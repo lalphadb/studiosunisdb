@@ -23,8 +23,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('membres/{membre}/attribuer-ceinture', [MembreController::class, 'attribuerCeinture'])->name('membres.attribuer-ceinture');
     Route::post('membres/{membre}/inscrire-seminaire', [MembreController::class, 'inscrireSeminaire'])->name('membres.inscrire-seminaire');
     
-    // Cours (temporairement désactivé)
-    // Route::resource('cours', CoursController::class);
+    // Cours (maintenant activé)
+    Route::resource('cours', CoursController::class);
     
     // Présences (temporairement désactivé) 
     // Route::resource('presences', PresenceController::class);

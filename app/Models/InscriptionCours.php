@@ -41,14 +41,22 @@ class InscriptionCours extends Model
         return $this->belongsTo(Membre::class);
     }
 
-    // Scopes
-    public function scopeActives($query)
+    // Accesseurs
+    public function getStatusBadgeAttribute(): string
     {
-        return $query->where('status', 'active');
+        return match($this->status) {
+            'active' => '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">✅ Active</span>',
+            'suspendue' => '<span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">⏸️ Suspendue</span>',
+            'annulee' => '<span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">❌ Annulée</span>',
+            default => ucfirst($this->status ?? 'Inconnu')
+        };
     }
 
-    public function scopeParCours($query, $coursId)
+    public function getDureeInscriptionAttribute(): string
     {
-        return $query->where('cours_id', $coursId);
+        if ($this->date_debut_facturation && $this->date_fin_facturation) {
+            return $this->date_debut_facturation->format('d/m/Y') . ' → ' . $this->date_fin_facturation->format('d/m/Y');
+        }
+        return 'Durée non définie';
     }
 }

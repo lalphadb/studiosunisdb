@@ -14,32 +14,37 @@ class Cours extends Model
     protected $table = 'cours';
 
     protected $fillable = [
-        'nom',
-        'description',
         'ecole_id',
         'instructeur_id',
+        'nom',
+        'description',
+        'niveau_requis',
+        'age_min',
+        'age_max',
+        'capacite_max',
+        'duree_minutes',
+        'prix',
+        'prix_mensuel',
+        'prix_session',
+        'status',
         'jour_semaine',
         'heure_debut',
         'heure_fin',
-        'capacite_max',
-        'age_min',
-        'age_max',
-        'niveau_requis',
         'type_cours',
-        'status',
-        'prix_mensuel',
-        'prix_session',
         'date_debut',
         'date_fin',
     ];
 
     protected $casts = [
-        'heure_debut' => 'datetime:H:i',
-        'heure_fin' => 'datetime:H:i',
         'date_debut' => 'date',
         'date_fin' => 'date',
+        'heure_debut' => 'datetime:H:i',
+        'heure_fin' => 'datetime:H:i',
+        'prix' => 'decimal:2',
         'prix_mensuel' => 'decimal:2',
         'prix_session' => 'decimal:2',
+        'age_min' => 'integer',
+        'age_max' => 'integer',
     ];
 
     // Relations
@@ -58,57 +63,84 @@ class Cours extends Model
         return $this->hasMany(InscriptionCours::class);
     }
 
-    public function inscriptionsActives(): HasMany
-    {
-        return $this->hasMany(InscriptionCours::class)->where('status', 'active');
-    }
-
     public function presences(): HasMany
     {
         return $this->hasMany(Presence::class);
     }
 
-    // Accesseurs
-    public function getHoraireFormatteAttribute(): string
+    public function membres()
     {
-        return ucfirst($this->jour_semaine) . ' ' . 
-               $this->heure_debut->format('H:i') . '-' . 
-               $this->heure_fin->format('H:i');
+        return $this->belongsToMany(Membre::class, 'inscriptions_cours')
+                   ->withPivot('date_inscription', 'status', 'montant_paye')
+                   ->withTimestamps();
     }
 
-    public function getNombreInscritsAttribute(): int
+    // Accesseurs
+    public function getStatusBadgeAttribute(): string
     {
-        return $this->inscriptionsActives()->count();
+        return match($this->status) {
+            'actif' => '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">✅ Actif</span>',
+            'inactif' => '<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">⏸️ Inactif</span>',
+            'complet' => '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">🔄 Complet</span>',
+            default => ucfirst($this->status ?? 'Inconnu')
+        };
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return match($this->type_cours) {
+            'karate' => '🥋 Karaté',
+            'boxe' => '🥊 Boxe',
+            'kickboxing' => '🦵 Kickboxing',
+            'cardiobox' => '💪 Cardio Box',
+            'enfants' => '👶 Enfants',
+            'adultes' => '👨 Adultes',
+            default => ucfirst($this->type_cours ?? 'Non défini')
+        };
+    }
+
+    public function getJourLabelAttribute(): string
+    {
+        return match($this->jour_semaine) {
+            'lundi' => '📅 Lundi',
+            'mardi' => '📅 Mardi',
+            'mercredi' => '📅 Mercredi',
+            'jeudi' => '📅 Jeudi',
+            'vendredi' => '📅 Vendredi',
+            'samedi' => '📅 Samedi',
+            'dimanche' => '📅 Dimanche',
+            default => ucfirst($this->jour_semaine ?? 'Non défini')
+        };
+    }
+
+    public function getCreneauAttribute(): string
+    {
+        if ($this->heure_debut && $this->heure_fin) {
+            return $this->heure_debut->format('H:i') . ' - ' . $this->heure_fin->format('H:i');
+        }
+        return 'Horaire non défini';
+    }
+
+    public function getAgeRangeAttribute(): string
+    {
+        if ($this->age_min && $this->age_max) {
+            return $this->age_min . ' - ' . $this->age_max . ' ans';
+        } elseif ($this->age_min) {
+            return $this->age_min . '+ ans';
+        } elseif ($this->age_max) {
+            return 'Jusqu\'à ' . $this->age_max . ' ans';
+        }
+        return 'Tous âges';
     }
 
     public function getPlacesDisponiblesAttribute(): int
     {
-        return $this->capacite_max - $this->nombre_inscrits;
+        return $this->capacite_max - $this->inscriptions()->where('status', 'active')->count();
     }
 
-    public function getEstCompletAttribute(): bool
+    public function getTauxOccupationAttribute(): int
     {
-        return $this->nombre_inscrits >= $this->capacite_max;
-    }
-
-    // Scopes
-    public function scopeActifs($query)
-    {
-        return $query->where('status', 'actif');
-    }
-
-    public function scopeParEcole($query, $ecoleId)
-    {
-        return $query->where('ecole_id', $ecoleId);
-    }
-
-    public function scopeParJour($query, $jour)
-    {
-        return $query->where('jour_semaine', $jour);
-    }
-
-    public function scopeParType($query, $type)
-    {
-        return $query->where('type_cours', $type);
+        if ($this->capacite_max == 0) return 0;
+        return round(($this->inscriptions()->where('status', 'active')->count() / $this->capacite_max) * 100);
     }
 }

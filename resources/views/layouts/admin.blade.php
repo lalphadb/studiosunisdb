@@ -48,9 +48,10 @@
                            class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.membres*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
                             👥 Membres
                         </a>
-                        <span class="px-3 py-2 rounded-md text-gray-500 cursor-not-allowed">
-                            📚 Cours (bientôt)
-                        </span>
+                        <a href="{{ route('admin.cours.index') }}" 
+                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.cours*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
+                            📚 Cours
+                        </a>
                     </div>
                 </div>
                 <div class="flex items-center">
