@@ -2,59 +2,53 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InscriptionCours extends Model
 {
     use HasFactory;
 
+    protected $table = 'inscriptions_cours';
+
     protected $fillable = [
-        'membre_id',
         'cours_id',
+        'membre_id',
         'date_inscription',
-        'date_debut',
-        'date_fin',
-        'statut',
-        'tarif',
-        'mode_paiement',
-        'notes'
+        'status',
+        'montant_paye',
+        'date_debut_facturation',
+        'date_fin_facturation',
+        'notes',
     ];
 
     protected $casts = [
         'date_inscription' => 'date',
-        'date_debut' => 'date',
-        'date_fin' => 'date',
-        'tarif' => 'decimal:2',
+        'date_debut_facturation' => 'date',
+        'date_fin_facturation' => 'date',
+        'montant_paye' => 'decimal:2',
     ];
 
     // Relations
-    public function membre()
-    {
-        return $this->belongsTo(Membre::class);
-    }
-
-    public function cours()
+    public function cours(): BelongsTo
     {
         return $this->belongsTo(Cours::class);
     }
 
-    public function paiements()
+    public function membre(): BelongsTo
     {
-        return $this->hasMany(Paiement::class);
+        return $this->belongsTo(Membre::class);
     }
 
     // Scopes
-    public function scopeActive($query)
+    public function scopeActives($query)
     {
-        return $query->where('statut', 'active');
+        return $query->where('status', 'active');
     }
 
-    // Attributs calculés
-    public function getEstValideAttribute()
+    public function scopeParCours($query, $coursId)
     {
-        return $this->statut === 'active' && 
-               $this->date_debut <= now() &&
-               (!$this->date_fin || $this->date_fin >= now());
+        return $query->where('cours_id', $coursId);
     }
 }

@@ -11,21 +11,11 @@ class Ecole extends Model
 
     protected $fillable = [
         'nom',
-        'adresse',
+        'adresse', 
         'ville',
-        'province',
-        'code_postal',
         'telephone',
         'email',
-        'site_web',
-        'directeur',
-        'capacite_max',
-        'statut',
-        'description', // Maintenant disponible
-    ];
-
-    protected $casts = [
-        'capacite_max' => 'integer',
+        'description'
     ];
 
     public function membres()
@@ -36,5 +26,10 @@ class Ecole extends Model
     public function cours()
     {
         return $this->hasMany(Cours::class);
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
     }
 }

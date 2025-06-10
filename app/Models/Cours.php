@@ -2,77 +2,99 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cours extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory;
+
+    protected $table = 'cours';
 
     protected $fillable = [
-        'ecole_id',
         'nom',
         'description',
-        'type_cours',
-        'niveau_requis',
+        'ecole_id',
+        'instructeur_id',
+        'jour_semaine',
+        'heure_debut',
+        'heure_fin',
+        'capacite_max',
         'age_min',
         'age_max',
-        'capacite_max',
-        'duree_minutes',
-        'prix',
-        'instructeur_principal_id',
-        'instructeur_assistant_id',
-        'statut',
-        'salle',
-        'materiel_requis',
-        'objectifs'
+        'niveau_requis',
+        'type_cours',
+        'status',
+        'prix_mensuel',
+        'prix_session',
+        'date_debut',
+        'date_fin',
     ];
 
     protected $casts = [
-        'age_min' => 'integer',
-        'age_max' => 'integer',
-        'capacite_max' => 'integer',
-        'duree_minutes' => 'integer',
-        'prix' => 'decimal:2',
+        'heure_debut' => 'datetime:H:i',
+        'heure_fin' => 'datetime:H:i',
+        'date_debut' => 'date',
+        'date_fin' => 'date',
+        'prix_mensuel' => 'decimal:2',
+        'prix_session' => 'decimal:2',
     ];
 
     // Relations
-    public function ecole()
+    public function ecole(): BelongsTo
     {
         return $this->belongsTo(Ecole::class);
     }
 
-    public function instructeurPrincipal()
+    public function instructeur(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'instructeur_principal_id');
+        return $this->belongsTo(User::class, 'instructeur_id');
     }
 
-    public function instructeurAssistant()
-    {
-        return $this->belongsTo(User::class, 'instructeur_assistant_id');
-    }
-
-    public function horaires()
-    {
-        return $this->hasMany(CoursHoraire::class);
-    }
-
-    public function inscriptions()
+    public function inscriptions(): HasMany
     {
         return $this->hasMany(InscriptionCours::class);
     }
 
-    public function presences()
+    public function inscriptionsActives(): HasMany
+    {
+        return $this->hasMany(InscriptionCours::class)->where('status', 'active');
+    }
+
+    public function presences(): HasMany
     {
         return $this->hasMany(Presence::class);
     }
 
-    // Scopes
-    public function scopeActif($query)
+    // Accesseurs
+    public function getHoraireFormatteAttribute(): string
     {
-        return $query->where('statut', 'actif');
+        return ucfirst($this->jour_semaine) . ' ' . 
+               $this->heure_debut->format('H:i') . '-' . 
+               $this->heure_fin->format('H:i');
+    }
+
+    public function getNombreInscritsAttribute(): int
+    {
+        return $this->inscriptionsActives()->count();
+    }
+
+    public function getPlacesDisponiblesAttribute(): int
+    {
+        return $this->capacite_max - $this->nombre_inscrits;
+    }
+
+    public function getEstCompletAttribute(): bool
+    {
+        return $this->nombre_inscrits >= $this->capacite_max;
+    }
+
+    // Scopes
+    public function scopeActifs($query)
+    {
+        return $query->where('status', 'actif');
     }
 
     public function scopeParEcole($query, $ecoleId)
@@ -80,32 +102,13 @@ class Cours extends Model
         return $query->where('ecole_id', $ecoleId);
     }
 
+    public function scopeParJour($query, $jour)
+    {
+        return $query->where('jour_semaine', $jour);
+    }
+
     public function scopeParType($query, $type)
     {
         return $query->where('type_cours', $type);
-    }
-
-    // Attributs calculés
-    public function getNombreInscritsAttribute()
-    {
-        return $this->inscriptions()->where('statut', 'active')->count();
-    }
-
-    public function getPlacesRestantesAttribute()
-    {
-        return $this->capacite_max - $this->nombre_inscrits;
-    }
-
-    public function getEstCompletAttribute()
-    {
-        return $this->nombre_inscrits >= $this->capacite_max;
-    }
-
-    // Activity Log
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty();
     }
 }

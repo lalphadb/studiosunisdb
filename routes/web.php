@@ -7,10 +7,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -19,9 +15,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Routes administration
-require __DIR__.'/admin.php';
-
 // Redirection après login vers admin
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     return redirect()->route('admin.dashboard');
@@ -29,8 +22,3 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
 
 // Routes administration
 require __DIR__.'/admin.php';
-
-// Redirection après login vers admin
-Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
-    return redirect()->route('admin.dashboard');
-})->name('dashboard');

@@ -63,7 +63,9 @@ class MembreController extends Controller
         }
         
         $ecoles = $this->getEcolesForUser();
-        return view('admin.membres.create', compact('ecoles'));
+        $ecole_defaut = !Gate::allows('manage-system') ? auth()->user()->ecole_id : null;
+        
+        return view('admin.membres.create', compact('ecoles', 'ecole_defaut'));
     }
 
     public function store(Request $request)
@@ -237,5 +239,18 @@ class MembreController extends Controller
         } else {
             return Ecole::where('id', auth()->user()->ecole_id)->where('statut', 'actif')->get();
         }
+    }
+
+    // Méthodes futures pour ceintures et séminaires
+    public function attribuerCeinture(Request $request, Membre $membre)
+    {
+        return redirect()->route('admin.membres.show', $membre)
+                        ->with('info', 'Fonctionnalité en développement');
+    }
+
+    public function inscrireSeminaire(Request $request, Membre $membre)
+    {
+        return redirect()->route('admin.membres.show', $membre)
+                        ->with('info', 'Fonctionnalité en développement');
     }
 }
