@@ -6,203 +6,188 @@ use App\Http\Controllers\Controller;
 use App\Models\Cours;
 use App\Models\Ecole;
 use App\Models\User;
-use App\Http\Requests\CoursRequest;
+use App\Models\Membre;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class CoursController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
-        if (!Gate::allows('viewAny', Cours::class)) {
-            abort(403, 'Accès non autorisé');
+        $coursQuery = Cours::with(['ecole', 'instructeur']);
+        
+        // Filtrer par école pour les admins
+        if (auth()->user()->hasRole('admin')) {
+            $coursQuery->where('ecole_id', auth()->user()->ecole_id);
         }
-
-        $query = Cours::with(['ecole', 'instructeur']);
-
-        // Filtre automatique par école pour admin
-        if (!Gate::allows('manage-system')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
+        
+        if ($request->type_cours) {
+            $coursQuery->where('type_cours', $request->type_cours);
         }
-
-        // Filtres de recherche
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('niveau_requis', 'like', "%{$search}%");
+        
+        if ($request->status) {
+            $coursQuery->where('status', $request->status);
+        }
+        
+        if ($request->search) {
+            $coursQuery->where(function ($q) use ($request) {
+                $q->where('nom', 'like', "%{$request->search}%");
             });
         }
-
-        // Filtre par école (pour superadmin)
-        if ($request->filled('ecole_id') && Gate::allows('manage-system')) {
-            $query->where('ecole_id', $request->ecole_id);
-        }
-
-        // Filtre par statut
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filtre par type
-        if ($request->filled('type_cours')) {
-            $query->where('type_cours', $request->type_cours);
-        }
-
-        // Filtre par jour
-        if ($request->filled('jour_semaine')) {
-            $query->where('jour_semaine', $request->jour_semaine);
-        }
-
-        $cours = $query->orderBy('jour_semaine')
-                      ->orderBy('heure_debut')
-                      ->paginate(20)
-                      ->withQueryString();
-
-        // Données pour les filtres
-        $ecoles = $this->getEcolesForUser();
         
-        return view('admin.cours.index', compact('cours', 'ecoles'));
+        $cours = $coursQuery->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+
+        $statsQuery = Cours::query();
+        if (auth()->user()->hasRole('admin')) {
+            $statsQuery->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        $stats = [
+            'total_cours' => $statsQuery->count(),
+            'cours_actifs' => (clone $statsQuery)->where('status', 'actif')->count(),
+            'cours_complets' => (clone $statsQuery)->where('status', 'complet')->count(),
+        ];
+
+        return view('admin.cours.index', compact('cours', 'stats'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        if (!Gate::allows('create', Cours::class)) {
-            abort(403, 'Accès non autorisé');
+        // Récupérer les écoles selon le rôle
+        if (auth()->user()->hasRole('superadmin')) {
+            $ecoles = Ecole::orderBy('nom')->get();
+        } else {
+            // Pour admin d'école, seulement son école
+            $ecoles = Ecole::where('id', auth()->user()->ecole_id)->get();
         }
 
-        $ecoles = $this->getEcolesForUser();
-        $instructeurs = $this->getInstructeursForUser();
+        // Récupérer les instructeurs
+        $instructeursQuery = User::role(['admin', 'instructeur']);
+        
+        if (auth()->user()->hasRole('admin')) {
+            $instructeursQuery->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        $instructeurs = $instructeursQuery->orderBy('name')->get();
 
         return view('admin.cours.create', compact('ecoles', 'instructeurs'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(CoursRequest $request)
+    public function store(Request $request)
     {
-        if (!Gate::allows('create', Cours::class)) {
-            abort(403, 'Accès non autorisé');
+        $validated = $request->validate([
+            'nom' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'ecole_id' => 'required|exists:ecoles,id',
+            'instructeur_id' => 'nullable|exists:users,id',
+            'type_cours' => 'required|string',
+            'jour_semaine' => 'nullable|string|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
+            'heure_debut' => 'nullable|date_format:H:i',
+            'heure_fin' => 'nullable|date_format:H:i|after:heure_debut',
+            'prix_mensuel' => 'nullable|numeric|min:0',
+            'prix_session' => 'nullable|numeric|min:0',
+            'capacite_max' => 'required|integer|min:1',
+            'duree_minutes' => 'nullable|integer|min:30|max:180',
+            'age_min' => 'nullable|integer|min:3|max:100',
+            'age_max' => 'nullable|integer|min:3|max:100|gte:age_min',
+            'niveau_requis' => 'nullable|string|max:100',
+            'date_debut' => 'nullable|date',
+            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+        ]);
+
+        // Vérifier que l'admin ne peut créer que pour son école
+        if (auth()->user()->hasRole('admin') && $validated['ecole_id'] != auth()->user()->ecole_id) {
+            abort(403, 'Vous ne pouvez créer des cours que pour votre école.');
         }
 
-        $validated = $request->validated();
-
-        // Forcer l'école pour les admins d'école
-        if (!Gate::allows('manage-system')) {
-            $validated['ecole_id'] = auth()->user()->ecole_id;
-        }
+        // Définir le prix principal
+        $validated['prix'] = $validated['prix_mensuel'] ?? 0;
+        $validated['status'] = 'actif';
 
         $cours = Cours::create($validated);
 
-        return redirect()->route('admin.cours.show', $cours)
-                        ->with('success', 'Cours créé avec succès !');
+        return redirect()->route('admin.cours.index')->with('success', 'Cours créé avec succès.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Cours $cours)
     {
-        if (!Gate::allows('view', $cours)) {
-            abort(403, 'Accès non autorisé');
+        if (auth()->user()->hasRole('admin') && $cours->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
         }
 
-        $cours->load(['ecole', 'instructeur', 'inscriptions.membre']);
+        $cours->load(['ecole', 'instructeur']);
 
-        return view('admin.cours.show', compact('cours'));
+        $stats = [
+            'nombre_inscrits' => 0,
+            'places_disponibles' => $cours->capacite_max,
+            'taux_occupation' => 0,
+        ];
+
+        return view('admin.cours.show', compact('cours', 'stats'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Cours $cours)
     {
-        if (!Gate::allows('update', $cours)) {
-            abort(403, 'Accès non autorisé');
+        if (auth()->user()->hasRole('admin') && $cours->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
         }
 
-        $ecoles = $this->getEcolesForUser();
-        $instructeurs = $this->getInstructeursForUser();
+        if (auth()->user()->hasRole('superadmin')) {
+            $ecoles = Ecole::orderBy('nom')->get();
+        } else {
+            $ecoles = Ecole::where('id', auth()->user()->ecole_id)->get();
+        }
+
+        $instructeursQuery = User::role(['admin', 'instructeur']);
+        
+        if (auth()->user()->hasRole('admin')) {
+            $instructeursQuery->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        $instructeurs = $instructeursQuery->orderBy('name')->get();
 
         return view('admin.cours.edit', compact('cours', 'ecoles', 'instructeurs'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(CoursRequest $request, Cours $cours)
+    public function update(Request $request, Cours $cours)
     {
-        if (!Gate::allows('update', $cours)) {
-            abort(403, 'Accès non autorisé');
+        if (auth()->user()->hasRole('admin') && $cours->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
         }
 
-        $validated = $request->validated();
+        $validated = $request->validate([
+            'nom' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'ecole_id' => 'required|exists:ecoles,id',
+            'instructeur_id' => 'nullable|exists:users,id',
+            'type_cours' => 'required|string',
+            'jour_semaine' => 'nullable|string|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
+            'heure_debut' => 'nullable|date_format:H:i',
+            'heure_fin' => 'nullable|date_format:H:i|after:heure_debut',
+            'prix_mensuel' => 'nullable|numeric|min:0',
+            'prix_session' => 'nullable|numeric|min:0',
+            'capacite_max' => 'required|integer|min:1',
+            'duree_minutes' => 'nullable|integer|min:30|max:180',
+            'age_min' => 'nullable|integer|min:3|max:100',
+            'age_max' => 'nullable|integer|min:3|max:100|gte:age_min',
+            'niveau_requis' => 'nullable|string|max:100',
+            'date_debut' => 'nullable|date',
+            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+            'status' => 'required|in:actif,inactif,complet',
+        ]);
 
-        // Forcer l'école pour les admins d'école
-        if (!Gate::allows('manage-system')) {
-            $validated['ecole_id'] = auth()->user()->ecole_id;
-        }
-
+        $validated['prix'] = $validated['prix_mensuel'] ?? 0;
         $cours->update($validated);
 
-        return redirect()->route('admin.cours.show', $cours)
-                        ->with('success', 'Cours mis à jour avec succès !');
+        return redirect()->route('admin.cours.index')->with('success', 'Cours mis à jour.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Cours $cours)
     {
-        if (!Gate::allows('delete', $cours)) {
-            abort(403, 'Accès non autorisé');
-        }
-
-        // Vérifier s'il y a des inscriptions actives
-        if ($cours->inscriptions()->where('status', 'active')->count() > 0) {
-            return redirect()->route('admin.cours.index')
-                           ->with('error', 'Impossible de supprimer un cours avec des inscriptions actives.');
+        if (auth()->user()->hasRole('admin') && $cours->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
         }
 
         $cours->delete();
-
-        return redirect()->route('admin.cours.index')
-                        ->with('success', 'Cours supprimé avec succès !');
-    }
-
-    /**
-     * Get écoles available for current user
-     */
-    private function getEcolesForUser()
-    {
-        if (Gate::allows('manage-system')) {
-            return Ecole::where('statut', 'actif')->orderBy('nom')->get();
-        } else {
-            return Ecole::where('id', auth()->user()->ecole_id)
-                        ->where('statut', 'actif')
-                        ->get();
-        }
-    }
-
-    /**
-     * Get instructeurs available for current user
-     */
-    private function getInstructeursForUser()
-    {
-        $query = User::role(['instructeur', 'admin', 'superadmin']);
-
-        if (!Gate::allows('manage-system')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
-        }
-
-        return $query->orderBy('name')->get();
+        return redirect()->route('admin.cours.index')->with('success', 'Cours supprimé.');
     }
 }

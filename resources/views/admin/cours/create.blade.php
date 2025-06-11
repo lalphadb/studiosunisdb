@@ -9,7 +9,7 @@
         <div class="mb-8">
             <div class="flex items-center space-x-4">
                 <a href="{{ route('admin.cours.index') }}" class="text-gray-400 hover:text-white">
-                    <i class="fas fa-arrow-left"></i> ←
+                    ← Retour
                 </a>
                 <h1 class="text-3xl font-bold text-white">
                     ➕ Créer un nouveau cours
@@ -76,7 +76,7 @@
                             <option value="">Sélectionner une école</option>
                             @foreach($ecoles as $ecole)
                                 <option value="{{ $ecole->id }}" {{ old('ecole_id') == $ecole->id ? 'selected' : '' }}>
-                                    {{ $ecole->nom }}
+                                    {{ $ecole->nom }} - {{ $ecole->ville }}
                                 </option>
                             @endforeach
                         </select>
@@ -87,7 +87,7 @@
 
                     <div>
                         <label for="instructeur_id" class="block text-sm font-medium text-gray-300 mb-2">
-                            Instructeur
+                            Instructeur (optionnel)
                         </label>
                         <select name="instructeur_id" id="instructeur_id"
                                 class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -104,8 +104,53 @@
                     </div>
                 </div>
 
-                <!-- Paramètres du cours -->
+                <!-- Horaires -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="jour_semaine" class="block text-sm font-medium text-gray-300 mb-2">
+                            Jour de la semaine
+                        </label>
+                        <select name="jour_semaine" id="jour_semaine"
+                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Sélectionner un jour</option>
+                            <option value="lundi" {{ old('jour_semaine') == 'lundi' ? 'selected' : '' }}>Lundi</option>
+                            <option value="mardi" {{ old('jour_semaine') == 'mardi' ? 'selected' : '' }}>Mardi</option>
+                            <option value="mercredi" {{ old('jour_semaine') == 'mercredi' ? 'selected' : '' }}>Mercredi</option>
+                            <option value="jeudi" {{ old('jour_semaine') == 'jeudi' ? 'selected' : '' }}>Jeudi</option>
+                            <option value="vendredi" {{ old('jour_semaine') == 'vendredi' ? 'selected' : '' }}>Vendredi</option>
+                            <option value="samedi" {{ old('jour_semaine') == 'samedi' ? 'selected' : '' }}>Samedi</option>
+                            <option value="dimanche" {{ old('jour_semaine') == 'dimanche' ? 'selected' : '' }}>Dimanche</option>
+                        </select>
+                        @error('jour_semaine')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="heure_debut" class="block text-sm font-medium text-gray-300 mb-2">
+                            Heure de début
+                        </label>
+                        <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut') }}"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('heure_debut')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="heure_fin" class="block text-sm font-medium text-gray-300 mb-2">
+                            Heure de fin
+                        </label>
+                        <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin') }}"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('heure_fin')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Paramètres du cours -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div>
                         <label for="capacite_max" class="block text-sm font-medium text-gray-300 mb-2">
                             Capacité max *
@@ -129,12 +174,85 @@
                     </div>
 
                     <div>
-                        <label for="prix_mensuel" class="block text-sm font-medium text-gray-300 mb-2">
-                            Prix mensuel ($) *
+                        <label for="age_min" class="block text-sm font-medium text-gray-300 mb-2">
+                            Âge minimum
                         </label>
-                        <input type="number" name="prix_mensuel" id="prix_mensuel" value="{{ old('prix_mensuel') }}" step="0.01" min="0" required
+                        <input type="number" name="age_min" id="age_min" value="{{ old('age_min') }}" min="3" max="100"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('age_min')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="age_max" class="block text-sm font-medium text-gray-300 mb-2">
+                            Âge maximum
+                        </label>
+                        <input type="number" name="age_max" id="age_max" value="{{ old('age_max') }}" min="3" max="100"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('age_max')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Niveau et prix (optionnels) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="niveau_requis" class="block text-sm font-medium text-gray-300 mb-2">
+                            Niveau requis
+                        </label>
+                        <input type="text" name="niveau_requis" id="niveau_requis" value="{{ old('niveau_requis') }}"
+                               placeholder="Ex: Débutant, Intermédiaire..."
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('niveau_requis')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="prix_mensuel" class="block text-sm font-medium text-gray-300 mb-2">
+                            Prix mensuel ($) <span class="text-gray-500">(optionnel)</span>
+                        </label>
+                        <input type="number" name="prix_mensuel" id="prix_mensuel" value="{{ old('prix_mensuel') }}" step="0.01" min="0"
                                class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         @error('prix_mensuel')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="prix_session" class="block text-sm font-medium text-gray-300 mb-2">
+                            Prix par session ($) <span class="text-gray-500">(optionnel)</span>
+                        </label>
+                        <input type="number" name="prix_session" id="prix_session" value="{{ old('prix_session') }}" step="0.01" min="0"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('prix_session')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Dates de session (optionnelles) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="date_debut" class="block text-sm font-medium text-gray-300 mb-2">
+                            Date de début de session
+                        </label>
+                        <input type="date" name="date_debut" id="date_debut" value="{{ old('date_debut') }}"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('date_debut')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="date_fin" class="block text-sm font-medium text-gray-300 mb-2">
+                            Date de fin de session
+                        </label>
+                        <input type="date" name="date_fin" id="date_fin" value="{{ old('date_fin') }}"
+                               class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        @error('date_fin')
                             <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
