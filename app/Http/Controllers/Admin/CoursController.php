@@ -190,4 +190,40 @@ class CoursController extends Controller
         $cours->delete();
         return redirect()->route('admin.cours.index')->with('success', 'Cours supprimé.');
     }
+
+    /**
+     * Dupliquer un cours existant
+     */
+    public function duplicate(Cours $cours)
+    {
+        if (auth()->user()->hasRole('admin') && $cours->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
+        }
+
+        // Récupérer les données du cours original
+        $originalData = $cours->toArray();
+        
+        // Supprimer les champs qui ne doivent pas être dupliqués
+        unset($originalData['id'], $originalData['created_at'], $originalData['updated_at']);
+        
+        // Modifier le nom pour indiquer que c'est une copie
+        $originalData['nom'] = $originalData['nom'] . ' (Copie)';
+        
+        // Récupérer les écoles et instructeurs
+        if (auth()->user()->hasRole('superadmin')) {
+            $ecoles = Ecole::orderBy('nom')->get();
+        } else {
+            $ecoles = Ecole::where('id', auth()->user()->ecole_id)->get();
+        }
+
+        $instructeursQuery = User::role(['admin', 'instructeur']);
+        
+        if (auth()->user()->hasRole('admin')) {
+            $instructeursQuery->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        $instructeurs = $instructeursQuery->orderBy('name')->get();
+
+        return view('admin.cours.create', compact('ecoles', 'instructeurs'))->with('coursOriginal', $originalData);
+    }
 }

@@ -16,18 +16,40 @@
                 </p>
             </div>
             <div class="mt-4 flex md:mt-0 md:ml-4">
-                @can('create', App\Models\Cours::class)
                 <a href="{{ route('admin.cours.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                     ➕ Nouveau Cours
                 </a>
-                @endcan
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-white">{{ $stats['total_cours'] }}</div>
+                    <div class="text-gray-400">Total Cours</div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-400">{{ $stats['cours_actifs'] }}</div>
+                    <div class="text-gray-400">Cours Actifs</div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-400">{{ $stats['cours_complets'] }}</div>
+                    <div class="text-gray-400">Cours Complets</div>
+                </div>
             </div>
         </div>
 
         <!-- Filtres -->
         <div class="bg-gray-800 rounded-lg shadow mb-6 border border-gray-700">
             <div class="p-6">
-                <form method="GET" action="{{ route('admin.cours.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <form method="GET" action="{{ route('admin.cours.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- Recherche -->
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-300 mb-2">Rechercher</label>
@@ -39,21 +61,6 @@
                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
-                    <!-- École (pour superadmin) -->
-                    @can('manage-system')
-                    <div>
-                        <label for="ecole_id" class="block text-sm font-medium text-gray-300 mb-2">École</label>
-                        <select name="ecole_id" id="ecole_id" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Toutes les écoles</option>
-                            @foreach($ecoles as $ecole)
-                                <option value="{{ $ecole->id }}" {{ request('ecole_id') == $ecole->id ? 'selected' : '' }}>
-                                    {{ $ecole->nom }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endcan
-
                     <!-- Statut -->
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-300 mb-2">Statut</label>
@@ -61,7 +68,7 @@
                             <option value="">Tous les statuts</option>
                             <option value="actif" {{ request('status') == 'actif' ? 'selected' : '' }}>✅ Actif</option>
                             <option value="inactif" {{ request('status') == 'inactif' ? 'selected' : '' }}>⏸️ Inactif</option>
-                            <option value="complet" {{ request('status') == 'complet' ? 'selected' : '' }}>🔄 Complet</option>
+                            <option value="complet" {{ request('status') == 'complet' ? 'selected' : '' }}>🔴 Complet</option>
                         </select>
                     </div>
 
@@ -101,9 +108,6 @@
                         <thead class="bg-gray-900">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Cours</th>
-                                @can('manage-system')
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">École</th>
-                                @endcan
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Horaire</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Capacité</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Prix</th>
@@ -118,85 +122,97 @@
                                 <td class="px-4 py-4">
                                     <div>
                                         <div class="text-sm font-medium text-white">{{ $coursItem->nom }}</div>
-                                        <div class="text-sm text-gray-400">{{ $coursItem->type_label }}</div>
-                                        @if($coursItem->niveau_requis)
-                                            <div class="text-xs text-gray-500">{{ $coursItem->niveau_requis }}</div>
+                                        <div class="text-sm text-gray-400">{{ ucfirst($coursItem->type_cours ?? 'Non défini') }}</div>
+                                        @if($coursItem->ecole)
+                                            <div class="text-xs text-gray-500">{{ $coursItem->ecole->nom }}</div>
                                         @endif
                                     </div>
                                 </td>
 
-                                <!-- École (pour superadmin) -->
-                                @can('manage-system')
-                                <td class="px-4 py-4">
-                                    <div class="text-sm text-white">{{ $coursItem->ecole->nom }}</div>
-                                    <div class="text-sm text-gray-400">{{ $coursItem->ecole->ville }}</div>
-                                </td>
-                                @endcan
-
                                 <!-- Horaire -->
                                 <td class="px-4 py-4">
-                                    <div class="text-sm text-white">{{ $coursItem->jour_label }}</div>
-                                    <div class="text-sm text-gray-400">{{ $coursItem->creneau }}</div>
-                                    <div class="text-xs text-gray-500">{{ $coursItem->duree_minutes }}min</div>
+                                    @if($coursItem->jour_semaine)
+                                        <div class="text-sm text-white">{{ ucfirst($coursItem->jour_semaine) }}</div>
+                                    @endif
+                                    @if($coursItem->heure_debut && $coursItem->heure_fin)
+                                        <div class="text-sm text-gray-400">
+                                            {{ date('H:i', strtotime($coursItem->heure_debut)) }} - {{ date('H:i', strtotime($coursItem->heure_fin)) }}
+                                        </div>
+                                    @endif
+                                    @if($coursItem->duree_minutes)
+                                        <div class="text-xs text-gray-500">{{ $coursItem->duree_minutes }}min</div>
+                                    @endif
                                 </td>
 
                                 <!-- Capacité -->
                                 <td class="px-4 py-4">
-                                    <div class="text-sm text-white">{{ $coursItem->inscriptions->count() }}/{{ $coursItem->capacite_max }}</div>
+                                    <div class="text-sm text-white">0/{{ $coursItem->capacite_max }}</div>
                                     <div class="w-full bg-gray-700 rounded-full h-2 mt-1">
-                                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $coursItem->taux_occupation }}%"></div>
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
                                     </div>
-                                    <div class="text-xs text-gray-400 mt-1">{{ $coursItem->taux_occupation }}%</div>
+                                    <div class="text-xs text-gray-400 mt-1">0%</div>
                                 </td>
 
                                 <!-- Prix -->
                                 <td class="px-4 py-4">
-                                    <div class="text-sm text-white">{{ number_format($coursItem->prix_mensuel, 2) }}$ /mois</div>
-                                    @if($coursItem->age_min || $coursItem->age_max)
-                                        <div class="text-xs text-gray-400">{{ $coursItem->age_range }}</div>
+                                    @if($coursItem->prix_mensuel > 0)
+                                        <div class="text-sm text-white">${{ number_format($coursItem->prix_mensuel, 2) }}/mois</div>
+                                    @endif
+                                    @if($coursItem->prix_session > 0)
+                                        <div class="text-xs text-gray-400">${{ number_format($coursItem->prix_session, 2) }}/session</div>
+                                    @endif
+                                    @if($coursItem->prix_mensuel == 0 && $coursItem->prix_session == 0)
+                                        <div class="text-sm text-gray-400">Prix à définir</div>
                                     @endif
                                 </td>
 
                                 <!-- Statut -->
                                 <td class="px-4 py-4">
-                                    {!! $coursItem->status_badge !!}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        @if($coursItem->status == 'actif') bg-green-100 text-green-800
+                                        @elseif($coursItem->status == 'complet') bg-red-100 text-red-800
+                                        @else bg-yellow-100 text-yellow-800 @endif">
+                                        {{ ucfirst($coursItem->status) }}
+                                    </span>
                                 </td>
 
                                 <!-- Actions -->
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <div class="flex items-center space-x-2">
-                                        @can('view', $coursItem)
+                                        <!-- Voir -->
                                         <a href="{{ route('admin.cours.show', $coursItem) }}" 
                                            class="text-blue-400 hover:text-blue-300 text-lg"
                                            title="Voir détails">
                                             👁️
                                         </a>
-                                        @endcan
                                         
-                                        @can('update', $coursItem)
+                                        <!-- Modifier -->
                                         <a href="{{ route('admin.cours.edit', $coursItem) }}" 
-                                           class="text-green-400 hover:text-green-300 text-lg"
+                                           class="text-yellow-400 hover:text-yellow-300 text-lg"
                                            title="Modifier">
                                             ✏️
                                         </a>
-                                        @endcan
                                         
-                                        @can('delete', $coursItem)
-                                        @if($coursItem->inscriptions()->where('status', 'active')->count() === 0)
-                                            <form action="{{ route('admin.cours.destroy', $coursItem) }}" 
-                                                  method="POST" 
-                                                  class="inline"
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="text-red-400 hover:text-red-300 text-lg"
-                                                        title="Supprimer">
-                                                    🗑️
-                                                </button>
-                                            </form>
-                                        @endif
-                                        @endcan
+                                        <!-- Dupliquer -->
+                                        <a href="{{ route('admin.cours.duplicate', $coursItem) }}" 
+                                           class="text-purple-400 hover:text-purple-300 text-lg"
+                                           title="Dupliquer cours">
+                                            📋
+                                        </a>
+                                        
+                                        <!-- Supprimer -->
+                                        <form action="{{ route('admin.cours.destroy', $coursItem) }}" 
+                                              method="POST" 
+                                              class="inline"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="text-red-400 hover:text-red-300 text-lg"
+                                                    title="Supprimer">
+                                                🗑️
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -223,11 +239,9 @@
                             Commencez par créer votre premier cours.
                         @endif
                     </p>
-                    @can('create', App\Models\Cours::class)
                     <a href="{{ route('admin.cours.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
                         ➕ Créer Premier Cours
                     </a>
-                    @endcan
                 </div>
             @endif
         </div>

@@ -48,6 +48,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'admin.cours.destroy',
     ]);
     
+    // Route de duplication des cours
+    Route::get('cours/{cours}/duplicate', [CoursController::class, 'duplicate'])->name('admin.cours.duplicate');
+    
     // Présences
     Route::resource('presences', PresenceController::class)->names([
         'index' => 'admin.presences.index',
