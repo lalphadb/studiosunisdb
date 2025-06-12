@@ -12,34 +12,26 @@ class MembrePolicy
 
     public function viewAny(User $user)
     {
-        return $user->can('manage-membres') || $user->can('view-membres');
+        return $user->hasRole('superadmin') || $user->can('manage_membres');
     }
 
     public function view(User $user, Membre $membre)
     {
-        if ($user->hasRole('superadmin')) {
-            return true;
-        }
-        
-        return $user->ecole_id === $membre->ecole_id;
+        return $user->hasRole('superadmin') || $user->can('manage_membres');
     }
 
     public function create(User $user)
     {
-        return $user->can('manage-membres');
+        return $user->hasRole('superadmin') || $user->can('manage_membres');
     }
 
     public function update(User $user, Membre $membre)
     {
-        if ($user->hasRole('superadmin')) {
-            return true;
-        }
-        
-        return $user->ecole_id === $membre->ecole_id && $user->can('manage-membres');
+        return $user->hasRole('superadmin') || $user->can('manage_membres');
     }
 
     public function delete(User $user, Membre $membre)
     {
-        return $user->hasRole('superadmin');
+        return $user->hasRole('superadmin') || $user->can('manage_membres');
     }
 }
