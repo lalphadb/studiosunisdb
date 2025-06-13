@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EcoleController;
 use App\Http\Controllers\Admin\MembreController;
+use App\Http\Controllers\Admin\CoursController;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard
@@ -15,10 +16,8 @@ Route::resource('ecoles', EcoleController::class);
 Route::resource('membres', MembreController::class);
 Route::get('membres/export', [MembreController::class, 'export'])->name('membres.export');
 
-// Cours (temporaire)
-Route::get('/cours', function() { 
-    return view('admin.cours.index', ['cours' => collect()]); 
-})->name('cours.index');
+// Cours
+Route::resource('cours', CoursController::class);
 
 // Présences (temporaire)
 Route::get('/presences', function() { 

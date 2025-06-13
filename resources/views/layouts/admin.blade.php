@@ -33,36 +33,81 @@
                 <div class="flex items-center space-x-8">
                     <div class="flex-shrink-0">
                         <h1 class="text-xl font-bold text-white">🥋 StudiosUnisDB</h1>
-                        <p class="text-xs text-blue-300">Réseau Studios Unis</p>
+                        <p class="text-xs text-blue-300">
+                            @if(auth()->user()->hasRole('superadmin'))
+                                SuperAdmin - Réseau Studios Unis
+                            @elseif(auth()->user()->ecole)
+                                {{ auth()->user()->ecole->nom }}
+                            @else
+                                École non assignée
+                            @endif
+                        </p>
                     </div>
                     <div class="hidden md:flex md:space-x-4">
+                        <!-- Dashboard - Tous -->
                         <a href="{{ route('admin.dashboard') }}" 
                            class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.dashboard*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
                             📊 Dashboard
                         </a>
+                        
+                        <!-- Écoles - SEULEMENT SuperAdmin -->
+                        @if(auth()->user()->hasRole('superadmin'))
                         <a href="{{ route('admin.ecoles.index') }}" 
                            class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.ecoles*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
                             🏢 Écoles
                         </a>
+                        @endif
+                        
+                        <!-- Membres - Admin et Instructeur -->
+                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
                         <a href="{{ route('admin.membres.index') }}" 
                            class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.membres*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
                             👥 Membres
                         </a>
+                        @endif
+                        
+                        <!-- Cours - Admin et Instructeur -->
+                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
                         <a href="{{ route('admin.cours.index') }}" 
                            class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.cours*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
                             📚 Cours
                         </a>
+                        @endif
+                        
+                        <!-- Présences - Admin et Instructeur (quand développé) -->
+                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
+                        <a href="{{ route('admin.presences.index') }}" 
+                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.presences*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
+                            ✅ Présences
+                        </a>
+                        @endif
                     </div>
                 </div>
                 <div class="flex items-center">
                     <div class="relative">
                         <button onclick="toggleDropdown()" class="flex items-center space-x-2 hover-bg px-3 py-2 rounded-md transition-all">
-                            <span class="text-white">👤 {{ Auth::user()->name }}</span>
+                            <span class="text-white">
+                                @if(auth()->user()->hasRole('superadmin'))
+                                    🔥 {{ Auth::user()->name }}
+                                @elseif(auth()->user()->hasRole('admin'))
+                                    👑 {{ Auth::user()->name }}
+                                @elseif(auth()->user()->hasRole('instructeur'))
+                                    🥋 {{ Auth::user()->name }}
+                                @else
+                                    👤 {{ Auth::user()->name }}
+                                @endif
+                            </span>
                             <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                             </svg>
                         </button>
                         <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 card-bg rounded-md shadow-xl py-1 z-50">
+                            <div class="px-4 py-2 text-xs text-slate-400 border-b border-slate-600">
+                                {{ auth()->user()->roles->pluck('name')->join(', ') }}
+                                @if(auth()->user()->ecole)
+                                    <br>{{ auth()->user()->ecole->nom }}
+                                @endif
+                            </div>
                             <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-white hover-bg">👤 Profil</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf

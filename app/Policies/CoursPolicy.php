@@ -4,58 +4,44 @@ namespace App\Policies;
 
 use App\Models\Cours;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CoursPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+
+    public function viewAny(User $user)
     {
-        return $user->can('view-cours');
+        return $user->hasPermission('manage_cours') || $user->hasAnyRole(['superadmin', 'admin', 'instructeur']);
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Cours $cours): bool
+    public function view(User $user, Cours $cours)
     {
-        if ($user->can('manage-system')) {
+        // SuperAdmin : accès total
+        if ($user->hasRole('superadmin')) {
             return true;
         }
-
-        return $user->ecole_id === $cours->ecole_id && $user->can('view-cours');
+        
+        // Admin/Instructeur : seulement leur école
+        return $user->ecole_id === $cours->ecole_id;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user)
     {
-        return $user->can('create-cours');
+        return $user->hasPermission('manage_cours') || $user->hasAnyRole(['superadmin', 'admin']);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Cours $cours): bool
+    public function update(User $user, Cours $cours)
     {
-        if ($user->can('manage-system')) {
+        if ($user->hasRole('superadmin')) {
             return true;
         }
-
-        return $user->ecole_id === $cours->ecole_id && $user->can('edit-cours');
+        
+        return $user->hasRole('admin') && $user->ecole_id === $cours->ecole_id;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Cours $cours): bool
+    public function delete(User $user, Cours $cours)
     {
-        if ($user->can('manage-system')) {
-            return true;
-        }
-
-        return $user->ecole_id === $cours->ecole_id && $user->can('delete-cours');
+        return $this->update($user, $cours);
     }
 }

@@ -6,15 +6,14 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        // Permissions et rôles en premier
-        $this->call(RolePermissionSeeder::class);
-        
-        // Utilisateurs de base
-        $this->call(FinalUsersSeeder::class);
-        
-        // Données de test riches
-        $this->call(RichTestDataSeeder::class);
+        // Ordre important : Écoles en premier
+        $this->call([
+            EcoleSeeder::class,
+            CeintureSeeder::class,
+            RolePermissionSeeder::class,
+            UserSeeder::class,
+        ]);
     }
 }

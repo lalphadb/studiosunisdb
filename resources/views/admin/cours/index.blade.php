@@ -3,14 +3,68 @@
 @section('title', 'Gestion des Cours')
 
 @section('content')
-<div class="mb-8">
-    <h1 class="text-4xl font-bold text-white mb-2">📚 Gestion des Cours</h1>
-    <p class="text-slate-400">Module en développement</p>
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-4xl font-bold text-white mb-2">📚 Gestion des Cours</h1>
+        <p class="text-slate-400">Cours du réseau Studios Unis</p>
+    </div>
+    <a href="{{ route('admin.cours.create') }}" class="hover-bg px-6 py-3 rounded-lg font-bold transition-all text-white border border-blue-500" style="background-color: rgba(59, 130, 246, 0.2);">
+        ➕ Nouveau Cours
+    </a>
 </div>
 
-<div class="card-bg rounded-xl shadow-xl p-8 text-center">
-    <div class="text-8xl mb-4">🚧</div>
-    <h2 class="text-2xl font-bold text-white mb-4">Module Cours en Développement</h2>
-    <p class="text-slate-400">Cette fonctionnalité sera disponible prochainement.</p>
+<div class="card-bg rounded-xl shadow-xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead style="background: linear-gradient(135deg, #334155, #1e293b); border-bottom: 1px solid #475569;">
+                <tr>
+                    <th class="text-left px-6 py-4 font-bold text-white">Cours</th>
+                    <th class="text-left px-6 py-4 font-bold text-white">École</th>
+                    <th class="text-left px-6 py-4 font-bold text-white">Instructeur</th>
+                    <th class="text-left px-6 py-4 font-bold text-white">Inscrits</th>
+                    <th class="text-left px-6 py-4 font-bold text-white">Statut</th>
+                    <th class="text-center px-6 py-4 font-bold text-white">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($cours as $cour)
+                <tr class="border-b border-slate-600 hover-bg transition-all">
+                    <td class="px-6 py-4">
+                        <div>
+                            <div class="font-bold text-white text-lg">{{ $cour->nom }}</div>
+                            <div class="text-slate-400">{{ $cour->description ?? 'Pas de description' }}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-white">{{ $cour->ecole->nom ?? 'N/A' }}</td>
+                    <td class="px-6 py-4 text-white">{{ $cour->instructeur->name ?? 'Non assigné' }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-bold" style="background-color: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa;">
+                            {{ $cour->inscriptions_count ?? 0 }}/{{ $cour->capacite_max }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-sm font-bold" style="@if($cour->statut === 'actif') background-color: rgba(34, 197, 94, 0.2); border: 1px solid #16a34a; color: #4ade80; @elseif($cour->statut === 'complet') background-color: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; @else background-color: rgba(239, 68, 68, 0.2); border: 1px solid #dc2626; color: #f87171; @endif">
+                            {{ ucfirst($cour->statut) }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center space-x-3">
+                            <a href="{{ route('admin.cours.show', $cour) }}" class="text-blue-400 hover:text-blue-300 transition-colors text-lg" title="Voir">👁️</a>
+                            <a href="{{ route('admin.cours.edit', $cour) }}" class="text-green-400 hover:text-green-300 transition-colors text-lg" title="Modifier">✏️</a>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                        <div class="text-6xl mb-4">📚</div>
+                        <p class="text-xl">Aucun cours trouvé.</p>
+                        <p class="text-base mt-2">Créez votre premier cours pour commencer !</p>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
