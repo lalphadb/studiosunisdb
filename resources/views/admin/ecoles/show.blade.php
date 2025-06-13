@@ -1,218 +1,159 @@
 @extends('layouts.admin')
 
-@section('title', 'Détail École')
+@section('title', 'École - ' . $ecole->nom)
 
 @section('content')
-<div class="py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- En-tête -->
-        <div class="md:flex md:items-center md:justify-between mb-8">
-            <div class="flex-1 min-w-0">
-                <h1 class="text-3xl font-bold text-white">
-                    🏢 {{ $ecole->nom }}
-                </h1>
-                <p class="mt-1 text-sm text-gray-300">
-                    Détails de l'école - {{ $ecole->ville }}, {{ $ecole->province }}
-                </p>
+<div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-white">{{ $ecole->nom }}</h1>
+            <p class="text-slate-300 mt-1 text-lg">{{ $ecole->ville }}, {{ $ecole->province }}</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ route('admin.ecoles.index') }}" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Retour Liste
+            </a>
+            @can('edit-ecole')
+            <a href="{{ route('admin.ecoles.edit', $ecole) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                <i class="fas fa-edit mr-2"></i>Modifier
+            </a>
+            @endcan
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Informations principales -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Détails école -->
+            <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-6">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <i class="fas fa-school mr-3 text-blue-400"></i>
+                    Informations de l'École
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Nom de l'École</label>
+                        <p class="text-white text-lg font-medium">{{ $ecole->nom }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Directeur</label>
+                        <p class="text-white text-lg">{{ $ecole->directeur }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Adresse Complète</label>
+                        <p class="text-white text-lg">{{ $ecole->adresse }}</p>
+                        <p class="text-slate-300 text-base">{{ $ecole->ville }}, {{ $ecole->province }} {{ $ecole->code_postal }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Téléphone</label>
+                        <p class="text-white text-lg font-mono">{{ $ecole->telephone }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Email</label>
+                        <p class="text-blue-300 text-lg">{{ $ecole->email }}</p>
+                    </div>
+                    @if($ecole->site_web)
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Site Web</label>
+                        <a href="{{ $ecole->site_web }}" target="_blank" class="text-blue-400 hover:text-blue-300 text-lg underline">{{ $ecole->site_web }}</a>
+                    </div>
+                    @endif
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Capacité Maximale</label>
+                        <p class="text-white text-lg"><span class="font-bold">{{ $ecole->capacite_max }}</span> personnes</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">Statut</label>
+                        <span class="px-3 py-2 rounded-full text-base font-bold 
+                            {{ $ecole->statut === 'actif' ? 'bg-green-600 text-white' : 'bg-red-600 text-white' }}">
+                            {{ ucfirst($ecole->statut) }}
+                        </span>
+                    </div>
+                </div>
             </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-                <a href="{{ route('admin.ecoles.edit', $ecole) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 transition">
-                    ✏️ Modifier
-                </a>
-                <a href="{{ route('admin.ecoles.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition">
-                    ← Retour Liste
-                </a>
+
+            <!-- Membres récents -->
+            <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-6">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <i class="fas fa-users mr-3 text-green-400"></i>
+                    Membres Récents
+                </h3>
+                @if($ecole->membres->count() > 0)
+                <div class="space-y-4">
+                    @foreach($ecole->membres->take(5) as $membre)
+                    <div class="flex items-center justify-between p-4 bg-slate-700 rounded-lg border border-slate-600">
+                        <div>
+                            <p class="font-bold text-white text-lg">{{ $membre->prenom }} {{ $membre->nom }}</p>
+                            <p class="text-slate-300">{{ $membre->email }}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-bold 
+                            {{ $membre->statut === 'actif' ? 'bg-green-600 text-white' : 'bg-red-600 text-white' }}">
+                            {{ ucfirst($membre->statut) }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="text-center py-8">
+                    <i class="fas fa-user-plus text-4xl text-slate-500 mb-4"></i>
+                    <p class="text-slate-400 text-lg">Aucun membre inscrit</p>
+                </div>
+                @endif
             </div>
         </div>
 
-        <!-- Messages de succès -->
-        @if(session('success'))
-        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            {{ session('success') }}
-        </div>
-        @endif
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Informations principales -->
-            <div class="lg:col-span-2">
-                <div class="bg-gray-800 rounded-lg shadow border border-gray-700">
-                    <div class="px-6 py-4 border-b border-gray-700">
-                        <h3 class="text-lg font-medium text-white">Informations de l'École</h3>
+        <!-- Statistiques -->
+        <div class="space-y-6">
+            <!-- KPIs -->
+            <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-6">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <i class="fas fa-chart-bar mr-3 text-purple-400"></i>
+                    Statistiques
+                </h3>
+                <div class="space-y-6">
+                    <div class="bg-slate-700 p-4 rounded-lg border border-slate-600">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-300 font-medium">Membres actifs</span>
+                            <span class="text-3xl font-bold text-blue-400">{{ $stats['membres_actifs'] ?? 0 }}</span>
+                        </div>
                     </div>
-                    <div class="p-6 space-y-6">
-                        <!-- Nom et Statut -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Nom de l'école</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->nom }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Statut</label>
-                                <p class="mt-1">
-                                    @if($ecole->statut === 'actif')
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">✅ Actif</span>
-                                    @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">❌ Inactif</span>
-                                    @endif
-                                </p>
-                            </div>
+                    <div class="bg-slate-700 p-4 rounded-lg border border-slate-600">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-300 font-medium">Cours actifs</span>
+                            <span class="text-3xl font-bold text-green-400">{{ $stats['cours_actifs'] ?? 0 }}</span>
                         </div>
-
-                        <!-- Adresse -->
-                        @if($ecole->adresse)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300">Adresse</label>
-                            <p class="mt-1 text-sm text-white">{{ $ecole->adresse }}</p>
+                    </div>
+                    <div class="bg-slate-700 p-4 rounded-lg border border-slate-600">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-300 font-medium">Revenus mois</span>
+                            <span class="text-3xl font-bold text-purple-400">${{ number_format($stats['revenus_mois'] ?? 0, 2) }}</span>
                         </div>
-                        @endif
-
-                        <!-- Ville et Province -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Ville</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->ville ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Province</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->province ?? 'Québec' }}</p>
-                            </div>
+                    </div>
+                    <div class="bg-slate-700 p-4 rounded-lg border border-slate-600">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-300 font-medium">Taux présence</span>
+                            <span class="text-3xl font-bold text-orange-400">{{ $stats['taux_presence'] ?? 0 }}%</span>
                         </div>
-
-                        <!-- Contact -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @if($ecole->telephone)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Téléphone</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->telephone }}</p>
-                            </div>
-                            @endif
-                            @if($ecole->email)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Email</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->email }}</p>
-                            </div>
-                            @endif
-                        </div>
-
-                        <!-- Directeur et Capacité -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @if($ecole->directeur)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Directeur</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->directeur }}</p>
-                            </div>
-                            @endif
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300">Capacité maximale</label>
-                                <p class="mt-1 text-sm text-white">{{ $ecole->capacite_max ?? 100 }} membres</p>
-                            </div>
-                        </div>
-
-                        <!-- Site web -->
-                        @if($ecole->site_web)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300">Site web</label>
-                            <p class="mt-1 text-sm">
-                                <a href="{{ $ecole->site_web }}" target="_blank" class="text-blue-400 hover:text-blue-300">
-                                    {{ $ecole->site_web }}
-                                </a>
-                            </p>
-                        </div>
-                        @endif
-
-                        <!-- Description -->
-                        @if($ecole->description)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300">Description</label>
-                            <p class="mt-1 text-sm text-white">{{ $ecole->description }}</p>
-                        </div>
-                        @endif
                     </div>
                 </div>
             </div>
 
-            <!-- Statistiques -->
-            <div class="space-y-6">
-                <!-- Membres Actifs -->
-                <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="text-2xl">👥</div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-300">Membres Actifs</p>
-                            <p class="text-2xl font-bold text-white">{{ $ecole->membres()->where('statut', 'actif')->count() }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cours Actifs -->
-                <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="text-2xl">📚</div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-300">Cours Actifs</p>
-                            <p class="text-2xl font-bold text-white">{{ $ecole->cours()->where('statut', 'actif')->count() }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Capacité Utilisée -->
-                <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="text-2xl">📊</div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-300">Capacité Utilisée</p>
-                            @php
-                                $total_membres = $ecole->membres()->count();
-                                $capacite = $ecole->capacite_max ?? 100;
-                                $pourcentage = $capacite > 0 ? round(($total_membres / $capacite) * 100) : 0;
-                            @endphp
-                            <p class="text-2xl font-bold text-white">{{ $pourcentage }}%</p>
-                            <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ min($pourcentage, 100) }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions rapides -->
-                <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6">
-                    <h3 class="text-lg font-medium text-white mb-4">Actions Rapides</h3>
-                    <div class="space-y-3">
-                        <a href="{{ route('admin.membres.create') }}?ecole_id={{ $ecole->id }}" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                            👤 Nouveau Membre
-                        </a>
-                        <a href="{{ route('admin.cours.create') }}?ecole_id={{ $ecole->id }}" class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
-                            📚 Nouveau Cours
-                        </a>
-                        <a href="{{ route('admin.membres.index') }}?ecole_id={{ $ecole->id }}" class="block w-full text-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition">
-                            📋 Voir Membres
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informations système -->
-        <div class="mt-8 bg-gray-800 rounded-lg shadow border border-gray-700 p-6">
-            <h3 class="text-lg font-medium text-white mb-4">📋 Informations Système</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <span class="text-gray-400">Créée le:</span>
-                    <span class="text-white ml-2">{{ $ecole->created_at ? $ecole->created_at->format('d/m/Y à H:i') : 'N/A' }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-400">Dernière modification:</span>
-                    <span class="text-white ml-2">{{ $ecole->updated_at ? $ecole->updated_at->format('d/m/Y à H:i') : 'N/A' }}</span>
-                </div>
-                <div>
-                    <span class="text-gray-400">ID École:</span>
-                    <span class="text-white ml-2">#{{ $ecole->id }}</span>
+            <!-- Actions rapides -->
+            <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 p-6">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <i class="fas fa-bolt mr-3 text-yellow-400"></i>
+                    Actions Rapides
+                </h3>
+                <div class="space-y-4">
+                    <a href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors block text-center font-bold text-lg">
+                        <i class="fas fa-users mr-3"></i>Gérer Membres
+                    </a>
+                    <a href="#" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors block text-center font-bold text-lg">
+                        <i class="fas fa-calendar mr-3"></i>Voir Cours
+                    </a>
+                    <a href="#" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg transition-colors block text-center font-bold text-lg">
+                        <i class="fas fa-chart-bar mr-3"></i>Rapports
+                    </a>
                 </div>
             </div>
         </div>

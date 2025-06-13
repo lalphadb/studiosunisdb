@@ -13,9 +13,9 @@ Route::get('/dashboard', function () {
 
 // Pages légales
 Route::get('/politique-confidentialite', [App\Http\Controllers\LegalController::class, 'privacy'])->name('privacy');
-  Route::get('/conditions-utilisation', [App\Http\Controllers\LegalController::class, 'terms'])->name('terms');
-  Route::get('/contact', [App\Http\Controllers\LegalController::class, 'contact'])->name('contact');
-  Route::post('/contact', [App\Http\Controllers\LegalController::class, 'sendContact'])->name('contact.send');
+Route::get('/conditions-utilisation', [App\Http\Controllers\LegalController::class, 'terms'])->name('terms');
+Route::get('/contact', [App\Http\Controllers\LegalController::class, 'contact'])->name('contact');
+Route::post('/contact', [App\Http\Controllers\LegalController::class, 'sendContact'])->name('contact.send');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -24,4 +24,8 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-require __DIR__.'/admin.php';
+
+// Routes admin avec prefix et middleware
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    require __DIR__.'/admin.php';
+});

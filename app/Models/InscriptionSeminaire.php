@@ -13,16 +13,19 @@ class InscriptionSeminaire extends Model
 
     protected $fillable = [
         'seminaire_id',
-        'membre_id',
-        'date_inscription', 
+        'membre_id', 
+        'ecole_id',
+        'date_inscription',
         'statut',
         'montant_paye',
-        'certificat_obtenu',
-        'notes'
+        'notes_participant',
+        'date_paiement',
+        'certificat_obtenu'
     ];
 
     protected $casts = [
         'date_inscription' => 'date',
+        'date_paiement' => 'datetime',
         'montant_paye' => 'decimal:2',
         'certificat_obtenu' => 'boolean'
     ];
@@ -35,5 +38,10 @@ class InscriptionSeminaire extends Model
     public function membre()
     {
         return $this->belongsTo(Membre::class);
+    }
+
+    public function ecole()
+    {
+        return $this->belongsTo(Ecole::class);
     }
 }

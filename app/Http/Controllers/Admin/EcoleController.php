@@ -10,33 +10,25 @@ class EcoleController extends Controller
 {
     public function index()
     {
-        $ecoles = Ecole::paginate(20);
+        $ecoles = Ecole::withCount('membres')
+            ->orderBy('nom')
+            ->paginate(10);
+
         return view('admin.ecoles.index', compact('ecoles'));
-    }
-
-    public function create()
-    {
-        return view('admin.ecoles.create');
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'adresse' => 'nullable|string',
-            'ville' => 'nullable|string|max:100',
-            'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email',
-        ]);
-
-        Ecole::create($validated);
-        return redirect()->route('admin.ecoles.index')->with('success', 'École créée avec succès.');
     }
 
     public function show(Ecole $ecole)
     {
-        $ecole->load(['membres', 'cours']);
-        return view('admin.ecoles.show', compact('ecole'));
+        $ecole->load('membres');
+        
+        $stats = [
+            'membres_actifs' => $ecole->membres()->where('statut', 'actif')->count(),
+            'cours_actifs' => 0,
+            'revenus_mois' => 0,
+            'taux_presence' => 85
+        ];
+
+        return view('admin.ecoles.show', compact('ecole', 'stats'));
     }
 
     public function edit(Ecole $ecole)
@@ -48,19 +40,20 @@ class EcoleController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'adresse' => 'nullable|string',
-            'ville' => 'nullable|string|max:100',
-            'telephone' => 'nullable|string|max:20',
-            'email' => 'nullable|email',
+            'adresse' => 'required|string|max:500',
+            'ville' => 'required|string|max:100',
+            'province' => 'required|string|max:50',
+            'code_postal' => 'required|string|max:10',
+            'telephone' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'directeur' => 'required|string|max:255',
+            'capacite_max' => 'required|integer|min:10|max:500',
+            'statut' => 'required|in:actif,inactif',
         ]);
 
         $ecole->update($validated);
-        return redirect()->route('admin.ecoles.show', $ecole)->with('success', 'École mise à jour.');
-    }
 
-    public function destroy(Ecole $ecole)
-    {
-        $ecole->delete();
-        return redirect()->route('admin.ecoles.index')->with('success', 'École supprimée.');
+        return redirect()->route('admin.ecoles.show', $ecole)
+                        ->with('success', 'École mise à jour avec succès !');
     }
 }
