@@ -8,14 +8,31 @@ use App\Models\Ecole;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\MembresExport;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class MembreController extends Controller
+class MembreController extends Controller implements HasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-membres', only: ['index', 'show']),
+            new Middleware('can:create-membre', only: ['create', 'store']),
+            new Middleware('can:edit-membre', only: ['edit', 'update']),
+            new Middleware('can:delete-membre', only: ['destroy']),
+            new Middleware('can:export-membres', only: ['export']),
+        ];
+    }
+
     public function index()
     {
         $user = auth()->user();
         
-        // SuperAdmin voit tous les membres, Admin voit seulement les membres de son école
         if ($user->hasRole('superadmin')) {
             $membres = Membre::with('ecole')
                 ->orderBy('created_at', 'desc')
@@ -34,7 +51,6 @@ class MembreController extends Controller
     {
         $user = auth()->user();
         
-        // SuperAdmin voit toutes les écoles, Admin voit seulement son école
         if ($user->hasRole('superadmin')) {
             $ecoles = Ecole::where('statut', 'actif')->orderBy('nom')->get();
         } else {
@@ -66,7 +82,6 @@ class MembreController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Vérifier que l'admin ne peut créer que des membres pour son école
         if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
             abort(403, 'Vous ne pouvez créer des membres que pour votre école.');
         }
@@ -81,7 +96,6 @@ class MembreController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier que l'admin peut voir ce membre
         if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez voir que les membres de votre école.');
         }
@@ -93,7 +107,6 @@ class MembreController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier que l'admin peut modifier ce membre
         if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez modifier que les membres de votre école.');
         }
@@ -114,7 +127,6 @@ class MembreController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier que l'admin peut modifier ce membre
         if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez modifier que les membres de votre école.');
         }
@@ -134,7 +146,6 @@ class MembreController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Vérifier les permissions d'école
         if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
             abort(403, 'Vous ne pouvez assigner des membres qu\'à votre école.');
         }
@@ -149,7 +160,6 @@ class MembreController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier que l'admin peut supprimer ce membre
         if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez supprimer que les membres de votre école.');
         }
@@ -164,7 +174,6 @@ class MembreController extends Controller
     {
         $user = auth()->user();
         
-        // Export selon les permissions
         if ($user->hasRole('superadmin')) {
             $membres = Membre::with('ecole')->get();
             $filename = 'membres_tous_' . date('Y-m-d') . '.xlsx';

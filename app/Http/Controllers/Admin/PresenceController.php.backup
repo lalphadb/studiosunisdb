@@ -10,23 +10,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
-class PresenceController extends Controller implements HasMiddleware
+class PresenceController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
+    public function __construct()
     {
-        return [
-            'auth',
-            new Middleware('can:presence.view', only: ['index', 'show']),
-            new Middleware('can:presence.create', only: ['create', 'store']),
-            new Middleware('can:presence.edit', only: ['edit', 'update']),
-            new Middleware('can:presence.delete', only: ['destroy']),
-        ];
+        $this->middleware('auth');
+        $this->middleware('can:presence.view')->only(['index', 'show']);
+        $this->middleware('can:presence.create')->only(['create', 'store']);
+        $this->middleware('can:presence.edit')->only(['edit', 'update']);
+        $this->middleware('can:presence.delete')->only(['destroy']);
     }
 
     /**
@@ -370,6 +363,7 @@ class PresenceController extends Controller implements HasMiddleware
         
         return $pdf->download('presences_' . Carbon::now()->format('Y-m-d_H-i-s') . '.pdf');
     }
+}
 
     /**
      * Affiche les statistiques de présences
@@ -417,4 +411,3 @@ class PresenceController extends Controller implements HasMiddleware
 
         return view('admin.presences.statistiques', compact('stats', 'statsCours', 'dateDebut', 'dateFin'));
     }
-}

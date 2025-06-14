@@ -7,14 +7,30 @@ use App\Models\Cours;
 use App\Models\Ecole;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CoursController extends Controller
+class CoursController extends Controller implements HasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-cours', only: ['index', 'show']),
+            new Middleware('can:create-cours', only: ['create', 'store']),
+            new Middleware('can:edit-cours', only: ['edit', 'update']),
+            new Middleware('can:delete-cours', only: ['destroy']),
+        ];
+    }
+
     public function index()
     {
         $user = auth()->user();
         
-        // SuperAdmin voit tous les cours, autres voient seulement leur école
         if ($user->hasRole('superadmin')) {
             $cours = Cours::with(['ecole', 'instructeur'])
                 ->withCount('inscriptions')
@@ -35,24 +51,19 @@ class CoursController extends Controller
     {
         $user = auth()->user();
         
-        // CORRECTION CRITIQUE: Filtrer les écoles selon le rôle
         if ($user->hasRole('superadmin')) {
-            // SuperAdmin: toutes les écoles
             $ecoles = Ecole::where('statut', 'actif')->orderBy('nom')->get();
         } else {
-            // Admin/Instructeur: SEULEMENT leur école
             $ecoles = Ecole::where('id', $user->ecole_id)
                 ->where('statut', 'actif')
                 ->get();
         }
         
-        // Instructeurs selon le rôle
         if ($user->hasRole('superadmin')) {
             $instructeurs = User::whereHas('roles', function($query) {
                 $query->whereIn('name', ['instructeur', 'admin', 'superadmin']);
             })->orderBy('name')->get();
         } else {
-            // SEULEMENT les instructeurs de l'école de l'utilisateur
             $instructeurs = User::whereHas('roles', function($query) {
                 $query->whereIn('name', ['instructeur', 'admin']);
             })
@@ -80,7 +91,6 @@ class CoursController extends Controller
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
         ]);
 
-        // SÉCURITÉ: Vérifier que l'utilisateur peut créer pour cette école
         if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
             abort(403, 'Vous ne pouvez créer des cours que pour votre école.');
         }
@@ -95,7 +105,6 @@ class CoursController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier l'accès
         if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
@@ -109,7 +118,6 @@ class CoursController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier l'accès
         if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
@@ -133,7 +141,6 @@ class CoursController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier l'accès
         if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
@@ -150,7 +157,6 @@ class CoursController extends Controller
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
         ]);
 
-        // Vérifier les permissions d'école
         if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
             abort(403, 'Vous ne pouvez modifier que les cours de votre école.');
         }
@@ -165,7 +171,6 @@ class CoursController extends Controller
     {
         $user = auth()->user();
         
-        // Vérifier l'accès
         if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }

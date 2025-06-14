@@ -1,0 +1,17 @@
+🎯 AUDIT STUDIOSUNISDB v3.7.0.0
+Date: 2025-06-14 15:49:07
+Laravel: 12.17.0
+==================================================
+
+📊 SCORE GLOBAL: 48% (36/75)
+
+🔍 RÉSUMÉ PAR SECTION:
+STRUCTURE      : 100.0% (10/10)
+CONTROLEURS    :   0.0% (0/5)
+MODELES        :   0.0% (0/8)
+VUES           :  27.3% (6/22)
+ROUTES         :  50.0% (3/6)
+DATABASE       :  81.8% (9/11)
+SECURITE       : 100.0% (4/4)
+PERMISSIONS    :   0.0% (0/4)
+CONFORMITE     :  80.0% (4/5)

@@ -10,6 +10,10 @@
             <p class="text-slate-400">Détails du cours</p>
         </div>
         <div class="flex space-x-3">
+                    <a href="{{ route('admin.presences.prise-presence', $cours) }}" 
+                       class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+                        <i class="fas fa-clipboard-check mr-2"></i>Prise de Présence
+                    </a>
             <a href="{{ route('admin.cours.edit', $cours) }}" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold">
                 ✏️ Modifier
             </a>

@@ -51,3 +51,30 @@
 - Authentication complète
 - Modules Écoles et Membres
 - Conformité légale Québec
+
+## Version 3.6.1.0 - Module Cours finalisé (2025-06-13)
+
+### 🔧 Corrections majeures
+- **Layouts unifiés** : Toutes les vues Cours utilisent maintenant `@extends('layouts.admin')`
+- **Interface cohérente** : Design StudiosUnisDB maintenu sur toutes les pages
+- **Navigation harmonisée** : Breadcrumbs et boutons d'action cohérents
+
+### ✅ Module Cours 100% fonctionnel
+- **Index** : Liste avec filtres avancés et statistiques temps réel
+- **Create** : Formulaire création avec validation complète
+- **Show** : Page détails avec statistiques et actions rapides
+- **Edit** : Modification avec tous les champs accessibles
+- **Sécurité** : Restrictions par école parfaitement opérationnelles
+
+### 🎨 Interface utilisateur
+- Design dark theme uniforme (#0f172a, #1e293b, #334155)
+- Navigation intuitive entre toutes les pages
+- Messages de feedback appropriés
+- Boutons d'action cohérents et accessibles
+
+### 📊 Progression projet
+- **Modules opérationnels** : 8/10 (80% complet)
+- **Module Cours** : ✅ Complètement finalisé
+- **Prochaines étapes** : Modules Présences et Ceintures
+
+---

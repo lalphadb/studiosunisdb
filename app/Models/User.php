@@ -58,20 +58,50 @@ class User extends Authenticatable
     }
 
     /**
-     * Vérifier si l'utilisateur peut accéder à une école
+     * Relation avec les cours comme instructeur
      */
-    public function canAccessEcole($ecoleId): bool
+    public function coursInstructeur()
     {
-        // SuperAdmin peut accéder à toutes les écoles
-        if ($this->hasRole('superadmin')) {
-            return true;
-        }
-        
-        // Admin école peut accéder à son école uniquement
-        if ($this->hasRole('admin')) {
-            return $this->ecole_id == $ecoleId;
-        }
-        
-        return false;
+        return $this->hasMany(Cours::class, 'instructeur_id');
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut accéder à une école spécifique
+     */
+    public function canAccessEcole($ecoleId)
+    {
+        return $this->hasRole('superadmin') || $this->ecole_id == $ecoleId;
+    }
+
+    /**
+     * Obtenir le nom complet de l'utilisateur
+     */
+    public function getFullNameAttribute()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Vérifier si l'utilisateur est un super administrateur
+     */
+    public function isSuperAdmin()
+    {
+        return $this->hasRole('superadmin');
+    }
+
+    /**
+     * Vérifier si l'utilisateur est un administrateur d'école
+     */
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Vérifier si l'utilisateur est un instructeur
+     */
+    public function isInstructeur()
+    {
+        return $this->hasRole('instructeur');
     }
 }
