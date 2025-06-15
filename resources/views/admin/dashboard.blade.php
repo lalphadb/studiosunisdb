@@ -540,6 +540,10 @@
                     <span class="text-sm font-medium text-yellow-800">Tous Cours</span>
                 </a>
                 <a href="{{ route('admin.presences.index') }}" class="flex flex-col items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                <a href="{{ route('admin.ceintures.index') }}" class="flex flex-col items-center p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                    <span class="text-2xl mb-2">🥋</span>
+                    <span class="text-sm font-medium text-yellow-800">Ceintures</span>
+                </a>
                     <span class="text-2xl mb-2">📊</span>
                     <span class="text-sm font-medium text-purple-800">Statistiques</span>
                 </a>
@@ -553,6 +557,10 @@
                     <span class="text-sm font-medium text-blue-800">Mes Cours</span>
                 </a>
                 <a href="{{ route('admin.presences.index') }}" class="flex flex-col items-center p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                <a href="{{ route('admin.ceintures.index') }}" class="flex flex-col items-center p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                    <span class="text-2xl mb-2">🥋</span>
+                    <span class="text-sm font-medium text-yellow-800">Ceintures</span>
+                </a>
                     <span class="text-2xl mb-2">✅</span>
                     <span class="text-sm font-medium text-yellow-800">Présences</span>
                 </a>
@@ -566,6 +574,10 @@
                     <span class="text-sm font-medium text-orange-800">Mes Cours</span>
                 </a>
                 <a href="{{ route('admin.presences.index') }}" class="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                <a href="{{ route('admin.ceintures.index') }}" class="flex flex-col items-center p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                    <span class="text-2xl mb-2">🥋</span>
+                    <span class="text-sm font-medium text-yellow-800">Ceintures</span>
+                </a>
                     <span class="text-2xl mb-2">✅</span>
                     <span class="text-sm font-medium text-green-800">Présences</span>
                 </a>

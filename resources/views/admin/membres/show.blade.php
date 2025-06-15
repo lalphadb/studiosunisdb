@@ -187,12 +187,14 @@
                 <div class="bg-gray-800 rounded-lg shadow border border-gray-700 p-6">
                     <h3 class="text-lg font-medium text-white mb-4">⚡ Actions Rapides</h3>
                     <div class="space-y-3">
-                        <button class="block w-full text-center px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition">
-                            🥋 Attribuer Ceinture (bientôt)
-                        </button>
-                        <button class="block w-full text-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition">
-                            🎓 Inscrire Séminaire (bientôt)
-                        </button>
+                        <a href="{{ route('admin.ceintures.create', ['membre_id' => $membre->id]) }}" 
+                           class="block w-full text-center px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition">
+                            🥋 Attribuer Ceinture
+                        </a>
+                        <a href="{{ route('admin.seminaires.index') }}" 
+                           class="block w-full text-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition">
+                            🎓 Voir Séminaires
+                        </a>
                         <button class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
                             ✅ Prendre Présence (bientôt)
                         </button>
@@ -202,6 +204,9 @@
                         <a href="{{ route('admin.membres.edit', $membre) }}" 
                            class="block w-full text-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition">
                             ✏️ Modifier Profil
+                        </a>
+                    </div>
+                </div>
                         </a>
                     </div>
                 </div>
@@ -229,3 +234,84 @@
     </div>
 </div>
 @endsection
+
+                <!-- Section Ceintures -->
+                <div class="bg-gray-800 rounded-lg shadow border border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-700">
+                        <h3 class="text-lg font-medium text-white">🥋 Progression Ceintures</h3>
+                    </div>
+                    <div class="p-6">
+                        @php
+                            $progressions = $membre->progressionsCeintures()->with('ceinture')->orderBy('date_obtention', 'desc')->take(3)->get();
+                            $derniereCeinture = $progressions->first();
+                        @endphp
+                        
+                        @if($derniereCeinture)
+                            <!-- Ceinture actuelle -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Ceinture Actuelle</label>
+                                <div class="flex items-center space-x-3">
+                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full border {{ $derniereCeinture->ceinture->couleur_badge ?? 'bg-white text-gray-800 border-gray-300' }}">
+                                        {{ $derniereCeinture->ceinture->emoji ?? '🥋' }} {{ $derniereCeinture->ceinture->nom }}
+                                    </span>
+                                    <span class="text-sm text-gray-400">
+                                        obtenue le {{ $derniereCeinture->date_obtention->format('d/m/Y') }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Progression récente -->
+                            @if($progressions->count() > 1)
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Dernières Progressions</label>
+                                <div class="space-y-2">
+                                    @foreach($progressions->skip(1) as $progression)
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-300">{{ $progression->ceinture->nom }}</span>
+                                        <span class="text-gray-500">{{ $progression->date_obtention->format('d/m/Y') }}</span>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Prochaine ceinture -->
+                            @php
+                                $prochaineCeinture = $derniereCeinture->ceinture->prochaineCeinture();
+                            @endphp
+                            @if($prochaineCeinture)
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Prochaine Ceinture</label>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-400">{{ $prochaineCeinture->nom }}</span>
+                                    <span class="text-xs text-gray-500">
+                                        Niveau {{ $prochaineCeinture->niveau }}
+                                    </span>
+                                </div>
+                            </div>
+                            @endif
+                        @else
+                            <!-- Aucune ceinture -->
+                            <div class="text-center py-4">
+                                <div class="text-4xl mb-2">🥋</div>
+                                <p class="text-gray-400 mb-2">Aucune ceinture attribuée</p>
+                                <p class="text-xs text-gray-500">Commencer par attribuer la ceinture blanche</p>
+                            </div>
+                        @endif
+
+                        <!-- Actions ceintures -->
+                        <div class="pt-4 border-t border-gray-700 flex space-x-3">
+                            <a href="{{ route('admin.ceintures.create', ['membre_id' => $membre->id]) }}" 
+                               class="flex-1 text-center px-3 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition text-sm">
+                                🥋 Attribuer Ceinture
+                            </a>
+                            
+                            @if($progressions->count() > 0)
+                            <a href="{{ route('admin.ceintures.index', ['search' => $membre->nom]) }}" 
+                               class="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition text-sm">
+                                📋 Voir Historique
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>

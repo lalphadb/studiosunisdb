@@ -70,6 +70,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('dashboard', [CeintureController::class, 'dashboard'])->name('dashboard');
         Route::get('{id}/certificat', [CeintureController::class, 'certificat'])->name('certificat');
     });
+    Route::post('ceintures/{ceinture}/approuver', [CeintureController::class, 'approuver'])->name('ceintures.approuver');
+    Route::post('ceintures/{ceinture}/rejeter', [CeintureController::class, 'rejeter'])->name('ceintures.rejeter');
     Route::resource('ceintures', CeintureController::class);
 
     // Module Séminaires - CRUD complet avec inscriptions
