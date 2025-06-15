@@ -34,11 +34,11 @@ class MembreController extends Controller implements HasMiddleware
         $user = auth()->user();
         
         if ($user->hasRole('superadmin')) {
-            $membres = Membre::with('ecole')
+            $membres = Membre::with(['ecole', 'derniereCeinture.ceinture'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
         } else {
-            $membres = Membre::with('ecole')
+            $membres = Membre::with(['ecole', 'derniereCeinture.ceinture'])
                 ->where('ecole_id', $user->ecole_id)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -99,6 +99,9 @@ class MembreController extends Controller implements HasMiddleware
         if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez voir que les membres de votre école.');
         }
+
+        // Charger les relations nécessaires
+        $membre->load(['derniereCeinture.ceinture', 'progressionsCeintures.ceinture', 'ecole']);
 
         return view('admin.membres.show', compact('membre'));
     }

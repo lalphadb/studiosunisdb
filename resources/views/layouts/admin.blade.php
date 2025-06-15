@@ -74,11 +74,27 @@
                         </a>
                         @endif
                         
-                        <!-- Présences - Admin et Instructeur (quand développé) -->
+                        <!-- Présences - Admin et Instructeur -->
                         @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
                         <a href="{{ route('admin.presences.index') }}" 
                            class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.presences*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
                             ✅ Présences
+                        </a>
+                        @endif
+
+                        <!-- Ceintures - Admin et Instructeur -->
+                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
+                        <a href="{{ route('admin.ceintures.index') }}" 
+                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.ceintures*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
+                            🥋 Ceintures
+                        </a>
+                        @endif
+
+                        <!-- Séminaires - Admin et Instructeur -->
+                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
+                        <a href="{{ route('admin.seminaires.index') }}" 
+                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.seminaires*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
+                            🎓 Séminaires
                         </a>
                         @endif
                     </div>
