@@ -16,8 +16,7 @@ class Ceinture extends Model
         'ordre_affichage',
         'description',
         'pre_requis',
-        'duree_minimum_mois',
-        'couleur_hex'
+        'duree_minimum_mois'
     ];
 
     protected $casts = [
@@ -63,18 +62,36 @@ class Ceinture extends Model
     public function getCouleurBadgeAttribute()
     {
         $couleurs = [
-            'blanc' => 'bg-white text-gray-800 border-gray-300',
-            'jaune' => 'bg-yellow-200 text-yellow-800 border-yellow-400',
-            'orange' => 'bg-orange-200 text-orange-800 border-orange-400',
-            'vert' => 'bg-green-200 text-green-800 border-green-400',
-            'bleu' => 'bg-blue-200 text-blue-800 border-blue-400',
-            'violet' => 'bg-purple-200 text-purple-800 border-purple-400',
-            'marron' => 'bg-amber-600 text-white border-amber-700',
-            'noir' => 'bg-black text-white border-gray-700',
-            'rouge' => 'bg-red-600 text-white border-red-700',
-            'or' => 'bg-yellow-400 text-yellow-800 border-yellow-500',
+            'blanc' => 'bg-white text-gray-800 border-gray-400',
+            'jaune' => 'bg-yellow-300 text-yellow-900 border-yellow-500',
+            'orange' => 'bg-orange-300 text-orange-900 border-orange-500',
+            'violet' => 'bg-purple-300 text-purple-900 border-purple-500',
+            'bleu' => 'bg-blue-300 text-blue-900 border-blue-500',
+            'vert' => 'bg-green-300 text-green-900 border-green-500',
+            'marron' => 'bg-amber-700 text-white border-amber-800',
+            'noir' => 'bg-black text-white border-gray-600',
         ];
 
-        return $couleurs[$this->couleur] ?? 'bg-gray-200 text-gray-800 border-gray-300';
+        return $couleurs[$this->couleur] ?? 'bg-gray-200 text-gray-800 border-gray-400';
+    }
+
+    // Méthode pour obtenir l'emoji de la ceinture
+    public function getEmojiAttribute()
+    {
+        if (str_contains($this->nom, 'Dan')) {
+            return '🥇';
+        }
+        
+        return match($this->couleur) {
+            'blanc' => '🤍',
+            'jaune' => '💛',
+            'orange' => '🧡',
+            'violet' => '💜',
+            'bleu' => '💙',
+            'vert' => '💚',
+            'marron' => '🤎',
+            'noir' => '🖤',
+            default => '🥋'
+        };
     }
 }

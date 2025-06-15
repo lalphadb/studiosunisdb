@@ -55,6 +55,57 @@ class Membre extends Model
         return $this->belongsTo(Ceinture::class, 'ceinture_actuelle_id');
     }
 
+    /**
+     * Relations avec les progressions de ceintures
+     */
+    public function progressionsCeintures()
+    {
+        return $this->hasMany(MembreCeinture::class);
+    }
+
+    public function derniereCeinture()
+    {
+        return $this->hasOne(MembreCeinture::class)->latest('date_obtention');
+    }
+
+    /**
+     * Relations avec les cours
+     */
+    public function inscriptionsCours()
+    {
+        return $this->hasMany(InscriptionCours::class);
+    }
+
+    public function cours()
+    {
+        return $this->belongsToMany(Cours::class, 'inscriptions_cours')
+                   ->withPivot(['date_inscription', 'status', 'montant_paye'])
+                   ->withTimestamps();
+    }
+
+    /**
+     * Relations avec les présences
+     */
+    public function presences()
+    {
+        return $this->hasMany(Presence::class);
+    }
+
+    /**
+     * Relations avec les séminaires
+     */
+    public function inscriptionsSeminaires()
+    {
+        return $this->hasMany(InscriptionSeminaire::class);
+    }
+
+    public function seminaires()
+    {
+        return $this->belongsToMany(Seminaire::class, 'inscriptions_seminaires')
+                   ->withPivot(['date_inscription', 'statut', 'montant_paye', 'certificat_obtenu'])
+                   ->withTimestamps();
+    }
+
     // Attributs calculés
     public function getAgeAttribute()
     {
@@ -78,5 +129,25 @@ class Membre extends Model
     public function scopeParEcole($query, $ecole_id)
     {
         return $query->where('ecole_id', $ecole_id);
+    }
+
+    /**
+     * Méthodes utiles pour les ceintures
+     */
+    public function getCeintureActuellePourAffichage()
+    {
+        return $this->derniereCeinture?->ceinture ?? $this->ceintureActuelle ?? null;
+    }
+
+    public function peutPasserCeinture($ceinture_id)
+    {
+        $ceintureActuelle = $this->getCeintureActuellePourAffichage();
+        $nouvelleCeinture = Ceinture::find($ceinture_id);
+        
+        if (!$ceintureActuelle || !$nouvelleCeinture) {
+            return false;
+        }
+        
+        return $nouvelleCeinture->niveau > $ceintureActuelle->niveau;
     }
 }

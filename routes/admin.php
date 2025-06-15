@@ -5,11 +5,13 @@ use App\Http\Controllers\Admin\EcoleController;
 use App\Http\Controllers\Admin\MembreController;
 use App\Http\Controllers\Admin\CoursController;
 use App\Http\Controllers\Admin\PresenceController;
+use App\Http\Controllers\Admin\CeintureController;  // ← AJOUTÉ
+use App\Http\Controllers\Admin\SeminaireController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes - StudiosUnisDB v3.7.0.0
+| Admin Routes - StudiosUnisDB v3.8.0.0
 |--------------------------------------------------------------------------
 | Routes d'administration pour la gestion des écoles de karaté
 | Sécurité : Auth + Permissions Spatie + Restrictions Multi-École
@@ -62,9 +64,28 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
               ->name('store-prise-presence')
               ->middleware('can:prisePresence,cours');
     });
+
+    // Module Ceintures - CRUD complet avec examens et certificats
+    Route::prefix('ceintures')->name('ceintures.')->group(function () {
+        Route::get('dashboard', [CeintureController::class, 'dashboard'])->name('dashboard');
+        Route::get('{id}/certificat', [CeintureController::class, 'certificat'])->name('certificat');
+    });
+    Route::resource('ceintures', CeintureController::class);
+
+    // Module Séminaires - CRUD complet avec inscriptions
+    Route::prefix('seminaires')->name('seminaires.')->group(function () {
+        Route::post('{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('inscrire');
+        Route::post('{seminaire}/presence', [SeminaireController::class, 'marquerPresence'])->name('presence');
+    });
+    Route::resource('seminaires', SeminaireController::class);
+
+    // Module Séminaires - CRUD complet avec inscriptions
+    Route::prefix('seminaires')->name('seminaires.')->group(function () {
+        Route::post('{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('inscrire');
+    });
+    Route::resource('seminaires', SeminaireController::class);
     
-    // Routes futures modules (préparation v3.8.0.0)
-    // Route::resource('ceintures', CeintureController::class);
+    // Routes futures modules (préparation v3.9.0.0)
     // Route::resource('seminaires', SeminaireController::class);
     // Route::resource('paiements', PaiementController::class);
 });
