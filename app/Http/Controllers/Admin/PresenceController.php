@@ -18,16 +18,17 @@ class PresenceController extends Controller implements HasMiddleware
     /**
      * Get the middleware that should be assigned to the controller.
      */
-    public static function middleware(): array
-    {
-        return [
-            'auth',
-            new Middleware('can:presence.view', only: ['index', 'show']),
-            new Middleware('can:presence.create', only: ['create', 'store']),
-            new Middleware('can:presence.edit', only: ['edit', 'update']),
-            new Middleware('can:presence.delete', only: ['destroy']),
-        ];
-    }
+
+public static function middleware(): array
+{
+    return [
+        'auth',
+        new Middleware('can:view-presences', only: ['index', 'show']),
+        new Middleware('can:create-presence', only: ['create', 'store']),
+        new Middleware('can:edit-presence', only: ['edit', 'update']),
+        new Middleware('can:delete-presence', only: ['destroy']),
+    ];
+}
 
     /**
      * Affiche la liste des présences

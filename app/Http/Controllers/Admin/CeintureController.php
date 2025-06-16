@@ -7,7 +7,6 @@ use App\Models\Ceinture;
 use App\Models\Membre;
 use App\Models\MembreCeinture;
 use App\Models\Ecole;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -15,11 +14,17 @@ use Carbon\Carbon;
 
 class CeintureController extends Controller implements HasMiddleware
 {
+    /**
+     * Get the middleware that should be assigned to the controller.
+     */
     public static function middleware(): array
     {
         return [
             'auth',
-            'permission:manage_ceintures',
+            new Middleware('can:view-ceintures', only: ['index', 'show']),
+            new Middleware('can:create-ceinture', only: ['create', 'store']),
+            new Middleware('can:edit-ceinture', only: ['edit', 'update']),
+            new Middleware('can:delete-ceinture', only: ['destroy']),
         ];
     }
 

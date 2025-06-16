@@ -47,3 +47,60 @@ require __DIR__.'/auth.php';
 
 // Routes administration StudiosUnisDB
 require __DIR__.'/admin.php';
+
+// ============================================================================
+// ROUTES DE DEBUG TEMPORAIRES - À SUPPRIMER APRÈS DIAGNOSTIC
+// ============================================================================
+
+Route::middleware('auth')->group(function () {
+    
+    // Debug général des permissions
+    Route::get('/debug-permissions', function() {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Non connecté'], 401);
+        }
+        
+        $user = auth()->user();
+        
+        return response()->json([
+            'session_info' => [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->name,
+                'ecole_id' => $user->ecole_id,
+                'auth_check' => auth()->check(),
+            ],
+            'roles_info' => [
+                'roles' => $user->roles->pluck('name')->toArray(),
+                'has_superadmin' => $user->hasRole('superadmin'),
+            ],
+            'permissions_test' => [
+                'can_view_ceintures' => $user->can('view-ceintures'),
+                'can_view_presences' => $user->can('view-presences'),
+                'total_permissions' => $user->getAllPermissions()->count(),
+            ],
+        ], 200, [], JSON_PRETTY_PRINT);
+    });
+});
+
+// Test sans authentification
+Route::get('/debug-routes-list', function() {
+    $adminRoutes = collect(\Illuminate\Support\Facades\Route::getRoutes())
+        ->filter(function($route) {
+            return str_contains($route->uri(), 'admin/');
+        })
+        ->take(10)
+        ->map(function($route) {
+            return [
+                'uri' => $route->uri(),
+                'name' => $route->getName(),
+                'methods' => $route->methods(),
+            ];
+        })
+        ->values();
+    
+    return response()->json([
+        'total_admin_routes' => $adminRoutes->count(),
+        'sample_admin_routes' => $adminRoutes->toArray()
+    ], 200, [], JSON_PRETTY_PRINT);
+});
