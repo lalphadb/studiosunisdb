@@ -178,24 +178,21 @@
                     @endif
                 </div>
 
-                {{-- Prochaine Ceinture AVEC BADGE BIEN POSITIONNÉ --}}
+                {{-- Prochaine Ceinture CORRIGÉE --}}
                 <div class="mb-6">
                     <label class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Prochaine Ceinture</label>
                     @if($ceintureActuelle && $ceintureActuelle->prochaineCeinture())
                         @php $prochaine = $ceintureActuelle->prochaineCeinture(); @endphp
-                        <div class="bg-gray-700 rounded-lg p-4 border-2 border-dashed border-gray-600">
-                            {{-- Badge Objectif bien positionné --}}
-                            <div class="flex items-center justify-between mb-3">
-                                <small class="text-blue-400 font-medium uppercase tracking-wider">🎯 OBJECTIF</small>
+                        <div class="bg-gray-700 rounded-lg p-4 border-2 border-dashed border-gray-600 relative">
+                            <div class="absolute top-2 right-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-lg">
+                                Objectif
                             </div>
-                            {{-- Contenu de la prochaine ceinture --}}
                             <div class="flex items-center space-x-4">
                                 <div class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-xl opacity-75">
                                     {{ $prochaine->emoji }}
                                 </div>
                                 <div>
-                                    <div class="text-white font-medium">{{ $prochaine->nom }}</div>
-                                    <small class="text-gray-400">Prochaine étape</small>
+                                    <div class="text-white font-medium">{{ str_replace('ject', '', $prochaine->nom) }}</div>
                                 </div>
                             </div>
                         </div>

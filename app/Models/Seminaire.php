@@ -9,68 +9,97 @@ class Seminaire extends Model
 {
     use HasFactory;
 
-    protected $table = 'seminaires';
-
     protected $fillable = [
-        'nom',
-        'description',
-        'type_seminaire',
-        'niveau_requis',
-        'formateur',
-        'date_debut',
-        'date_fin',
-        'lieu',
-        'ecole_organisatrice_id',
-        'capacite_max',
-        'prix',
-        'statut',
-        'image_url',
-        'programme',
-        'materiel_fourni'
+        'nom',                    // ✅ Champ réel DB
+        'intervenant',           // ✅ Champ réel DB  
+        'type_seminaire',        // ✅ Champ réel DB
+        'niveau_cible',          // ✅ Champ réel DB
+        'pre_requis',            // ✅ Champ réel DB
+        'ouvert_toutes_ecoles',  // ✅ Champ réel DB
+        'materiel_requis',       // ✅ Champ réel DB
+        'description',           // ✅ Champ réel DB
+        'date_debut',            // ✅ Champ réel DB
+        'date_fin',              // ✅ Champ réel DB
+        'lieu',                  // ✅ Champ réel DB
+        'prix',                  // ✅ Champ réel DB
+        'capacite_max',          // ✅ Champ réel DB
+        'statut'                 // ✅ Champ réel DB
     ];
 
     protected $casts = [
-        'date_debut' => 'datetime',
-        'date_fin' => 'datetime',
+        'date_debut' => 'date',
+        'date_fin' => 'date',
+        'ouvert_toutes_ecoles' => 'boolean',
         'prix' => 'decimal:2'
     ];
 
-    public function ecoleOrganisatrice()
+    /**
+     * 🔄 ACCESSEURS pour compatibilité avec les vues
+     */
+    public function getTitreAttribute()
     {
-        return $this->belongsTo(Ecole::class, 'ecole_organisatrice_id');
+        return $this->nom;
     }
 
+    public function getInstructeurAttribute()
+    {
+        return $this->intervenant;
+    }
+
+    public function getTypeAttribute()
+    {
+        return $this->type_seminaire;
+    }
+
+    public function getCoutAttribute()
+    {
+        return $this->prix;
+    }
+
+    public function getMaxParticipantsAttribute()
+    {
+        return $this->capacite_max;
+    }
+
+    public function getCertificatAttribute()
+    {
+        return false; // Valeur par défaut
+    }
+
+    public function getDureeAttribute()
+    {
+        return 120; // Valeur par défaut 2h
+    }
+
+    public function getObjectifsAttribute()
+    {
+        return null;
+    }
+
+    public function getPrerequisAttribute()
+    {
+        return $this->pre_requis;
+    }
+
+    /**
+     * 🏫 Relation avec École (simulée - ouvert à toutes)
+     */
+    public function ecole()
+    {
+        // Retourner une école par défaut si ouvert à toutes
+        if ($this->ouvert_toutes_ecoles) {
+            return $this->belongsTo(Ecole::class, 'id', 'id')->withDefault([
+                'nom' => 'Toutes les écoles StudiosUnisDB'
+            ]);
+        }
+        return $this->belongsTo(Ecole::class);
+    }
+
+    /**
+     * 👥 Relation avec Inscriptions
+     */
     public function inscriptions()
     {
         return $this->hasMany(InscriptionSeminaire::class);
-    }
-
-    public function membres()
-    {
-        return $this->belongsToMany(Membre::class, 'inscriptions_seminaires')
-                    ->withPivot(['date_inscription', 'statut', 'montant_paye', 'certificat_obtenu', 'notes'])
-                    ->withTimestamps();
-    }
-
-    // Attributs calculés
-    public function getPlacesRestantesAttribute()
-    {
-        return $this->capacite_max - $this->inscriptions()->where('statut', 'confirmee')->count();
-    }
-
-    public function getEstCompletAttribute()
-    {
-        return $this->places_restantes <= 0;
-    }
-
-    // Scopes
-    public function scopeOuverts($query)
-    {
-        return $query->where('statut', 'ouvert');
-    }
-
-    public function scopeAVenir($query)
-    {
-        return $query->where('date_debut', '>', now());
     }
 }

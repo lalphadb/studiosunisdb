@@ -1,4 +1,6 @@
-<x-admin-layout>
+@extends("layouts.admin")
+
+@section("content")
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-100 leading-tight">
@@ -266,4 +268,4 @@
             });
         }
     </script>
-</x-admin-layout>
+@endsection

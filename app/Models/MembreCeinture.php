@@ -13,26 +13,14 @@ class MembreCeinture extends Model
 
     protected $fillable = [
         'membre_id',
-        'ceinture_id', 
+        'ceinture_id',
         'date_obtention',
-        'date_examen',
-        'examinateur_id',
-        'notes_examen',
-        'score_technique',
-        'score_kata',
-        'score_combat', 
-        'score_global',
-        'statut',
-        'certificat_url'
+        'evaluateur',
+        'notes'
     ];
 
     protected $casts = [
-        'date_obtention' => 'date',
-        'date_examen' => 'date',
-        'score_technique' => 'decimal:2',
-        'score_kata' => 'decimal:2', 
-        'score_combat' => 'decimal:2',
-        'score_global' => 'decimal:2'
+        'date_obtention' => 'date'
     ];
 
     public function membre()
@@ -43,10 +31,5 @@ class MembreCeinture extends Model
     public function ceinture()
     {
         return $this->belongsTo(Ceinture::class);
-    }
-
-    public function examinateur()
-    {
-        return $this->belongsTo(User::class, 'examinateur_id');
     }
 }

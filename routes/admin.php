@@ -74,20 +74,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('ceintures/{ceinture}/rejeter', [CeintureController::class, 'rejeter'])->name('ceintures.rejeter');
     Route::resource('ceintures', CeintureController::class);
 
-    // Module Séminaires - CRUD complet avec inscriptions
+// Module Séminaires - CRUD complet avec inscriptions
     Route::prefix('seminaires')->name('seminaires.')->group(function () {
         Route::post('{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('inscrire');
         Route::post('{seminaire}/presence', [SeminaireController::class, 'marquerPresence'])->name('presence');
+        Route::get('{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('inscriptions');
     });
     Route::resource('seminaires', SeminaireController::class);
 
-    // Module Séminaires - CRUD complet avec inscriptions
-    Route::prefix('seminaires')->name('seminaires.')->group(function () {
-        Route::post('{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('inscrire');
-    });
-    Route::resource('seminaires', SeminaireController::class);
     
     // Routes futures modules (préparation v3.9.0.0)
-    // Route::resource('seminaires', SeminaireController::class);
     // Route::resource('paiements', PaiementController::class);
 });
