@@ -52,3 +52,10 @@ RAPPORT_*.txt
 # Build
 /public/build
 /public/mix-manifest.json
+
+# Fichiers temporaires créés accidentellement
+*$*
+*'*
+*"*
+*.tmp
+*->*
