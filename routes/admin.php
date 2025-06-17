@@ -34,7 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/admin/membres/{membre}', [MembreController::class, 'destroy'])->name('admin.membres.destroy');
     Route::get('/admin/membres/export', [MembreController::class, 'export'])->name('admin.membres.export');
     
-    // Module Cours - Routes manuelles pour éviter les conflits
+    // Module Cours
     Route::get('/admin/cours', [CoursController::class, 'index'])->name('admin.cours.index');
     Route::get('/admin/cours/create', [CoursController::class, 'create'])->name('admin.cours.create');
     Route::post('/admin/cours', [CoursController::class, 'store'])->name('admin.cours.store');

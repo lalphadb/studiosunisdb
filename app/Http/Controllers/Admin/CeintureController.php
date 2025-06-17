@@ -21,9 +21,8 @@ class CeintureController extends Controller implements HasMiddleware
         return [
             'auth',
             new Middleware('can:view-ceintures', only: ['index', 'show']),
-            new Middleware('can:create-ceinture', only: ['create', 'store']),
-            new Middleware('can:edit-ceinture', only: ['edit', 'update']),
-            new Middleware('can:delete-ceinture', only: ['destroy']),
+            new Middleware('can:manage-ceintures', only: ['create', 'store', 'edit', 'update']),
+            new Middleware('can:manage-ceintures', only: ['destroy', 'approuver', 'rejeter']),
         ];
     }
 
