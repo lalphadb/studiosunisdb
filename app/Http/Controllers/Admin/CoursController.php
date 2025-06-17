@@ -6,178 +6,226 @@ use App\Http\Controllers\Controller;
 use App\Models\Cours;
 use App\Models\Ecole;
 use App\Models\User;
+use App\Models\Membre;
+use App\Models\CoursHoraire;
+use App\Models\InscriptionCours;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
-class CoursController extends Controller implements HasMiddleware
+class CoursController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
+    public function index(Request $request)
     {
-        return [
-            'auth',
-            'verified',
-            new Middleware('can:view-cours', only: ['index', 'show']),
-            new Middleware('can:create-cours', only: ['create', 'store']),
-            new Middleware('can:edit-cours', only: ['edit', 'update']),
-            new Middleware('can:delete-cours', only: ['destroy']),
-        ];
-    }
+        $user = Auth::user();
+        $query = Cours::with(['ecole', 'instructeurPrincipal', 'horaires'])
+                      ->withCount('inscriptions');
 
-    public function index()
-    {
-        $user = auth()->user();
-        
-        if ($user->hasRole('superadmin')) {
-            $cours = Cours::with(['ecole', 'instructeur'])
-                ->withCount('inscriptions')
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
-            $cours = Cours::with(['ecole', 'instructeur'])
-                ->withCount('inscriptions')
-                ->where('ecole_id', $user->ecole_id)
-                ->orderBy('created_at', 'desc')
-                ->get();
+        // Restriction par école pour non-superadmin
+        if (!$user->hasRole('superadmin')) {
+            $query->where('ecole_id', $user->ecole_id);
         }
 
-        return view('admin.cours.index', compact('cours'));
+        // Filtres
+        if ($request->filled('ecole_id') && $user->hasRole('superadmin')) {
+            $query->where('ecole_id', $request->ecole_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('type_cours')) {
+            $query->where('type_cours', $request->type_cours);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $cours = $query->orderBy('nom')->paginate(15);
+
+        // Données pour les filtres
+        $ecoles = $user->hasRole('superadmin') ? 
+                 Ecole::orderBy('nom')->get() : 
+                 collect([]);
+
+        return view('admin.cours.index', compact('cours', 'ecoles'));
     }
 
     public function create()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
-        if ($user->hasRole('superadmin')) {
-            $ecoles = Ecole::where('statut', 'actif')->orderBy('nom')->get();
-        } else {
-            $ecoles = Ecole::where('id', $user->ecole_id)
-                ->where('statut', 'actif')
-                ->get();
-        }
-        
-        if ($user->hasRole('superadmin')) {
-            $instructeurs = User::whereHas('roles', function($query) {
-                $query->whereIn('name', ['instructeur', 'admin', 'superadmin']);
-            })->orderBy('name')->get();
-        } else {
-            $instructeurs = User::whereHas('roles', function($query) {
-                $query->whereIn('name', ['instructeur', 'admin']);
-            })
-            ->where('ecole_id', $user->ecole_id)
-            ->orderBy('name')
-            ->get();
-        }
+        // Écoles disponibles
+        $ecoles = $user->hasRole('superadmin') ? 
+                 Ecole::orderBy('nom')->get() : 
+                 Ecole::where('id', $user->ecole_id)->get();
+
+        // Instructeurs de l'école
+        $instructeurs = User::role(['admin', 'instructeur'])
+                           ->when(!$user->hasRole('superadmin'), function($query) use ($user) {
+                               return $query->where('ecole_id', $user->ecole_id);
+                           })
+                           ->orderBy('name')
+                           ->get();
 
         return view('admin.cours.create', compact('ecoles', 'instructeurs'));
     }
 
     public function store(Request $request)
     {
-        $user = auth()->user();
-        
         $validated = $request->validate([
+            'ecole_id' => 'required|exists:ecoles,id',
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'ecole_id' => 'required|exists:ecoles,id',
-            'instructeur_id' => 'nullable|exists:users,id',
-            'capacite_max' => 'required|integer|min:1',
-            'prix' => 'required|numeric|min:0',
-            'statut' => 'required|in:actif,inactif,complet',
-            'date_debut' => 'required|date',
+            'type_cours' => 'required|in:regulier,specialise,competition,examen',
+            'niveau_requis' => 'nullable|string|max:100',
+            'age_min' => 'required|integer|min:3|max:99',
+            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
+            'capacite_max' => 'required|integer|min:1|max:50',
+            'duree_minutes' => 'required|integer|min:30|max:180',
+            'prix_mensuel' => 'nullable|numeric|min:0',
+            'prix_session' => 'nullable|numeric|min:0',
+            'instructeur_principal_id' => 'nullable|exists:users,id',
+            'instructeur_assistant_id' => 'nullable|exists:users,id|different:instructeur_principal_id',
+            'status' => 'required|in:actif,inactif,complet,annule',
+            'salle' => 'nullable|string|max:100',
+            'materiel_requis' => 'nullable|string',
+            'objectifs' => 'nullable|string',
+            'date_debut' => 'nullable|date',
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
         ]);
 
-        if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
-            abort(403, 'Vous ne pouvez créer des cours que pour votre école.');
+        // Assigner l'école automatiquement si pas superadmin
+        if (!Auth::user()->hasRole('superadmin')) {
+            $validated['ecole_id'] = Auth::user()->ecole_id;
         }
 
-        Cours::create($validated);
+        $cours = Cours::create($validated);
 
-        return redirect()->route('admin.cours.index')
-            ->with('success', 'Cours créé avec succès !');
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($cours)
+            ->log('Cours créé');
+
+        return redirect()
+            ->route('admin.cours.index')
+            ->with('success', 'Cours créé avec succès');
     }
 
     public function show(Cours $cours)
     {
-        $user = auth()->user();
-        
-        if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
-        }
-        
-        $cours->load(['ecole', 'instructeur', 'inscriptions.membre']);
-        
-        return view('admin.cours.show', compact('cours'));
+        $cours->load([
+            'ecole', 
+            'instructeurPrincipal', 
+            'instructeurAssistant',
+            'horaires' => function($query) {
+                $query->where('est_actif', true)->orderBy('jour_semaine');
+            },
+            'inscriptions.membre',
+            'presences' => function($query) {
+                $query->latest()->limit(10);
+            }
+        ]);
+
+        // Statistiques
+        $stats = [
+            'total_inscriptions' => $cours->inscriptions()->where('status', 'active')->count(),
+            'places_disponibles' => max(0, $cours->capacite_max - $cours->inscriptions()->where('status', 'active')->count()),
+            'revenus_mensuels' => $cours->inscriptions()
+                                       ->where('status', 'active')
+                                       ->sum('montant_paye')
+        ];
+
+        return view('admin.cours.show', compact('cours', 'stats'));
     }
 
     public function edit(Cours $cours)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
-        if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
-        }
-        
-        if ($user->hasRole('superadmin')) {
-            $ecoles = Ecole::where('statut', 'actif')->orderBy('nom')->get();
-            $instructeurs = User::whereHas('roles', function($query) {
-                $query->whereIn('name', ['instructeur', 'admin', 'superadmin']);
-            })->orderBy('name')->get();
-        } else {
-            $ecoles = Ecole::where('id', $user->ecole_id)->where('statut', 'actif')->get();
-            $instructeurs = User::whereHas('roles', function($query) {
-                $query->whereIn('name', ['instructeur', 'admin']);
-            })->where('ecole_id', $user->ecole_id)->orderBy('name')->get();
-        }
+        $ecoles = $user->hasRole('superadmin') ? 
+                 Ecole::orderBy('nom')->get() : 
+                 Ecole::where('id', $user->ecole_id)->get();
+
+        $instructeurs = User::role(['admin', 'instructeur'])
+                           ->when(!$user->hasRole('superadmin'), function($query) use ($user) {
+                               return $query->where('ecole_id', $user->ecole_id);
+                           })
+                           ->orderBy('name')
+                           ->get();
+
+        $cours->load('horaires');
 
         return view('admin.cours.edit', compact('cours', 'ecoles', 'instructeurs'));
     }
 
     public function update(Request $request, Cours $cours)
     {
-        $user = auth()->user();
-        
-        if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
-        }
-        
         $validated = $request->validate([
+            'ecole_id' => 'required|exists:ecoles,id',
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'ecole_id' => 'required|exists:ecoles,id',
-            'instructeur_id' => 'nullable|exists:users,id',
-            'capacite_max' => 'required|integer|min:1',
-            'prix' => 'required|numeric|min:0',
-            'statut' => 'required|in:actif,inactif,complet',
-            'date_debut' => 'required|date',
+            'type_cours' => 'required|in:regulier,specialise,competition,examen',
+            'niveau_requis' => 'nullable|string|max:100',
+            'age_min' => 'required|integer|min:3|max:99',
+            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
+            'capacite_max' => 'required|integer|min:1|max:50',
+            'duree_minutes' => 'required|integer|min:30|max:180',
+            'prix_mensuel' => 'nullable|numeric|min:0',
+            'prix_session' => 'nullable|numeric|min:0',
+            'instructeur_principal_id' => 'nullable|exists:users,id',
+            'instructeur_assistant_id' => 'nullable|exists:users,id|different:instructeur_principal_id',
+            'status' => 'required|in:actif,inactif,complet,annule',
+            'salle' => 'nullable|string|max:100',
+            'materiel_requis' => 'nullable|string',
+            'objectifs' => 'nullable|string',
+            'date_debut' => 'nullable|date',
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
         ]);
 
-        if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
-            abort(403, 'Vous ne pouvez modifier que les cours de votre école.');
+        // Assigner l'école automatiquement si pas superadmin
+        if (!Auth::user()->hasRole('superadmin')) {
+            $validated['ecole_id'] = Auth::user()->ecole_id;
         }
 
         $cours->update($validated);
 
-        return redirect()->route('admin.cours.index')
-            ->with('success', 'Cours modifié avec succès !');
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($cours)
+            ->log('Cours modifié');
+
+        return redirect()
+            ->route('admin.cours.index')
+            ->with('success', 'Cours modifié avec succès');
     }
 
     public function destroy(Cours $cours)
     {
-        $user = auth()->user();
+        // Vérifier s'il y a des inscriptions actives
+        $inscriptionsActives = $cours->inscriptions()->where('status', 'active')->count();
         
-        if (!$user->hasRole('superadmin') && $cours->ecole_id != $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
+        if ($inscriptionsActives > 0) {
+            return redirect()
+                ->back()
+                ->with('error', 'Impossible de supprimer un cours avec des inscriptions actives');
         }
-        
+
+        activity()
+            ->causedBy(Auth::user())
+            ->performedOn($cours)
+            ->log('Cours supprimé');
+
         $cours->delete();
 
-        return redirect()->route('admin.cours.index')
-            ->with('success', 'Cours supprimé avec succès !');
+        return redirect()
+            ->route('admin.cours.index')
+            ->with('success', 'Cours supprimé avec succès');
     }
 }

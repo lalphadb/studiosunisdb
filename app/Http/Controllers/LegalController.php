@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class LegalController extends Controller
 {
@@ -28,7 +27,7 @@ class LegalController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'subject' => 'required|string|max:255',
-            'message' => 'required|string|max:2000'
+            'message' => 'required|string|max:2000',
         ]);
 
         // Pour l'instant, on sauvegarde dans les logs
@@ -36,7 +35,7 @@ class LegalController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'subject' => $request->subject,
-            'message' => $request->message
+            'message' => $request->message,
         ]);
 
         return back()->with('success', 'Votre message a été envoyé avec succès. Nous vous répondrons sous 24h.');

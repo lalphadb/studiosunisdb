@@ -21,11 +21,11 @@ return new class extends Migration
             $table->enum('methode_pointage', ['manuel', 'qrcode', 'nfc', 'facial'])->default('manuel');
             $table->string('ip_address', 45)->nullable();
             $table->timestamps();
-            
+
             $table->foreign('membre_id')->references('id')->on('membres')->onDelete('cascade');
             $table->foreign('cours_id')->references('id')->on('cours')->onDelete('cascade');
             $table->foreign('prise_par_user_id')->references('id')->on('users')->onDelete('set null');
-            
+
             $table->unique(['membre_id', 'cours_id', 'session_date']);
             $table->index(['membre_id']);
             $table->index(['cours_id']);

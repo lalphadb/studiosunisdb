@@ -11,7 +11,7 @@ class Seminaire extends Model
 
     protected $fillable = [
         'nom',                    // ✅ Champ réel DB
-        'intervenant',           // ✅ Champ réel DB  
+        'intervenant',           // ✅ Champ réel DB
         'type_seminaire',        // ✅ Champ réel DB
         'niveau_cible',          // ✅ Champ réel DB
         'pre_requis',            // ✅ Champ réel DB
@@ -23,14 +23,14 @@ class Seminaire extends Model
         'lieu',                  // ✅ Champ réel DB
         'prix',                  // ✅ Champ réel DB
         'capacite_max',          // ✅ Champ réel DB
-        'statut'                 // ✅ Champ réel DB
+        'statut',                 // ✅ Champ réel DB
     ];
 
     protected $casts = [
         'date_debut' => 'date',
         'date_fin' => 'date',
         'ouvert_toutes_ecoles' => 'boolean',
-        'prix' => 'decimal:2'
+        'prix' => 'decimal:2',
     ];
 
     /**
@@ -89,9 +89,10 @@ class Seminaire extends Model
         // Retourner une école par défaut si ouvert à toutes
         if ($this->ouvert_toutes_ecoles) {
             return $this->belongsTo(Ecole::class, 'id', 'id')->withDefault([
-                'nom' => 'Toutes les écoles StudiosUnisDB'
+                'nom' => 'Toutes les écoles StudiosUnisDB',
             ]);
         }
+
         return $this->belongsTo(Ecole::class);
     }
 

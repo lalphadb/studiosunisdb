@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Ecole;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class FinalUsersSeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class FinalUsersSeeder extends Seeder
             'manage-ceintures', 'evaluate-ceintures', 'view-progressions',
             'manage-finances', 'view-paiements', 'create-paiement', 'edit-paiement',
             'view-reports', 'generate-reports', 'view-analytics', 'export-data',
-            'manage-users', 'manage-roles', 'view-logs', 'manage-settings'
+            'manage-users', 'manage-roles', 'view-logs', 'manage-settings',
         ];
 
         foreach ($permissions as $permission) {
@@ -46,7 +46,7 @@ class FinalUsersSeeder extends Seeder
             'manage-presences', 'take-presences', 'edit-presences', 'view-presences',
             'manage-ceintures', 'evaluate-ceintures', 'view-progressions',
             'manage-finances', 'view-paiements', 'create-paiement', 'edit-paiement',
-            'view-reports', 'generate-reports', 'view-analytics', 'export-data'
+            'view-reports', 'generate-reports', 'view-analytics', 'export-data',
         ];
         $adminRole->syncPermissions($adminPermissions);
 
@@ -57,15 +57,15 @@ class FinalUsersSeeder extends Seeder
                 'name' => 'Louis SuperAdmin',
                 'password' => bcrypt('password123'),
                 'email_verified_at' => now(),
-                'ecole_id' => null // NULL = SuperAdmin
+                'ecole_id' => null, // NULL = SuperAdmin
             ]
         );
         $louis->syncRoles(['superadmin']);
 
         // 2. TROUVER L'ÉCOLE ST-ÉMILE
         $ecoleStEmile = Ecole::where('nom', 'like', '%mile%')->first();
-        
-        if (!$ecoleStEmile) {
+
+        if (! $ecoleStEmile) {
             // Créer l'école St-Émile si elle n'existe pas
             $ecoleStEmile = Ecole::create([
                 'nom' => 'Studios Unis St-Émile',
@@ -77,7 +77,7 @@ class FinalUsersSeeder extends Seeder
                 'email' => 'stemile@studiosunisdb.com',
                 'directeur' => 'Lalpha Directeur',
                 'capacite_max' => 150,
-                'statut' => 'actif'
+                'statut' => 'actif',
             ]);
         }
 
@@ -88,14 +88,14 @@ class FinalUsersSeeder extends Seeder
                 'name' => 'Lalpha Admin St-Émile',
                 'password' => bcrypt('B0bby2111'),
                 'email_verified_at' => now(),
-                'ecole_id' => $ecoleStEmile->id
+                'ecole_id' => $ecoleStEmile->id,
             ]
         );
         $lalpha->syncRoles(['admin']);
 
-        echo "✅ UTILISATEURS CONFIGURÉS :" . PHP_EOL;
-        echo "👑 SuperAdmin: louis@4lb.ca / password123 (Toutes écoles)" . PHP_EOL;
-        echo "🏫 Admin École: lalpha@4lb.ca / B0bby2111 (École: " . $ecoleStEmile->nom . ")" . PHP_EOL;
-        echo "📧 École ID: " . $ecoleStEmile->id . PHP_EOL;
+        echo '✅ UTILISATEURS CONFIGURÉS :'.PHP_EOL;
+        echo '👑 SuperAdmin: louis@4lb.ca / password123 (Toutes écoles)'.PHP_EOL;
+        echo '🏫 Admin École: lalpha@4lb.ca / B0bby2111 (École: '.$ecoleStEmile->nom.')'.PHP_EOL;
+        echo '📧 École ID: '.$ecoleStEmile->id.PHP_EOL;
     }
 }

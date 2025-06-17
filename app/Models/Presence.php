@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Presence extends Model
 {
@@ -19,7 +19,7 @@ class Presence extends Model
         'notes',
         'prise_par_user_id',
         'methode_pointage',
-        'ip_address'
+        'ip_address',
     ];
 
     protected $casts = [
@@ -66,6 +66,7 @@ class Presence extends Model
         if ($this->heure_arrivee && $this->heure_depart) {
             return $this->heure_arrivee->diffInMinutes($this->heure_depart);
         }
+
         return null;
     }
 

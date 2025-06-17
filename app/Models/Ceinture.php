@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Ceinture extends Model
 {
@@ -16,7 +16,7 @@ class Ceinture extends Model
         'ordre_affichage',
         'description',
         'pre_requis',
-        'duree_minimum_mois'
+        'duree_minimum_mois',
     ];
 
     protected $casts = [
@@ -81,8 +81,8 @@ class Ceinture extends Model
         if (str_contains($this->nom, 'Dan')) {
             return '🥇';
         }
-        
-        return match($this->couleur) {
+
+        return match ($this->couleur) {
             'blanc' => '🤍',
             'jaune' => '💛',
             'orange' => '🧡',

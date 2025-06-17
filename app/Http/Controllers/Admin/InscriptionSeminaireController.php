@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Seminaire;
-use App\Models\Membre;
 use App\Models\InscriptionSeminaire;
+use App\Models\Membre;
+use App\Models\Seminaire;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,22 +17,22 @@ class InscriptionSeminaireController extends Controller
             ->with(['membre', 'ecole'])
             ->orderBy('date_inscription', 'desc')
             ->paginate(20);
-            
+
         return view('admin.seminaires.inscriptions', compact('seminaire', 'inscriptions'));
     }
 
     public function create(Seminaire $seminaire)
     {
         $user = Auth::user();
-        
+
         $membres = Membre::with('ecole')
             ->where('statut', 'actif')
-            ->when(!$user->hasRole('superadmin'), function($query) use ($user) {
+            ->when(! $user->hasRole('superadmin'), function ($query) use ($user) {
                 return $query->where('ecole_id', $user->ecole_id);
             })
             ->orderBy('nom')
             ->get();
-        
+
         return view('admin.seminaires.inscrire', compact('seminaire', 'membres'));
     }
 
@@ -40,20 +40,20 @@ class InscriptionSeminaireController extends Controller
     {
         // Validation
         $request->validate([
-            'membre_id' => 'required|exists:membres,id'
+            'membre_id' => 'required|exists:membres,id',
         ]);
 
         $membre = Membre::findOrFail($request->membre_id);
-        
+
         // Vérifier si déjà inscrit
         $existe = InscriptionSeminaire::where('seminaire_id', $seminaire->id)
             ->where('membre_id', $membre->id)
             ->exists();
-            
+
         if ($existe) {
             return back()->with('error', 'Ce membre est déjà inscrit à ce séminaire.');
         }
-        
+
         // Créer inscription
         InscriptionSeminaire::create([
             'seminaire_id' => $seminaire->id,
@@ -62,9 +62,9 @@ class InscriptionSeminaireController extends Controller
             'date_inscription' => now()->format('Y-m-d'),
             'statut' => 'inscrit',
             'montant_paye' => $request->montant_paye ?? 0,
-            'notes_participant' => $request->notes_participant
+            'notes_participant' => $request->notes_participant,
         ]);
-        
+
         return redirect()->route('admin.seminaires.inscriptions', $seminaire)
             ->with('success', "✅ {$membre->prenom} {$membre->nom} inscrit avec succès !");
     }
@@ -75,10 +75,11 @@ class InscriptionSeminaireController extends Controller
             'statut' => 'required|in:inscrit,present,absent,annule',
             'montant_paye' => 'nullable|numeric|min:0',
             'notes_participant' => 'nullable|string',
-            'certificat_obtenu' => 'boolean'
+            'certificat_obtenu' => 'boolean',
         ]);
-        
+
         $inscription->update($validated);
+
         return back()->with('success', 'Inscription mise à jour.');
     }
 
@@ -86,6 +87,7 @@ class InscriptionSeminaireController extends Controller
     {
         $membre_nom = $inscription->membre->nom ?? 'Membre';
         $inscription->delete();
+
         return back()->with('success', "Inscription de {$membre_nom} supprimée.");
     }
 }

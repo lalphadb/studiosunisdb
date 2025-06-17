@@ -57,18 +57,18 @@ class EcoleController extends Controller implements HasMiddleware
         $ecole = Ecole::create($validated);
 
         return redirect()->route('admin.ecoles.show', $ecole)
-                        ->with('success', 'École créée avec succès !');
+            ->with('success', 'École créée avec succès !');
     }
 
     public function show(Ecole $ecole)
     {
         $ecole->load('membres');
-        
+
         $stats = [
             'membres_actifs' => $ecole->membres()->where('statut', 'actif')->count(),
             'cours_actifs' => 0,
             'revenus_mois' => 0,
-            'taux_presence' => 85
+            'taux_presence' => 85,
         ];
 
         return view('admin.ecoles.show', compact('ecole', 'stats'));
@@ -97,40 +97,40 @@ class EcoleController extends Controller implements HasMiddleware
         $ecole->update($validated);
 
         return redirect()->route('admin.ecoles.show', $ecole)
-                        ->with('success', 'École mise à jour avec succès !');
+            ->with('success', 'École mise à jour avec succès !');
     }
 
     public function destroy(Ecole $ecole)
     {
         if ($ecole->membres()->count() > 0) {
             return redirect()->route('admin.ecoles.index')
-                           ->with('error', 'Impossible de supprimer une école qui a des membres.');
+                ->with('error', 'Impossible de supprimer une école qui a des membres.');
         }
 
         $ecole->delete();
 
         return redirect()->route('admin.ecoles.index')
-                        ->with('success', 'École supprimée avec succès !');
+            ->with('success', 'École supprimée avec succès !');
     }
 
     public function export()
     {
         $ecoles = Ecole::withCount('membres')->get();
-        
-        $filename = 'ecoles_' . date('Y-m-d_H-i-s') . '.csv';
-        
-        $headers = array(
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=$filename",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
-        );
 
-        $callback = function() use ($ecoles) {
+        $filename = 'ecoles_'.date('Y-m-d_H-i-s').'.csv';
+
+        $headers = [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$filename",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($ecoles) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['Nom', 'Ville', 'Directeur', 'Téléphone', 'Email', 'Membres', 'Statut']);
-            
+
             foreach ($ecoles as $ecole) {
                 fputcsv($file, [
                     $ecole->nom,
@@ -139,10 +139,10 @@ class EcoleController extends Controller implements HasMiddleware
                     $ecole->telephone,
                     $ecole->email,
                     $ecole->membres_count,
-                    $ecole->statut
+                    $ecole->statut,
                 ]);
             }
-            
+
             fclose($file);
         };
 

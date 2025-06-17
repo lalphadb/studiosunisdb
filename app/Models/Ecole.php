@@ -11,11 +11,11 @@ class Ecole extends Model
 
     protected $fillable = [
         'nom',
-        'adresse', 
+        'adresse',
         'ville',
         'telephone',
         'email',
-        'description'
+        'description',
     ];
 
     public function membres()

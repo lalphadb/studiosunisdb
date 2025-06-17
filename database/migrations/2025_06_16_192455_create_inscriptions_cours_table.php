@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up() {
+return new class extends Migration
+{
+    public function up()
+    {
         Schema::create('inscriptions_cours', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cours_id')->constrained('cours')->onDelete('cascade');
@@ -19,5 +22,9 @@ return new class extends Migration {
             $table->unique(['cours_id', 'membre_id']);
         });
     }
-    public function down() { Schema::dropIfExists('inscriptions_cours'); }
+
+    public function down()
+    {
+        Schema::dropIfExists('inscriptions_cours');
+    }
 };

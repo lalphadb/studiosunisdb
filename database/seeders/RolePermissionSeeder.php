@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -15,28 +15,28 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             // Gestion globale
             'manage-all', 'view-dashboard', 'access-admin',
-            
+
             // Écoles
             'manage-ecoles', 'create-ecole', 'edit-ecole', 'delete-ecole', 'view-ecoles',
-            
+
             // Membres
             'manage-membres', 'create-membre', 'edit-membre', 'delete-membre', 'view-membres',
             'approve-membre', 'suspend-membre', 'export-membres',
-            
+
             // Cours
             'manage-cours', 'create-cours', 'edit-cours', 'delete-cours', 'view-cours',
             'assign-instructeur', 'manage-horaires',
-            
+
             // Présences
             'manage-presences', 'take-presences', 'edit-presences', 'view-presences',
             'export-presences', 'view-statistics',
-            
+
             // Ceintures
             'manage-ceintures', 'evaluate-ceintures', 'assign-ceintures', 'view-progressions',
-            
+
             // Finances
             'manage-finances', 'view-paiements', 'create-paiement', 'generate-factures',
-            
+
             // Rapports
             'view-reports', 'generate-reports', 'view-analytics', 'export-data',
         ];
@@ -61,17 +61,17 @@ class RolePermissionSeeder extends Seeder
             'manage-cours', 'create-cours', 'edit-cours', 'view-cours',
             'manage-presences', 'take-presences', 'view-presences',
             'manage-ceintures', 'evaluate-ceintures', 'view-progressions',
-            'view-reports', 'view-analytics'
+            'view-reports', 'view-analytics',
         ]);
 
         $instructeur->givePermissionTo([
             'view-dashboard', 'access-admin',
             'view-cours', 'take-presences', 'view-presences',
-            'view-membres', 'evaluate-ceintures'
+            'view-membres', 'evaluate-ceintures',
         ]);
 
         $membre->givePermissionTo([
-            'view-dashboard'
+            'view-dashboard',
         ]);
 
         // Créer un utilisateur super admin
@@ -79,7 +79,7 @@ class RolePermissionSeeder extends Seeder
             'name' => 'Admin StudiosUnisDB',
             'email' => 'admin@studiosunisdb.com',
             'password' => bcrypt('password'),
-            'email_verified_at' => now()
+            'email_verified_at' => now(),
         ]);
 
         $user->assignRole('superadmin');

@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Membre;
 use App\Models\Ecole;
+use App\Models\Membre;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Spatie\Permission\Models\Role;
 
 class MembrePolicyTest extends TestCase
 {
@@ -17,10 +16,10 @@ class MembrePolicyTest extends TestCase
     {
         $superadmin = User::factory()->create();
         $superadmin->assignRole('superadmin');
-        
+
         $ecole = Ecole::factory()->create();
         $membre = Membre::factory()->create(['ecole_id' => $ecole->id]);
-        
+
         $this->assertTrue($superadmin->can('view', $membre));
     }
 
@@ -28,13 +27,13 @@ class MembrePolicyTest extends TestCase
     {
         $ecole1 = Ecole::factory()->create();
         $ecole2 = Ecole::factory()->create();
-        
+
         $admin = User::factory()->create(['ecole_id' => $ecole1->id]);
         $admin->assignRole('admin');
-        
+
         $membreEcole1 = Membre::factory()->create(['ecole_id' => $ecole1->id]);
         $membreEcole2 = Membre::factory()->create(['ecole_id' => $ecole2->id]);
-        
+
         $this->assertTrue($admin->can('view', $membreEcole1));
         $this->assertFalse($admin->can('view', $membreEcole2));
     }

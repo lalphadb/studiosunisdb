@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class FixPermissionsSeeder extends Seeder
 {
@@ -18,20 +18,20 @@ class FixPermissionsSeeder extends Seeder
         $permissions = [
             // Ceintures
             'view-ceintures',
-            'create-ceinture', 
+            'create-ceinture',
             'edit-ceinture',
             'delete-ceinture',
             'manage-ceintures',
             'assign-ceintures',
             'evaluate-ceintures',
-            
+
             // Présences
             'view-presences',
             'create-presence',
-            'edit-presence', 
+            'edit-presence',
             'delete-presence',
             'presence.export',
-            
+
             // Autres permissions essentielles
             'view-ecoles',
             'view-membres',
@@ -58,7 +58,7 @@ class FixPermissionsSeeder extends Seeder
             'view-ceintures', 'create-ceinture', 'edit-ceinture', 'assign-ceintures',
             'view-presences', 'create-presence', 'edit-presence', 'presence.export',
             'view-ecoles', 'view-membres', 'view-cours', 'view-seminaires',
-            'admin.dashboard'
+            'admin.dashboard',
         ];
         $admin->syncPermissions($adminPermissions);
 
@@ -67,7 +67,7 @@ class FixPermissionsSeeder extends Seeder
             'view-ceintures', 'assign-ceintures',
             'view-presences', 'create-presence', 'edit-presence',
             'view-membres', 'view-cours',
-            'admin.dashboard'
+            'admin.dashboard',
         ];
         $instructeur->syncPermissions($instructeurPermissions);
 
@@ -82,7 +82,7 @@ class FixPermissionsSeeder extends Seeder
         // Utilisateurs spécifiques à restaurer
         $users = [
             'lalpha@4lb.ca' => 'superadmin',
-            'admin@studiosunisdb.com' => 'admin', 
+            'admin@studiosunisdb.com' => 'admin',
             'root3d@4lb.ca' => 'instructeur',
         ];
 

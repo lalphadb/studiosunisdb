@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,13 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class InscriptionSeminaire extends Model
 {
     use HasFactory;
-    
+
     // ✅ GARDER le nom existant de la table
     protected $table = 'inscriptions_seminaires';
-    
+
     protected $fillable = [
         'seminaire_id',
-        'membre_id', 
+        'membre_id',
         'ecole_id',
         'date_inscription',
         'statut',
@@ -21,14 +22,14 @@ class InscriptionSeminaire extends Model
         'notes',  // ✅ Champ qui existe dans la DB
         'notes_participant',
         'date_paiement',
-        'certificat_obtenu'
+        'certificat_obtenu',
     ];
 
     protected $casts = [
         'date_inscription' => 'date',
         'date_paiement' => 'datetime',
         'montant_paye' => 'decimal:2',
-        'certificat_obtenu' => 'boolean'
+        'certificat_obtenu' => 'boolean',
     ];
 
     public function seminaire()

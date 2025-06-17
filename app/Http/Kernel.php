@@ -41,6 +41,7 @@ class Kernel extends HttpKernel
 
     /**
      * The application's middleware aliases.
+     * StudiosUnisDB - Includes Spatie Permission + Custom middlewares
      */
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
@@ -54,18 +55,14 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        
+
         // Middlewares Spatie Permission
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-        
-        // Middleware custom
-        'ecole.access' => \App\Http\Middleware\CheckEcoleAccess::class,
-    ];
-}
 
-    protected $middlewareAliases = [
-        // ... autres middlewares ...
+        // Middlewares Custom StudiosUnisDB
+        'ecole.access' => \App\Http\Middleware\CheckEcoleAccess::class,
         'ecole.restriction' => \App\Http\Middleware\EcoleRestrictionMiddleware::class,
     ];
+}

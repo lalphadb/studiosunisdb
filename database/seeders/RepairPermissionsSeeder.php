@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RepairPermissionsSeeder extends Seeder
 {
@@ -20,23 +20,23 @@ class RepairPermissionsSeeder extends Seeder
         $permissions = [
             // Dashboard
             'admin.dashboard',
-            
+
             // Écoles
             'view-ecoles', 'create-ecole', 'edit-ecole', 'delete-ecole', 'ecole.export',
-            
+
             // Membres
             'view-membres', 'create-membre', 'edit-membre', 'delete-membre', 'membre.export',
-            
+
             // Cours
             'view-cours', 'create-cours', 'edit-cours', 'delete-cours',
-            
+
             // Présences
             'view-presences', 'create-presence', 'edit-presence', 'delete-presence', 'presence.export',
-            
+
             // Ceintures
-            'view-ceintures', 'create-ceinture', 'edit-ceinture', 'delete-ceinture', 
+            'view-ceintures', 'create-ceinture', 'edit-ceinture', 'delete-ceinture',
             'manage-ceintures', 'assign-ceintures', 'evaluate-ceintures',
-            
+
             // Séminaires
             'view-seminaires', 'create-seminaire', 'edit-seminaire', 'delete-seminaire',
             'manage-seminaires', 'inscribe-seminaires',
@@ -110,13 +110,13 @@ class RepairPermissionsSeeder extends Seeder
             if ($user) {
                 // Assigner le rôle
                 $user->syncRoles([$config['role']]);
-                
+
                 // Définir l'école si nécessaire
                 if ($config['ecole_id']) {
                     $user->ecole_id = $config['ecole_id'];
                     $user->save();
                 }
-                
+
                 $this->command->info("✅ Utilisateur {$email} : rôle {$config['role']}");
             } else {
                 $this->command->warn("⚠️  Utilisateur {$email} non trouvé");

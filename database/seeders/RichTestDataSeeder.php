@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\Ceinture;
 use App\Models\Ecole;
 use App\Models\Membre;
 use App\Models\User;
-use App\Models\Ceinture;
-use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class RichTestDataSeeder extends Seeder
 {
@@ -52,17 +52,17 @@ class RichTestDataSeeder extends Seeder
             $ecole = $ecoles->random();
             $prenom = $prenoms[array_rand($prenoms)];
             $nom = $noms[array_rand($noms)];
-            
+
             Membre::create([
                 'ecole_id' => $ecole->id,
                 'prenom' => $prenom,
                 'nom' => $nom,
                 'date_naissance' => Carbon::now()->subYears(rand(8, 45))->subDays(rand(1, 365)),
-                'telephone' => '514-' . rand(100, 999) . '-' . rand(1000, 9999),
-                'email' => strtolower($prenom . '.' . $nom . '@email.com'),
-                'adresse' => rand(100, 9999) . ' Rue ' . ['Principale', 'Saint-Jean', 'Notre-Dame', 'Sainte-Catherine', 'Saint-Laurent'][array_rand(['Principale', 'Saint-Jean', 'Notre-Dame', 'Sainte-Catherine', 'Saint-Laurent'])],
-                'contact_urgence' => $prenoms[array_rand($prenoms)] . ' ' . $noms[array_rand($noms)],
-                'telephone_urgence' => '438-' . rand(100, 999) . '-' . rand(1000, 9999),
+                'telephone' => '514-'.rand(100, 999).'-'.rand(1000, 9999),
+                'email' => strtolower($prenom.'.'.$nom.'@email.com'),
+                'adresse' => rand(100, 9999).' Rue '.['Principale', 'Saint-Jean', 'Notre-Dame', 'Sainte-Catherine', 'Saint-Laurent'][array_rand(['Principale', 'Saint-Jean', 'Notre-Dame', 'Sainte-Catherine', 'Saint-Laurent'])],
+                'contact_urgence' => $prenoms[array_rand($prenoms)].' '.$noms[array_rand($noms)],
+                'telephone_urgence' => '438-'.rand(100, 999).'-'.rand(1000, 9999),
                 'date_inscription' => Carbon::now()->subDays(rand(1, 730)),
                 'statut' => ['actif', 'actif', 'actif', 'actif', 'inactif'][array_rand(['actif', 'actif', 'actif', 'actif', 'inactif'])],
                 'notes' => rand(1, 100) > 70 ? 'Étudiant motivé, bons progrès' : null,

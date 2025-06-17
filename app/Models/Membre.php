@@ -24,12 +24,12 @@ class Membre extends Model
         'ceinture_actuelle_id',
         'contact_urgence',
         'telephone_urgence',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [
         'date_naissance' => 'date',
-        'date_inscription' => 'date'
+        'date_inscription' => 'date',
     ];
 
     public function ecole()
@@ -60,19 +60,19 @@ class Membre extends Model
         if ($this->ceinture_actuelle) {
             return $this->ceinture_actuelle;
         }
-        
+
         if ($this->derniereCeinture && $this->derniereCeinture->ceinture) {
             return $this->derniereCeinture->ceinture;
         }
-        
+
         return null;
     }
 
     public function cours()
     {
         return $this->belongsToMany(Cours::class, 'inscription_cours')
-                    ->withPivot(['date_inscription', 'statut'])
-                    ->withTimestamps();
+            ->withPivot(['date_inscription', 'statut'])
+            ->withTimestamps();
     }
 
     public function presences()
@@ -83,13 +83,13 @@ class Membre extends Model
     public function seminaires()
     {
         return $this->belongsToMany(Seminaire::class, 'inscriptions_seminaires')
-                    ->withPivot(['statut', 'date_inscription', 'montant_paye'])
-                    ->withTimestamps();
+            ->withPivot(['statut', 'date_inscription', 'montant_paye'])
+            ->withTimestamps();
     }
 
     public function getNomCompletAttribute()
     {
-        return $this->prenom . ' ' . $this->nom;
+        return $this->prenom.' '.$this->nom;
     }
 
     public function getAgeAttribute()

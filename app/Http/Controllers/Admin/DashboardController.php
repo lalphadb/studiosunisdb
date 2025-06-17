@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cours;
 use App\Models\Ecole;
 use App\Models\Membre;
-use App\Models\Cours;
 use App\Models\Presence;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Carbon\Carbon;
 
 class DashboardController extends Controller implements HasMiddleware
 {
@@ -28,10 +28,10 @@ class DashboardController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         // Préparer les données selon le rôle de l'utilisateur
         $data = $this->prepareDataForRole($user);
-        
+
         return view('admin.dashboard', $data);
     }
 
@@ -95,12 +95,12 @@ class DashboardController extends Controller implements HasMiddleware
         // Revenus par école (simulation)
         $revenus_ecoles = Ecole::withCount('membres')
             ->get()
-            ->map(function($ecole) {
+            ->map(function ($ecole) {
                 return [
                     'nom' => $ecole->nom,
                     'ville' => $ecole->ville,
                     'revenus' => $ecole->membres_count * 75,
-                    'membres' => $ecole->membres_count
+                    'membres' => $ecole->membres_count,
                 ];
             })
             ->sortByDesc('revenus')
@@ -129,12 +129,13 @@ class DashboardController extends Controller implements HasMiddleware
     private function getAdminEcoleData($user)
     {
         $ecole = $user->ecole;
-        
-        if (!$ecole) {
+
+        if (! $ecole) {
             $stats = [
                 'error' => 'Aucune école assignée à cet administrateur.',
                 'ecole_nom' => 'École non assignée',
             ];
+
             return ['stats' => $stats, 'ecole' => null];
         }
 
@@ -154,7 +155,7 @@ class DashboardController extends Controller implements HasMiddleware
             'taux_presence' => $this->calculerTauxPresenceEcole($ecole->id),
             'revenus_mois' => $membres_actifs * 75,
             'capacite_max' => $ecole->capacite_max ?? 100,
-            'capacite_utilisee' => ($ecole->capacite_max ?? 100) > 0 ? 
+            'capacite_utilisee' => ($ecole->capacite_max ?? 100) > 0 ?
                 round(($ecole->membres()->count() / ($ecole->capacite_max ?? 100)) * 100, 1) : 0,
         ];
 
@@ -172,9 +173,9 @@ class DashboardController extends Controller implements HasMiddleware
             ->get();
 
         // Instructeurs de cette école
-        $instructeurs = User::whereHas('roles', function($query) {
-                $query->where('name', 'instructeur');
-            })
+        $instructeurs = User::whereHas('roles', function ($query) {
+            $query->where('name', 'instructeur');
+        })
             ->where('ecole_id', $ecole->id)
             ->withCount('coursInstructeur')
             ->get();
@@ -201,7 +202,7 @@ class DashboardController extends Controller implements HasMiddleware
             'ecole_ville' => $ecole->ville ?? '',
             'mes_cours' => $mesCours->count(),
             'cours_actifs' => $mesCours->count(), // Tous considérés comme actifs pour l'instant
-            'total_eleves' => $mesCours->sum(function($cours) {
+            'total_eleves' => $mesCours->sum(function ($cours) {
                 return $cours->inscriptions ? $cours->inscriptions->count() : 0;
             }),
             'presences_aujourd_hui' => $this->compterPresencesAujourdhuiInstructeur($user->id),
@@ -209,13 +210,13 @@ class DashboardController extends Controller implements HasMiddleware
         ];
 
         // Mes cours avec statistiques
-        $mes_cours_stats = $mesCours->map(function($cours) {
+        $mes_cours_stats = $mesCours->map(function ($cours) {
             return [
                 'nom' => $cours->nom,
                 'statut' => 'actif', // Par défaut
                 'inscriptions' => $cours->inscriptions ? $cours->inscriptions->count() : 0,
                 'capacite_max' => $cours->capacite_max ?? 20,
-                'taux_remplissage' => ($cours->capacite_max ?? 20) > 0 ? 
+                'taux_remplissage' => ($cours->capacite_max ?? 20) > 0 ?
                     round((($cours->inscriptions ? $cours->inscriptions->count() : 0) / ($cours->capacite_max ?? 20)) * 100, 1) : 0,
             ];
         });
@@ -325,11 +326,11 @@ class DashboardController extends Controller implements HasMiddleware
     private function compterPresencesSemaineEcole($ecoleId)
     {
         try {
-            return Presence::whereHas('cours', function($query) use ($ecoleId) {
+            return Presence::whereHas('cours', function ($query) use ($ecoleId) {
                 $query->where('ecole_id', $ecoleId);
             })
-            ->where('date_presence', '>=', Carbon::now()->startOfWeek())
-            ->count();
+                ->where('date_presence', '>=', Carbon::now()->startOfWeek())
+                ->count();
         } catch (\Exception $e) {
             return 0;
         }
@@ -338,12 +339,12 @@ class DashboardController extends Controller implements HasMiddleware
     private function compterPresencesAujourdhuiInstructeur($instructeurId)
     {
         try {
-            return Presence::whereHas('cours', function($query) use ($instructeurId) {
+            return Presence::whereHas('cours', function ($query) use ($instructeurId) {
                 $query->where('instructeur_id', $instructeurId);
             })
-            ->where('date_presence', Carbon::today())
-            ->where('statut', 'present')
-            ->count();
+                ->where('date_presence', Carbon::today())
+                ->where('statut', 'present')
+                ->count();
         } catch (\Exception $e) {
             return 0;
         }
@@ -352,11 +353,11 @@ class DashboardController extends Controller implements HasMiddleware
     private function compterPresencesSemaineInstructeur($instructeurId)
     {
         try {
-            return Presence::whereHas('cours', function($query) use ($instructeurId) {
+            return Presence::whereHas('cours', function ($query) use ($instructeurId) {
                 $query->where('instructeur_id', $instructeurId);
             })
-            ->where('date_presence', '>=', Carbon::now()->startOfWeek())
-            ->count();
+                ->where('date_presence', '>=', Carbon::now()->startOfWeek())
+                ->count();
         } catch (\Exception $e) {
             return 0;
         }
@@ -367,9 +368,16 @@ class DashboardController extends Controller implements HasMiddleware
      */
     private function getUserPrimaryRole($user)
     {
-        if ($user->hasRole('superadmin')) return 'superadmin';
-        if ($user->hasRole('admin')) return 'admin';
-        if ($user->hasRole('instructeur')) return 'instructeur';
+        if ($user->hasRole('superadmin')) {
+            return 'superadmin';
+        }
+        if ($user->hasRole('admin')) {
+            return 'admin';
+        }
+        if ($user->hasRole('instructeur')) {
+            return 'instructeur';
+        }
+
         return 'membre';
     }
 
@@ -386,7 +394,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Studios Unis Montréal - Nouvelle école activée',
                     'date' => 'Il y a 1 heure',
                     'icon' => '🏫',
-                    'color' => 'bg-blue-100 text-blue-800'
+                    'color' => 'bg-blue-100 text-blue-800',
                 ],
                 [
                     'type' => 'membre',
@@ -394,7 +402,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Inscriptions dans 5 écoles différentes',
                     'date' => 'Il y a 3 heures',
                     'icon' => '👥',
-                    'color' => 'bg-green-100 text-green-800'
+                    'color' => 'bg-green-100 text-green-800',
                 ],
                 [
                     'type' => 'cours',
@@ -402,7 +410,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Karaté Avancé, Kata Perfectionnement, Self-Défense',
                     'date' => 'Il y a 5 heures',
                     'icon' => '🥋',
-                    'color' => 'bg-yellow-100 text-yellow-800'
+                    'color' => 'bg-yellow-100 text-yellow-800',
                 ],
                 [
                     'type' => 'system',
@@ -410,7 +418,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Statistiques de performance globales',
                     'date' => 'Il y a 1 jour',
                     'icon' => '📊',
-                    'color' => 'bg-purple-100 text-purple-800'
+                    'color' => 'bg-purple-100 text-purple-800',
                 ],
             ];
         } elseif ($user->hasRole('admin')) {
@@ -421,7 +429,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Marie Dubois - Ceinture blanche',
                     'date' => 'Il y a 2 heures',
                     'icon' => '👤',
-                    'color' => 'bg-green-100 text-green-800'
+                    'color' => 'bg-green-100 text-green-800',
                 ],
                 [
                     'type' => 'presence',
@@ -429,7 +437,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Karaté Débutant - 15 présents / 18 inscrits',
                     'date' => 'Il y a 4 heures',
                     'icon' => '✅',
-                    'color' => 'bg-blue-100 text-blue-800'
+                    'color' => 'bg-blue-100 text-blue-800',
                 ],
                 [
                     'type' => 'cours',
@@ -437,7 +445,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Karaté Intermédiaire - Nouveau créneau ajouté',
                     'date' => 'Il y a 1 jour',
                     'icon' => '📝',
-                    'color' => 'bg-yellow-100 text-yellow-800'
+                    'color' => 'bg-yellow-100 text-yellow-800',
                 ],
                 [
                     'type' => 'paiement',
@@ -445,7 +453,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => '8 paiements mensuels confirmés',
                     'date' => 'Il y a 2 jours',
                     'icon' => '💰',
-                    'color' => 'bg-green-100 text-green-800'
+                    'color' => 'bg-green-100 text-green-800',
                 ],
             ];
         } elseif ($user->hasRole('instructeur')) {
@@ -456,7 +464,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Karaté Avancé - Demain 19h00',
                     'date' => 'Il y a 1 heure',
                     'icon' => '📅',
-                    'color' => 'bg-orange-100 text-orange-800'
+                    'color' => 'bg-orange-100 text-orange-800',
                 ],
                 [
                     'type' => 'presence',
@@ -464,7 +472,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Cours de ce matin - 12 présents',
                     'date' => 'Il y a 6 heures',
                     'icon' => '✅',
-                    'color' => 'bg-green-100 text-green-800'
+                    'color' => 'bg-green-100 text-green-800',
                 ],
                 [
                     'type' => 'membre',
@@ -472,7 +480,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Paul Martin - Karaté Débutant',
                     'date' => 'Il y a 1 jour',
                     'icon' => '👤',
-                    'color' => 'bg-blue-100 text-blue-800'
+                    'color' => 'bg-blue-100 text-blue-800',
                 ],
             ];
         } else {
@@ -483,7 +491,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Karaté Débutant - Mercredi 18h30',
                     'date' => 'Dans 2 jours',
                     'icon' => '🥋',
-                    'color' => 'bg-blue-100 text-blue-800'
+                    'color' => 'bg-blue-100 text-blue-800',
                 ],
                 [
                     'type' => 'presence',
@@ -491,7 +499,7 @@ class DashboardController extends Controller implements HasMiddleware
                     'description' => 'Karaté Débutant - Présent',
                     'date' => 'Il y a 2 jours',
                     'icon' => '✅',
-                    'color' => 'bg-green-100 text-green-800'
+                    'color' => 'bg-green-100 text-green-800',
                 ],
             ];
         }
@@ -507,7 +515,7 @@ class DashboardController extends Controller implements HasMiddleware
             $presentsCount = Presence::where('date_presence', '>=', Carbon::now()->startOfMonth())
                 ->where('statut', 'present')
                 ->count();
-                
+
             return $totalPresences > 0 ? round(($presentsCount / $totalPresences) * 100, 1) : 0;
         } catch (\Exception $e) {
             return 0;
@@ -520,19 +528,19 @@ class DashboardController extends Controller implements HasMiddleware
     private function calculerTauxPresenceEcole($ecoleId)
     {
         try {
-            $totalPresences = Presence::whereHas('cours', function($query) use ($ecoleId) {
+            $totalPresences = Presence::whereHas('cours', function ($query) use ($ecoleId) {
                 $query->where('ecole_id', $ecoleId);
             })
-            ->where('date_presence', '>=', Carbon::now()->startOfMonth())
-            ->count();
+                ->where('date_presence', '>=', Carbon::now()->startOfMonth())
+                ->count();
 
-            $presentsCount = Presence::whereHas('cours', function($query) use ($ecoleId) {
+            $presentsCount = Presence::whereHas('cours', function ($query) use ($ecoleId) {
                 $query->where('ecole_id', $ecoleId);
             })
-            ->where('date_presence', '>=', Carbon::now()->startOfMonth())
-            ->where('statut', 'present')
-            ->count();
-                
+                ->where('date_presence', '>=', Carbon::now()->startOfMonth())
+                ->where('statut', 'present')
+                ->count();
+
             return $totalPresences > 0 ? round(($presentsCount / $totalPresences) * 100, 1) : 0;
         } catch (\Exception $e) {
             return 0;

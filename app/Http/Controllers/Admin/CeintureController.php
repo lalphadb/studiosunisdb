@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ceinture;
+use App\Models\Ecole;
 use App\Models\Membre;
 use App\Models\MembreCeinture;
-use App\Models\Ecole;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Carbon\Carbon;
 
 class CeintureController extends Controller implements HasMiddleware
 {
@@ -31,17 +30,17 @@ class CeintureController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         $query = MembreCeinture::with(['membre', 'ceinture', 'membre.ecole']);
-        
-        if (!$user->hasRole('superadmin')) {
-            $query->whereHas('membre', function($q) use ($user) {
+
+        if (! $user->hasRole('superadmin')) {
+            $query->whereHas('membre', function ($q) use ($user) {
                 $q->where('ecole_id', $user->ecole_id);
             });
         }
 
         if ($request->filled('ecole_id') && $user->hasRole('superadmin')) {
-            $query->whereHas('membre', function($q) use ($request) {
+            $query->whereHas('membre', function ($q) use ($request) {
                 $q->where('ecole_id', $request->ecole_id);
             });
         }
@@ -56,9 +55,9 @@ class CeintureController extends Controller implements HasMiddleware
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('membre', function($q) use ($search) {
+            $query->whereHas('membre', function ($q) use ($search) {
                 $q->where('prenom', 'LIKE', "%{$search}%")
-                  ->orWhere('nom', 'LIKE', "%{$search}%");
+                    ->orWhere('nom', 'LIKE', "%{$search}%");
             });
         }
 
@@ -72,16 +71,16 @@ class CeintureController extends Controller implements HasMiddleware
     public function create(Request $request)
     {
         $user = auth()->user();
-        
+
         $membresQuery = Membre::with(['ecole', 'derniereCeinture.ceinture']);
-        
-        if (!$user->hasRole('superadmin')) {
+
+        if (! $user->hasRole('superadmin')) {
             $membresQuery->where('ecole_id', $user->ecole_id);
         }
-        
+
         $membres = $membresQuery->where('statut', 'actif')->orderBy('nom')->get();
         $ceintures = Ceinture::orderBy('niveau')->get();
-        
+
         $membreSelectionne = null;
         if ($request->filled('membre_id')) {
             $membreSelectionne = $membres->firstWhere('id', $request->membre_id);
@@ -102,16 +101,16 @@ class CeintureController extends Controller implements HasMiddleware
         $user = auth()->user();
         $membre = Membre::findOrFail($request->membre_id);
 
-        if (!$user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à ce membre.');
         }
 
         $derniereCeinture = $membre->derniereCeinture?->ceinture;
         $nouvelleCeinture = Ceinture::findOrFail($request->ceinture_id);
-        
+
         if ($derniereCeinture && $nouvelleCeinture->niveau <= $derniereCeinture->niveau) {
             return back()->withErrors(['ceinture_id' => 'La nouvelle ceinture doit être de niveau supérieur à la ceinture actuelle.'])
-                        ->withInput();
+                ->withInput();
         }
 
         // Créer l'attribution en attente d'approbation
@@ -124,7 +123,7 @@ class CeintureController extends Controller implements HasMiddleware
         ]);
 
         return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Ceinture en attente d\'approbation pour ' . $membre->prenom . ' ' . $membre->nom);
+            ->with('success', 'Ceinture en attente d\'approbation pour '.$membre->prenom.' '.$membre->nom);
     }
 
     public function show(string $id)
@@ -132,7 +131,7 @@ class CeintureController extends Controller implements HasMiddleware
         $progression = MembreCeinture::with(['membre.ecole', 'ceinture'])->findOrFail($id);
         $user = auth()->user();
 
-        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
 
@@ -149,7 +148,7 @@ class CeintureController extends Controller implements HasMiddleware
         $progression = MembreCeinture::with(['membre.ecole', 'ceinture'])->findOrFail($id);
         $user = auth()->user();
 
-        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
 
@@ -163,7 +162,7 @@ class CeintureController extends Controller implements HasMiddleware
         $progression = MembreCeinture::with('membre')->findOrFail($id);
         $user = auth()->user();
 
-        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
 
@@ -184,17 +183,17 @@ class CeintureController extends Controller implements HasMiddleware
         $progression = MembreCeinture::with('membre')->findOrFail($id);
         $user = auth()->user();
 
-        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé.');
         }
 
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             abort(403, 'Seul le superadmin peut supprimer des attributions de ceintures.');
         }
 
-        $membreNom = $progression->membre->prenom . ' ' . $progression->membre->nom;
+        $membreNom = $progression->membre->prenom.' '.$progression->membre->nom;
         $ceinture = $progression->ceinture->nom;
-        
+
         $progression->delete();
 
         return redirect()->route('admin.ceintures.index')
@@ -210,12 +209,12 @@ class CeintureController extends Controller implements HasMiddleware
         $user = auth()->user();
 
         // Vérification des permissions par école
-        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à ce membre.');
         }
 
         // Seuls admin et superadmin peuvent approuver
-        if (!$user->hasAnyRole(['superadmin', 'admin'])) {
+        if (! $user->hasAnyRole(['superadmin', 'admin'])) {
             abort(403, 'Seuls les administrateurs peuvent approuver les ceintures.');
         }
 
@@ -223,7 +222,7 @@ class CeintureController extends Controller implements HasMiddleware
         $progression->update(['statut' => 'approuve']);
 
         return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Ceinture approuvée pour ' . $progression->membre->prenom . ' ' . $progression->membre->nom);
+            ->with('success', 'Ceinture approuvée pour '.$progression->membre->prenom.' '.$progression->membre->nom);
     }
 
     /**
@@ -235,22 +234,22 @@ class CeintureController extends Controller implements HasMiddleware
         $user = auth()->user();
 
         // Vérification des permissions par école
-        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à ce membre.');
         }
 
         // Seuls admin et superadmin peuvent rejeter
-        if (!$user->hasAnyRole(['superadmin', 'admin'])) {
+        if (! $user->hasAnyRole(['superadmin', 'admin'])) {
             abort(403, 'Seuls les administrateurs peuvent rejeter les ceintures.');
         }
 
         // Rejeter avec note optionnelle
         $progression->update([
             'statut' => 'rejete',
-            'notes' => $progression->notes . ' | Rejeté: ' . ($request->raison_rejet ?? 'Aucune raison spécifiée')
+            'notes' => $progression->notes.' | Rejeté: '.($request->raison_rejet ?? 'Aucune raison spécifiée'),
         ]);
 
         return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Progression rejetée pour ' . $progression->membre->prenom . ' ' . $progression->membre->nom);
+            ->with('success', 'Progression rejetée pour '.$progression->membre->prenom.' '.$progression->membre->nom);
     }
 }

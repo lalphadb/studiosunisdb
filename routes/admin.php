@@ -5,84 +5,81 @@ use App\Http\Controllers\Admin\EcoleController;
 use App\Http\Controllers\Admin\MembreController;
 use App\Http\Controllers\Admin\CoursController;
 use App\Http\Controllers\Admin\PresenceController;
-use App\Http\Controllers\Admin\CeintureController;  // ← AJOUTÉ
+use App\Http\Controllers\Admin\CeintureController;
 use App\Http\Controllers\Admin\SeminaireController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Admin Routes - StudiosUnisDB v3.8.0.0
-|--------------------------------------------------------------------------
-| Routes d'administration pour la gestion des écoles de karaté
-| Sécurité : Auth + Permissions Spatie + Restrictions Multi-École
-*/
-
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     
-    // Dashboard principal avec métriques KPI
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    // Dashboard principal
+    Route::get('/admin', [DashboardController::class, 'index'])->name('admin.dashboard');
     
-    // Module Écoles - CRUD complet avec restrictions par rôle
-    Route::resource('ecoles', EcoleController::class);
-    Route::get('ecoles/export', [EcoleController::class, 'export'])
-          ->name('ecoles.export')
-          ->middleware('can:ecole.export');
+    // Module Écoles
+    Route::get('/admin/ecoles', [EcoleController::class, 'index'])->name('admin.ecoles.index');
+    Route::get('/admin/ecoles/create', [EcoleController::class, 'create'])->name('admin.ecoles.create');
+    Route::post('/admin/ecoles', [EcoleController::class, 'store'])->name('admin.ecoles.store');
+    Route::get('/admin/ecoles/{ecole}', [EcoleController::class, 'show'])->name('admin.ecoles.show');
+    Route::get('/admin/ecoles/{ecole}/edit', [EcoleController::class, 'edit'])->name('admin.ecoles.edit');
+    Route::put('/admin/ecoles/{ecole}', [EcoleController::class, 'update'])->name('admin.ecoles.update');
+    Route::delete('/admin/ecoles/{ecole}', [EcoleController::class, 'destroy'])->name('admin.ecoles.destroy');
+    Route::get('/admin/ecoles/export', [EcoleController::class, 'export'])->name('admin.ecoles.export');
     
-    // Module Membres - CRUD avec export Excel et policies
-    Route::resource('membres', MembreController::class);
-    Route::get('membres/export', [MembreController::class, 'export'])
-          ->name('membres.export')
-          ->middleware('can:membre.export');
+    // Module Membres
+    Route::get('/admin/membres', [MembreController::class, 'index'])->name('admin.membres.index');
+    Route::get('/admin/membres/create', [MembreController::class, 'create'])->name('admin.membres.create');
+    Route::post('/admin/membres', [MembreController::class, 'store'])->name('admin.membres.store');
+    Route::get('/admin/membres/{membre}', [MembreController::class, 'show'])->name('admin.membres.show');
+    Route::get('/admin/membres/{membre}/edit', [MembreController::class, 'edit'])->name('admin.membres.edit');
+    Route::put('/admin/membres/{membre}', [MembreController::class, 'update'])->name('admin.membres.update');
+    Route::delete('/admin/membres/{membre}', [MembreController::class, 'destroy'])->name('admin.membres.destroy');
+    Route::get('/admin/membres/export', [MembreController::class, 'export'])->name('admin.membres.export');
     
-    // Module Cours - CRUD avec gestion instructeurs
-    Route::resource('cours', CoursController::class);
-    Route::get('cours/{cours}/membres', [CoursController::class, 'showMembres'])
-          ->name('cours.membres')
-          ->middleware('can:view,cours');
+    // Module Cours - Routes manuelles pour éviter les conflits
+    Route::get('/admin/cours', [CoursController::class, 'index'])->name('admin.cours.index');
+    Route::get('/admin/cours/create', [CoursController::class, 'create'])->name('admin.cours.create');
+    Route::post('/admin/cours', [CoursController::class, 'store'])->name('admin.cours.store');
+    Route::get('/admin/cours/{cours}', [CoursController::class, 'show'])->name('admin.cours.show');
+    Route::get('/admin/cours/{cours}/edit', [CoursController::class, 'edit'])->name('admin.cours.edit');
+    Route::put('/admin/cours/{cours}', [CoursController::class, 'update'])->name('admin.cours.update');
+    Route::delete('/admin/cours/{cours}', [CoursController::class, 'destroy'])->name('admin.cours.destroy');
     
-    // Module Présences - CRUD + Prise de présence rapide + Export PDF
-    Route::resource('presences', PresenceController::class);
+    // Module Présences
+    Route::get('/admin/presences', [PresenceController::class, 'index'])->name('admin.presences.index');
+    Route::get('/admin/presences/create', [PresenceController::class, 'create'])->name('admin.presences.create');
+    Route::post('/admin/presences', [PresenceController::class, 'store'])->name('admin.presences.store');
+    Route::get('/admin/presences/{presence}', [PresenceController::class, 'show'])->name('admin.presences.show');
+    Route::get('/admin/presences/{presence}/edit', [PresenceController::class, 'edit'])->name('admin.presences.edit');
+    Route::put('/admin/presences/{presence}', [PresenceController::class, 'update'])->name('admin.presences.update');
+    Route::delete('/admin/presences/{presence}', [PresenceController::class, 'destroy'])->name('admin.presences.destroy');
+    Route::get('/admin/presences/export-pdf', [PresenceController::class, 'exportPdf'])->name('admin.presences.export-pdf');
+    Route::get('/admin/presences/statistiques', [PresenceController::class, 'statistiques'])->name('admin.presences.statistiques');
     
-    // Routes spécialisées présences
-    Route::prefix('presences')->name('presences.')->group(function () {
-        Route::get('export-pdf', [PresenceController::class, 'exportPdf'])
-              ->name('export-pdf')
-              ->middleware('can:presence.export');
-              
-        Route::get('statistiques', [PresenceController::class, 'statistiques'])
-              ->name('statistiques')
-              ->middleware('can:presence.view');
-    });
+    // Prise de présence par cours
+    Route::get('/admin/cours/{cours}/prise-presence', [PresenceController::class, 'prisePresence'])->name('admin.presences.prise-presence');
+    Route::post('/admin/cours/{cours}/prise-presence', [PresenceController::class, 'storePrisePresence'])->name('admin.presences.store-prise-presence');
     
-    // Interface prise de présence par cours
-    Route::prefix('cours/{cours}')->name('presences.')->group(function () {
-        Route::get('prise-presence', [PresenceController::class, 'prisePresence'])
-              ->name('prise-presence')
-              ->middleware('can:prisePresence,cours');
-              
-        Route::post('prise-presence', [PresenceController::class, 'storePrisePresence'])
-              ->name('store-prise-presence')
-              ->middleware('can:prisePresence,cours');
-    });
-
-    // Module Ceintures - CRUD complet avec examens et certificats
-    Route::prefix('ceintures')->name('ceintures.')->group(function () {
-        Route::get('dashboard', [CeintureController::class, 'dashboard'])->name('dashboard');
-        Route::get('{id}/certificat', [CeintureController::class, 'certificat'])->name('certificat');
-    });
-    Route::post('ceintures/{ceinture}/approuver', [CeintureController::class, 'approuver'])->name('ceintures.approuver');
-    Route::post('ceintures/{ceinture}/rejeter', [CeintureController::class, 'rejeter'])->name('ceintures.rejeter');
-    Route::resource('ceintures', CeintureController::class);
-
-// Module Séminaires - CRUD complet avec inscriptions
-    Route::prefix('seminaires')->name('seminaires.')->group(function () {
-        Route::post('{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('inscrire');
-        Route::post('{seminaire}/presence', [SeminaireController::class, 'marquerPresence'])->name('presence');
-        Route::get('{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('inscriptions');
-    });
-    Route::resource('seminaires', SeminaireController::class);
-
+    // Module Ceintures
+    Route::get('/admin/ceintures', [CeintureController::class, 'index'])->name('admin.ceintures.index');
+    Route::get('/admin/ceintures/create', [CeintureController::class, 'create'])->name('admin.ceintures.create');
+    Route::post('/admin/ceintures', [CeintureController::class, 'store'])->name('admin.ceintures.store');
+    Route::get('/admin/ceintures/{ceinture}', [CeintureController::class, 'show'])->name('admin.ceintures.show');
+    Route::get('/admin/ceintures/{ceinture}/edit', [CeintureController::class, 'edit'])->name('admin.ceintures.edit');
+    Route::put('/admin/ceintures/{ceinture}', [CeintureController::class, 'update'])->name('admin.ceintures.update');
+    Route::delete('/admin/ceintures/{ceinture}', [CeintureController::class, 'destroy'])->name('admin.ceintures.destroy');
+    Route::get('/admin/ceintures/dashboard', [CeintureController::class, 'dashboard'])->name('admin.ceintures.dashboard');
+    Route::get('/admin/ceintures/{id}/certificat', [CeintureController::class, 'certificat'])->name('admin.ceintures.certificat');
+    Route::post('/admin/ceintures/{ceinture}/approuver', [CeintureController::class, 'approuver'])->name('admin.ceintures.approuver');
+    Route::post('/admin/ceintures/{ceinture}/rejeter', [CeintureController::class, 'rejeter'])->name('admin.ceintures.rejeter');
     
-    // Routes futures modules (préparation v3.9.0.0)
-    // Route::resource('paiements', PaiementController::class);
+    // Module Séminaires
+    Route::get('/admin/seminaires', [SeminaireController::class, 'index'])->name('admin.seminaires.index');
+    Route::get('/admin/seminaires/create', [SeminaireController::class, 'create'])->name('admin.seminaires.create');
+    Route::post('/admin/seminaires', [SeminaireController::class, 'store'])->name('admin.seminaires.store');
+    Route::get('/admin/seminaires/{seminaire}', [SeminaireController::class, 'show'])->name('admin.seminaires.show');
+    Route::get('/admin/seminaires/{seminaire}/edit', [SeminaireController::class, 'edit'])->name('admin.seminaires.edit');
+    Route::put('/admin/seminaires/{seminaire}', [SeminaireController::class, 'update'])->name('admin.seminaires.update');
+    Route::delete('/admin/seminaires/{seminaire}', [SeminaireController::class, 'destroy'])->name('admin.seminaires.destroy');
+    Route::post('/admin/seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('admin.seminaires.inscrire');
+    Route::post('/admin/seminaires/{seminaire}/presence', [SeminaireController::class, 'marquerPresence'])->name('admin.seminaires.presence');
+    Route::get('/admin/seminaires/{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('admin.seminaires.inscriptions');
 });

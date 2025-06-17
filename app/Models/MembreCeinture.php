@@ -16,11 +16,11 @@ class MembreCeinture extends Model
         'ceinture_id',
         'date_obtention',
         'evaluateur',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [
-        'date_obtention' => 'date'
+        'date_obtention' => 'date',
     ];
 
     public function membre()

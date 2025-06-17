@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('cours')) {
+        if (! Schema::hasTable('cours')) {
             Schema::create('cours', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('ecole_id');
@@ -28,11 +28,11 @@ return new class extends Migration
                 $table->text('materiel_requis')->nullable();
                 $table->text('objectifs')->nullable();
                 $table->timestamps();
-                
+
                 $table->foreign('ecole_id')->references('id')->on('ecoles')->onDelete('cascade');
                 $table->foreign('instructeur_principal_id')->references('id')->on('users')->onDelete('set null');
                 $table->foreign('instructeur_assistant_id')->references('id')->on('users')->onDelete('set null');
-                
+
                 $table->index(['ecole_id']);
                 $table->index(['statut']);
                 $table->index(['instructeur_principal_id']);

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AdminUserSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
         $permissions = [
             'manage-all', 'view-dashboard', 'manage-ecoles', 'manage-membres',
             'manage-cours', 'manage-presences', 'manage-ceintures', 'manage-seminaires',
-            'manage-finances', 'view-reports', 'manage-users'
+            'manage-finances', 'view-reports', 'manage-users',
         ];
 
         foreach ($permissions as $permission) {
@@ -32,13 +32,13 @@ class AdminUserSeeder extends Seeder
 
         // Assigner permissions limitées à admin
         $admin->syncPermissions([
-            'view-dashboard', 'manage-membres', 'manage-cours', 
-            'manage-presences', 'manage-ceintures', 'view-reports'
+            'view-dashboard', 'manage-membres', 'manage-cours',
+            'manage-presences', 'manage-ceintures', 'view-reports',
         ]);
 
         // Créer utilisateur superadmin
         $user = User::firstOrCreate([
-            'email' => 'louis@4lb.ca'
+            'email' => 'louis@4lb.ca',
         ], [
             'name' => 'Louis Admin',
             'password' => bcrypt('password123'),

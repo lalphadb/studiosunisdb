@@ -13,10 +13,10 @@ class PresencePermissionSeeder extends Seeder
         // Créer les permissions de présence (si elles n'existent pas)
         $presencePermissions = [
             'presence.view',
-            'presence.create', 
+            'presence.create',
             'presence.edit',
             'presence.delete',
-            'presence.export'
+            'presence.export',
         ];
 
         foreach ($presencePermissions as $permission) {
@@ -30,19 +30,19 @@ class PresencePermissionSeeder extends Seeder
 
         // Attribuer les permissions aux rôles
         $superadmin->givePermissionTo($presencePermissions);
-        
+
         $admin->givePermissionTo([
             'presence.view',
             'presence.create',
-            'presence.edit', 
+            'presence.edit',
             'presence.delete',
-            'presence.export'
+            'presence.export',
         ]);
 
         $instructeur->givePermissionTo([
             'presence.view',
             'presence.create',
-            'presence.edit'
+            'presence.edit',
         ]);
 
         echo "✅ Permissions de présences ajoutées avec succès!\n";

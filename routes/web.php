@@ -25,7 +25,7 @@ Route::get('/dashboard', function () {
 // Pages légales - Conformité Loi 25 Québec
 Route::controller(LegalController::class)->group(function () {
     Route::get('/politique-confidentialite', 'privacy')->name('legal.privacy');
-    Route::get('/conditions-utilisation', 'terms')->name('legal.terms');  
+    Route::get('/conditions-utilisation', 'terms')->name('legal.terms');
     Route::get('/contact', 'contact')->name('legal.contact');
     Route::post('/contact', 'sendContact')->name('legal.contact.send');
 });
@@ -46,22 +46,21 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 // Routes administration StudiosUnisDB
-require __DIR__.'/admin.php';
 
 // ============================================================================
 // ROUTES DE DEBUG TEMPORAIRES - À SUPPRIMER APRÈS DIAGNOSTIC
 // ============================================================================
 
 Route::middleware('auth')->group(function () {
-    
+
     // Debug général des permissions
-    Route::get('/debug-permissions', function() {
-        if (!auth()->check()) {
+    Route::get('/debug-permissions', function () {
+        if (! auth()->check()) {
             return response()->json(['error' => 'Non connecté'], 401);
         }
-        
+
         $user = auth()->user();
-        
+
         return response()->json([
             'session_info' => [
                 'user_id' => $user->id,
@@ -84,13 +83,13 @@ Route::middleware('auth')->group(function () {
 });
 
 // Test sans authentification
-Route::get('/debug-routes-list', function() {
+Route::get('/debug-routes-list', function () {
     $adminRoutes = collect(\Illuminate\Support\Facades\Route::getRoutes())
-        ->filter(function($route) {
+        ->filter(function ($route) {
             return str_contains($route->uri(), 'admin/');
         })
         ->take(10)
-        ->map(function($route) {
+        ->map(function ($route) {
             return [
                 'uri' => $route->uri(),
                 'name' => $route->getName(),
@@ -98,9 +97,9 @@ Route::get('/debug-routes-list', function() {
             ];
         })
         ->values();
-    
+
     return response()->json([
         'total_admin_routes' => $adminRoutes->count(),
-        'sample_admin_routes' => $adminRoutes->toArray()
+        'sample_admin_routes' => $adminRoutes->toArray(),
     ], 200, [], JSON_PRETTY_PRINT);
 });

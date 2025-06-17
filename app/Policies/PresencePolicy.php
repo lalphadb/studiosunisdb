@@ -45,7 +45,7 @@ class PresencePolicy
      */
     public function update(User $user, Presence $presence)
     {
-        if (!$user->hasPermissionTo('presence.edit')) {
+        if (! $user->hasPermissionTo('presence.edit')) {
             return false;
         }
 
@@ -63,7 +63,7 @@ class PresencePolicy
      */
     public function delete(User $user, Presence $presence)
     {
-        if (!$user->hasPermissionTo('presence.delete')) {
+        if (! $user->hasPermissionTo('presence.delete')) {
             return false;
         }
 
@@ -81,7 +81,7 @@ class PresencePolicy
      */
     public function prisePresence(User $user, $cours)
     {
-        if (!$user->hasPermissionTo('presence.create')) {
+        if (! $user->hasPermissionTo('presence.create')) {
             return false;
         }
 

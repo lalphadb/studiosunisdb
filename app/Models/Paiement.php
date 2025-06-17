@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Paiement extends Model
 {
@@ -20,7 +20,7 @@ class Paiement extends Model
         'date_echeance',
         'reference_transaction',
         'notes',
-        'recu_url'
+        'recu_url',
     ];
 
     protected $casts = [

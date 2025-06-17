@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Ecole;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class UserSeeder extends Seeder
 {
@@ -20,7 +19,7 @@ class UserSeeder extends Seeder
 
         // Utilisateur SuperAdmin
         $superAdminUser = User::firstOrCreate([
-            'email' => 'louis@4lb.ca'
+            'email' => 'louis@4lb.ca',
         ], [
             'name' => 'Louis Admin',
             'password' => bcrypt('password123'),
@@ -31,7 +30,7 @@ class UserSeeder extends Seeder
         // Admin École Montréal
         $ecoleMontrealCentre = Ecole::where('nom', 'like', '%Montréal Centre%')->first();
         $adminMontreal = User::firstOrCreate([
-            'email' => 'admin.montreal@studiosdb.com'
+            'email' => 'admin.montreal@studiosdb.com',
         ], [
             'name' => 'Admin Montréal',
             'password' => bcrypt('password123'),
@@ -42,7 +41,7 @@ class UserSeeder extends Seeder
 
         // Instructeur test
         $instructeurTest = User::firstOrCreate([
-            'email' => 'instructeur@studiosdb.com'
+            'email' => 'instructeur@studiosdb.com',
         ], [
             'name' => 'Instructeur Test',
             'password' => bcrypt('password123'),

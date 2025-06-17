@@ -1,94 +1,192 @@
 @extends('layouts.admin')
 
-@section('title', 'Détails Cours')
+@section('title', 'Détails du Cours')
 
 @section('content')
-<div class="mb-8">
-    <div class="flex items-center justify-between">
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-4xl font-bold text-white mb-2">📚 {{ $cours->nom }}</h1>
-            <p class="text-slate-400">Détails du cours</p>
+            <h1 class="text-3xl font-bold text-white">📚 {{ $cours->nom }}</h1>
+            <p class="text-slate-400 mt-1">Détails du cours de karaté</p>
         </div>
         <div class="flex space-x-3">
-                    <a href="{{ route('admin.presences.prise-presence', $cours) }}" 
-                       class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
-                        <i class="fas fa-clipboard-check mr-2"></i>Prise de Présence
-                    </a>
-            <a href="{{ route('admin.cours.edit', $cours) }}" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-bold">
-                ✏️ Modifier
+            <a href="{{ route('admin.cours.edit', $cours) }}" 
+               class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2">
+                <span>✏️</span>
+                <span>Modifier</span>
             </a>
-            <a href="{{ route('admin.cours.index') }}" class="px-6 py-3 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition font-bold">
-                ← Retour Liste
+            <a href="{{ route('admin.cours.index') }}" 
+               class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2">
+                <span>←</span>
+                <span>Retour</span>
             </a>
         </div>
     </div>
-</div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Informations principales -->
-    <div class="lg:col-span-2">
-        <div class="card-bg rounded-xl shadow-xl p-6">
-            <h3 class="text-xl font-bold text-white mb-6">📋 Informations du Cours</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">Nom du cours</label>
-                    <p class="text-white text-lg">{{ $cours->nom }}</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Informations principales -->
+        <div class="lg:col-span-2">
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-3">
+                    Informations du Cours
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">École:</span>
+                            <div class="text-white font-semibold">{{ $cours->ecole->nom ?? 'N/A' }}</div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Type:</span>
+                            <div class="mt-1">
+                                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ ucfirst($cours->type_cours) }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Niveau requis:</span>
+                            <div class="text-white font-semibold">{{ $cours->niveau_requis ?? 'Tous niveaux' }}</div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Tranche d'âge:</span>
+                            <div class="text-white font-semibold">{{ $cours->age_min }} - {{ $cours->age_max }} ans</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Capacité:</span>
+                            <div class="text-white font-semibold">{{ $cours->capacite_max }} places</div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Durée:</span>
+                            <div class="text-white font-semibold">{{ $cours->duree_minutes }} minutes</div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Prix mensuel:</span>
+                            <div class="text-white font-semibold">
+                                @if($cours->prix_mensuel)
+                                    ${{ number_format($cours->prix_mensuel, 2) }}
+                                @else
+                                    Non défini
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Salle:</span>
+                            <div class="text-white font-semibold">{{ $cours->salle ?? 'Non spécifiée' }}</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">École</label>
-                    <p class="text-white text-lg">{{ $cours->ecole->nom ?? 'Non assignée' }}</p>
+                @if($cours->description)
+                <div class="mt-6 pt-6 border-t border-slate-700">
+                    <span class="text-slate-400 text-sm font-medium">Description:</span>
+                    <p class="text-white mt-2 leading-relaxed">{{ $cours->description }}</p>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">Instructeur</label>
-                    <p class="text-white text-lg">{{ $cours->instructeur->name ?? 'Non assigné' }}</p>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">Capacité</label>
-                    <p class="text-white text-lg">{{ $cours->capacite_max }} personnes</p>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">Prix</label>
-                    <p class="text-white text-lg">${{ number_format($cours->prix, 2) }}</p>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-300 mb-2">Statut</label>
-                    <span class="px-3 py-1 rounded-full text-sm font-bold" style="@if($cours->statut === 'actif') background-color: rgba(34, 197, 94, 0.2); border: 1px solid #16a34a; color: #4ade80; @else background-color: rgba(239, 68, 68, 0.2); border: 1px solid #dc2626; color: #f87171; @endif">
-                        {{ ucfirst($cours->statut) }}
-                    </span>
-                </div>
+                @endif
             </div>
-            
-            @if($cours->description)
-            <div class="mt-6">
-                <label class="block text-sm font-bold text-slate-300 mb-2">Description</label>
-                <p class="text-white">{{ $cours->description }}</p>
+
+            <!-- Instructeurs -->
+            @if($cours->instructeurPrincipal)
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-3">
+                    👨‍🏫 Instructeur(s)
+                </h3>
+                
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-slate-400 text-sm font-medium">Instructeur principal:</span>
+                        <div class="text-white font-semibold">{{ $cours->instructeurPrincipal->name }}</div>
+                    </div>
+                    
+                    @if($cours->instructeurAssistant)
+                    <div>
+                        <span class="text-slate-400 text-sm font-medium">Instructeur assistant:</span>
+                        <div class="text-white font-semibold">{{ $cours->instructeurAssistant->name }}</div>
+                    </div>
+                    @endif
+                </div>
             </div>
             @endif
         </div>
-    </div>
-    
-    <!-- Statistiques -->
-    <div>
-        <div class="card-bg rounded-xl shadow-xl p-6">
-            <h3 class="text-xl font-bold text-white mb-6">📊 Statistiques</h3>
-            <div class="space-y-4">
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Inscrits</span>
-                    <span class="text-white font-bold">0</span>
+
+        <!-- Sidebar - Statistiques et Statut -->
+        <div class="space-y-6">
+            <!-- Statistiques -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-3">
+                    📊 Statistiques
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="text-center bg-slate-900 rounded-lg p-4">
+                        <div class="text-3xl font-bold text-blue-400">{{ $stats['total_inscriptions'] ?? 0 }}</div>
+                        <div class="text-slate-400 text-sm">Inscriptions actives</div>
+                    </div>
+                    
+                    <div class="text-center bg-slate-900 rounded-lg p-4">
+                        <div class="text-3xl font-bold text-green-400">{{ $stats['places_disponibles'] ?? 0 }}</div>
+                        <div class="text-slate-400 text-sm">Places disponibles</div>
+                    </div>
+                    
+                    <div class="text-center bg-slate-900 rounded-lg p-4">
+                        <div class="text-3xl font-bold text-purple-400">${{ number_format($stats['revenus_mensuels'] ?? 0, 2) }}</div>
+                        <div class="text-slate-400 text-sm">Revenus mensuels</div>
+                    </div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Places libres</span>
-                    <span class="text-white font-bold">{{ $cours->capacite_max }}</span>
+            </div>
+
+            <!-- Statut -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-3">
+                    🏷️ Statut
+                </h3>
+                
+                <div class="text-center">
+                    @php
+                        $statusClasses = [
+                            'actif' => 'bg-green-600',
+                            'inactif' => 'bg-slate-600',
+                            'complet' => 'bg-yellow-600',
+                            'annule' => 'bg-red-600'
+                        ];
+                        $statusClass = $statusClasses[$cours->status] ?? 'bg-slate-600';
+                    @endphp
+                    <span class="{{ $statusClass }} text-white px-6 py-3 rounded-lg text-lg font-semibold">
+                        {{ ucfirst($cours->status) }}
+                    </span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-400">Taux occupation</span>
-                    <span class="text-white font-bold">0%</span>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-3">
+                    ⚡ Actions rapides
+                </h3>
+                
+                <div class="space-y-3">
+                    <a href="{{ route('admin.cours.edit', $cours) }}" 
+                       class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg font-medium transition-colors text-center block">
+                        ✏️ Modifier le cours
+                    </a>
+                    
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors opacity-60" disabled>
+                        📅 Gérer les horaires
+                    </button>
+                    
+                    <button class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors opacity-60" disabled>
+                        👥 Voir les inscriptions
+                    </button>
                 </div>
             </div>
         </div>

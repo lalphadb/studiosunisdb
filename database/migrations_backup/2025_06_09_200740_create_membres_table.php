@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('membres')) {
+        if (! Schema::hasTable('membres')) {
             Schema::create('membres', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('ecole_id');
@@ -34,10 +34,10 @@ return new class extends Migration
                 $table->boolean('consentement_photo')->default(false);
                 $table->boolean('consentement_email')->default(true);
                 $table->timestamps();
-                
+
                 $table->foreign('ecole_id')->references('id')->on('ecoles')->onDelete('cascade');
                 $table->foreign('ceinture_actuelle_id')->references('id')->on('ceintures')->onDelete('set null');
-                
+
                 $table->index(['ecole_id']);
                 $table->index(['statut']);
                 $table->index(['nom', 'prenom']);

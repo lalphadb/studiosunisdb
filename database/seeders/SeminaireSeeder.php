@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Seminaire;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class SeminaireSeeder extends Seeder
 {
@@ -25,11 +25,11 @@ class SeminaireSeeder extends Seeder
                 'materiel_requis' => 'Karategi, protections',
                 'capacite_max' => 40,
                 'prix' => 75.00,
-                'statut' => 'actif'
+                'statut' => 'actif',
             ],
             [
                 'nom' => 'Kata Traditionnel',
-                'intervenant' => 'Maître Kenji Nakamura', 
+                'intervenant' => 'Maître Kenji Nakamura',
                 'type_seminaire' => 'kata',
                 'description' => 'Apprentissage et perfectionnement des kata traditionnels',
                 'date_debut' => Carbon::now()->addDays(30)->format('Y-m-d'),
@@ -41,7 +41,7 @@ class SeminaireSeeder extends Seeder
                 'materiel_requis' => 'Karategi blanc uniquement',
                 'capacite_max' => 25,
                 'prix' => 60.00,
-                'statut' => 'actif'
+                'statut' => 'actif',
             ],
             [
                 'nom' => 'Préparation Compétition',
@@ -57,8 +57,8 @@ class SeminaireSeeder extends Seeder
                 'materiel_requis' => 'Équipement complet de protection',
                 'capacite_max' => 30,
                 'prix' => 85.00,
-                'statut' => 'actif'
-            ]
+                'statut' => 'actif',
+            ],
         ];
 
         foreach ($seminaires as $seminaire) {

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Ecole;
+use Illuminate\Database\Seeder;
 
 class EcoleSeeder extends Seeder
 {
@@ -27,12 +27,12 @@ class EcoleSeeder extends Seeder
             ['nom' => 'Studios Unis Jonquière', 'ville' => 'Saguenay', 'directeur' => 'Éric Bouchard'],
             ['nom' => 'Studios Unis Rouyn-Noranda', 'ville' => 'Rouyn-Noranda', 'directeur' => 'Sylvain Trottier'],
             ['nom' => 'Studios Unis Val-d\'Or', 'ville' => 'Val-d\'Or', 'directeur' => 'Stéphane Lacroix'],
-            ['nom' => 'Studios Unis Sept-Îles', 'ville' => 'Sept-Îles', 'directeur' => 'Julie Tremblay']
+            ['nom' => 'Studios Unis Sept-Îles', 'ville' => 'Sept-Îles', 'directeur' => 'Julie Tremblay'],
         ];
 
         $compteur = 0;
         foreach ($nouvelles_ecoles as $ecole) {
-            if (!Ecole::where('nom', $ecole['nom'])->exists()) {
+            if (! Ecole::where('nom', $ecole['nom'])->exists()) {
                 Ecole::create([
                     'nom' => $ecole['nom'],
                     'adresse' => '123 Rue Principale',
@@ -40,15 +40,15 @@ class EcoleSeeder extends Seeder
                     'province' => 'QC',
                     'code_postal' => 'G1A 1A1',
                     'telephone' => '418-555-0100',
-                    'email' => strtolower(str_replace([' ', '\''], ['.', ''], $ecole['nom'])) . '@studiosunisqc.com',
+                    'email' => strtolower(str_replace([' ', '\''], ['.', ''], $ecole['nom'])).'@studiosunisqc.com',
                     'directeur' => $ecole['directeur'],
                     'capacite_max' => 75,
-                    'statut' => 'actif'
+                    'statut' => 'actif',
                 ]);
                 $compteur++;
             }
         }
 
-        $this->command->info("Ajouté {$compteur} nouvelles écoles. Total: " . Ecole::count());
+        $this->command->info("Ajouté {$compteur} nouvelles écoles. Total: ".Ecole::count());
     }
 }

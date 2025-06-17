@@ -3,32 +3,31 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Presence;
 use App\Models\Cours;
 use App\Models\Membre;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use App\Models\Presence;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
 
 class PresenceController extends Controller implements HasMiddleware
 {
     /**
      * Get the middleware that should be assigned to the controller.
      */
-
-public static function middleware(): array
-{
-    return [
-        'auth',
-        new Middleware('can:view-presences', only: ['index', 'show']),
-        new Middleware('can:create-presence', only: ['create', 'store']),
-        new Middleware('can:edit-presence', only: ['edit', 'update']),
-        new Middleware('can:delete-presence', only: ['destroy']),
-    ];
-}
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            new Middleware('can:view-presences', only: ['index', 'show']),
+            new Middleware('can:create-presence', only: ['create', 'store']),
+            new Middleware('can:edit-presence', only: ['edit', 'update']),
+            new Middleware('can:delete-presence', only: ['destroy']),
+        ];
+    }
 
     /**
      * Affiche la liste des présences
@@ -39,8 +38,8 @@ public static function middleware(): array
         $query = Presence::with(['cours', 'membre']);
 
         // Restriction par école selon le rôle
-        if (!$user->hasRole('superadmin')) {
-            $query->whereHas('cours', function($q) use ($user) {
+        if (! $user->hasRole('superadmin')) {
+            $query->whereHas('cours', function ($q) use ($user) {
                 $q->where('ecole_id', $user->ecole_id);
             });
         }
@@ -63,17 +62,17 @@ public static function middleware(): array
         }
 
         $presences = $query->orderBy('date_presence', 'desc')
-                          ->orderBy('id', 'desc')
-                          ->paginate(20);
+            ->orderBy('id', 'desc')
+            ->paginate(20);
 
         // Données pour les filtres
         $coursQuery = Cours::query();
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $coursQuery->where('ecole_id', $user->ecole_id);
         }
         $cours = $coursQuery->get();
 
-        return view("admin.presences.index", compact("presences", "cours"));
+        return view('admin.presences.index', compact('presences', 'cours'));
     }
 
     /**
@@ -82,17 +81,17 @@ public static function middleware(): array
     public function create(Request $request)
     {
         $user = Auth::user();
-        
+
         // Cours disponibles selon l'école
         $coursQuery = Cours::with('ecole');
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $coursQuery->where('ecole_id', $user->ecole_id);
         }
         $cours = $coursQuery->get();
 
         // Membres disponibles selon l'école
         $membresQuery = Membre::query();
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $membresQuery->where('ecole_id', $user->ecole_id);
         }
         $membres = $membresQuery->get();
@@ -115,20 +114,20 @@ public static function middleware(): array
             'statut' => 'required|in:present,absent,retard,excuse',
             'heure_arrivee' => 'nullable|date_format:H:i',
             'heure_depart' => 'nullable|date_format:H:i',
-            'notes' => 'nullable|string|max:500'
+            'notes' => 'nullable|string|max:500',
         ]);
 
         // Vérification que le cours et le membre appartiennent à la même école
         $cours = Cours::findOrFail($request->cours_id);
         $membre = Membre::findOrFail($request->membre_id);
-        
+
         if ($cours->ecole_id !== $membre->ecole_id) {
             return back()->withErrors(['error' => 'Le cours et le membre doivent appartenir à la même école.']);
         }
 
         // Vérification des permissions d'école
         $user = Auth::user();
-        if (!$user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
@@ -136,7 +135,7 @@ public static function middleware(): array
         $existingPresence = Presence::where([
             'cours_id' => $request->cours_id,
             'membre_id' => $request->membre_id,
-            'date_presence' => $request->date_presence
+            'date_presence' => $request->date_presence,
         ])->first();
 
         if ($existingPresence) {
@@ -146,7 +145,7 @@ public static function middleware(): array
         Presence::create($request->all());
 
         return redirect()->route('admin.presences.index')
-                        ->with('success', 'Présence enregistrée avec succès.');
+            ->with('success', 'Présence enregistrée avec succès.');
     }
 
     /**
@@ -155,14 +154,14 @@ public static function middleware(): array
     public function show(Presence $presence)
     {
         $user = Auth::user();
-        
+
         // Vérification des permissions d'école
-        if (!$user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
         $presence->load(['cours.ecole', 'membre']);
-        
+
         return view('admin.presences.show', compact('presence'));
     }
 
@@ -172,22 +171,22 @@ public static function middleware(): array
     public function edit(Presence $presence)
     {
         $user = Auth::user();
-        
+
         // Vérification des permissions d'école
-        if (!$user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
         // Cours disponibles selon l'école
         $coursQuery = Cours::with('ecole');
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $coursQuery->where('ecole_id', $user->ecole_id);
         }
         $cours = $coursQuery->get();
 
         // Membres disponibles selon l'école
         $membresQuery = Membre::query();
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $membresQuery->where('ecole_id', $user->ecole_id);
         }
         $membres = $membresQuery->get();
@@ -201,9 +200,9 @@ public static function middleware(): array
     public function update(Request $request, Presence $presence)
     {
         $user = Auth::user();
-        
+
         // Vérification des permissions d'école
-        if (!$user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
@@ -214,19 +213,19 @@ public static function middleware(): array
             'statut' => 'required|in:present,absent,retard,excuse',
             'heure_arrivee' => 'nullable|date_format:H:i',
             'heure_depart' => 'nullable|date_format:H:i',
-            'notes' => 'nullable|string|max:500'
+            'notes' => 'nullable|string|max:500',
         ]);
 
         // Vérification que le cours et le membre appartiennent à la même école
         $cours = Cours::findOrFail($request->cours_id);
         $membre = Membre::findOrFail($request->membre_id);
-        
+
         if ($cours->ecole_id !== $membre->ecole_id) {
             return back()->withErrors(['error' => 'Le cours et le membre doivent appartenir à la même école.']);
         }
 
         // Vérification des permissions d'école pour les nouvelles données
-        if (!$user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
@@ -234,7 +233,7 @@ public static function middleware(): array
         $existingPresence = Presence::where([
             'cours_id' => $request->cours_id,
             'membre_id' => $request->membre_id,
-            'date_presence' => $request->date_presence
+            'date_presence' => $request->date_presence,
         ])->where('id', '!=', $presence->id)->first();
 
         if ($existingPresence) {
@@ -244,7 +243,7 @@ public static function middleware(): array
         $presence->update($request->all());
 
         return redirect()->route('admin.presences.index')
-                        ->with('success', 'Présence mise à jour avec succès.');
+            ->with('success', 'Présence mise à jour avec succès.');
     }
 
     /**
@@ -253,16 +252,16 @@ public static function middleware(): array
     public function destroy(Presence $presence)
     {
         $user = Auth::user();
-        
+
         // Vérification des permissions d'école
-        if (!$user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $presence->cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
         $presence->delete();
 
         return redirect()->route('admin.presences.index')
-                        ->with('success', 'Présence supprimée avec succès.');
+            ->with('success', 'Présence supprimée avec succès.');
     }
 
     /**
@@ -271,22 +270,22 @@ public static function middleware(): array
     public function prisePresence(Request $request, Cours $cours)
     {
         $user = Auth::user();
-        
+
         // Vérification des permissions d'école
-        if (!$user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
         $date = $request->get('date', Carbon::today()->format('Y-m-d'));
-        
+
         // Récupérer les membres inscrits à ce cours
         $membres = $cours->membres()->get();
-        
+
         // Récupérer les présences existantes pour cette date
         $presencesExistantes = Presence::where('cours_id', $cours->id)
-                                     ->where('date_presence', $date)
-                                     ->get()
-                                     ->keyBy('membre_id');
+            ->where('date_presence', $date)
+            ->get()
+            ->keyBy('membre_id');
 
         return view('admin.presences.prise-presence', compact('cours', 'membres', 'date', 'presencesExistantes'));
     }
@@ -297,9 +296,9 @@ public static function middleware(): array
     public function storePrisePresence(Request $request, Cours $cours)
     {
         $user = Auth::user();
-        
+
         // Vérification des permissions d'école
-        if (!$user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
+        if (! $user->hasRole('superadmin') && $cours->ecole_id !== $user->ecole_id) {
             abort(403, 'Accès non autorisé à cette école.');
         }
 
@@ -309,15 +308,15 @@ public static function middleware(): array
             'presences.*.membre_id' => 'required|exists:membres,id',
             'presences.*.statut' => 'required|in:present,absent,retard,excuse',
             'presences.*.heure_arrivee' => 'nullable|date_format:H:i',
-            'presences.*.notes' => 'nullable|string|max:200'
+            'presences.*.notes' => 'nullable|string|max:200',
         ]);
 
         $date = $request->date_presence;
-        
+
         // Supprimer les présences existantes pour cette date et ce cours
         Presence::where('cours_id', $cours->id)
-                ->where('date_presence', $date)
-                ->delete();
+            ->where('date_presence', $date)
+            ->delete();
 
         // Créer les nouvelles présences
         foreach ($request->presences as $presenceData) {
@@ -328,13 +327,13 @@ public static function middleware(): array
                     'date_presence' => $date,
                     'statut' => $presenceData['statut'],
                     'heure_arrivee' => $presenceData['heure_arrivee'] ?? null,
-                    'notes' => $presenceData['notes'] ?? null
+                    'notes' => $presenceData['notes'] ?? null,
                 ]);
             }
         }
 
         return redirect()->route('admin.presences.prise-presence', $cours)
-                        ->with('success', 'Présences enregistrées avec succès.');
+            ->with('success', 'Présences enregistrées avec succès.');
     }
 
     /**
@@ -346,8 +345,8 @@ public static function middleware(): array
         $query = Presence::with(['cours.ecole', 'membre']);
 
         // Restriction par école selon le rôle
-        if (!$user->hasRole('superadmin')) {
-            $query->whereHas('cours', function($q) use ($user) {
+        if (! $user->hasRole('superadmin')) {
+            $query->whereHas('cours', function ($q) use ($user) {
                 $q->where('ecole_id', $user->ecole_id);
             });
         }
@@ -368,8 +367,8 @@ public static function middleware(): array
         $presences = $query->orderBy('date_presence', 'desc')->get();
 
         $pdf = Pdf::loadView('admin.presences.pdf', compact('presences'));
-        
-        return $pdf->download('presences_' . Carbon::now()->format('Y-m-d_H-i-s') . '.pdf');
+
+        return $pdf->download('presences_'.Carbon::now()->format('Y-m-d_H-i-s').'.pdf');
     }
 
     /**
@@ -381,8 +380,8 @@ public static function middleware(): array
         $query = Presence::with(['cours.ecole', 'membre']);
 
         // Restriction par école selon le rôle
-        if (!$user->hasRole('superadmin')) {
-            $query->whereHas('cours', function($q) use ($user) {
+        if (! $user->hasRole('superadmin')) {
+            $query->whereHas('cours', function ($q) use ($user) {
                 $q->where('ecole_id', $user->ecole_id);
             });
         }
@@ -390,7 +389,7 @@ public static function middleware(): array
         // Période par défaut : 30 derniers jours
         $dateDebut = $request->get('date_debut', Carbon::now()->subDays(30)->format('Y-m-d'));
         $dateFin = $request->get('date_fin', Carbon::now()->format('Y-m-d'));
-        
+
         $query->whereBetween('date_presence', [$dateDebut, $dateFin]);
 
         $presences = $query->get();
@@ -402,8 +401,8 @@ public static function middleware(): array
             'absents' => $presences->where('statut', 'absent')->count(),
             'retards' => $presences->where('statut', 'retard')->count(),
             'excuses' => $presences->where('statut', 'excuse')->count(),
-            'taux_presence' => $presences->count() > 0 ? 
-                round(($presences->where('statut', 'present')->count() / $presences->count()) * 100, 1) : 0
+            'taux_presence' => $presences->count() > 0 ?
+                round(($presences->where('statut', 'present')->count() / $presences->count()) * 100, 1) : 0,
         ];
 
         // Statistiques par cours
@@ -411,8 +410,8 @@ public static function middleware(): array
             return [
                 'total' => $presencesCours->count(),
                 'presents' => $presencesCours->where('statut', 'present')->count(),
-                'taux' => $presencesCours->count() > 0 ? 
-                    round(($presencesCours->where('statut', 'present')->count() / $presencesCours->count()) * 100, 1) : 0
+                'taux' => $presencesCours->count() > 0 ?
+                    round(($presencesCours->where('statut', 'present')->count() / $presencesCours->count()) * 100, 1) : 0,
             ];
         });
 

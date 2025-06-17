@@ -3,13 +3,13 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 
 class AuditStudiosUnisDB extends Command
 {
     protected $signature = 'audit:studiosunisdb';
+
     protected $description = 'Audit complet StudiosUnisDB - Standards Laravel 12.17 Professionnels';
 
     public function handle()
@@ -20,7 +20,7 @@ class AuditStudiosUnisDB extends Command
 
         // Créer dossier audit
         $auditDir = base_path('audite');
-        if (!File::exists($auditDir)) {
+        if (! File::exists($auditDir)) {
             File::makeDirectory($auditDir);
         }
 
@@ -68,14 +68,14 @@ class AuditStudiosUnisDB extends Command
 
         // GÉNÉRER RAPPORT
         $this->genererRapport($rapport, $auditDir);
-        
+
         $this->info('✅ AUDIT TERMINÉ - Voir rapport dans /audite/');
     }
 
     protected function auditerStructure()
     {
         $resultats = [];
-        
+
         // Fichiers essentiels
         $fichiersEssentiels = [
             '.env' => base_path('.env'),
@@ -90,12 +90,12 @@ class AuditStudiosUnisDB extends Command
         // Dossiers structure Laravel
         $dossiersLaravel = [
             'app/Http/Controllers/Admin',
-            'app/Models', 
+            'app/Models',
             'app/Policies',
             'database/migrations',
             'resources/views/admin',
             'resources/views/layouts',
-            'routes'
+            'routes',
         ];
 
         foreach ($dossiersLaravel as $dossier) {
@@ -111,10 +111,10 @@ class AuditStudiosUnisDB extends Command
         $resultats = [];
         $controleurs = [
             'DashboardController',
-            'EcoleController', 
+            'EcoleController',
             'MembreController',
             'CoursController',
-            'PresenceController'
+            'PresenceController',
         ];
 
         foreach ($controleurs as $controleur) {
@@ -126,7 +126,7 @@ class AuditStudiosUnisDB extends Command
                     'namespace' => str_contains($contenu, 'namespace App\Http\Controllers\Admin') ? '✅' : '❌',
                     'methodes_crud' => $this->compterMethodesCRUD($contenu),
                     'middleware' => str_contains($contenu, 'middleware') ? '✅' : '❌',
-                    'syntaxe' => $this->verifierSyntaxePHP($chemin)
+                    'syntaxe' => $this->verifierSyntaxePHP($chemin),
                 ];
             } else {
                 $resultats[$controleur] = ['existe' => '❌ Manquant'];
@@ -140,8 +140,8 @@ class AuditStudiosUnisDB extends Command
     {
         $resultats = [];
         $modeles = [
-            'User', 'Ecole', 'Membre', 'Cours', 'Presence', 
-            'Ceinture', 'MembreCeinture', 'CoursHoraire'
+            'User', 'Ecole', 'Membre', 'Cours', 'Presence',
+            'Ceinture', 'MembreCeinture', 'CoursHoraire',
         ];
 
         foreach ($modeles as $modele) {
@@ -153,7 +153,7 @@ class AuditStudiosUnisDB extends Command
                     'extends_model' => str_contains($contenu, 'extends Model') ? '✅' : '❌',
                     'fillable' => str_contains($contenu, 'fillable') ? '✅' : '❌',
                     'relations' => $this->compterRelations($contenu),
-                    'syntaxe' => $this->verifierSyntaxePHP($chemin)
+                    'syntaxe' => $this->verifierSyntaxePHP($chemin),
                 ];
             } else {
                 $resultats[$modele] = ['existe' => '❌ Manquant'];
@@ -166,7 +166,7 @@ class AuditStudiosUnisDB extends Command
     protected function auditerVues()
     {
         $resultats = [];
-        
+
         // Vérifier layouts
         $layouts = ['admin.blade.php', 'guest.blade.php'];
         foreach ($layouts as $layout) {
@@ -181,21 +181,21 @@ class AuditStudiosUnisDB extends Command
             if (File::exists($dossier)) {
                 $vues = ['index.blade.php', 'create.blade.php', 'edit.blade.php', 'show.blade.php'];
                 $vuesPresentes = 0;
-                
+
                 foreach ($vues as $vue) {
                     if (File::exists("{$dossier}/{$vue}")) {
                         $vuesPresentes++;
-                        
+
                         // Vérifier cohérence @extends
                         $contenu = File::get("{$dossier}/{$vue}");
                         $resultats["{$module}_{$vue}"] = [
                             'existe' => '✅',
                             'extends' => str_contains($contenu, '@extends(\'layouts.admin\')') ? '✅' : '❌',
-                            'composants' => str_contains($contenu, '<x-') ? '⚠️ Utilise composants' : '✅ @extends'
+                            'composants' => str_contains($contenu, '<x-') ? '⚠️ Utilise composants' : '✅ @extends',
                         ];
                     }
                 }
-                
+
                 $resultats["module_{$module}"] = "✅ {$vuesPresentes}/4 vues";
             } else {
                 $resultats["module_{$module}"] = '❌ Dossier manquant';
@@ -208,7 +208,7 @@ class AuditStudiosUnisDB extends Command
     protected function auditerRoutes()
     {
         $resultats = [];
-        
+
         // Vérifier fichiers routes
         $fichierRoutes = ['web.php', 'admin.php', 'auth.php'];
         foreach ($fichierRoutes as $fichier) {
@@ -222,14 +222,14 @@ class AuditStudiosUnisDB extends Command
                 return [
                     'method' => implode('|', $route->methods()),
                     'uri' => $route->uri(),
-                    'name' => $route->getName()
+                    'name' => $route->getName(),
                 ];
             });
 
             $resultats['total_routes'] = $routes->count();
-            $resultats['routes_admin'] = $routes->filter(fn($r) => str_starts_with($r['uri'], 'admin'))->count();
-            $resultats['routes_presences'] = $routes->filter(fn($r) => str_contains($r['name'] ?? '', 'presence'))->count();
-            
+            $resultats['routes_admin'] = $routes->filter(fn ($r) => str_starts_with($r['uri'], 'admin'))->count();
+            $resultats['routes_presences'] = $routes->filter(fn ($r) => str_contains($r['name'] ?? '', 'presence'))->count();
+
         } catch (\Exception $e) {
             $resultats['erreur_routes'] = $e->getMessage();
         }
@@ -240,22 +240,22 @@ class AuditStudiosUnisDB extends Command
     protected function auditerDatabase()
     {
         $resultats = [];
-        
+
         try {
             // Test connexion
             DB::connection()->getPdo();
             $resultats['connexion'] = '✅ OK';
-            
+
             // Compter tables
             $tables = DB::select('SHOW TABLES');
             $resultats['nombre_tables'] = count($tables);
-            
+
             // Vérifier tables StudiosUnisDB
             $tablesAttendues = [
-                'users', 'ecoles', 'membres', 'cours', 'presences', 
-                'ceintures', 'permissions', 'roles'
+                'users', 'ecoles', 'membres', 'cours', 'presences',
+                'ceintures', 'permissions', 'roles',
             ];
-            
+
             foreach ($tablesAttendues as $table) {
                 try {
                     $count = DB::table($table)->count();
@@ -264,13 +264,13 @@ class AuditStudiosUnisDB extends Command
                     $resultats["table_{$table}"] = '❌ Manquante/Erreur';
                 }
             }
-            
+
             // État migrations
             $migrations = DB::table('migrations')->count();
             $resultats['migrations_executees'] = $migrations;
-            
+
         } catch (\Exception $e) {
-            $resultats['connexion'] = '❌ Erreur: ' . $e->getMessage();
+            $resultats['connexion'] = '❌ Erreur: '.$e->getMessage();
         }
 
         return $resultats;
@@ -279,7 +279,7 @@ class AuditStudiosUnisDB extends Command
     protected function auditerSecurite()
     {
         $resultats = [];
-        
+
         // Vérifier .env
         $envPath = base_path('.env');
         if (File::exists($envPath)) {
@@ -288,7 +288,7 @@ class AuditStudiosUnisDB extends Command
             $resultats['app_debug'] = str_contains($env, 'APP_DEBUG=false') ? '✅ Production' : '⚠️ Debug activé';
             $resultats['db_password'] = str_contains($env, 'DB_PASSWORD=') ? '✅ Défini' : '❌ Manquant';
         }
-        
+
         // Vérifier middleware
         $middleware = app_path('Http/Kernel.php');
         if (File::exists($middleware)) {
@@ -302,23 +302,23 @@ class AuditStudiosUnisDB extends Command
     protected function auditerPermissions()
     {
         $resultats = [];
-        
+
         try {
             // Compter permissions Spatie
             $permissions = DB::table('permissions')->count();
             $roles = DB::table('roles')->count();
             $rolePermissions = DB::table('role_has_permissions')->count();
-            
+
             $resultats['permissions_total'] = $permissions;
             $resultats['roles_total'] = $roles;
             $resultats['attributions'] = $rolePermissions;
-            
+
             // Vérifier permissions présences
             $permissionsPresences = DB::table('permissions')
                 ->where('name', 'like', 'presence%')
                 ->count();
             $resultats['permissions_presences'] = $permissionsPresences;
-            
+
         } catch (\Exception $e) {
             $resultats['erreur'] = $e->getMessage();
         }
@@ -329,7 +329,7 @@ class AuditStudiosUnisDB extends Command
     protected function auditerConformite()
     {
         $resultats = [];
-        
+
         // Vérifier branding StudiosUnisDB
         $adminLayout = resource_path('views/layouts/admin.blade.php');
         if (File::exists($adminLayout)) {
@@ -338,7 +338,7 @@ class AuditStudiosUnisDB extends Command
             $resultats['theme_dark'] = str_contains($contenu, '#0f172a') ? '✅ Thème dark' : '❌';
             $resultats['emoji_karatie'] = str_contains($contenu, '🥋') ? '✅ Emoji karaté' : '❌';
         }
-        
+
         // Vérifier structure multi-école
         $resultats['ecoles_configurees'] = DB::table('ecoles')->count();
         $resultats['superadmin_existe'] = DB::table('users')
@@ -359,6 +359,7 @@ class AuditStudiosUnisDB extends Command
                 $count++;
             }
         }
+
         return "{$count}/7 méthodes CRUD";
     }
 
@@ -369,28 +370,30 @@ class AuditStudiosUnisDB extends Command
         foreach ($relations as $relation) {
             $count += substr_count($contenu, $relation);
         }
+
         return "{$count} relations";
     }
 
     protected function verifierSyntaxePHP($chemin)
     {
         $output = shell_exec("php -l {$chemin} 2>&1");
+
         return str_contains($output, 'No syntax errors') ? '✅ Syntaxe OK' : '❌ Erreur syntaxe';
     }
 
     protected function genererRapport($rapport, $auditDir)
     {
         $timestamp = now()->format('Ymd_His');
-        
+
         // Rapport détaillé
         $rapportFile = "{$auditDir}/audit_studiosunisdb_{$timestamp}.json";
         File::put($rapportFile, json_encode($rapport, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        
+
         // Rapport résumé
         $resumeFile = "{$auditDir}/resume_audit_{$timestamp}.txt";
         $resume = $this->genererResume($rapport);
         File::put($resumeFile, $resume);
-        
+
         $this->info("📄 Rapport détaillé: {$rapportFile}");
         $this->info("📋 Résumé: {$resumeFile}");
     }
@@ -400,12 +403,12 @@ class AuditStudiosUnisDB extends Command
         $resume = "🎯 AUDIT STUDIOSUNISDB {$rapport['version']}\n";
         $resume .= "Date: {$rapport['timestamp']}\n";
         $resume .= "Laravel: {$rapport['laravel_version']}\n";
-        $resume .= str_repeat('=', 50) . "\n\n";
-        
+        $resume .= str_repeat('=', 50)."\n\n";
+
         // Calculer score global
         $total = 0;
         $ok = 0;
-        
+
         foreach ($rapport as $section => $donnees) {
             if (is_array($donnees)) {
                 foreach ($donnees as $cle => $valeur) {
@@ -416,28 +419,28 @@ class AuditStudiosUnisDB extends Command
                 }
             }
         }
-        
+
         $score = $total > 0 ? round(($ok / $total) * 100, 1) : 0;
-        
+
         $resume .= "📊 SCORE GLOBAL: {$score}% ({$ok}/{$total})\n\n";
-        
+
         $resume .= "🔍 RÉSUMÉ PAR SECTION:\n";
         foreach ($rapport as $section => $donnees) {
-            if (is_array($donnees) && !in_array($section, ['timestamp', 'version', 'laravel_version'])) {
+            if (is_array($donnees) && ! in_array($section, ['timestamp', 'version', 'laravel_version'])) {
                 $sectionOk = 0;
                 $sectionTotal = count($donnees);
-                
+
                 foreach ($donnees as $valeur) {
                     if (is_string($valeur) && str_contains($valeur, '✅')) {
                         $sectionOk++;
                     }
                 }
-                
+
                 $sectionScore = $sectionTotal > 0 ? round(($sectionOk / $sectionTotal) * 100, 1) : 0;
                 $resume .= sprintf("%-15s: %5.1f%% (%d/%d)\n", strtoupper($section), $sectionScore, $sectionOk, $sectionTotal);
             }
         }
-        
+
         return $resume;
     }
 }

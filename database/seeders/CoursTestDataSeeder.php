@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\Cours;
 use App\Models\Ecole;
+use App\Models\InscriptionCours;
 use App\Models\Membre;
 use App\Models\User;
-use App\Models\Cours;
-use App\Models\InscriptionCours;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class CoursTestDataSeeder extends Seeder
 {
@@ -17,9 +17,10 @@ class CoursTestDataSeeder extends Seeder
         // Récupérer les écoles et instructeurs existants
         $ecoles = Ecole::take(3)->get();
         $instructeurs = User::role('instructeur')->get();
-        
+
         if ($ecoles->isEmpty()) {
             $this->command->warn('Aucune école trouvée. Créez d\'abord des écoles.');
+
             return;
         }
 
@@ -100,7 +101,7 @@ class CoursTestDataSeeder extends Seeder
         foreach ($ecoles as $ecole) {
             // Créer 3 cours par école
             $coursSelectionnes = collect($coursData)->random(3);
-            
+
             foreach ($coursSelectionnes as $data) {
                 $cours = Cours::create([
                     'ecole_id' => $ecole->id,
@@ -124,10 +125,10 @@ class CoursTestDataSeeder extends Seeder
 
                 // Inscrire quelques membres (avec les bonnes valeurs de status)
                 $membres = Membre::where('ecole_id', $ecole->id)
-                                ->where('statut', 'actif')
-                                ->inRandomOrder()
-                                ->take(rand(3, min(8, $cours->capacite_max - 2)))
-                                ->get();
+                    ->where('statut', 'actif')
+                    ->inRandomOrder()
+                    ->take(rand(3, min(8, $cours->capacite_max - 2)))
+                    ->get();
 
                 foreach ($membres as $membre) {
                     InscriptionCours::create([
@@ -144,6 +145,6 @@ class CoursTestDataSeeder extends Seeder
         }
 
         $this->command->info('✅ Cours et inscriptions créés avec succès !');
-        $this->command->info('📊 ' . Cours::count() . ' cours avec inscriptions');
+        $this->command->info('📊 '.Cours::count().' cours avec inscriptions');
     }
 }
