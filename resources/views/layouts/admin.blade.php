@@ -97,7 +97,17 @@
                             🎓 Séminaires
                         </a>
                         @endif
-                    </div>
+                        
+			<!-- Telescope - SEULEMENT SuperAdmin -->
+			@if(auth()->user()->hasRole('superadmin'))
+			<a href="{{ url('/telescope') }}" 
+   				class="px-3 py-2 rounded-md hover-bg transition-all text-gray-300"
+   				target="_blank"
+   				title="Ouvrir Telescope (Monitoring)">
+    				🔭 Telescope
+			</a>
+			@endif                 
+   		   </div>
                 </div>
                 <div class="flex items-center">
                     <div class="relative">
