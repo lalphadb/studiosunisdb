@@ -1,0 +1,322 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Paiement;
+use App\Models\Membre;
+use App\Models\Ecole;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use PDF;
+
+class PaiementController extends Controller
+{
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Restriction par école sauf superadmin
+        $query = Paiement::with(['membre', 'ecole', 'validateur']);
+        
+        if (!$user->hasRole('superadmin')) {
+            $query->where('ecole_id', $user->ecole_id);
+        }
+        
+        // Filtres
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        
+        if ($request->filled('motif')) {
+            $query->where('motif', $request->motif);
+        }
+        
+        if ($request->filled('ecole_id') && $user->hasRole('superadmin')) {
+            $query->where('ecole_id', $request->ecole_id);
+        }
+        
+        if ($request->filled('recherche')) {
+            $recherche = $request->recherche;
+            $query->where(function($q) use ($recherche) {
+                $q->where('reference_interne', 'like', "%{$recherche}%")
+                  ->orWhere('reference_interac', 'like', "%{$recherche}%")
+                  ->orWhereHas('membre', function($mq) use ($recherche) {
+                      $mq->where('nom', 'like', "%{$recherche}%")
+                        ->orWhere('prenom', 'like', "%{$recherche}%");
+                  });
+            });
+        }
+        
+        $paiements = $query->orderBy('created_at', 'desc')->paginate(20);
+        
+        // Données pour les filtres
+        $ecoles = $user->hasRole('superadmin') ? Ecole::all() : collect([$user->ecole]);
+        
+        // Statistiques
+        $stats = [
+            'total_mois' => $query->clone()->whereMonth('created_at', now()->month)->sum('montant'),
+            'en_attente' => $query->clone()->where('statut', 'en_attente')->count(),
+            'a_valider' => $query->clone()->where('statut', 'recu')->count(),
+            'valides_mois' => $query->clone()->where('statut', 'valide')->whereMonth('date_validation', now()->month)->count()
+        ];
+        
+        return view('admin.paiements.index', compact('paiements', 'ecoles', 'stats'));
+    }
+
+    public function create()
+    {
+        $user = Auth::user();
+        
+        // Membres de l'école de l'utilisateur
+        $membres = Membre::where('ecole_id', $user->ecole_id)
+                         ->orderBy('nom')
+                         ->orderBy('prenom')
+                         ->get();
+                         
+        $ecoles = $user->hasRole('superadmin') ? Ecole::all() : collect([$user->ecole]);
+        
+        return view('admin.paiements.create', compact('membres', 'ecoles'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'membre_id' => 'required|exists:membres,id',
+            'motif' => 'required|in:session_automne,session_hiver,session_printemps,session_ete,seminaire,examen_ceinture,equipement,autre',
+            'montant' => 'required|numeric|min:0.01',
+            'frais' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string|max:255',
+            'date_echeance' => 'nullable|date|after:today'
+        ]);
+        
+        $user = Auth::user();
+        $membre = Membre::findOrFail($request->membre_id);
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+
+        // Créer le paiement SANS reference_interne d'abord
+        $paiement = Paiement::create([
+            'membre_id' => $membre->id,
+            'ecole_id' => $membre->ecole_id,
+            'motif' => $request->motif,
+            'montant' => $request->montant,
+            'frais' => $request->frais ?? 0,
+            'montant_net' => ($request->montant - ($request->frais ?? 0)), // Calculé directement
+            'description' => $request->description,
+            'date_facture' => now(),
+            'date_echeance' => $request->date_echeance ?? now()->addDays(30),
+            'periode_facturation' => now()->format('Y-m'),
+            'statut' => 'en_attente'
+        ]);
+        
+        // PUIS générer la référence avec l'ID disponible
+        $paiement->genererReference();
+        
+        // Log activity
+        activity()
+            ->performedOn($paiement)
+            ->causedBy($user)
+            ->log('Paiement créé');
+        
+        return redirect()
+            ->route('admin.paiements.show', $paiement)
+            ->with('success', 'Paiement créé avec succès. Référence: ' . $paiement->reference_interne);
+    }
+
+    public function show(Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $paiement->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        $paiement->load(['membre', 'ecole', 'validateur']);
+        
+        return view('admin.paiements.show', compact('paiement'));
+    }
+
+    public function edit(Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $paiement->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        // Seuls les paiements non validés peuvent être modifiés
+        if (in_array($paiement->statut, ['valide', 'rembourse'])) {
+            return redirect()
+                ->route('admin.paiements.show', $paiement)
+                ->with('error', 'Ce paiement ne peut plus être modifié.');
+        }
+        
+        $membres = Membre::where('ecole_id', $paiement->ecole_id)
+                         ->orderBy('nom')
+                         ->orderBy('prenom')
+                         ->get();
+        
+        return view('admin.paiements.edit', compact('paiement', 'membres'));
+    }
+
+    public function update(Request $request, Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        // Vérifications
+        if (!$user->hasRole('superadmin') && $paiement->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        if (in_array($paiement->statut, ['valide', 'rembourse'])) {
+            return redirect()
+                ->route('admin.paiements.show', $paiement)
+                ->with('error', 'Ce paiement ne peut plus être modifié.');
+        }
+        
+        $request->validate([
+            'motif' => 'required|in:session_automne,session_hiver,session_printemps,session_ete,seminaire,examen_ceinture,equipement,autre',
+            'montant' => 'required|numeric|min:0.01',
+            'frais' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string|max:255',
+            'email_expediteur' => 'nullable|email',
+            'nom_expediteur' => 'nullable|string|max:255',
+            'reference_interac' => 'nullable|string|max:255',
+            'message_interac' => 'nullable|string',
+            'notes_admin' => 'nullable|string'
+        ]);
+        
+        $paiement->update($request->only([
+            'motif', 'montant', 'frais', 'description',
+            'email_expediteur', 'nom_expediteur', 
+            'reference_interac', 'message_interac', 'notes_admin'
+        ]));
+        
+        $paiement->calculerMontantNet();
+        
+        // Log activity
+        activity()
+            ->performedOn($paiement)
+            ->causedBy($user)
+            ->withProperties(['modifications' => $request->only([
+                'motif', 'montant', 'frais', 'description'
+            ])])
+            ->log('Paiement modifié');
+        
+        return redirect()
+            ->route('admin.paiements.show', $paiement)
+            ->with('success', 'Paiement mis à jour avec succès.');
+    }
+
+    public function marquerRecu(Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        if (!$user->hasRole('superadmin') && $paiement->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        if ($paiement->statut !== 'en_attente') {
+            return redirect()
+                ->route('admin.paiements.show', $paiement)
+                ->with('error', 'Ce paiement ne peut pas être marqué comme reçu.');
+        }
+        
+        $paiement->marquerCommeRecu();
+        
+        return redirect()
+            ->route('admin.paiements.show', $paiement)
+            ->with('success', 'Paiement marqué comme reçu. En attente de validation.');
+    }
+
+    public function valider(Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        if (!$user->hasPermissionTo('validate-paiements')) {
+            abort(403);
+        }
+        
+        if (!$user->hasRole('superadmin') && $paiement->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        if ($paiement->statut !== 'recu') {
+            return redirect()
+                ->route('admin.paiements.show', $paiement)
+                ->with('error', 'Ce paiement ne peut pas être validé.');
+        }
+        
+        $paiement->valider($user);
+        
+        return redirect()
+            ->route('admin.paiements.show', $paiement)
+            ->with('success', 'Paiement validé avec succès.');
+    }
+
+    public function rejeter(Request $request, Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        if (!$user->hasPermissionTo('validate-paiements')) {
+            abort(403);
+        }
+        
+        $request->validate([
+            'motif_rejet' => 'required|string|max:500'
+        ]);
+        
+        $paiement->statut = 'rejete';
+        $paiement->notes_admin = $request->motif_rejet;
+        $paiement->user_id = $user->id;
+        $paiement->save();
+        
+        // Log activity
+        activity()
+            ->performedOn($paiement)
+            ->causedBy($user)
+            ->withProperties(['motif_rejet' => $request->motif_rejet])
+            ->log('Paiement rejeté');
+        
+        return redirect()
+            ->route('admin.paiements.show', $paiement)
+            ->with('success', 'Paiement rejeté.');
+    }
+
+    public function genererRecu(Paiement $paiement)
+    {
+        $user = Auth::user();
+        
+        if (!$user->hasRole('superadmin') && $paiement->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        if ($paiement->statut !== 'valide') {
+            return redirect()
+                ->route('admin.paiements.show', $paiement)
+                ->with('error', 'Seuls les paiements validés peuvent générer un reçu.');
+        }
+        
+        $pdf = PDF::loadView('admin.paiements.recu-pdf', compact('paiement'));
+        
+        return $pdf->download('recu-' . $paiement->reference_interne . '.pdf');
+    }
+
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Export Excel des paiements avec filtres
+        // À implémenter avec Maatwebsite\Excel
+        
+        return redirect()
+            ->route('admin.paiements.index')
+            ->with('info', 'Export en cours de développement.');
+    }
+}

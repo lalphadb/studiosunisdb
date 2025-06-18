@@ -181,3 +181,10 @@
         </div>
     </div>
 </nav>
+
+                        <!-- Module Paiements -->
+                        @can('view-paiements')
+                        <x-nav-link :href="route('admin.paiements.index')" :active="request()->routeIs('admin.paiements.*')">
+                            🏦 Paiements
+                        </x-nav-link>
+                        @endcan

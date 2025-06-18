@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CoursController;
 use App\Http\Controllers\Admin\PresenceController;
 use App\Http\Controllers\Admin\CeintureController;
 use App\Http\Controllers\Admin\SeminaireController;
+use App\Http\Controllers\Admin\PaiementController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -82,4 +83,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/admin/seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('admin.seminaires.inscrire');
     Route::post('/admin/seminaires/{seminaire}/presence', [SeminaireController::class, 'marquerPresence'])->name('admin.seminaires.presence');
     Route::get('/admin/seminaires/{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('admin.seminaires.inscriptions');
+
+    // Module Paiements - MAINTENANT DANS LE GROUPE MIDDLEWARE
+    Route::get('/admin/paiements', [PaiementController::class, 'index'])->name('admin.paiements.index');
+    Route::get('/admin/paiements/create', [PaiementController::class, 'create'])->name('admin.paiements.create');
+    Route::post('/admin/paiements', [PaiementController::class, 'store'])->name('admin.paiements.store');
+    Route::get('/admin/paiements/{paiement}', [PaiementController::class, 'show'])->name('admin.paiements.show');
+    Route::get('/admin/paiements/{paiement}/edit', [PaiementController::class, 'edit'])->name('admin.paiements.edit');
+    Route::put('/admin/paiements/{paiement}', [PaiementController::class, 'update'])->name('admin.paiements.update');
+    Route::delete('/admin/paiements/{paiement}', [PaiementController::class, 'destroy'])->name('admin.paiements.destroy');
+    Route::post('/admin/paiements/{paiement}/marquer-recu', [PaiementController::class, 'marquerRecu'])->name('admin.paiements.marquer-recu');
+    Route::post('/admin/paiements/{paiement}/valider', [PaiementController::class, 'valider'])->name('admin.paiements.valider');
+    Route::post('/admin/paiements/{paiement}/rejeter', [PaiementController::class, 'rejeter'])->name('admin.paiements.rejeter');
+    Route::get('/admin/paiements/{paiement}/recu', [PaiementController::class, 'genererRecu'])->name('admin.paiements.recu');
+    Route::get('/admin/paiements-export', [PaiementController::class, 'export'])->name('admin.paiements.export');
 });
