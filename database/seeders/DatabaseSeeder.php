@@ -8,12 +8,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Ordre important : Écoles en premier
         $this->call([
             EcoleSeeder::class,
             CeintureSeeder::class,
-            RolePermissionSeeder::class,
-            UserSeeder::class,
+            PermissionsSeeder::class, // Nouveau seeder complet
         ]);
     }
 }

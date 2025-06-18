@@ -14,14 +14,16 @@ return new class extends Migration
             // Relations
             $table->foreignId('membre_id')->constrained('membres')->onDelete('cascade');
             $table->foreignId('ecole_id')->constrained('ecoles')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // Admin qui valide
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             
             // Informations paiement
-            $table->string('reference_interne')->unique(); // SU-STEMI-2025-001
-            $table->string('type_paiement')->default('interac'); // interac, comptant, cheque
+            $table->string('reference_interne')->nullable()->unique();
+            $table->string('type_paiement')->default('interac');
             $table->enum('motif', [
-                'cotisation_mensuelle',
-                'cotisation_annuelle', 
+                'session_automne',
+                'session_hiver',
+                'session_printemps', 
+                'session_ete',
                 'seminaire',
                 'examen_ceinture',
                 'equipement',
@@ -31,22 +33,22 @@ return new class extends Migration
             
             // Montants
             $table->decimal('montant', 10, 2);
-            $table->decimal('frais', 10, 2)->default(0); // Frais Interac si applicable
-            $table->decimal('montant_net', 10, 2); // Montant - frais
+            $table->decimal('frais', 10, 2)->default(0);
+            $table->decimal('montant_net', 10, 2);
             
             // Informations Interac
             $table->string('email_expediteur')->nullable();
             $table->string('nom_expediteur')->nullable();
-            $table->string('reference_interac')->nullable(); // Référence du virement
+            $table->string('reference_interac')->nullable();
             $table->text('message_interac')->nullable();
             
             // Workflow et validation
             $table->enum('statut', [
-                'en_attente',      // Facture envoyée
-                'recu',            // Virement reçu, en validation
-                'valide',          // Validé par admin
-                'rejete',          // Rejeté (erreur montant, etc.)
-                'rembourse'        // Remboursé
+                'en_attente',
+                'recu',
+                'valide',
+                'rejete',
+                'rembourse'
             ])->default('en_attente');
             
             // Dates importantes
@@ -56,12 +58,12 @@ return new class extends Migration
             $table->timestamp('date_validation')->nullable();
             
             // Informations comptables
-            $table->string('periode_facturation')->nullable(); // 2025-06, 2025-Q1
+            $table->string('periode_facturation')->nullable();
             $table->year('annee_fiscale')->default(date('Y'));
             $table->boolean('recu_fiscal_emis')->default(false);
             
             // Métadonnées
-            $table->json('metadonnees')->nullable(); // Infos supplémentaires
+            $table->json('metadonnees')->nullable();
             $table->text('notes_admin')->nullable();
             
             $table->timestamps();

@@ -10,14 +10,13 @@ return new class extends Migration
     {
         Schema::create('cours_horaires', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cours_id')->constrained()->onDelete('cascade');
-
+            $table->foreignId('cours_id')->constrained('cours')->onDelete('cascade');
             $table->enum('jour_semaine', ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']);
             $table->time('heure_debut');
             $table->time('heure_fin');
-            $table->string('salle')->nullable();
-
-            $table->boolean('est_actif')->default(true);
+            $table->date('date_debut')->nullable();
+            $table->date('date_fin')->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

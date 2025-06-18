@@ -4,88 +4,65 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ceinture;
-use App\Models\Ecole;
 use App\Models\Membre;
 use App\Models\MembreCeinture;
+use App\Models\Ecole;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
+use PDF;
 
-class CeintureController extends Controller implements HasMiddleware
+class CeintureController extends Controller
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
-    public static function middleware(): array
-    {
-        return [
-            'auth',
-            new Middleware('can:view-ceintures', only: ['index', 'show']),
-            new Middleware('can:manage-ceintures', only: ['create', 'store', 'edit', 'update']),
-            new Middleware('can:manage-ceintures', only: ['destroy', 'approuver', 'rejeter']),
-        ];
-    }
-
     public function index(Request $request)
     {
-        $user = auth()->user();
-
+        $user = Auth::user();
+        
+        // Restriction par école sauf superadmin
         $query = MembreCeinture::with(['membre', 'ceinture', 'membre.ecole']);
-
-        if (! $user->hasRole('superadmin')) {
-            $query->whereHas('membre', function ($q) use ($user) {
+        
+        if (!$user->hasRole('superadmin')) {
+            $query->whereHas('membre', function($q) use ($user) {
                 $q->where('ecole_id', $user->ecole_id);
             });
         }
-
-        if ($request->filled('ecole_id') && $user->hasRole('superadmin')) {
-            $query->whereHas('membre', function ($q) use ($request) {
-                $q->where('ecole_id', $request->ecole_id);
+        
+        // Filtres
+        if ($request->filled('recherche')) {
+            $recherche = $request->recherche;
+            $query->where(function($q) use ($recherche) {
+                $q->whereHas('membre', function($mq) use ($recherche) {
+                    $mq->where('nom', 'like', "%{$recherche}%")
+                      ->orWhere('prenom', 'like', "%{$recherche}%");
+                })->orWhereHas('ceinture', function($cq) use ($recherche) {
+                    $cq->where('nom', 'like', "%{$recherche}%");
+                });
             });
         }
-
-        if ($request->filled('ceinture_id')) {
-            $query->where('ceinture_id', $request->ceinture_id);
-        }
-
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->statut);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('membre', function ($q) use ($search) {
-                $q->where('prenom', 'LIKE', "%{$search}%")
-                    ->orWhere('nom', 'LIKE', "%{$search}%");
-            });
-        }
-
-        $progressions = $query->orderBy('date_obtention', 'desc')->paginate(15);
-        $ceintures = Ceinture::orderBy('niveau')->get();
+        
+        $progressions = $query->orderBy('date_obtention', 'desc')->paginate(20);
+        
+        // Récupérer toutes les ceintures ordonnées par ordre
+        $ceintures = Ceinture::orderBy('ordre')->get();
+        
         $ecoles = $user->hasRole('superadmin') ? Ecole::orderBy('nom')->get() : collect([$user->ecole]);
-
+        
         return view('admin.ceintures.index', compact('progressions', 'ceintures', 'ecoles'));
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        $user = auth()->user();
-
-        $membresQuery = Membre::with(['ecole', 'derniereCeinture.ceinture']);
-
-        if (! $user->hasRole('superadmin')) {
-            $membresQuery->where('ecole_id', $user->ecole_id);
-        }
-
-        $membres = $membresQuery->where('statut', 'actif')->orderBy('nom')->get();
-        $ceintures = Ceinture::orderBy('niveau')->get();
-
-        $membreSelectionne = null;
-        if ($request->filled('membre_id')) {
-            $membreSelectionne = $membres->firstWhere('id', $request->membre_id);
-        }
-
-        return view('admin.ceintures.create', compact('membres', 'ceintures', 'membreSelectionne'));
+        $user = Auth::user();
+        
+        // Membres de l'école de l'utilisateur
+        $membres = Membre::where('ecole_id', $user->ecole_id)
+                         ->orderBy('nom')
+                         ->orderBy('prenom')
+                         ->get();
+                         
+        // Toutes les ceintures ordonnées
+        $ceintures = Ceinture::orderBy('ordre')->get();
+        
+        return view('admin.ceintures.create', compact('membres', 'ceintures'));
     }
 
     public function store(Request $request)
@@ -93,162 +70,230 @@ class CeintureController extends Controller implements HasMiddleware
         $request->validate([
             'membre_id' => 'required|exists:membres,id',
             'ceinture_id' => 'required|exists:ceintures,id',
-            'date_obtention' => 'required|date|before_or_equal:today',
-            'notes' => 'nullable|string|max:1000',
+            'date_obtention' => 'required|date',
+            'examinateur' => 'nullable|string|max:255',
+            'commentaires' => 'nullable|string'
         ]);
-
-        $user = auth()->user();
+        
+        $user = Auth::user();
         $membre = Membre::findOrFail($request->membre_id);
-
-        if (! $user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé à ce membre.');
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
+            abort(403);
         }
-
-        $derniereCeinture = $membre->derniereCeinture?->ceinture;
-        $nouvelleCeinture = Ceinture::findOrFail($request->ceinture_id);
-
-        if ($derniereCeinture && $nouvelleCeinture->niveau <= $derniereCeinture->niveau) {
-            return back()->withErrors(['ceinture_id' => 'La nouvelle ceinture doit être de niveau supérieur à la ceinture actuelle.'])
-                ->withInput();
-        }
-
-        // Créer l'attribution en attente d'approbation
-        MembreCeinture::create([
+        
+        $progression = MembreCeinture::create([
             'membre_id' => $request->membre_id,
             'ceinture_id' => $request->ceinture_id,
             'date_obtention' => $request->date_obtention,
-            'notes' => $request->notes,
-            'statut' => 'en_attente',
+            'examinateur' => $request->examinateur,
+            'commentaires' => $request->commentaires,
+            'valide' => true // Auto-validé par défaut
         ]);
-
-        return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Ceinture en attente d\'approbation pour '.$membre->prenom.' '.$membre->nom);
+        
+        // Log activity
+        activity()
+            ->performedOn($progression)
+            ->causedBy($user)
+            ->log('Progression ceinture créée');
+        
+        return redirect()
+            ->route('admin.ceintures.index')
+            ->with('success', 'Progression de ceinture enregistrée avec succès.');
     }
 
-    public function show(string $id)
+    public function show(MembreCeinture $ceinture)
     {
-        $progression = MembreCeinture::with(['membre.ecole', 'ceinture'])->findOrFail($id);
-        $user = auth()->user();
-
-        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
+        $user = Auth::user();
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
         }
-
-        $historique = MembreCeinture::where('membre_id', $progression->membre_id)
-            ->with('ceinture')
-            ->orderBy('date_obtention', 'desc')
-            ->get();
-
-        return view('admin.ceintures.show', compact('progression', 'historique'));
+        
+        $ceinture->load(['membre', 'ceinture']);
+        
+        return view('admin.ceintures.show', compact('ceinture'));
     }
 
-    public function edit(string $id)
+    public function edit(MembreCeinture $ceinture)
     {
-        $progression = MembreCeinture::with(['membre.ecole', 'ceinture'])->findOrFail($id);
-        $user = auth()->user();
-
-        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
+        $user = Auth::user();
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
         }
-
-        $ceintures = Ceinture::orderBy('niveau')->get();
-
-        return view('admin.ceintures.edit', compact('progression', 'ceintures'));
+        
+        $membres = Membre::where('ecole_id', $ceinture->membre->ecole_id)
+                         ->orderBy('nom')
+                         ->orderBy('prenom')
+                         ->get();
+                         
+        $ceintures = Ceinture::orderBy('ordre')->get();
+        
+        return view('admin.ceintures.edit', compact('ceinture', 'membres', 'ceintures'));
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, MembreCeinture $ceinture)
     {
-        $progression = MembreCeinture::with('membre')->findOrFail($id);
-        $user = auth()->user();
-
-        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
+        $user = Auth::user();
+        
+        // Vérifications
+        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
         }
-
+        
         $request->validate([
+            'membre_id' => 'required|exists:membres,id',
             'ceinture_id' => 'required|exists:ceintures,id',
-            'date_obtention' => 'required|date|before_or_equal:today',
-            'notes' => 'nullable|string|max:1000',
+            'date_obtention' => 'required|date',
+            'examinateur' => 'nullable|string|max:255',
+            'commentaires' => 'nullable|string',
+            'valide' => 'boolean'
         ]);
-
-        $progression->update($request->only(['ceinture_id', 'date_obtention', 'notes']));
-
-        return redirect()->route('admin.ceintures.show', $progression->id)
-            ->with('success', 'Attribution mise à jour avec succès.');
+        
+        $ceinture->update($request->only([
+            'membre_id', 'ceinture_id', 'date_obtention', 
+            'examinateur', 'commentaires', 'valide'
+        ]));
+        
+        // Log activity
+        activity()
+            ->performedOn($ceinture)
+            ->causedBy($user)
+            ->log('Progression ceinture modifiée');
+        
+        return redirect()
+            ->route('admin.ceintures.show', $ceinture)
+            ->with('success', 'Progression mise à jour avec succès.');
     }
 
-    public function destroy(string $id)
+    public function destroy(MembreCeinture $ceinture)
     {
-        $progression = MembreCeinture::with('membre')->findOrFail($id);
-        $user = auth()->user();
-
-        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé.');
+        $user = Auth::user();
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
         }
-
-        if (! $user->hasRole('superadmin')) {
-            abort(403, 'Seul le superadmin peut supprimer des attributions de ceintures.');
-        }
-
-        $membreNom = $progression->membre->prenom.' '.$progression->membre->nom;
-        $ceinture = $progression->ceinture->nom;
-
-        $progression->delete();
-
-        return redirect()->route('admin.ceintures.index')
-            ->with('success', "Attribution de {$ceinture} pour {$membreNom} supprimée.");
+        
+        $nom = $ceinture->membre->nom . ' ' . $ceinture->membre->prenom;
+        $ceintureNom = $ceinture->ceinture->nom;
+        
+        $ceinture->delete();
+        
+        // Log activity
+        activity()
+            ->causedBy($user)
+            ->log("Progression ceinture supprimée: {$nom} - {$ceintureNom}");
+        
+        return redirect()
+            ->route('admin.ceintures.index')
+            ->with('success', 'Progression supprimée avec succès.');
     }
 
-    /**
-     * Approuver une progression de ceinture (Admin d'école seulement)
-     */
-    public function approuver($id)
+    public function dashboard()
     {
-        $progression = MembreCeinture::with('membre')->findOrFail($id);
-        $user = auth()->user();
-
-        // Vérification des permissions par école
-        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé à ce membre.');
+        $user = Auth::user();
+        
+        // Statistiques des progressions
+        $query = MembreCeinture::with(['membre', 'ceinture']);
+        
+        if (!$user->hasRole('superadmin')) {
+            $query->whereHas('membre', function($q) use ($user) {
+                $q->where('ecole_id', $user->ecole_id);
+            });
         }
-
-        // Seuls admin et superadmin peuvent approuver
-        if (! $user->hasAnyRole(['superadmin', 'admin'])) {
-            abort(403, 'Seuls les administrateurs peuvent approuver les ceintures.');
-        }
-
-        // Approuver la progression
-        $progression->update(['statut' => 'approuve']);
-
-        return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Ceinture approuvée pour '.$progression->membre->prenom.' '.$progression->membre->nom);
+        
+        $stats = [
+            'total_progressions' => $query->count(),
+            'progressions_mois' => $query->clone()->whereMonth('date_obtention', now()->month)->count(),
+            'en_attente_validation' => $query->clone()->where('valide', false)->count(),
+            'validees_mois' => $query->clone()->where('valide', true)->whereMonth('date_obtention', now()->month)->count()
+        ];
+        
+        // Répartition par ceinture
+        $repartition = $query->clone()
+            ->select('ceinture_id', \DB::raw('count(*) as total'))
+            ->groupBy('ceinture_id')
+            ->with('ceinture')
+            ->get();
+        
+        return view('admin.ceintures.dashboard', compact('stats', 'repartition'));
     }
 
-    /**
-     * Rejeter une progression de ceinture
-     */
-    public function rejeter(Request $request, $id)
+    public function certificat($id)
     {
-        $progression = MembreCeinture::with('membre')->findOrFail($id);
-        $user = auth()->user();
-
-        // Vérification des permissions par école
-        if (! $user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
-            abort(403, 'Accès non autorisé à ce membre.');
+        $progression = MembreCeinture::with(['membre', 'ceinture'])->findOrFail($id);
+        $user = Auth::user();
+        
+        // Vérification permissions
+        if (!$user->hasRole('superadmin') && $progression->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
         }
-
-        // Seuls admin et superadmin peuvent rejeter
-        if (! $user->hasAnyRole(['superadmin', 'admin'])) {
-            abort(403, 'Seuls les administrateurs peuvent rejeter les ceintures.');
+        
+        if (!$progression->valide) {
+            return redirect()
+                ->route('admin.ceintures.show', $progression)
+                ->with('error', 'Seules les progressions validées peuvent générer un certificat.');
         }
+        
+        $pdf = PDF::loadView('admin.ceintures.certificat-pdf', compact('progression'));
+        
+        return $pdf->download('certificat-' . $progression->membre->nom . '-' . $progression->ceinture->nom . '.pdf');
+    }
 
-        // Rejeter avec note optionnelle
-        $progression->update([
-            'statut' => 'rejete',
-            'notes' => $progression->notes.' | Rejeté: '.($request->raison_rejet ?? 'Aucune raison spécifiée'),
-        ]);
+    public function approuver(MembreCeinture $ceinture)
+    {
+        $user = Auth::user();
+        
+        if (!$user->hasPermissionTo('manage-ceintures')) {
+            abort(403);
+        }
+        
+        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        $ceinture->valide = true;
+        $ceinture->save();
+        
+        // Log activity
+        activity()
+            ->performedOn($ceinture)
+            ->causedBy($user)
+            ->log('Progression ceinture approuvée');
+        
+        return redirect()
+            ->route('admin.ceintures.show', $ceinture)
+            ->with('success', 'Progression approuvée avec succès.');
+    }
 
-        return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Progression rejetée pour '.$progression->membre->prenom.' '.$progression->membre->nom);
+    public function rejeter(MembreCeinture $ceinture)
+    {
+        $user = Auth::user();
+        
+        if (!$user->hasPermissionTo('manage-ceintures')) {
+            abort(403);
+        }
+        
+        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+            abort(403);
+        }
+        
+        $ceinture->valide = false;
+        $ceinture->save();
+        
+        // Log activity
+        activity()
+            ->performedOn($ceinture)
+            ->causedBy($user)
+            ->log('Progression ceinture rejetée');
+        
+        return redirect()
+            ->route('admin.ceintures.show', $ceinture)
+            ->with('success', 'Progression rejetée.');
     }
 }

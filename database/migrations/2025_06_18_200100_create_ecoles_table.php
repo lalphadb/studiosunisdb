@@ -11,16 +11,16 @@ return new class extends Migration
         Schema::create('ecoles', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
-            $table->text('adresse')->nullable();
-            $table->string('ville', 100)->nullable();
-            $table->string('province', 50)->default('Quebec');
-            $table->string('code_postal', 10)->nullable();
-            $table->string('telephone', 20)->nullable();
+            $table->string('code', 10)->unique();
+            $table->string('adresse');
+            $table->string('ville');
+            $table->string('province')->default('QC');
+            $table->string('code_postal');
+            $table->string('telephone')->nullable();
             $table->string('email')->nullable();
             $table->string('site_web')->nullable();
-            $table->string('directeur')->nullable();
-            $table->integer('capacite_max')->default(100);
-            $table->enum('statut', ['actif', 'inactif'])->default('actif');
+            $table->text('description')->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

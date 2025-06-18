@@ -10,13 +10,10 @@ return new class extends Migration
     {
         Schema::create('ceintures', function (Blueprint $table) {
             $table->id();
-            $table->string('nom', 100);
-            $table->string('couleur', 50);
-            $table->integer('niveau')->unique();
-            $table->integer('ordre_affichage')->unique();
+            $table->string('nom');
+            $table->string('couleur');
+            $table->integer('ordre');
             $table->text('description')->nullable();
-            $table->text('pre_requis')->nullable();
-            $table->integer('duree_minimum_mois')->default(3);
             $table->timestamps();
         });
     }

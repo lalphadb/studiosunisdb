@@ -8,19 +8,21 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('membre_ceintures', function (Blueprint $table) {
+        Schema::create('presences', function (Blueprint $table) {
             $table->id();
             $table->foreignId('membre_id')->constrained('membres')->onDelete('cascade');
-            $table->foreignId('ceinture_id')->constrained('ceintures')->onDelete('cascade');
-            $table->date('date_obtention');
+            $table->foreignId('cours_id')->constrained('cours')->onDelete('cascade');
+            $table->date('date_cours');
+            $table->boolean('present')->default(true);
             $table->text('notes')->nullable();
-            $table->enum('statut', ['en_attente', 'approuve', 'rejete'])->default('en_attente');
             $table->timestamps();
+            
+            $table->unique(['membre_id', 'cours_id', 'date_cours']);
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('membre_ceintures');
+        Schema::dropIfExists('presences');
     }
 };
