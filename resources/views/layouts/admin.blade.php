@@ -202,7 +202,17 @@
                         <span class="icon">💳</span>
                         <span class="nav-text">Paiements</span>
                     </a>
+                                        <!-- Logs -->
+                    @if(auth()->user()->hasAnyRole(['superadmin', 'admin']))
+                    <a href="{{ route('admin.logs.index') }}"
+                       class="nav-item {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}"
+                       title="Logs">
+                        <span class="icon">📋</span>
+                        <span class="nav-text">Logs</span>
+                    </a>
                     @endif
+
+                @endif
 
                     <!-- Séparateur -->
                     @if(auth()->user()->hasRole('superadmin'))

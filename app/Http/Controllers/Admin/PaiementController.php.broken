@@ -105,7 +105,7 @@ class PaiementController extends Controller
             'motif' => $request->motif,
             'montant' => $request->montant,
             'frais' => $request->frais ?? 0,
-            'montant_net' => ($request->montant - ($request->frais ?? 0)),
+            'montant_net' => ($request->montant - ($request->frais ?? 0)), // Calculé directement
             'description' => $request->description,
             'date_facture' => now(),
             'date_echeance' => $request->date_echeance ?? now()->addDays(30),
@@ -312,9 +312,20 @@ class PaiementController extends Controller
     {
         $user = Auth::user();
         
-        // Export Excel des paiements avec filtres (implémentation de base)
+        // Export Excel des paiements avec filtres
+        // À implémenter avec Maatwebsite\Excel
+        
         return redirect()
             ->route('admin.paiements.index')
             ->with('info', 'Export en cours de développement.');
     }
 }
+
+    /**
+     * Export des paiements en Excel
+     */
+    public function export()
+    {
+        // Logique d'export à implémenter
+        return response()->json(['message' => 'Export en cours de développement']);
+    }
