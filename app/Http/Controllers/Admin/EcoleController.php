@@ -10,9 +10,6 @@ use Illuminate\Routing\Controllers\Middleware;
 
 class EcoleController extends Controller implements HasMiddleware
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
     public static function middleware(): array
     {
         return [
@@ -42,17 +39,22 @@ class EcoleController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'adresse' => 'required|string|max:500',
-            'ville' => 'required|string|max:100',
-            'province' => 'required|string|max:50',
-            'code_postal' => 'required|string|max:10',
-            'telephone' => 'required|string|max:20',
-            'email' => 'required|email|max:255',
-            'directeur' => 'required|string|max:255',
-            'capacite_max' => 'required|integer|min:10|max:500',
-            'statut' => 'required|in:actif,inactif',
+            'nom' => 'required|string|max:191',
+            'code' => 'required|string|max:10|unique:ecoles,code',
+            'adresse' => 'required|string|max:191',
+            'ville' => 'required|string|max:191',
+            'province' => 'string|max:191',
+            'code_postal' => 'required|string|max:191',
+            'telephone' => 'nullable|string|max:191',
+            'email' => 'nullable|email|max:191',
+            'site_web' => 'nullable|string|max:191',
+            'description' => 'nullable|string',
+            'active' => 'boolean',  // CORRIGÉ: active au lieu de statut
         ]);
+
+        // Valeur par défaut
+        $validated['active'] = $validated['active'] ?? true;
+        $validated['province'] = $validated['province'] ?? 'QC';
 
         $ecole = Ecole::create($validated);
 
@@ -65,7 +67,7 @@ class EcoleController extends Controller implements HasMiddleware
         $ecole->load('membres');
 
         $stats = [
-            'membres_actifs' => $ecole->membres()->where('statut', 'actif')->count(),
+            'membres_actifs' => $ecole->membres()->where('active', true)->count(),  // CORRIGÉ
             'cours_actifs' => 0,
             'revenus_mois' => 0,
             'taux_presence' => 85,
@@ -82,16 +84,17 @@ class EcoleController extends Controller implements HasMiddleware
     public function update(Request $request, Ecole $ecole)
     {
         $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'adresse' => 'required|string|max:500',
-            'ville' => 'required|string|max:100',
-            'province' => 'required|string|max:50',
-            'code_postal' => 'required|string|max:10',
-            'telephone' => 'required|string|max:20',
-            'email' => 'required|email|max:255',
-            'directeur' => 'required|string|max:255',
-            'capacite_max' => 'required|integer|min:10|max:500',
-            'statut' => 'required|in:actif,inactif',
+            'nom' => 'required|string|max:191',
+            'code' => 'required|string|max:10|unique:ecoles,code,' . $ecole->id,
+            'adresse' => 'required|string|max:191',
+            'ville' => 'required|string|max:191',
+            'province' => 'string|max:191',
+            'code_postal' => 'required|string|max:191',
+            'telephone' => 'nullable|string|max:191',
+            'email' => 'nullable|email|max:191',
+            'site_web' => 'nullable|string|max:191',
+            'description' => 'nullable|string',
+            'active' => 'boolean',  // CORRIGÉ
         ]);
 
         $ecole->update($validated);
@@ -129,17 +132,17 @@ class EcoleController extends Controller implements HasMiddleware
 
         $callback = function () use ($ecoles) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Nom', 'Ville', 'Directeur', 'Téléphone', 'Email', 'Membres', 'Statut']);
+            fputcsv($file, ['Nom', 'Code', 'Ville', 'Téléphone', 'Email', 'Membres', 'Actif']);
 
             foreach ($ecoles as $ecole) {
                 fputcsv($file, [
                     $ecole->nom,
+                    $ecole->code,
                     $ecole->ville,
-                    $ecole->directeur,
                     $ecole->telephone,
                     $ecole->email,
                     $ecole->membres_count,
-                    $ecole->statut,
+                    $ecole->active ? 'Oui' : 'Non',  // CORRIGÉ
                 ]);
             }
 

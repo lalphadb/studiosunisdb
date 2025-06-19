@@ -13,9 +13,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class MembreController extends Controller implements HasMiddleware
 {
-    /**
-     * Get the middleware that should be assigned to the controller.
-     */
     public static function middleware(): array
     {
         return [
@@ -34,11 +31,11 @@ class MembreController extends Controller implements HasMiddleware
         $user = auth()->user();
 
         if ($user->hasRole('superadmin')) {
-            $membres = Membre::with(['ecole', 'derniereCeinture.ceinture'])
+            $membres = Membre::with(['ecole'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
         } else {
-            $membres = Membre::with(['ecole', 'derniereCeinture.ceinture'])
+            $membres = Membre::with(['ecole'])
                 ->where('ecole_id', $user->ecole_id)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -52,10 +49,10 @@ class MembreController extends Controller implements HasMiddleware
         $user = auth()->user();
 
         if ($user->hasRole('superadmin')) {
-            $ecoles = Ecole::where('statut', 'actif')->orderBy('nom')->get();
+            $ecoles = Ecole::where('active', true)->orderBy('nom')->get();  // CORRIGÉ
         } else {
             $ecoles = Ecole::where('id', $user->ecole_id)
-                ->where('statut', 'actif')
+                ->where('active', true)  // CORRIGÉ
                 ->orderBy('nom')
                 ->get();
         }
@@ -68,23 +65,29 @@ class MembreController extends Controller implements HasMiddleware
         $user = auth()->user();
 
         $validated = $request->validate([
-            'prenom' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
+            'nom' => 'required|string|max:191',
+            'prenom' => 'required|string|max:191',
             'email' => 'nullable|email|unique:membres,email',
-            'telephone' => 'nullable|string|max:20',
+            'telephone' => 'nullable|string|max:191',
             'date_naissance' => 'nullable|date',
+            'sexe' => 'nullable|in:M,F,Autre',
             'adresse' => 'nullable|string',
+            'ville' => 'nullable|string|max:191',
+            'code_postal' => 'nullable|string|max:191',
+            'contact_urgence_nom' => 'nullable|string|max:191',
+            'contact_urgence_telephone' => 'nullable|string|max:191',
             'ecole_id' => 'required|exists:ecoles,id',
-            'date_inscription' => 'required|date',
-            'statut' => 'required|in:actif,inactif,suspendu',
-            'contact_urgence' => 'nullable|string|max:255',
-            'telephone_urgence' => 'nullable|string|max:20',
+            'active' => 'boolean',  // CORRIGÉ: selon vraie structure
             'notes' => 'nullable|string',
         ]);
 
-        if (! $user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
             abort(403, 'Vous ne pouvez créer des membres que pour votre école.');
         }
+
+        // Valeurs par défaut
+        $validated['date_inscription'] = now()->toDateString();
+        $validated['active'] = $validated['active'] ?? true;
 
         Membre::create($validated);
 
@@ -96,12 +99,11 @@ class MembreController extends Controller implements HasMiddleware
     {
         $user = auth()->user();
 
-        if (! $user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez voir que les membres de votre école.');
         }
 
-        // Charger les relations nécessaires
-        $membre->load(['derniereCeinture.ceinture', 'progressionsCeintures.ceinture', 'ecole']);
+        $membre->load(['ecole']);
 
         return view('admin.membres.show', compact('membre'));
     }
@@ -110,15 +112,15 @@ class MembreController extends Controller implements HasMiddleware
     {
         $user = auth()->user();
 
-        if (! $user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez modifier que les membres de votre école.');
         }
 
         if ($user->hasRole('superadmin')) {
-            $ecoles = Ecole::where('statut', 'actif')->orderBy('nom')->get();
+            $ecoles = Ecole::where('active', true)->orderBy('nom')->get();  // CORRIGÉ
         } else {
             $ecoles = Ecole::where('id', $user->ecole_id)
-                ->where('statut', 'actif')
+                ->where('active', true)  // CORRIGÉ
                 ->orderBy('nom')
                 ->get();
         }
@@ -130,26 +132,28 @@ class MembreController extends Controller implements HasMiddleware
     {
         $user = auth()->user();
 
-        if (! $user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez modifier que les membres de votre école.');
         }
 
         $validated = $request->validate([
-            'prenom' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
+            'nom' => 'required|string|max:191',
+            'prenom' => 'required|string|max:191',
             'email' => 'nullable|email|unique:membres,email,'.$membre->id,
-            'telephone' => 'nullable|string|max:20',
+            'telephone' => 'nullable|string|max:191',
             'date_naissance' => 'nullable|date',
+            'sexe' => 'nullable|in:M,F,Autre',
             'adresse' => 'nullable|string',
+            'ville' => 'nullable|string|max:191',
+            'code_postal' => 'nullable|string|max:191',
+            'contact_urgence_nom' => 'nullable|string|max:191',
+            'contact_urgence_telephone' => 'nullable|string|max:191',
             'ecole_id' => 'required|exists:ecoles,id',
-            'date_inscription' => 'required|date',
-            'statut' => 'required|in:actif,inactif,suspendu',
-            'contact_urgence' => 'nullable|string|max:255',
-            'telephone_urgence' => 'nullable|string|max:20',
+            'active' => 'boolean',  // CORRIGÉ
             'notes' => 'nullable|string',
         ]);
 
-        if (! $user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $validated['ecole_id'] != $user->ecole_id) {
             abort(403, 'Vous ne pouvez assigner des membres qu\'à votre école.');
         }
 
@@ -163,7 +167,7 @@ class MembreController extends Controller implements HasMiddleware
     {
         $user = auth()->user();
 
-        if (! $user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $membre->ecole_id != $user->ecole_id) {
             abort(403, 'Vous ne pouvez supprimer que les membres de votre école.');
         }
 
@@ -185,7 +189,7 @@ class MembreController extends Controller implements HasMiddleware
                 ->where('ecole_id', $user->ecole_id)
                 ->get();
             $ecole = Ecole::find($user->ecole_id);
-            $filename = 'membres_'.str_slug($ecole->nom).'_'.date('Y-m-d').'.xlsx';
+            $filename = 'membres_'.str_replace(' ', '_', $ecole->nom).'_'.date('Y-m-d').'.xlsx';
         }
 
         return Excel::download(new MembresExport($membres), $filename);
