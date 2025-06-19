@@ -14,23 +14,27 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     public function register(): void
     {
-        // Telescope sera uniquement activé pour les SuperAdmin
+        // Telescope en mode sombre
         Telescope::night();
 
         $this->hideSensitiveRequestDetails();
 
-        // Filtrer les entrées Telescope
+        // Filtrer les entrées Telescope - PLUS PERMISSIF
         Telescope::filter(function (IncomingEntry $entry) {
-            // Désactiver en production sauf pour debug
-            if (app()->environment('production')) {
-                return false;
+            // En développement, tout passer
+            if (app()->environment('local')) {
+                return true;
             }
 
+            // En production, filtrer mais permettre l'accès aux SuperAdmin
+            if (auth()->check() && auth()->user()->hasRole('superadmin')) {
+                return true;
+            }
+
+            // Sinon, seulement les erreurs importantes
             return $entry->isReportableException() ||
                    $entry->isFailedRequest() ||
-                   $entry->isFailedJob() ||
-                   $entry->isScheduledTask() ||
-                   $entry->hasMonitoredTag();
+                   $entry->isFailedJob();
         });
     }
 
@@ -60,7 +64,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewTelescope', function ($user = null) {
-            // SEULEMENT les SuperAdmin peuvent accéder à Telescope
+            // PERMETTRE L'ACCÈS AUX SUPERADMIN
             return $user && $user->hasRole('superadmin');
         });
     }
