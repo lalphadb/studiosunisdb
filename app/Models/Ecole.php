@@ -11,12 +11,27 @@ class Ecole extends Model
 
     protected $fillable = [
         'nom',
+        'code',
         'adresse',
         'ville',
+        'province',
+        'code_postal',
         'telephone',
         'email',
+        'site_web',
         'description',
+        'active'
     ];
+
+    protected $casts = [
+        'active' => 'boolean'
+    ];
+
+    // Relations
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 
     public function membres()
     {
@@ -28,8 +43,19 @@ class Ecole extends Model
         return $this->hasMany(Cours::class);
     }
 
-    public function users()
+    public function seminaires()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Seminaire::class);
+    }
+
+    public function paiements()
+    {
+        return $this->hasMany(Paiement::class);
+    }
+
+    // Accesseurs
+    public function getAdresseCompleteAttribute()
+    {
+        return $this->adresse . ', ' . $this->ville . ', ' . $this->province . ' ' . $this->code_postal;
     }
 }

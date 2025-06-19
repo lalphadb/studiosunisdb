@@ -1,37 +1,36 @@
 <?php
-
 namespace App\Policies;
-
-use App\Models\Membre;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Models\Membre;
 
 class MembrePolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return $user->hasRole('superadmin') || $user->can('manage_membres');
+        return $user->hasRole(['superadmin', 'admin', 'instructeur']);
     }
 
-    public function view(User $user, Membre $membre)
+    public function view(User $user, Membre $membre): bool
     {
-        return $user->hasRole('superadmin') || $user->can('manage_membres');
+        if ($user->hasRole('superadmin')) return true;
+        if ($user->ecole_id) return $user->ecole_id === $membre->ecole_id;
+        return false;
     }
 
-    public function create(User $user)
+    public function create(User $user): bool
     {
-        return $user->hasRole('superadmin') || $user->can('manage_membres');
+        return $user->hasRole(['superadmin', 'admin', 'instructeur']);
     }
 
-    public function update(User $user, Membre $membre)
+    public function update(User $user, Membre $membre): bool
     {
-        return $user->hasRole('superadmin') || $user->can('manage_membres');
+        if ($user->hasRole('superadmin')) return true;
+        if ($user->ecole_id) return $user->ecole_id === $membre->ecole_id;
+        return false;
     }
 
-    public function delete(User $user, Membre $membre)
+    public function delete(User $user, Membre $membre): bool
     {
-        return $user->hasRole('superadmin') || $user->can('manage_membres');
+        return $user->hasRole('superadmin');
     }
 }

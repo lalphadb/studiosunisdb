@@ -1,49 +1,36 @@
 <?php
-
 namespace App\Policies;
-
 use App\Models\User;
 use App\Models\Cours;
-use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CoursPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return $user->can('view-cours');
+        return $user->hasRole(['superadmin', 'admin', 'instructeur', 'membre']);
     }
 
-    public function view(User $user, Cours $cours)
+    public function view(User $user, Cours $cours): bool
     {
-        if ($user->hasRole('superadmin')) {
-            return true;
-        }
-
-        return $user->ecole_id === $cours->ecole_id && $user->can('view-cours');
+        if ($user->hasRole('superadmin')) return true;
+        if ($user->ecole_id) return $user->ecole_id === $cours->ecole_id;
+        return false;
     }
 
-    public function create(User $user)
+    public function create(User $user): bool
     {
-        return $user->can('create-cours');
+        return $user->hasRole(['superadmin', 'admin', 'instructeur']);
     }
 
-    public function update(User $user, Cours $cours)
+    public function update(User $user, Cours $cours): bool
     {
-        if ($user->hasRole('superadmin')) {
-            return $user->can('edit-cours');
-        }
-
-        return $user->ecole_id === $cours->ecole_id && $user->can('edit-cours');
+        if ($user->hasRole('superadmin')) return true;
+        if ($user->hasRole(['admin', 'instructeur']) && $user->ecole_id === $cours->ecole_id) return true;
+        return false;
     }
 
-    public function delete(User $user, Cours $cours)
+    public function delete(User $user, Cours $cours): bool
     {
-        if ($user->hasRole('superadmin')) {
-            return $user->can('delete-cours');
-        }
-
-        return $user->ecole_id === $cours->ecole_id && $user->can('delete-cours');
+        return $user->hasRole('superadmin');
     }
 }

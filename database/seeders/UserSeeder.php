@@ -2,57 +2,64 @@
 
 namespace Database\Seeders;
 
-use App\Models\Ecole;
 use App\Models\User;
+use App\Models\Ecole;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Créer rôles si pas existants
-        $superAdmin = Role::firstOrCreate(['name' => 'superadmin']);
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $instructeur = Role::firstOrCreate(['name' => 'instructeur']);
-        $membre = Role::firstOrCreate(['name' => 'membre']);
+        // Créer les rôles
+        $roles = ['superadmin', 'admin', 'instructeur', 'membre'];
+        foreach ($roles as $role) {
+            Role::firstOrCreate(['name' => $role]);
+        }
 
-        // Utilisateur SuperAdmin
-        $superAdminUser = User::firstOrCreate([
-            'email' => 'louis@4lb.ca',
-        ], [
-            'name' => 'Louis Admin',
-            'password' => bcrypt('password123'),
-            'email_verified_at' => now(),
-        ]);
-        $superAdminUser->assignRole('superadmin');
+        // Super Admin
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'lalpha@4lb.ca'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('password123'),
+                'ecole_id' => null,
+                'email_verified_at' => now(),
+            ]
+        );
+        $superAdmin->assignRole('superadmin');
 
-        // Admin École Montréal
-        $ecoleMontrealCentre = Ecole::where('nom', 'like', '%Montréal Centre%')->first();
-        $adminMontreal = User::firstOrCreate([
-            'email' => 'admin.montreal@studiosdb.com',
-        ], [
-            'name' => 'Admin Montréal',
-            'password' => bcrypt('password123'),
-            'ecole_id' => $ecoleMontrealCentre?->id,
-            'email_verified_at' => now(),
-        ]);
-        $adminMontreal->assignRole('admin');
+        // Admin Québec (code QBC)
+        $ecoleQuebec = Ecole::where('code', 'QBC')->first();
+        if ($ecoleQuebec) {
+            $adminQuebec = User::firstOrCreate(
+                ['email' => 'root3d@pm.me'],
+                [
+                    'name' => 'Admin Québec',
+                    'password' => Hash::make('password123'),
+                    'ecole_id' => $ecoleQuebec->id,
+                    'email_verified_at' => now(),
+                ]
+            );
+            $adminQuebec->assignRole('admin');
+        }
 
-        // Instructeur test
-        $instructeurTest = User::firstOrCreate([
-            'email' => 'instructeur@studiosdb.com',
-        ], [
-            'name' => 'Instructeur Test',
-            'password' => bcrypt('password123'),
-            'ecole_id' => $ecoleMontrealCentre?->id,
-            'email_verified_at' => now(),
-        ]);
-        $instructeurTest->assignRole('instructeur');
+        // Admin St-Émile (code STE)
+        $ecoleStEmile = Ecole::where('code', 'STE')->first();
+        if ($ecoleStEmile) {
+            $adminStEmile = User::firstOrCreate(
+                ['email' => 'louis@4lb.ca'],
+                [
+                    'name' => 'Louis Admin St-Émile',
+                    'password' => Hash::make('password123'),
+                    'ecole_id' => $ecoleStEmile->id,
+                    'email_verified_at' => now(),
+                ]
+            );
+            $adminStEmile->assignRole('admin');
+        }
 
-        echo "✅ Utilisateurs créés avec succès!\n";
-        echo "SuperAdmin: louis@4lb.ca / password123\n";
-        echo "Admin: admin.montreal@studiosdb.com / password123\n";
-        echo "Instructeur: instructeur@studiosdb.com / password123\n";
+        $this->command->info('✅ Utilisateurs administrateurs créés avec codes courts');
     }
 }

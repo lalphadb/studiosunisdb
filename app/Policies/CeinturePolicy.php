@@ -1,34 +1,27 @@
 <?php
-
 namespace App\Policies;
-
 use App\Models\User;
 use App\Models\Ceinture;
 
 class CeinturePolicy
 {
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return $user->can('view-ceintures');
+        return $user->hasRole(['superadmin', 'admin', 'instructeur', 'membre']);
     }
 
-    public function view(User $user, Ceinture $ceinture)
+    public function create(User $user): bool
     {
-        return $user->can('view-ceintures');
+        return $user->hasRole(['superadmin', 'admin']);
     }
 
-    public function create(User $user)
+    public function update(User $user, Ceinture $ceinture): bool
     {
-        return $user->can('manage-ceintures');
+        return $user->hasRole(['superadmin', 'admin']);
     }
 
-    public function update(User $user, Ceinture $ceinture)
+    public function delete(User $user, Ceinture $ceinture): bool
     {
-        return $user->can('manage-ceintures');
-    }
-
-    public function delete(User $user, Ceinture $ceinture)
-    {
-        return $user->can('manage-ceintures');
+        return $user->hasRole('superadmin');
     }
 }
