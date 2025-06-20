@@ -1,0 +1,23 @@
+📊 EXPORT LOGS STUDIOSUNISDB
+============================
+
+Date: $(date)
+Serveur: $(hostname)
+Version Laravel: $(php artisan --version 2>/dev/null || echo "Non disponible")
+
+CONTENU DE L'EXPORT:
+- laravel.log : Logs application Laravel
+- nginx_system.log : Logs système Nginx
+- nginx_errors.log : Erreurs Nginx
+- mysql_errors.log : Erreurs MySQL
+- *_status.txt : Status des services
+- *_usage.txt : Utilisation ressources système
+- routes_list.txt : Liste des routes
+- migrate_status.txt : Status migrations
+
+PROCHAINES ÉTAPES:
+1. Analyser les erreurs dans laravel.log
+2. Vérifier les erreurs 404/500 dans nginx_errors.log
+3. Contrôler les erreurs MySQL
+4. Vérifier l'espace disque
+

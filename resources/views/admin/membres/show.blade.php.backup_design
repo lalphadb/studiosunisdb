@@ -1,0 +1,273 @@
+@extends('layouts.admin')
+
+@section('title', 'Profil Membre')
+
+@section('content')
+<div class="space-y-6">
+    {{-- Header Moderne avec Gradient --}}
+    <div class="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-lg p-6 text-white overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-5 rounded-full -ml-16 -mb-16"></div>
+        
+        <div class="relative flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                {{-- Avatar 3D Style --}}
+                <div class="relative">
+                    <div class="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex items-center justify-center text-2xl font-bold backdrop-blur-sm border border-white border-opacity-30">
+                        {{ $membre->initiales }}
+                    </div>
+                    {{-- Badge Statut --}}
+                    <div class="absolute -bottom-2 -right-2 w-6 h-6 {{ $membre->active ? 'bg-green-500' : 'bg-red-500' }} rounded-full border-2 border-white flex items-center justify-center">
+                        <span class="text-white text-xs">{{ $membre->active ? '✓' : '!' }}</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <h1 class="text-2xl font-bold mb-2">{{ $membre->nom_complet }}</h1>
+                    <div class="flex items-center space-x-4 text-lg">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ $membre->ecole->nom ?? 'École non assignée' }}
+                        </span>
+                        {{-- Ceinture Badge avec Rectangle et Rayures --}}
+                        @php $ceintureActuelle = $membre->getCeintureActuellePourAffichage(); @endphp
+                        @if($ceintureActuelle)
+                        <div class="flex items-center bg-white bg-opacity-20 px-3 py-2 rounded-lg backdrop-blur-sm">
+                            {!! $ceintureActuelle->html !!}
+                        </div>
+                        @else
+                        <div class="flex items-center bg-gray-500 bg-opacity-30 px-3 py-1 rounded-lg backdrop-blur-sm">
+                            <div class="w-8 h-6 bg-gray-400 rounded mr-2"></div>
+                            <span class="font-medium">Aucune ceinture</span>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            {{-- Actions Floating --}}
+            <div class="flex space-x-3">
+                <a href="{{ route('admin.membres.edit', $membre) }}" 
+                   class="bg-white bg-opacity-20 hover:bg-opacity-30 px-6 py-3 rounded-lg font-medium transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30">
+                    ✏️ Modifier
+                </a>
+                <a href="{{ route('admin.membres.index') }}" 
+                   class="bg-white text-purple-600 hover:bg-gray-50 px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                    ← Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- SECTION PRINCIPALE --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {{-- CARTE INFORMATIONS PERSONNELLES --}}
+        <div class="bg-gray-800 rounded-lg shadow-2xl border border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 p-4">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                    </svg>
+                    Informations Personnelles
+                </h3>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="group">
+                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</label>
+                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
+                                {{ $membre->email ?? 'Non renseigné' }}
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Téléphone</label>
+                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
+                                {{ $membre->telephone ?? 'Non renseigné' }}
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Date de naissance</label>
+                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
+                                @if($membre->date_naissance)
+                                    {{ $membre->date_naissance->format('d/m/Y') }}
+                                    <span class="text-sm text-gray-400">({{ $membre->age }} ans)</span>
+                                @else
+                                    Non renseigné
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="group">
+                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Date inscription</label>
+                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
+                                {{ $membre->date_inscription->format('d/m/Y') }}
+                                <span class="text-sm text-gray-400">({{ $membre->date_inscription->diffForHumans() }})</span>
+                            </div>
+                        </div>
+                        
+                        <div class="group">
+                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Adresse</label>
+                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
+                                {{ $membre->adresse ?? 'Non renseigné' }}
+                                @if($membre->ville || $membre->code_postal)
+                                    <br><span class="text-sm">{{ $membre->ville }} {{ $membre->code_postal }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        {{-- Contact d'urgence --}}
+                        @if($membre->contact_urgence_nom)
+                        <div class="group bg-red-500 bg-opacity-10 p-3 rounded-lg border border-red-500 border-opacity-30">
+                            <label class="text-xs font-medium text-red-400 uppercase tracking-wider flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                Contact d'urgence
+                            </label>
+                            <div class="text-white font-medium">{{ $membre->contact_urgence_nom }}</div>
+                            @if($membre->contact_urgence_telephone)
+                                <div class="text-red-300 text-sm">{{ $membre->contact_urgence_telephone }}</div>
+                            @endif
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- CARTE PROGRESSION CEINTURES --}}
+        <div class="bg-gray-800 rounded-lg shadow-2xl border border-gray-700 overflow-hidden">
+            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 p-4">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    Progression Ceintures
+                </h3>
+            </div>
+            
+            <div class="p-6">
+                {{-- Ceinture Actuelle --}}
+                <div class="mb-6">
+                    <label class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Ceinture Actuelle</label>
+                    @if($ceintureActuelle)
+                        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg p-4 text-white">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-12 bg-white bg-opacity-20 rounded flex items-center justify-center">
+                                    {!! $ceintureActuelle->html !!}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-xl font-bold">{{ $ceintureActuelle->nom }}</div>
+                                    <div class="text-yellow-100">Niveau {{ $ceintureActuelle->niveau }}</div>
+                                    @if($membre->ceintureActuelle)
+                                    <div class="text-sm text-yellow-200">
+                                        Obtenue le {{ $membre->ceintureActuelle->date_obtention->format('d/m/Y') }}
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-gray-700 rounded-lg p-4 text-center">
+                            <div class="text-4xl mb-2">🥋</div>
+                            <div class="text-gray-300">Aucune ceinture attribuée</div>
+                            <div class="text-gray-400 text-sm mt-2">Commencer par attribuer la ceinture blanche</div>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Prochaine Ceinture --}}
+                <div class="mb-6">
+                    <label class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Prochaine Ceinture</label>
+                    @if($ceintureActuelle)
+                        {{-- CORRECTION: Utiliser la propriété directement --}}
+                        @php $prochaine = $ceintureActuelle->prochaineCeinture; @endphp
+                        @if($prochaine)
+                        <div class="bg-gray-700 rounded-lg p-4 border-2 border-dashed border-gray-600">
+                            <div class="flex items-center justify-between mb-3">
+                                <small class="text-blue-400 font-medium uppercase tracking-wider">🎯 OBJECTIF</small>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-8 bg-gray-600 rounded flex items-center justify-center opacity-75">
+                                    {!! $prochaine->html !!}
+                                </div>
+                                <div>
+                                    <div class="text-white font-medium">{{ $prochaine->nom }}</div>
+                                    <small class="text-gray-400">Prochaine étape</small>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <div class="bg-green-700 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">🏆</div>
+                            <div class="text-green-200 font-medium">Niveau Maximum Atteint</div>
+                            <div class="text-green-300 text-sm">Félicitations !</div>
+                        </div>
+                        @endif
+                    @else
+                        <div class="bg-blue-700 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">🎯</div>
+                            <div class="text-blue-200 font-medium">Première ceinture à obtenir</div>
+                            <div class="text-blue-300 text-sm">Commencer le parcours</div>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Progression Visuelle --}}
+                @if($ceintureActuelle)
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-400">Progression</span>
+                        <span class="text-sm text-white">{{ $ceintureActuelle->niveau }}/21</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-500"
+                             style="width: {{ ($ceintureActuelle->niveau / 21) * 100 }}%"></div>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- Actions rapides --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a href="{{ route('admin.membres.edit', $membre) }}" 
+           class="group bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl">
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">✏️</div>
+            <div class="font-bold text-lg">Modifier Profil</div>
+            <div class="text-blue-100 text-sm">Informations personnelles</div>
+        </a>
+        
+        <a href="{{ route('admin.ceintures.index') }}?membre_id={{ $membre->id }}" 
+           class="group bg-gradient-to-br from-orange-500 to-red-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl">
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🥋</div>
+            <div class="font-bold text-lg">Attribuer Ceinture</div>
+            <div class="text-orange-100 text-sm">Gestion des grades</div>
+        </a>
+        
+        <a href="{{ route('admin.presences.index') }}?membre_id={{ $membre->id }}" 
+           class="group bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl">
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">📊</div>
+            <div class="font-bold text-lg">Présences</div>
+            <div class="text-green-100 text-sm">{{ $membre->presences->count() }} présences</div>
+        </a>
+        
+        <a href="{{ route('admin.paiements.index') }}?membre_id={{ $membre->id }}"
+           class="group bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl">
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">💳</div>
+            <div class="font-bold text-lg">Paiements</div>
+            <div class="text-purple-100 text-sm">{{ $membre->paiements->count() }} paiements</div>
+        </a>
+    </div>
+</div>
+@endsection

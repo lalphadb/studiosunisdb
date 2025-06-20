@@ -35,3 +35,50 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Nouvelle route Logs
     Route::get('logs', [LogController::class, 'index'])->name('logs.index');
 });
+
+// Routes pour la gestion complète des ceintures
+Route::get('ceintures/types', function() {
+    return view('admin.ceintures.types');
+})->name('ceintures.types');
+
+Route::get('ceintures/attribuer', function() {
+    return view('admin.ceintures.attribuer');
+})->name('ceintures.attribuer');
+
+Route::post('ceintures/attribuer', function(\Illuminate\Http\Request $request) {
+    $validated = $request->validate([
+        'membre_id' => 'required|exists:membres,id',
+        'ceinture_id' => 'required|exists:ceintures,id',
+        'date_obtention' => 'required|date',
+        'examinateur' => 'nullable|string',
+        'valide' => 'boolean'
+    ]);
+    
+    $validated['valide'] = $request->has('valide');
+    
+    \App\Models\MembreCeinture::create($validated);
+    
+    return redirect()->back()->with('success', 'Ceinture attribuée avec succès!');
+})->name('ceintures.attribuer.store');
+
+// Route Telescope Stats manquante
+Route::get('telescope/stats', function() {
+    try {
+        $since = now()->subDay();
+        return response()->json([
+            'success' => true,
+            'exceptions_count' => \DB::table('telescope_entries')->where('type', 'exception')->where('created_at', '>=', $since)->count(),
+            'logs_count' => \DB::table('telescope_entries')->where('type', 'log')->whereRaw("JSON_EXTRACT(content, '$.level') = 'error'")->where('created_at', '>=', $since)->count(),
+            'slow_queries' => \DB::table('telescope_entries')->where('type', 'query')->whereRaw("CAST(JSON_EXTRACT(content, '$.time') AS DECIMAL) > 100")->where('created_at', '>=', $since)->count(),
+            'failed_requests' => \DB::table('telescope_entries')->where('type', 'request')->whereRaw("CAST(JSON_EXTRACT(content, '$.response_status') AS UNSIGNED) >= 400")->where('created_at', '>=', $since)->count(),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'exceptions_count' => 0,
+            'logs_count' => 0,
+            'slow_queries' => 0,
+            'failed_requests' => 0,
+        ]);
+    }
+})->name('telescope.stats');

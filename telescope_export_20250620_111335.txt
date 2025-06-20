@@ -1,0 +1,51 @@
+🔭 Export Telescope Logs - StudiosUnisDB
+========================================
+
+⚠️ EXCEPTIONS (dernières 24h):
+--------------------------------------------------
+📅 2025-06-20 11:11:26
+🚨 ParseError
+💬 syntax error, unexpected token "public", expecting end of file
+📁 /home/studiosdb/studiosunisdb/app/Http/Controllers/Admin/DashboardController.php:132
+
+📅 2025-06-20 11:11:25
+🚨 Symfony\Component\Console\Exception\RuntimeException
+💬 The "--force" option does not exist.
+📁 /home/studiosdb/studiosunisdb/vendor/symfony/console/Input/ArgvInput.php:226
+
+📅 2025-06-20 11:10:00
+🚨 Illuminate\Database\QueryException
+💬 SQLSTATE[42S22]: Column not found: 1054 Unknown column 'batch_uuid' in 'field list' (Connection: mysql, SQL: insert into `activity_log` (`log_name`, `properties`, `causer_id`, `causer_type`, `batch_uu
+📁 /home/studiosdb/studiosunisdb/vendor/laravel/framework/src/Illuminate/Database/Connection.php:822
+
+📅 2025-06-20 11:05:46
+🚨 Symfony\Component\Console\Exception\RuntimeException
+💬 The "--force" option does not exist.
+📁 /home/studiosdb/studiosunisdb/vendor/symfony/console/Input/ArgvInput.php:226
+
+📅 2025-06-20 11:05:16
+🚨 Symfony\Component\Console\Exception\RuntimeException
+💬 The "--force" option does not exist.
+📁 /home/studiosdb/studiosunisdb/vendor/symfony/console/Input/ArgvInput.php:226
+
+📅 2025-06-20 11:01:05
+🚨 Symfony\Component\Console\Exception\RuntimeException
+💬 The "--force" option does not exist.
+📁 /home/studiosdb/studiosunisdb/vendor/symfony/console/Input/ArgvInput.php:226
+
+
+📋 LOGS ERREURS (dernières 24h):
+--------------------------------------------------
+
+🐌 REQUÊTES LENTES (>100ms, dernières 24h):
+--------------------------------------------------
+
+❌ REQUÊTES HTTP ÉCHOUÉES (4xx/5xx, dernières 24h):
+--------------------------------------------------
+📅 2025-06-20 11:10:00
+🌐 POST /admin/membres
+📊 HTTP 500
+👤 IP: 127.0.0.1
+
+
+✅ Export terminé !

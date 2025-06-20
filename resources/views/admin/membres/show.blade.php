@@ -11,20 +11,25 @@
         
         <div class="relative flex items-center justify-between">
             <div class="flex items-center space-x-6">
-                {{-- Avatar 3D Style --}}
+                {{-- Avatar 3D Style avec Age --}}
                 <div class="relative">
                     <div class="w-20 h-20 bg-white bg-opacity-20 rounded-lg flex items-center justify-center text-2xl font-bold backdrop-blur-sm border border-white border-opacity-30">
-                        {{ strtoupper(substr($membre->prenom, 0, 1)) }}{{ strtoupper(substr($membre->nom, 0, 1)) }}
+                        {{ $membre->initiales }}
                     </div>
                     {{-- Badge Statut --}}
-                    <div class="absolute -bottom-2 -right-2 w-6 h-6 {{ $membre->statut === 'actif' ? 'bg-green-500' : 'bg-red-500' }} rounded-full border-2 border-white flex items-center justify-center">
-                        <span class="text-white text-xs">{{ $membre->statut === 'actif' ? '✓' : '!' }}</span>
+                    <div class="absolute -bottom-2 -right-2 w-6 h-6 {{ $membre->active ? 'bg-green-500' : 'bg-red-500' }} rounded-full border-2 border-white flex items-center justify-center">
+                        <span class="text-white text-xs">{{ $membre->active ? '✓' : '!' }}</span>
                     </div>
+                    {{-- Badge Age --}}
+                    @if($membre->age)
+                    <div class="absolute -top-2 -left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {{ $membre->age }} ans
+                    </div>
+                    @endif
                 </div>
                 
                 <div>
-                    {{-- NOM RÉDUIT --}}
-                    <h1 class="text-2xl font-bold mb-2">{{ $membre->prenom }} {{ $membre->nom }}</h1>
+                    <h1 class="text-2xl font-bold mb-2">{{ $membre->nom_complet }}</h1>
                     <div class="flex items-center space-x-4 text-lg">
                         <span class="flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -32,19 +37,29 @@
                             </svg>
                             {{ $membre->ecole->nom ?? 'École non assignée' }}
                         </span>
-                        {{-- Ceinture Badge Élégant --}}
+                        {{-- Ceinture Badge --}}
                         @php $ceintureActuelle = $membre->getCeintureActuellePourAffichage(); @endphp
                         @if($ceintureActuelle)
-                        <span class="flex items-center bg-yellow-500 bg-opacity-30 px-3 py-1 rounded-lg backdrop-blur-sm">
-                            <span class="text-xl mr-2">{{ $ceintureActuelle->emoji }}</span>
-                            <span class="font-medium">{{ $ceintureActuelle->nom }}</span>
-                        </span>
+                        <div class="flex items-center bg-black bg-opacity-40 px-4 py-2 rounded-lg backdrop-blur-sm border border-white border-opacity-40">
+                            <div class="relative w-10 h-6 rounded border-2 border-white overflow-hidden mr-3" style="background: {{ $ceintureActuelle->couleur }}">
+                                {{-- Rayures pour ceintures avancées --}}
+                                @if(strpos($ceintureActuelle->nom, 'I') !== false || strpos($ceintureActuelle->nom, 'Dan') !== false)
+                                    <div class="absolute w-full h-0.5 bg-yellow-400 top-1/2 transform -translate-y-1/2"></div>
+                                @endif
+                            </div>
+                            <span class="font-bold text-white text-sm drop-shadow-lg">{{ $ceintureActuelle->nom }}</span>
+                        </div>
+                        @else
+                        <div class="flex items-center bg-gray-700 bg-opacity-60 px-4 py-2 rounded-lg backdrop-blur-sm border border-gray-500">
+                            <div class="w-10 h-6 bg-gray-400 rounded mr-3 border-2 border-gray-300"></div>
+                            <span class="font-bold text-white text-sm">Aucune ceinture</span>
+                        </div>
                         @endif
                     </div>
                 </div>
             </div>
             
-            {{-- Actions Floating --}}
+            {{-- Actions Header --}}
             <div class="flex space-x-3">
                 <a href="{{ route('admin.membres.edit', $membre) }}" 
                    class="bg-white bg-opacity-20 hover:bg-opacity-30 px-6 py-3 rounded-lg font-medium transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30">
@@ -58,7 +73,7 @@
         </div>
     </div>
 
-    {{-- SECTION PRINCIPALE - CÔTE À CÔTE --}}
+    {{-- SECTION PRINCIPALE --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {{-- CARTE INFORMATIONS PERSONNELLES --}}
@@ -73,67 +88,91 @@
             </div>
             
             <div class="p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {{-- Colonne Gauche --}}
-                    <div class="space-y-4">
-                        <div class="group">
-                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email</label>
-                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
-                                {{ $membre->email ?? 'Non renseigné' }}
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="group">
+                                <label class="text-xs font-medium text-blue-400 uppercase tracking-wider mb-1 block">📧 Email</label>
+                                <div class="text-white font-medium text-lg">{{ $membre->email ?? 'Non renseigné' }}</div>
+                            </div>
+                            
+                            <div class="group">
+                                <label class="text-xs font-medium text-green-400 uppercase tracking-wider mb-1 block">📞 Téléphone</label>
+                                <div class="text-white font-medium text-lg">{{ $membre->telephone ?? 'Non renseigné' }}</div>
+                            </div>
+                            
+                            <div class="group">
+                                <label class="text-xs font-medium text-purple-400 uppercase tracking-wider mb-1 block">🎂 Date de naissance</label>
+                                <div class="text-white font-medium text-lg">
+                                    @if($membre->date_naissance)
+                                        {{ $membre->date_naissance->format('d/m/Y') }}
+                                        <div class="text-purple-300 text-sm font-bold">🎯 {{ $membre->age }} ans</div>
+                                    @else
+                                        Non renseigné
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="group">
-                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Téléphone</label>
-                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
-                                {{ $membre->telephone ?? 'Non renseigné' }}
+                        <div class="space-y-4">
+                            <div class="group">
+                                <label class="text-xs font-medium text-yellow-400 uppercase tracking-wider mb-1 block">📅 Date inscription</label>
+                                <div class="text-white font-medium text-lg">
+                                    {{ $membre->date_inscription->format('d/m/Y') }}
+                                    <div class="text-yellow-300 text-sm">{{ $membre->date_inscription->diffForHumans() }}</div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="group">
-                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Date de naissance</label>
-                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
-                                @if($membre->date_naissance)
-                                    {{ $membre->date_naissance->format('d/m/Y') }}
-                                    <span class="text-sm text-gray-400">({{ $membre->age }} ans)</span>
-                                @else
-                                    Non renseigné
-                                @endif
+                            
+                            <div class="group">
+                                <label class="text-xs font-medium text-pink-400 uppercase tracking-wider mb-1 block">🏠 Adresse</label>
+                                <div class="text-white font-medium text-lg">
+                                    {{ $membre->adresse ?? 'Non renseigné' }}
+                                    @if($membre->ville || $membre->code_postal)
+                                        <div class="text-pink-300 text-sm">{{ $membre->ville }} {{ $membre->code_postal }}</div>
+                                    @endif
+                                </div>
                             </div>
+                            
+                            @if($membre->sexe)
+                            <div class="group">
+                                <label class="text-xs font-medium text-indigo-400 uppercase tracking-wider mb-1 block">⚧️ Sexe</label>
+                                <div class="text-white font-medium text-lg">
+                                    @if($membre->sexe == 'M') 👨 Masculin
+                                    @elseif($membre->sexe == 'F') 👩 Féminin  
+                                    @else 🏳️‍⚧️ Autre
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
-                    
-                    {{-- Colonne Droite --}}
-                    <div class="space-y-4">
-                        <div class="group">
-                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Date inscription</label>
-                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
-                                {{ $membre->date_inscription->format('d/m/Y') }}
-                                <span class="text-sm text-gray-400">({{ $membre->date_inscription->diffForHumans() }})</span>
-                            </div>
-                        </div>
-                        
-                        <div class="group">
-                            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Adresse</label>
-                            <div class="text-white font-medium group-hover:text-blue-400 transition-colors">
-                                {{ $membre->adresse ?? 'Non renseigné' }}
-                            </div>
-                        </div>
-                        
-                        {{-- Contact d'urgence intégré --}}
-                        @if($membre->contact_urgence)
-                        <div class="group bg-red-500 bg-opacity-10 p-3 rounded-lg border border-red-500 border-opacity-30">
-                            <label class="text-xs font-medium text-red-400 uppercase tracking-wider flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                Contact d'urgence
-                            </label>
-                            <div class="text-white font-medium">{{ $membre->contact_urgence }}</div>
-                            <div class="text-red-300 text-sm">{{ $membre->telephone_urgence ?? 'Pas de téléphone' }}</div>
-                        </div>
+
+                    {{-- Contact d'urgence --}}
+                    @if($membre->contact_urgence_nom || $membre->contact_urgence_telephone)
+                    <div class="bg-red-500 bg-opacity-15 p-4 rounded-lg border-2 border-red-500 border-opacity-40">
+                        <label class="text-sm font-bold text-red-300 uppercase tracking-wider mb-3 block flex items-center">
+                            🚨 Contact d'urgence
+                        </label>
+                        @if($membre->contact_urgence_nom)
+                            <div class="text-white font-bold text-xl mb-2">👤 {{ $membre->contact_urgence_nom }}</div>
+                        @endif
+                        @if($membre->contact_urgence_telephone)
+                            <div class="text-red-200 font-medium text-lg">📞 {{ $membre->contact_urgence_telephone }}</div>
                         @endif
                     </div>
+                    @else
+                    <div class="bg-gray-700 bg-opacity-50 p-4 rounded-lg border border-gray-600">
+                        <div class="text-gray-400 text-center">⚠️ Aucun contact d'urgence renseigné</div>
+                    </div>
+                    @endif
+
+                    {{-- Notes --}}
+                    @if($membre->notes)
+                    <div class="bg-blue-500 bg-opacity-15 p-4 rounded-lg border border-blue-500 border-opacity-40">
+                        <label class="text-sm font-bold text-blue-300 uppercase tracking-wider mb-2 block">📝 Notes</label>
+                        <div class="text-white text-base leading-relaxed">{{ $membre->notes }}</div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -150,188 +189,116 @@
             </div>
             
             <div class="p-6">
-                {{-- Ceinture Actuelle - Design Spécial --}}
                 <div class="mb-6">
-                    <label class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Ceinture Actuelle</label>
+                    <label class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3 block">🏆 Ceinture Actuelle</label>
                     @if($ceintureActuelle)
-                        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg p-4 text-white">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-2xl">
-                                    {{ $ceintureActuelle->emoji }}
+                        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg p-6 text-white">
+                            <div class="flex items-center space-x-6">
+                                <div class="w-20 h-12 bg-white bg-opacity-30 rounded-lg flex items-center justify-center border-2 border-white">
+                                    <div class="relative w-16 h-8 rounded border border-gray-300 overflow-hidden" style="background: {{ $ceintureActuelle->couleur }}"></div>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="text-xl font-bold">{{ $ceintureActuelle->nom }}</div>
-                                    <div class="text-yellow-100">Niveau {{ $ceintureActuelle->niveau }}</div>
-                                    @if($membre->derniereCeinture)
-                                    <div class="text-sm text-yellow-200">
-                                        Obtenue le {{ $membre->derniereCeinture->date_obtention->format('d/m/Y') }}
-                                    </div>
-                                    @endif
+                                    <div class="text-2xl font-bold mb-1">{{ $ceintureActuelle->nom }}</div>
+                                    <div class="text-yellow-100 text-lg font-medium">🎯 Niveau {{ $ceintureActuelle->ordre }}/21</div>
                                 </div>
                             </div>
                         </div>
                     @else
-                        <div class="bg-gray-700 rounded-lg p-4 text-center">
-                            <div class="text-4xl mb-2">🥋</div>
-                            <div class="text-gray-300">Aucune ceinture attribuée</div>
+                        <div class="bg-gray-700 rounded-lg p-6 text-center border-2 border-dashed border-gray-500">
+                            <div class="text-5xl mb-3">🥋</div>
+                            <div class="text-gray-300 text-xl font-medium">Aucune ceinture attribuée</div>
                         </div>
                     @endif
                 </div>
-
-                {{-- Prochaine Ceinture AVEC BADGE BIEN POSITIONNÉ --}}
-                <div class="mb-6">
-                    <label class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 block">Prochaine Ceinture</label>
-                    @if($ceintureActuelle && $ceintureActuelle->prochaineCeinture())
-                        @php $prochaine = $ceintureActuelle->prochaineCeinture(); @endphp
-                        <div class="bg-gray-700 rounded-lg p-4 border-2 border-dashed border-gray-600">
-                            {{-- Badge Objectif bien positionné --}}
-                            <div class="flex items-center justify-between mb-3">
-                                <small class="text-blue-400 font-medium uppercase tracking-wider">🎯 OBJECTIF</small>
-                            </div>
-                            {{-- Contenu de la prochaine ceinture --}}
-                            <div class="flex items-center space-x-4">
-                                <div class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-xl opacity-75">
-                                    {{ $prochaine->emoji }}
-                                </div>
-                                <div>
-                                    <div class="text-white font-medium">{{ $prochaine->nom }}</div>
-                                    <small class="text-gray-400">Prochaine étape</small>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="bg-green-700 rounded-lg p-4 text-center">
-                            <div class="text-2xl mb-1">🏆</div>
-                            <div class="text-green-200 font-medium">Niveau Maximum Atteint</div>
-                            <div class="text-green-300 text-sm">Félicitations !</div>
-                        </div>
-                    @endif
-                </div>
-
-                {{-- Progression Visuelle --}}
-                @if($ceintureActuelle)
-                <div class="bg-gray-900 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm text-gray-400">Progression</span>
-                        <span class="text-sm text-white">{{ $ceintureActuelle->niveau }}/10</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-500"
-                             style="width: {{ ($ceintureActuelle->niveau / 10) * 100 }}%"></div>
-                    </div>
-                </div>
-                @endif
             </div>
         </div>
     </div>
 
-    {{-- SECTION ACTIONS ET DÉTAILS --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    {{-- Actions rapides --}}
+    <div class="bg-gray-800 rounded-lg shadow-2xl border border-gray-700 overflow-hidden">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-500 p-4">
+            <h3 class="text-xl font-bold text-white">⚡ Actions Rapides</h3>
+        </div>
         
-        {{-- Actions Rapides --}}
-        <div class="lg:col-span-2">
-            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
-                </svg>
-                Actions Rapides
-            </h3>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <a href="{{ route('admin.ceintures.create', ['membre_id' => $membre->id]) }}" 
-                   class="group bg-gradient-to-br from-orange-500 to-red-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl border border-orange-400 border-opacity-30">
-                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🥋</div>
-                    <div class="font-bold text-lg">Attribuer Ceinture</div>
-                    <div class="text-orange-100 text-sm">Nouvelle progression</div>
-                </a>
-                
-                <a href="{{ route('admin.seminaires.create', ['membre_id' => $membre->id]) }}" 
-                   class="group bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl border border-purple-400 border-opacity-30">
-                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">🎓</div>
-                    <div class="font-bold text-lg">Voir Séminaires</div>
-                    <div class="text-purple-100 text-sm">Formations</div>
-                </a>
-                
-                <button class="group bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg p-6 text-white transition-all duration-300 shadow-2xl opacity-60 border border-blue-400 border-opacity-30" disabled>
-                    <div class="text-3xl mb-2">✅</div>
-                    <div class="font-bold text-lg">Prendre Présence</div>
-                    <div class="text-blue-100 text-sm">Bientôt disponible</div>
-                </button>
-                
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <a href="{{ route('admin.membres.edit', $membre) }}" 
-                   class="group bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-2xl border border-gray-500 border-opacity-30">
-                    <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">✏️</div>
-                    <div class="font-bold text-lg">Modifier Profil</div>
-                    <div class="text-gray-300 text-sm">Informations</div>
+                   class="group bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div class="text-4xl mb-3">✏️</div>
+                    <div class="font-bold text-xl">Modifier Profil</div>
+                    <div class="text-blue-100 text-sm">Informations personnelles</div>
                 </a>
-            </div>
-        </div>
-
-        {{-- Sidebar Infos --}}
-        <div class="space-y-6">
-            
-            {{-- Activité Compacte --}}
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <h4 class="font-bold text-white mb-3 flex items-center">
-                    📊 Statistiques
-                </h4>
-                <div class="grid grid-cols-1 gap-3">
-                    <div class="bg-gray-900 rounded-lg p-3 text-center">
-                        <div class="text-xl font-bold text-blue-400">0</div>
-                        <div class="text-xs text-gray-400">Cours actifs</div>
-                    </div>
-                    <div class="bg-gray-900 rounded-lg p-3 text-center">
-                        <div class="text-xl font-bold text-green-400">0</div>
-                        <div class="text-xs text-gray-400">Présences mois</div>
-                    </div>
-                    <div class="bg-gray-900 rounded-lg p-3 text-center">
-                        <div class="text-xl font-bold text-purple-400">N/A</div>
-                        <div class="text-xs text-gray-400">Taux présence</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Notes si présentes --}}
-            @if($membre->notes)
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <h4 class="font-bold text-white mb-2 flex items-center">
-                    📝 Notes
-                </h4>
-                <p class="text-gray-300 text-sm leading-relaxed">{{ $membre->notes }}</p>
-            </div>
-            @endif
-
-            {{-- Informations système --}}
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <h4 class="font-bold text-white mb-3">⚙️ Système</h4>
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">ID Membre</span>
-                        <span class="text-white font-mono">#{{ $membre->id }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">Créé</span>
-                        <span class="text-white">{{ $membre->created_at->format('d/m/Y') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400">Modifié</span>
-                        <span class="text-white">{{ $membre->updated_at->format('d/m/Y') }}</span>
-                    </div>
-                </div>
+                
+                <a href="{{ route('admin.ceintures.create') }}?membre_id={{ $membre->id }}" 
+                   class="group bg-gradient-to-br from-orange-500 to-red-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div class="text-4xl mb-3">🥋</div>
+                    <div class="font-bold text-xl">Attribuer Ceinture</div>
+                    <div class="text-orange-100 text-sm">Gestion des grades</div>
+                </a>
+                
+                <a href="{{ route('admin.presences.index') }}?membre_id={{ $membre->id }}" 
+                   class="group bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div class="text-4xl mb-3">📊</div>
+                    <div class="font-bold text-xl">Présences</div>
+                    <div class="text-green-100 text-sm">Historique</div>
+                </a>
+                
+                <a href="{{ route('admin.paiements.index') }}?membre_id={{ $membre->id }}"
+                   class="group bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg p-6 text-white hover:scale-105 transition-all duration-300 shadow-lg">
+                    <div class="text-4xl mb-3">💳</div>
+                    <div class="font-bold text-xl">Paiements</div>
+                    <div class="text-purple-100 text-sm">Facturation</div>
+                </a>
             </div>
         </div>
     </div>
+
+    {{-- Zone Administration (SuperAdmin ET Admin) --}}
+    @if(auth()->user()->hasAnyRole(['superadmin', 'admin']))
+    <div class="bg-red-900 bg-opacity-20 border border-red-500 rounded-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-red-600 to-red-700 p-4">
+            <h3 class="text-xl font-bold text-white flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                ⚠️ Zone Dangereuse - Administration
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <div class="bg-red-800 bg-opacity-30 rounded-lg p-4 mb-4">
+                <h4 class="text-red-200 font-bold mb-2">⚠️ Suppression Définitive</h4>
+                <p class="text-red-300 text-sm">
+                    La suppression de <strong>{{ $membre->nom_complet }}</strong> est une action <strong>irréversible</strong> qui supprimera :
+                </p>
+                <ul class="text-red-300 text-sm mt-2 ml-4 list-disc">
+                    <li>Toutes ses progressions de ceintures</li>
+                    <li>Toutes ses présences aux cours</li>
+                    <li>Tous ses paiements et factures</li>
+                    <li>Toutes ses inscriptions aux cours et séminaires</li>
+                </ul>
+            </div>
+            
+            <form method="POST" action="{{ route('admin.membres.destroy', $membre) }}" 
+                  onsubmit="return confirm('⚠️ SUPPRESSION DÉFINITIVE !\n\nVous êtes sur le point de supprimer {{ $membre->nom_complet }}.\n\nCeci supprimera TOUTES ses données :\n• Progressions de ceintures\n• Présences\n• Paiements\n• Inscriptions\n\nCette action est IRRÉVERSIBLE !\n\nÊtes-vous absolument sûr ?')" 
+                  class="flex items-center justify-between">
+                @csrf
+                @method('DELETE')
+                
+                <div class="text-red-300 text-sm">
+                    @if(auth()->user()->hasRole('superadmin'))
+                        <strong>Accès Super-Administrateur</strong>
+                    @else
+                        <strong>Accès Administrateur d'École</strong>
+                    @endif
+                </div>
+                <button type="submit" 
+                        class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-colors border-2 border-red-500 hover:border-red-400">
+                    🗑️ Supprimer Définitivement
+                </button>
+            </form>
+        </div>
+    </div>
+    @endif
 </div>
-
-<style>
-/* Animations personnalisées */
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
-.group:hover .group-hover\:scale-110 {
-    animation: float 2s ease-in-out infinite;
-}
-</style>
 @endsection

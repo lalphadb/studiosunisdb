@@ -1,0 +1,12 @@
+Filesystem                         Size  Used Avail Use% Mounted on
+tmpfs                              4.7G  2.8M  4.7G   1% /run
+efivarfs                           192K   91K   97K  49% /sys/firmware/efi/efivars
+/dev/mapper/ubuntu--vg-ubuntu--lv   98G   55G   39G  59% /
+tmpfs                               24G   38M   24G   1% /dev/shm
+tmpfs                              5.0M   12K  5.0M   1% /run/lock
+/dev/sda2                          2.0G  203M  1.6G  12% /boot
+/dev/sda1                          1.1G  6.2M  1.1G   1% /boot/efi
+shm                                 64M     0   64M   0% /var/snap/microk8s/common/run/containerd/io.containerd.grpc.v1.cri/sandboxes/4718e83a0696c3f4c098496584a10aca3aebff351b211454eff297a6f8608cdd/shm
+shm                                 64M     0   64M   0% /var/snap/microk8s/common/run/containerd/io.containerd.grpc.v1.cri/sandboxes/a7caa9a5d258fdc093076dbaf34985e3eaa4d904bc356744138939cdbd84ee2e/shm
+shm                                 64M     0   64M   0% /var/snap/microk8s/common/run/containerd/io.containerd.grpc.v1.cri/sandboxes/9a6ea96b072eba148e2db5110e6ce6e8ea32a9a96d3c3c7553568749aa4e004a/shm
+tmpfs                              4.7G  2.6M  4.7G   1% /run/user/1003

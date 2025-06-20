@@ -7,7 +7,6 @@ use App\Models\Membre;
 use App\Models\Ecole;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
-use Illuminate\Support\Facades\DB;
 
 class MembreController extends Controller
 {
@@ -121,6 +120,7 @@ class MembreController extends Controller
 
             $validated['active'] = $request->has('active');
 
+            // Mise à jour simple sans Activity Log pour l'instant
             $membre->fill($validated);
             $membre->save();
 
@@ -135,48 +135,13 @@ class MembreController extends Controller
 
     public function destroy(Membre $membre)
     {
-        $user = auth()->user();
-        
-        // Vérification des permissions
-        if (!$user->hasAnyRole(['superadmin', 'admin'])) {
-            abort(403, 'Vous n\'avez pas les permissions pour supprimer des membres.');
-        }
-
-        // Si admin d'école, vérifier que le membre appartient à son école
-        if ($user->hasRole('admin') && !$user->hasRole('superadmin')) {
-            if ($membre->ecole_id !== $user->ecole_id) {
-                abort(403, 'Vous ne pouvez supprimer que les membres de votre école.');
-            }
-        }
-
         try {
-            DB::beginTransaction();
-
-            $nom = $membre->nom_complet;
-            $ecoleNom = $membre->ecole->nom ?? 'École inconnue';
-            
-            // Suppression en cascade (les contraintes de clé étrangère s'occupent du reste)
-            // Laravel/MySQL supprimera automatiquement :
-            // - membre_ceintures (FK: membre_id)
-            // - presences (FK: membre_id) 
-            // - paiements (FK: membre_id)
-            // - inscriptions_cours (FK: membre_id)
-            // - inscriptions_seminaires (FK: membre_id)
-            
             $membre->delete();
             
-            DB::commit();
-            
-            // Log de l'activité
-            activity()
-                ->causedBy($user)
-                ->log("Membre supprimé: {$nom} ({$ecoleNom}) par " . ($user->hasRole('superadmin') ? 'SuperAdmin' : 'Admin École'));
-            
             return redirect()->route('admin.membres.index')
-                ->with('success', "Membre {$nom} supprimé avec succès (toutes les données associées ont été supprimées).");
+                ->with('success', 'Membre supprimé avec succès!');
                 
         } catch (\Exception $e) {
-            DB::rollBack();
             \Log::error('Erreur suppression membre: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Erreur lors de la suppression: ' . $e->getMessage()]);
         }
