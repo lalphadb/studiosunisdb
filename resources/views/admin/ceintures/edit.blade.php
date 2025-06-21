@@ -3,91 +3,107 @@
 @section('title', 'Modifier Attribution Ceinture')
 
 @section('content')
-<div class="space-y-6">
+<div class="admin-content">
     {{-- Header --}}
-    <div class="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg p-6 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold">✏️ Modifier Attribution</h1>
-                <p class="text-yellow-100 text-lg">{{ $progression->user->nom_complet }} - {{ $progression->ceinture->nom }}</p>
-            </div>
-            <a href="{{ route('admin.ceintures.show', $progression) }}" class="bg-white text-yellow-600 hover:bg-yellow-50 px-4 py-2 rounded-lg font-medium transition-colors">
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">✏️ Modifier Attribution</h1>
+            <p class="admin-subtitle">{{ $progression->user->name }} - {{ $progression->ceinture->nom }}</p>
+        </div>
+        <div class="admin-actions">
+            <a href="{{ route('admin.ceintures.show', $progression) }}" class="btn btn-secondary">
                 ← Retour aux détails
             </a>
         </div>
     </div>
 
     {{-- Formulaire --}}
-    <div class="bg-gray-800 rounded-lg shadow-md border border-gray-700">
-        <div class="p-6 border-b border-gray-700">
-            <h3 class="text-lg font-medium text-white">📝 Modifier l'attribution</h3>
-            <p class="text-sm text-gray-400 mt-1">Corrigez les informations de cette progression</p>
-        </div>
-
-        <form method="POST" action="{{ route('admin.ceintures.update', $progression) }}" class="p-6 space-y-6">
+    <div class="admin-card">
+        <form method="POST" action="{{ route('admin.ceintures.update', $progression) }}" class="space-y-6">
             @csrf
             @method('PUT')
 
             {{-- Informations membre (lecture seule) --}}
             <div class="bg-gray-900 rounded-lg p-4">
                 <h4 class="font-medium text-white mb-2">👤 Membre</h4>
-                <p class="text-gray-300">{{ $progression->user->nom_complet }} - {{ $progression->user->ecole->nom ?? 'N/A' }}</p>
+                <p class="text-gray-300">{{ $progression->user->name }} - {{ $progression->user->ecole->nom ?? 'N/A' }}</p>
             </div>
 
             {{-- Sélection ceinture --}}
             <div>
-                <label for="ceinture_id" class="block text-sm font-medium text-gray-300 mb-2">
+                <label for="ceinture_id" class="form-label">
                     🏆 Ceinture *
                 </label>
-                <select name="ceinture_id" id="ceinture_id" required 
-                        class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-yellow-500 focus:ring-yellow-500 @error('ceinture_id') border-red-500 @enderror">
+                <select name="ceinture_id" id="ceinture_id" required class="form-select @error('ceinture_id') border-red-500 @enderror">
                     @foreach($ceintures as $ceinture)
                         <option value="{{ $ceinture->id }}" {{ old('ceinture_id', $progression->ceinture_id) == $ceinture->id ? 'selected' : '' }}>
-                            {{ $ceinture->nom }} (Niveau {{ $ceinture->niveau }})
+                            {{ $ceinture->nom }} (Ordre {{ $ceinture->ordre }})
                         </option>
                     @endforeach
                 </select>
                 @error('ceinture_id')
-                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                    <p class="form-error">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- Date d'obtention --}}
-            <div>
-                <label for="date_obtention" class="block text-sm font-medium text-gray-300 mb-2">
-                    📅 Date d'Obtention *
-                </label>
-                <input type="date" name="date_obtention" id="date_obtention" required
-                       value="{{ old('date_obtention', $progression->date_obtention->format('Y-m-d')) }}"
-                       max="{{ date('Y-m-d') }}"
-                       class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-yellow-500 focus:ring-yellow-500 @error('date_obtention') border-red-500 @enderror">
-                @error('date_obtention')
-                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                @enderror
+            {{-- Date et examinateur --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label for="date_obtention" class="form-label">
+                        📅 Date d'Obtention *
+                    </label>
+                    <input type="date" name="date_obtention" id="date_obtention" required
+                           value="{{ old('date_obtention', $progression->date_obtention->format('Y-m-d')) }}"
+                           max="{{ date('Y-m-d') }}"
+                           class="form-input @error('date_obtention') border-red-500 @enderror">
+                    @error('date_obtention')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="examinateur" class="form-label">
+                        👨‍🏫 Examinateur
+                    </label>
+                    <input type="text" name="examinateur" id="examinateur" 
+                           value="{{ old('examinateur', $progression->examinateur) }}"
+                           class="form-input @error('examinateur') border-red-500 @enderror">
+                    @error('examinateur')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
-            {{-- Notes --}}
+            {{-- Commentaires --}}
             <div>
-                <label for="notes" class="block text-sm font-medium text-gray-300 mb-2">
-                    📝 Notes
+                <label for="commentaires" class="form-label">
+                    📝 Commentaires
                 </label>
-                <textarea name="notes" id="notes" rows="4"
+                <textarea name="commentaires" id="commentaires" rows="4"
                           placeholder="Commentaires sur l'attribution..."
-                          class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-yellow-500 focus:ring-yellow-500 @error('notes') border-red-500 @enderror">{{ old('notes', $progression->notes) }}</textarea>
-                @error('notes')
-                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                          class="form-textarea @error('commentaires') border-red-500 @enderror">{{ old('commentaires', $progression->commentaires) }}</textarea>
+                @error('commentaires')
+                    <p class="form-error">{{ $message }}</p>
                 @enderror
+            </div>
+
+            {{-- Validation --}}
+            <div class="flex items-center">
+                <input type="checkbox" name="valide" id="valide" value="1" 
+                       {{ old('valide', $progression->valide) ? 'checked' : '' }}
+                       class="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700">
+                <label for="valide" class="ml-2 text-sm text-gray-300">
+                    Ceinture validée
+                </label>
             </div>
 
             {{-- Actions --}}
             <div class="flex items-center justify-between pt-6 border-t border-gray-700">
-                <a href="{{ route('admin.ceintures.show', $progression) }}" 
-                   class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                <a href="{{ route('admin.ceintures.show', $progression) }}" class="btn btn-secondary">
                     ❌ Annuler
                 </a>
                 
-                <button type="submit" 
-                        class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                <button type="submit" class="btn btn-primary">
                     ✅ Mettre à Jour
                 </button>
             </div>

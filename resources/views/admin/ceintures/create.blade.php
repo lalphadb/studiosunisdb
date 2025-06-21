@@ -3,108 +3,124 @@
 @section('title', 'Attribuer une Ceinture')
 
 @section('content')
-<div class="space-y-6">
+<div class="admin-content">
     {{-- Header --}}
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-lg p-6 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold">🥋 Attribuer une Ceinture</h1>
-                <p class="text-green-100 text-lg">Enregistrer une nouvelle progression</p>
-            </div>
-            <a href="{{ route('admin.ceintures.index') }}" class="bg-white text-green-600 hover:bg-green-50 px-4 py-2 rounded-lg font-medium transition-colors">
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">🥋 Attribuer une Ceinture</h1>
+            <p class="admin-subtitle">Enregistrer une nouvelle progression</p>
+        </div>
+        <div class="admin-actions">
+            <a href="{{ route('admin.ceintures.index') }}" class="btn btn-secondary">
                 ← Retour à la liste
             </a>
         </div>
     </div>
 
     {{-- Formulaire --}}
-    <div class="bg-gray-800 rounded-lg shadow-md border border-gray-700">
-        <div class="p-6 border-b border-gray-700">
-            <h3 class="text-lg font-medium text-white">📝 Attribution de ceinture</h3>
-            <p class="text-sm text-gray-400 mt-1">Complétez les informations pour enregistrer la progression</p>
-        </div>
-
-        <form method="POST" action="{{ route('admin.ceintures.store') }}" class="p-6 space-y-6">
+    <div class="admin-card">
+        <form method="POST" action="{{ route('admin.ceintures.store') }}" class="space-y-6">
             @csrf
 
             {{-- Sélection du membre --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                    <label for="membre_id" class="block text-sm font-medium text-gray-300 mb-2">
+                    <label for="user_id" class="form-label">
                         👤 Membre *
                     </label>
-                    <select name="membre_id" id="membre_id" required 
-                            class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-green-500 focus:ring-green-500 @error('membre_id') border-red-500 @enderror">
+                    <select name="user_id" id="user_id" required class="form-select @error('user_id') border-red-500 @enderror">
                         <option value="">Sélectionner un membre...</option>
-                        @foreach($membres as $membre)
-                            <option value="{{ $membre->id }}" {{ old('membre_id', $membreSelectionne?->id) == $membre->id ? 'selected' : '' }}>
-                                {{ $membre->nom_complet }} 
-                                @if($membre->ecole)
-                                    - {{ $membre->ecole->nom }}
+                        @foreach($users as $user)
+                            <option value="{{ $user->id }}" {{ old('user_id', $userSelectionne?->id) == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }}
+                                @if($user->ecole)
+                                    - {{ $user->ecole->nom }}
                                 @endif
                             </option>
                         @endforeach
                     </select>
-                    @error('membre_id')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                    @error('user_id')
+                        <p class="form-error">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="ceinture_id" class="block text-sm font-medium text-gray-300 mb-2">
+                    <label for="ceinture_id" class="form-label">
                         🏆 Nouvelle Ceinture *
                     </label>
-                    <select name="ceinture_id" id="ceinture_id" required 
-                            class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-green-500 focus:ring-green-500 @error('ceinture_id') border-red-500 @enderror">
+                    <select name="ceinture_id" id="ceinture_id" required class="form-select @error('ceinture_id') border-red-500 @enderror">
                         <option value="">Sélectionner une ceinture...</option>
                         @foreach($ceintures as $ceinture)
                             <option value="{{ $ceinture->id }}" {{ old('ceinture_id') == $ceinture->id ? 'selected' : '' }}>
-                                {{ $ceinture->nom }} (Niveau {{ $ceinture->niveau }})
+                                {{ $ceinture->nom }} (Ordre {{ $ceinture->ordre }})
                             </option>
                         @endforeach
                     </select>
                     @error('ceinture_id')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        <p class="form-error">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            {{-- Date d'obtention --}}
+            {{-- Date et examinateur --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label for="date_obtention" class="form-label">
+                        📅 Date d'Obtention *
+                    </label>
+                    <input type="date" name="date_obtention" id="date_obtention" required
+                           value="{{ old('date_obtention', date('Y-m-d')) }}"
+                           max="{{ date('Y-m-d') }}"
+                           class="form-input @error('date_obtention') border-red-500 @enderror">
+                    @error('date_obtention')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="examinateur" class="form-label">
+                        👨‍🏫 Examinateur
+                    </label>
+                    <input type="text" name="examinateur" id="examinateur" 
+                           value="{{ old('examinateur') }}"
+                           placeholder="Nom de l'examinateur"
+                           class="form-input @error('examinateur') border-red-500 @enderror">
+                    @error('examinateur')
+                        <p class="form-error">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- Commentaires --}}
             <div>
-                <label for="date_obtention" class="block text-sm font-medium text-gray-300 mb-2">
-                    📅 Date d'Obtention *
+                <label for="commentaires" class="form-label">
+                    📝 Commentaires
                 </label>
-                <input type="date" name="date_obtention" id="date_obtention" required
-                       value="{{ old('date_obtention', date('Y-m-d')) }}"
-                       max="{{ date('Y-m-d') }}"
-                       class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-green-500 focus:ring-green-500 @error('date_obtention') border-red-500 @enderror">
-                @error('date_obtention')
-                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                <textarea name="commentaires" id="commentaires" rows="4"
+                          placeholder="Commentaires sur l'attribution, performance, etc..."
+                          class="form-textarea @error('commentaires') border-red-500 @enderror">{{ old('commentaires') }}</textarea>
+                @error('commentaires')
+                    <p class="form-error">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- Notes --}}
-            <div>
-                <label for="notes" class="block text-sm font-medium text-gray-300 mb-2">
-                    📝 Notes
+            {{-- Validation --}}
+            <div class="flex items-center">
+                <input type="checkbox" name="valide" id="valide" value="1" 
+                       {{ old('valide', true) ? 'checked' : '' }}
+                       class="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700">
+                <label for="valide" class="ml-2 text-sm text-gray-300">
+                    Ceinture validée (recommandé)
                 </label>
-                <textarea name="notes" id="notes" rows="4"
-                          placeholder="Commentaires sur l'attribution, performance, etc..."
-                          class="w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-green-500 focus:ring-green-500 @error('notes') border-red-500 @enderror">{{ old('notes') }}</textarea>
-                @error('notes')
-                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                @enderror
             </div>
 
             {{-- Actions --}}
             <div class="flex items-center justify-between pt-6 border-t border-gray-700">
-                <a href="{{ route('admin.ceintures.index') }}" 
-                   class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                <a href="{{ route('admin.ceintures.index') }}" class="btn btn-secondary">
                     ❌ Annuler
                 </a>
                 
-                <button type="submit" 
-                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                <button type="submit" class="btn btn-primary">
                     ✅ Attribuer la Ceinture
                 </button>
             </div>
