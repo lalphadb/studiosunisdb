@@ -47,8 +47,8 @@
                         Écoles
                     </a>
 
-                    <a href="{{ route('admin.membres.index') }}" 
-                       class="nav-item {{ request()->routeIs('admin.membres*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.users.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                         <span class="nav-item-icon">👥</span>
                         Membres
                     </a>

@@ -49,8 +49,8 @@
                                 </a>
                                 @endhasrole
 
-                                <a href="{{ route('admin.membres.index') }}" 
-                                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150 {{ request()->routeIs('admin.membres.*') ? 'bg-gray-700 text-white' : '' }}">
+                                <a href="{{ route('admin.users.index') }}" 
+                                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-150 {{ request()->routeIs('admin.users.*') ? 'bg-gray-700 text-white' : '' }}">
                                     👥 Membres
                                 </a>
 
@@ -154,7 +154,7 @@
             @endhasrole
 
             @hasanyrole('superadmin|admin|instructeur')
-                <x-responsive-nav-link :href="route('admin.membres.index')" :active="request()->routeIs('admin.membres.*')"
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')"
                                        class="text-gray-600 dark:text-gray-400">
                     👥 {{ __('Membres') }}
                 </x-responsive-nav-link>

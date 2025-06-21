@@ -41,9 +41,9 @@
                             <a class="nav-link" href="{{ route('admin.dashboard') }}">📊 Dashboard</a>
                         </li>
                         
-                        @can('view-membres')
+                        @can('view-users')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.membres.index') }}">👥 Membres</a>
+                            <a class="nav-link" href="{{ route('admin.users.index') }}">👥 Membres</a>
                         </li>
                         @endcan
                         
