@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
+use Laravel\Telescope\Telescope;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +12,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Telescope authorization
+        if (class_exists(Telescope::class)) {
+            Telescope::auth(function ($request) {
+                return auth()->check() && 
+                       auth()->user()->hasRole('superadmin');
+            });
+        }
     }
 
     /**
@@ -20,6 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Schema::defaultStringLength(191);
+        //
     }
 }

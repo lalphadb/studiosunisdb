@@ -2,86 +2,113 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Créer les permissions
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Créer toutes les permissions
         $permissions = [
-            // Gestion globale
-            'manage-all', 'view-dashboard', 'access-admin',
-
+            // Users
+            'view-users',
+            'create-user', 
+            'edit-user',
+            'delete-user',
+            'export-users',
+            
             // Écoles
-            'manage-ecoles', 'create-ecole', 'edit-ecole', 'delete-ecole', 'view-ecoles',
-
-            // Membres
-            'manage-membres', 'create-membre', 'edit-membre', 'delete-membre', 'view-membres',
-            'approve-membre', 'suspend-membre', 'export-membres',
-
+            'view-ecoles',
+            'create-ecole',
+            'edit-ecole', 
+            'delete-ecole',
+            
             // Cours
-            'manage-cours', 'create-cours', 'edit-cours', 'delete-cours', 'view-cours',
-            'assign-instructeur', 'manage-horaires',
-
+            'view-cours',
+            'create-cours',
+            'edit-cours',
+            'delete-cours',
+            'manage-horaires',
+            
             // Présences
-            'manage-presences', 'take-presences', 'edit-presences', 'view-presences',
-            'export-presences', 'view-statistics',
-
+            'view-presences',
+            'create-presence',
+            'edit-presence',
+            'delete-presence',
+            'scan-qr-presence',
+            
             // Ceintures
-            'manage-ceintures', 'evaluate-ceintures', 'assign-ceintures', 'view-progressions',
-
-            // Finances
-            'manage-finances', 'view-paiements', 'create-paiement', 'generate-factures',
-
-            // Rapports
-            'view-reports', 'generate-reports', 'view-analytics', 'export-data',
+            'view-ceintures',
+            'create-ceinture',
+            'edit-ceinture',
+            'delete-ceinture',
+            'assign-ceintures',
+            'manage-ceintures',
+            
+            // Séminaires
+            'view-seminaires',
+            'create-seminaire',
+            'edit-seminaire',
+            'delete-seminaire',
+            'manage-seminaires',
+            'inscribe-seminaires',
+            
+            // Paiements
+            'view-paiements',
+            'create-paiements',
+            'edit-paiements',
+            'delete-paiements',
+            'validate-paiements',
+            'export-paiements',
+            
+            // Système
+            'manage-roles',
+            'export-data',
+            'view-activity-log',
+            'access-telescope',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Créer les rôles
-        $superAdmin = Role::create(['name' => 'superadmin']);
-        $admin = Role::create(['name' => 'admin']);
-        $instructeur = Role::create(['name' => 'instructeur']);
-        $membre = Role::create(['name' => 'membre']);
+        // RÔLE: SuperAdmin (accès global)
+        $superadmin = Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+        $superadmin->givePermissionTo(Permission::all());
 
-        // Assigner permissions aux rôles
-        $superAdmin->givePermissionTo(Permission::all());
-
+        // RÔLE: Admin (école spécifique)
+        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $admin->givePermissionTo([
-            'view-dashboard', 'access-admin',
-            'manage-ecoles', 'view-ecoles', 'edit-ecole',
-            'manage-membres', 'create-membre', 'edit-membre', 'view-membres',
-            'manage-cours', 'create-cours', 'edit-cours', 'view-cours',
-            'manage-presences', 'take-presences', 'view-presences',
-            'manage-ceintures', 'evaluate-ceintures', 'view-progressions',
-            'view-reports', 'view-analytics',
+            'view-users', 'create-user', 'edit-user', 'delete-user', 'export-users',
+            'view-cours', 'create-cours', 'edit-cours', 'delete-cours', 'manage-horaires',
+            'view-presences', 'create-presence', 'edit-presence', 'scan-qr-presence',
+            'view-ceintures', 'assign-ceintures', 'manage-ceintures',
+            'view-seminaires', 'create-seminaire', 'edit-seminaire', 'manage-seminaires',
+            'view-paiements', 'create-paiements', 'edit-paiements', 'validate-paiements',
+            'export-data', 'view-activity-log',
         ]);
 
+        // RÔLE: Instructeur
+        $instructeur = Role::firstOrCreate(['name' => 'instructeur', 'guard_name' => 'web']);
         $instructeur->givePermissionTo([
-            'view-dashboard', 'access-admin',
-            'view-cours', 'take-presences', 'view-presences',
-            'view-membres', 'evaluate-ceintures',
+            'view-users', 'view-cours',
+            'view-presences', 'create-presence', 'edit-presence', 'scan-qr-presence',
+            'view-ceintures', 'assign-ceintures',
+            'view-seminaires',
         ]);
 
+        // RÔLE: Membre
+        $membre = Role::firstOrCreate(['name' => 'membre', 'guard_name' => 'web']);
         $membre->givePermissionTo([
-            'view-dashboard',
+            'view-presences', // ses propres présences
+            'view-ceintures', // ses propres ceintures
         ]);
 
-        // Créer un utilisateur super admin
-        $user = User::create([
-            'name' => 'Admin StudiosUnisDB',
-            'email' => 'admin@studiosunisdb.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => now(),
-        ]);
-
-        $user->assignRole('superadmin');
+        $this->command->info('✅ Rôles et permissions créés avec succès');
     }
 }

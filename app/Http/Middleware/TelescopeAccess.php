@@ -9,11 +9,9 @@ class TelescopeAccess
 {
     public function handle(Request $request, Closure $next)
     {
-        // Bloquer l'accès à Telescope en production sauf pour SuperAdmin
-        if (app()->environment('production')) {
-            if (!auth()->check() || !auth()->user()->hasRole('superadmin')) {
-                abort(404);
-            }
+        // Telescope uniquement pour SuperAdmin
+        if (!auth()->check() || !auth()->user()->hasRole('superadmin')) {
+            abort(403, 'Accès Telescope réservé aux Super Administrateurs');
         }
 
         return $next($request);
