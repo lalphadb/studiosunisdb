@@ -1,4 +1,5 @@
 <?php
+
 require_once 'vendor/autoload.php';
 
 use Illuminate\Support\Facades\DB;
@@ -7,92 +8,76 @@ use Illuminate\Support\Facades\DB;
 $app = require_once 'bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-echo "🔭 Export Telescope Logs - StudiosUnisDB\n";
-echo "========================================\n\n";
+echo "🔭 EXPORT TELESCOPE LOGS StudiosUnisDB\n";
+echo "=====================================\n";
 
 try {
-    // Dernières 24h d'activité
-    $since = now()->subDay();
+    // Vérifier la connexion DB
+    $connection = DB::connection()->getPdo();
+    echo "✅ Connexion base de données OK\n";
     
-    // 1. Exceptions
-    echo "⚠️ EXCEPTIONS (dernières 24h):\n";
-    echo str_repeat("-", 50) . "\n";
+    // Export des entrées Telescope récentes
+    $filename = 'telescope_export_' . date('Ymd_His') . '.json';
     
-    $exceptions = DB::table('telescope_entries')
+    echo "📊 Export des entrées Telescope...\n";
+    
+    // Requête des entrées récentes (dernières 24h)
+    $entries = DB::table('telescope_entries')
+        ->where('created_at', '>=', now()->subDay())
+        ->orderBy('created_at', 'desc')
+        ->limit(1000)
+        ->get();
+    
+    echo "📋 Entrées trouvées: " . $entries->count() . "\n";
+    
+    if ($entries->count() > 0) {
+        // Convertir en array et encoder en JSON
+        $data = [
+            'export_date' => now()->toISOString(),
+            'total_entries' => $entries->count(),
+            'entries' => $entries->toArray()
+        ];
+        
+        file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT));
+        
+        echo "✅ Export terminé: $filename\n";
+        echo "📁 Taille: " . number_format(filesize($filename) / 1024, 2) . " KB\n";
+        
+        // Statistiques par type
+        echo "\n📊 STATISTIQUES:\n";
+        $types = DB::table('telescope_entries')
+            ->where('created_at', '>=', now()->subDay())
+            ->select('type', DB::raw('count(*) as count'))
+            ->groupBy('type')
+            ->get();
+            
+        foreach ($types as $type) {
+            echo "   - {$type->type}: {$type->count}\n";
+        }
+        
+    } else {
+        echo "⚠️ Aucune entrée Telescope trouvée\n";
+    }
+    
+    // Export des erreurs uniquement
+    echo "\n❌ Export des erreurs...\n";
+    $errors = DB::table('telescope_entries')
         ->where('type', 'exception')
-        ->where('created_at', '>=', $since)
+        ->where('created_at', '>=', now()->subWeek())
         ->orderBy('created_at', 'desc')
-        ->limit(20)
         ->get();
-    
-    foreach ($exceptions as $exception) {
-        $content = json_decode($exception->content, true);
-        echo "📅 " . $exception->created_at . "\n";
-        echo "🚨 " . ($content['class'] ?? 'Unknown') . "\n";
-        echo "💬 " . substr($content['message'] ?? 'No message', 0, 200) . "\n";
-        echo "📁 " . ($content['file'] ?? 'Unknown') . ":" . ($content['line'] ?? '?') . "\n\n";
+        
+    if ($errors->count() > 0) {
+        $errorFile = 'telescope_errors_' . date('Ymd_His') . '.json';
+        file_put_contents($errorFile, json_encode($errors->toArray(), JSON_PRETTY_PRINT));
+        echo "✅ Erreurs exportées: $errorFile ({$errors->count()} entrées)\n";
+    } else {
+        echo "✅ Aucune erreur trouvée\n";
     }
-    
-    // 2. Logs d'erreur
-    echo "\n📋 LOGS ERREURS (dernières 24h):\n";
-    echo str_repeat("-", 50) . "\n";
-    
-    $logs = DB::table('telescope_entries')
-        ->where('type', 'log')
-        ->whereRaw("JSON_EXTRACT(content, '$.level') = 'error'")
-        ->where('created_at', '>=', $since)
-        ->orderBy('created_at', 'desc')
-        ->limit(20)
-        ->get();
-    
-    foreach ($logs as $log) {
-        $content = json_decode($log->content, true);
-        echo "📅 " . $log->created_at . "\n";
-        echo "🔥 " . ($content['level'] ?? 'error') . "\n";
-        echo "💬 " . substr($content['message'] ?? 'No message', 0, 200) . "\n\n";
-    }
-    
-    // 3. Requêtes lentes
-    echo "\n🐌 REQUÊTES LENTES (>100ms, dernières 24h):\n";
-    echo str_repeat("-", 50) . "\n";
-    
-    $slowQueries = DB::table('telescope_entries')
-        ->where('type', 'query')
-        ->whereRaw("CAST(JSON_EXTRACT(content, '$.time') AS DECIMAL) > 100")
-        ->where('created_at', '>=', $since)
-        ->orderByRaw("CAST(JSON_EXTRACT(content, '$.time') AS DECIMAL) DESC")
-        ->limit(10)
-        ->get();
-    
-    foreach ($slowQueries as $query) {
-        $content = json_decode($query->content, true);
-        echo "📅 " . $query->created_at . "\n";
-        echo "⏱️ " . ($content['time'] ?? '?') . "ms\n";
-        echo "🗄️ " . substr($content['sql'] ?? 'No SQL', 0, 150) . "\n\n";
-    }
-    
-    // 4. Requêtes HTTP échouées
-    echo "\n❌ REQUÊTES HTTP ÉCHOUÉES (4xx/5xx, dernières 24h):\n";
-    echo str_repeat("-", 50) . "\n";
-    
-    $failedRequests = DB::table('telescope_entries')
-        ->where('type', 'request')
-        ->whereRaw("CAST(JSON_EXTRACT(content, '$.response_status') AS UNSIGNED) >= 400")
-        ->where('created_at', '>=', $since)
-        ->orderBy('created_at', 'desc')
-        ->limit(10)
-        ->get();
-    
-    foreach ($failedRequests as $request) {
-        $content = json_decode($request->content, true);
-        echo "📅 " . $request->created_at . "\n";
-        echo "🌐 " . ($content['method'] ?? '?') . " " . ($content['uri'] ?? '?') . "\n";
-        echo "📊 HTTP " . ($content['response_status'] ?? '?') . "\n";
-        echo "👤 IP: " . ($content['ip_address'] ?? '?') . "\n\n";
-    }
-    
-    echo "\n✅ Export terminé !\n";
     
 } catch (Exception $e) {
-    echo "❌ Erreur lors de l'export: " . $e->getMessage() . "\n";
+    echo "❌ ERREUR: " . $e->getMessage() . "\n";
+    exit(1);
 }
+
+echo "\n🎯 Export Telescope terminé !\n";

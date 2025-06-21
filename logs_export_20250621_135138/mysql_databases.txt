@@ -1,0 +1,10 @@
+Database
+information_schema
+mysql
+performance_schema
+phpmyadmin
+studiosdb
+studiosdb_test
+studiosunisdb_prod
+sys
+wordpress_db

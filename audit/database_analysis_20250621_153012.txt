@@ -1,0 +1,184 @@
+=== INFORMATIONS BASE DE DONNÉES ===
+Database	Tables	Size_MB
+studiosdb	28	0.89
+
+=== LISTE DES TABLES ===
+Tables_in_studiosdb
+activity_log
+cache
+cache_locks
+ceintures
+cours
+cours_horaires
+ecoles
+failed_jobs
+inscriptions_cours
+inscriptions_seminaires
+job_batches
+jobs
+membre_ceintures
+migrations
+model_has_permissions
+model_has_roles
+paiements
+password_reset_tokens
+permissions
+presences
+role_has_permissions
+roles
+seminaires
+sessions
+telescope_entries
+telescope_entries_tags
+telescope_monitoring
+users
+
+=== ANALYSE DES TABLES ===
+Table	Rows	Size_MB	ENGINE	Collation
+telescope_entries	2	0.09	InnoDB	utf8mb4_unicode_ci
+users	0	0.06	InnoDB	utf8mb4_unicode_ci
+paiements	0	0.06	InnoDB	utf8mb4_unicode_ci
+activity_log	0	0.06	InnoDB	utf8mb4_unicode_ci
+presences	0	0.05	InnoDB	utf8mb4_unicode_ci
+inscriptions_cours	0	0.05	InnoDB	utf8mb4_unicode_ci
+inscriptions_seminaires	0	0.05	InnoDB	utf8mb4_unicode_ci
+membre_ceintures	0	0.05	InnoDB	utf8mb4_unicode_ci
+model_has_permissions	0	0.03	InnoDB	utf8mb4_unicode_ci
+telescope_entries_tags	0	0.03	InnoDB	utf8mb4_unicode_ci
+seminaires	0	0.03	InnoDB	utf8mb4_unicode_ci
+role_has_permissions	0	0.03	InnoDB	utf8mb4_unicode_ci
+model_has_roles	0	0.03	InnoDB	utf8mb4_unicode_ci
+cours_horaires	0	0.03	InnoDB	utf8mb4_unicode_ci
+cours	0	0.03	InnoDB	utf8mb4_unicode_ci
+migrations	20	0.02	InnoDB	utf8mb4_unicode_ci
+jobs	0	0.02	InnoDB	utf8mb4_unicode_ci
+job_batches	0	0.02	InnoDB	utf8mb4_unicode_ci
+failed_jobs	0	0.02	InnoDB	utf8mb4_unicode_ci
+password_reset_tokens	0	0.02	InnoDB	utf8mb4_unicode_ci
+permissions	0	0.02	InnoDB	utf8mb4_unicode_ci
+ecoles	0	0.02	InnoDB	utf8mb4_unicode_ci
+roles	0	0.02	InnoDB	utf8mb4_unicode_ci
+sessions	0	0.02	InnoDB	utf8mb4_unicode_ci
+ceintures	0	0.02	InnoDB	utf8mb4_unicode_ci
+cache_locks	0	0.02	InnoDB	utf8mb4_unicode_ci
+telescope_monitoring	0	0.02	InnoDB	utf8mb4_unicode_ci
+cache	0	0.02	InnoDB	utf8mb4_unicode_ci
+
+=== CLÉS ÉTRANGÈRES ===
+Table	Column	Ref_Table	Ref_Column	Constraint
+cours	ecole_id	ecoles	id	cours_ecole_id_foreign
+cours_horaires	cours_id	cours	id	cours_horaires_cours_id_foreign
+inscriptions_cours	cours_id	cours	id	inscriptions_cours_cours_id_foreign
+inscriptions_cours	user_id	users	id	inscriptions_cours_user_id_foreign
+inscriptions_seminaires	seminaire_id	seminaires	id	inscriptions_seminaires_seminaire_id_foreign
+inscriptions_seminaires	user_id	users	id	inscriptions_seminaires_user_id_foreign
+membre_ceintures	ceinture_id	ceintures	id	membre_ceintures_ceinture_id_foreign
+membre_ceintures	user_id	users	id	membre_ceintures_user_id_foreign
+model_has_permissions	permission_id	permissions	id	model_has_permissions_permission_id_foreign
+model_has_roles	role_id	roles	id	model_has_roles_role_id_foreign
+paiements	ecole_id	ecoles	id	paiements_ecole_id_foreign
+paiements	processed_by_user_id	users	id	paiements_processed_by_user_id_foreign
+paiements	user_id	users	id	paiements_user_id_foreign
+presences	cours_id	cours	id	presences_cours_id_foreign
+presences	user_id	users	id	presences_user_id_foreign
+role_has_permissions	permission_id	permissions	id	role_has_permissions_permission_id_foreign
+role_has_permissions	role_id	roles	id	role_has_permissions_role_id_foreign
+seminaires	ecole_id	ecoles	id	seminaires_ecole_id_foreign
+telescope_entries_tags	entry_uuid	telescope_entries	uuid	telescope_entries_tags_entry_uuid_foreign
+users	ecole_id	ecoles	id	users_ecole_id_foreign
+
+=== RECHERCHE RÉFÉRENCES OBSOLÈTES ===
+
+=== INDEX ANALYSE ===
+Table	Index	Column	Non_Unique
+activity_log	activity_log_log_name_index	log_name	1
+activity_log	causer	causer_type	1
+activity_log	causer	causer_id	1
+activity_log	PRIMARY	id	0
+activity_log	subject	subject_id	1
+activity_log	subject	subject_type	1
+cache	PRIMARY	key	0
+cache_locks	PRIMARY	key	0
+ceintures	PRIMARY	id	0
+cours	cours_ecole_id_foreign	ecole_id	1
+cours	PRIMARY	id	0
+cours_horaires	cours_horaires_cours_id_foreign	cours_id	1
+cours_horaires	PRIMARY	id	0
+ecoles	ecoles_code_unique	code	0
+ecoles	PRIMARY	id	0
+failed_jobs	failed_jobs_uuid_unique	uuid	0
+failed_jobs	PRIMARY	id	0
+inscriptions_cours	inscriptions_cours_cours_id_foreign	cours_id	1
+inscriptions_cours	inscriptions_cours_user_id_cours_id_unique	user_id	0
+inscriptions_cours	inscriptions_cours_user_id_cours_id_unique	cours_id	0
+inscriptions_cours	PRIMARY	id	0
+inscriptions_seminaires	inscriptions_seminaires_seminaire_id_foreign	seminaire_id	1
+inscriptions_seminaires	inscriptions_seminaires_user_id_seminaire_id_unique	user_id	0
+inscriptions_seminaires	inscriptions_seminaires_user_id_seminaire_id_unique	seminaire_id	0
+inscriptions_seminaires	PRIMARY	id	0
+job_batches	PRIMARY	id	0
+jobs	jobs_queue_index	queue	1
+jobs	PRIMARY	id	0
+membre_ceintures	membre_ceintures_ceinture_id_foreign	ceinture_id	1
+membre_ceintures	membre_ceintures_user_id_date_obtention_index	user_id	1
+membre_ceintures	membre_ceintures_user_id_date_obtention_index	date_obtention	1
+membre_ceintures	PRIMARY	id	0
+migrations	PRIMARY	id	0
+model_has_permissions	model_has_permissions_model_id_model_type_index	model_id	1
+model_has_permissions	model_has_permissions_model_id_model_type_index	model_type	1
+model_has_permissions	PRIMARY	permission_id	0
+model_has_permissions	PRIMARY	model_type	0
+model_has_permissions	PRIMARY	model_id	0
+model_has_roles	model_has_roles_model_id_model_type_index	model_id	1
+model_has_roles	model_has_roles_model_id_model_type_index	model_type	1
+model_has_roles	PRIMARY	role_id	0
+model_has_roles	PRIMARY	model_id	0
+model_has_roles	PRIMARY	model_type	0
+paiements	paiements_ecole_id_statut_index	ecole_id	1
+paiements	paiements_ecole_id_statut_index	statut	1
+paiements	paiements_processed_by_user_id_foreign	processed_by_user_id	1
+paiements	paiements_reference_interne_index	reference_interne	1
+paiements	paiements_reference_interne_unique	reference_interne	0
+paiements	paiements_type_paiement_statut_index	statut	1
+paiements	paiements_type_paiement_statut_index	type_paiement	1
+paiements	paiements_user_id_created_at_index	user_id	1
+paiements	paiements_user_id_created_at_index	created_at	1
+paiements	PRIMARY	id	0
+password_reset_tokens	PRIMARY	email	0
+permissions	permissions_name_guard_name_unique	name	0
+permissions	permissions_name_guard_name_unique	guard_name	0
+permissions	PRIMARY	id	0
+presences	presences_cours_id_date_cours_index	date_cours	1
+presences	presences_cours_id_date_cours_index	cours_id	1
+presences	presences_user_id_cours_id_date_cours_unique	user_id	0
+presences	presences_user_id_cours_id_date_cours_unique	cours_id	0
+presences	presences_user_id_cours_id_date_cours_unique	date_cours	0
+presences	PRIMARY	id	0
+role_has_permissions	PRIMARY	permission_id	0
+role_has_permissions	PRIMARY	role_id	0
+role_has_permissions	role_has_permissions_role_id_foreign	role_id	1
+roles	PRIMARY	id	0
+roles	roles_name_guard_name_unique	guard_name	0
+roles	roles_name_guard_name_unique	name	0
+seminaires	PRIMARY	id	0
+seminaires	seminaires_ecole_id_foreign	ecole_id	1
+sessions	PRIMARY	id	0
+sessions	sessions_last_activity_index	last_activity	1
+sessions	sessions_user_id_index	user_id	1
+telescope_entries	PRIMARY	sequence	0
+telescope_entries	telescope_entries_batch_id_index	batch_id	1
+telescope_entries	telescope_entries_created_at_index	created_at	1
+telescope_entries	telescope_entries_family_hash_index	family_hash	1
+telescope_entries	telescope_entries_type_should_display_on_index_index	should_display_on_index	1
+telescope_entries	telescope_entries_type_should_display_on_index_index	type	1
+telescope_entries	telescope_entries_uuid_unique	uuid	0
+telescope_entries_tags	PRIMARY	entry_uuid	0
+telescope_entries_tags	PRIMARY	tag	0
+telescope_entries_tags	telescope_entries_tags_tag_index	tag	1
+telescope_monitoring	PRIMARY	tag	0
+users	PRIMARY	id	0
+users	users_date_inscription_index	date_inscription	1
+users	users_ecole_id_active_index	ecole_id	1
+users	users_ecole_id_active_index	active	1
+users	users_email_unique	email	0
+

@@ -1,0 +1,140 @@
+=== LISTE DES MODÈLES ===
+app/Models/Ceinture.php
+app/Models/Cours.php
+app/Models/CoursHoraire.php
+app/Models/Ecole.php
+app/Models/InscriptionCours.php
+app/Models/InscriptionSeminaire.php
+app/Models/MembreCeinture.php
+app/Models/Paiement.php
+app/Models/Presence.php
+app/Models/Seminaire.php
+app/Models/User.php
+
+=== ANALYSE DES RELATIONS ===
+--- Ceinture ---
+Aucune relation trouvée
+13:    protected $fillable = [
+20:    protected function casts(): array
+
+--- Cours ---
+Aucune relation trouvée
+14:    protected $fillable = [
+29:    protected function casts(): array
+
+--- CoursHoraire ---
+Aucune relation trouvée
+14:    protected $fillable = [
+23:    protected $casts = [
+
+--- Ecole ---
+Aucune relation trouvée
+13:    protected $fillable = [
+26:    protected function casts(): array
+
+--- InscriptionCours ---
+Aucune relation trouvée
+15:    protected $fillable = [
+23:    protected function casts(): array
+
+--- InscriptionSeminaire ---
+Aucune relation trouvée
+15:    protected $fillable = [
+23:    protected function casts(): array
+
+--- MembreCeinture ---
+Aucune relation trouvée
+13:    protected $fillable = [
+22:    protected function casts(): array
+
+--- Paiement ---
+Aucune relation trouvée
+13:    protected $fillable = [
+40:    protected function casts(): array
+
+--- Presence ---
+Aucune relation trouvée
+13:    protected $fillable = [
+21:    protected function casts(): array
+
+--- Seminaire ---
+Aucune relation trouvée
+14:    protected $fillable = [
+31:    protected function casts(): array
+
+--- User ---
+Aucune relation trouvée
+16:    protected $fillable = [
+41:    protected function casts(): array
+
+=== RECHERCHE RÉFÉRENCES OBSOLÈTES DANS MODÈLES ===
+app/Models/MembreCeinture.php:        'user_id', // Changé de membre_id à user_id
+app/Models/InscriptionCours.php:        'user_id', // Changé de membre_id à user_id
+app/Models/InscriptionSeminaire.php:        'user_id', // Changé de membre_id à user_id
+app/Models/Presence.php:        'user_id', // Changé de membre_id à user_id
+app/Models/Paiement.php:        'user_id', // Changé de membre_id à user_id
+
+=== TRAITS UTILISÉS ===
+app/Models/MembreCeinture.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/MembreCeinture.php:    use HasFactory;
+app/Models/Ceinture.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Ceinture.php:    use HasFactory;
+app/Models/User.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/User.php:use Spatie\Permission\Traits\HasRoles;
+app/Models/User.php:use Spatie\Activitylog\Traits\LogsActivity;
+app/Models/User.php:    use HasFactory, Notifiable, HasRoles, LogsActivity;
+app/Models/InscriptionCours.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/InscriptionCours.php:    use HasFactory;
+app/Models/InscriptionSeminaire.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/InscriptionSeminaire.php:    use HasFactory;
+app/Models/Seminaire.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Seminaire.php:    use HasFactory;
+app/Models/CoursHoraire.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/CoursHoraire.php:    use HasFactory;
+app/Models/Presence.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Presence.php:    use HasFactory;
+app/Models/Cours.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Cours.php:    use HasFactory;
+app/Models/Paiement.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Paiement.php:    use HasFactory;
+app/Models/Ecole.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Ecole.php:    use HasFactory;
+
+=== ANALYSE SPÉCIFIQUE USER.PHP ===
+    protected function casts(): array
+    public function ecole()
+        return $this->belongsTo(Ecole::class);
+    public function ceinture_actuelle()
+        return $this->belongsTo(Ceinture::class, 'ceinture_actuelle_id');
+    public function membre_ceintures()
+        return $this->hasMany(MembreCeinture::class, 'user_id');
+    public function presences()
+        return $this->hasMany(Presence::class, 'user_id');
+    public function inscriptions_cours()
+        return $this->hasMany(InscriptionCours::class, 'user_id');
+    public function inscriptions_seminaires()
+        return $this->hasMany(InscriptionSeminaire::class, 'user_id');
+    public function paiements()
+        return $this->hasMany(Paiement::class, 'user_id');
+    public function cours_instructeur_principal()
+        return $this->hasMany(Cours::class, 'instructeur_principal_id');
+    public function cours_instructeur_assistant()
+        return $this->hasMany(Cours::class, 'instructeur_assistant_id');
+    public function scopeMembres($query)
+        return $query->whereHas('roles', function($q) {
+    public function scopeMembresOnly($query)
+        return $query->whereHas('roles', function($q) {
+    public function scopeInstructeurs($query)
+        return $query->whereHas('roles', function($q) {
+    public function scopeForEcole($query, $ecole_id)
+    public function scopeActive($query)
+    public function scopeWithRole($query, $role)
+        return $query->whereHas('roles', function($q) use ($role) {
+    public function getAgeAttribute()
+    public function getNomCompletAttribute()
+    public function canManageEcole($ecole_id)
+    public function getTauxPresenceAttribute()
+    public function isMembre()
+    public function isInstructeur()
+    public function isAdmin()
+    public function getActivitylogOptions(): LogOptions

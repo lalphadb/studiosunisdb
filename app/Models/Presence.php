@@ -4,74 +4,47 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Presence extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'membre_id',
+        'user_id', // Changé de membre_id à user_id
         'cours_id',
-        'session_date',
-        'heure_arrivee',
-        'heure_depart',
-        'statut',
+        'date_cours',
+        'present',
         'notes',
-        'prise_par_user_id',
-        'methode_pointage',
-        'ip_address',
     ];
 
-    protected $casts = [
-        'session_date' => 'date',
-        'heure_arrivee' => 'datetime:H:i',
-        'heure_depart' => 'datetime:H:i',
-    ];
-
-    // Relations
-    public function membre()
+    protected function casts(): array
     {
-        return $this->belongsTo(Membre::class);
+        return [
+            'date_cours' => 'date',
+            'present' => 'boolean',
+        ];
     }
 
-    public function cours()
+    // Relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function cours(): BelongsTo
     {
         return $this->belongsTo(Cours::class);
     }
 
-    public function priseParUser()
-    {
-        return $this->belongsTo(User::class, 'prise_par_user_id');
-    }
-
     // Scopes
-    public function scopePresent($query)
+    public function scopePresents($query)
     {
-        return $query->where('statut', 'present');
+        return $query->where('present', true);
     }
 
-    public function scopeParDate($query, $date)
+    public function scopeAbsents($query)
     {
-        return $query->where('session_date', $date);
-    }
-
-    public function scopeParCours($query, $coursId)
-    {
-        return $query->where('cours_id', $coursId);
-    }
-
-    // Attributs calculés
-    public function getDureePresenceAttribute()
-    {
-        if ($this->heure_arrivee && $this->heure_depart) {
-            return $this->heure_arrivee->diffInMinutes($this->heure_depart);
-        }
-
-        return null;
-    }
-
-    public function getEstEnRetardAttribute()
-    {
-        return $this->statut === 'retard';
+        return $query->where('present', false);
     }
 }

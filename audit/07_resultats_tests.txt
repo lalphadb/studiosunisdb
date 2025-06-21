@@ -1,0 +1,342 @@
+RAPPORT D'AUDIT - RÉSULTATS DES TESTS
+Généré le : Sat Jun 21 03:27:48 PM EDT 2025
+==================================================
+NOTE : Ce rapport indique l'état des tests existants.
+S'il n'y a pas de tests, il ne peut rien vérifier.\n
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+Table users étendue avec les champs métier.
+Colonne 'event' ajoutée à activity_log.
+
+   FAIL  Tests\Feature\Auth\AuthenticationTest
+  ✓ login screen can be rendered                                         4.90s  
+  ⨯ users can authenticate using the login screen                        0.22s  
+  ✓ users can not authenticate with invalid password                     0.02s  
+  ⨯ users can logout                                                     0.02s  
+
+   PASS  Tests\Feature\Auth\EmailVerificationTest
+  ✓ email verification screen can be rendered                            0.02s  
+  ✓ email can be verified                                                0.03s  
+  ✓ email is not verified with invalid hash                              0.02s  
+
+   FAIL  Tests\Feature\Auth\PasswordConfirmationTest
+  ✓ confirm password screen can be rendered                              0.02s  
+  ⨯ password can be confirmed                                            0.02s  
+  ⨯ password is not confirmed with invalid password                      0.02s  
+
+   FAIL  Tests\Feature\Auth\PasswordResetTest
+  ✓ reset password link screen can be rendered                           0.02s  
+  ⨯ reset password link can be requested                                 0.02s  
+  ⨯ reset password screen can be rendered                                0.02s  
+  ⨯ password can be reset with valid token                               0.02s  
+
+   FAIL  Tests\Feature\Auth\PasswordUpdateTest
+  ⨯ password can be updated                                              0.02s  
+  ⨯ correct password must be provided to update password                 0.02s  
+
+   FAIL  Tests\Feature\Auth\RegistrationTest
+  ✓ registration screen can be rendered                                  0.02s  
+  ⨯ new users can register                                               0.01s  
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ the application returns a successful response                        0.02s  
+
+   FAIL  Tests\Feature\MembrePolicyTest
+  ⨯ superadmin can view all membres                                      0.02s  
+  ⨯ admin can only view own school membres                               0.01s  
+
+   FAIL  Tests\Feature\ProfileTest
+  ⨯ profile page is displayed                                            0.27s  
+  ⨯ profile information can be updated                                   0.02s  
+  ⨯ email verification status is unchanged when the email address is un… 0.02s  
+  ⨯ user can delete their account                                        0.02s  
+  ⨯ correct password must be provided to delete account                  0.02s  
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users can authenticate us…   
+  The user is not authenticated
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/AuthenticationTest.php:29
+     25▕             'email' => $user->email,
+     26▕             'password' => 'password',
+     27▕         ]);
+     28▕ 
+  ➜  29▕         $this->assertAuthenticated();
+     30▕         $response->assertRedirect(route('dashboard', absolute: false));
+     31▕     }
+     32▕ 
+     33▕     public function test_users_can_not_authenticate_with_invalid_password(): void
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\AuthenticationTest > users can logout             
+  The user is authenticated
+Failed asserting that true is false.
+
+  at tests/Feature/Auth/AuthenticationTest.php:51
+     47▕         $user = User::factory()->create();
+     48▕ 
+     49▕         $response = $this->actingAs($user)->post('/logout');
+     50▕ 
+  ➜  51▕         $this->assertGuest();
+     52▕         $response->assertRedirect('/');
+     53▕     }
+     54▕ }
+     55▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordConfirmationTest > password can be con…   
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/PasswordConfirmationTest.php:30
+     26▕         $response = $this->actingAs($user)->post('/confirm-password', [
+     27▕             'password' => 'password',
+     28▕         ]);
+     29▕ 
+  ➜  30▕         $response->assertRedirect();
+     31▕         $response->assertSessionHasNoErrors();
+     32▕     }
+     33▕ 
+     34▕     public function test_password_is_not_confirmed_with_invalid_password(): void
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordConfirmationTest > password is not con…   
+  Session is missing expected key [errors].
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/PasswordConfirmationTest.php:42
+     38▕         $response = $this->actingAs($user)->post('/confirm-password', [
+     39▕             'password' => 'wrong-password',
+     40▕         ]);
+     41▕ 
+  ➜  42▕         $response->assertSessionHasErrors();
+     43▕     }
+     44▕ }
+     45▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordResetTest > reset password link can be…   
+  The expected [Illuminate\Auth\Notifications\ResetPassword] notification was not sent.
+Failed asserting that false is true.
+
+  at vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/NotificationFake.php:89
+     85▕         if (is_numeric($callback)) {
+     86▕             return $this->assertSentToTimes($notifiable, $notification, $callback);
+     87▕         }
+     88▕ 
+  ➜  89▕         PHPUnit::assertTrue(
+     90▕             $this->sent($notifiable, $notification, $callback)->count() > 0,
+     91▕             "The expected [{$notification}] notification was not sent."
+     92▕         );
+     93▕     }
+
+      [2m+2 vendor frames [22m
+  3   tests/Feature/Auth/PasswordResetTest.php:30
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordResetTest > reset password screen can…    
+  The expected [Illuminate\Auth\Notifications\ResetPassword] notification was not sent.
+Failed asserting that false is true.
+
+  at vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/NotificationFake.php:89
+     85▕         if (is_numeric($callback)) {
+     86▕             return $this->assertSentToTimes($notifiable, $notification, $callback);
+     87▕         }
+     88▕ 
+  ➜  89▕         PHPUnit::assertTrue(
+     90▕             $this->sent($notifiable, $notification, $callback)->count() > 0,
+     91▕             "The expected [{$notification}] notification was not sent."
+     92▕         );
+     93▕     }
+
+      [2m+2 vendor frames [22m
+  3   tests/Feature/Auth/PasswordResetTest.php:41
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordResetTest > password can be reset with…   
+  The expected [Illuminate\Auth\Notifications\ResetPassword] notification was not sent.
+Failed asserting that false is true.
+
+  at vendor/laravel/framework/src/Illuminate/Support/Testing/Fakes/NotificationFake.php:89
+     85▕         if (is_numeric($callback)) {
+     86▕             return $this->assertSentToTimes($notifiable, $notification, $callback);
+     87▕         }
+     88▕ 
+  ➜  89▕         PHPUnit::assertTrue(
+     90▕             $this->sent($notifiable, $notification, $callback)->count() > 0,
+     91▕             "The expected [{$notification}] notification was not sent."
+     92▕         );
+     93▕     }
+
+      [2m+2 vendor frames [22m
+  3   tests/Feature/Auth/PasswordResetTest.php:58
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordUpdateTest > password can be updated      
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/PasswordUpdateTest.php:29
+     25▕             ]);
+     26▕ 
+     27▕         $response
+     28▕             ->assertSessionHasNoErrors()
+  ➜  29▕             ->assertRedirect('/profile');
+     30▕ 
+     31▕         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+     32▕     }
+     33▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\PasswordUpdateTest > correct password must be…    
+  Session is missing expected key [errors].
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/PasswordUpdateTest.php:48
+     44▕                 'password_confirmation' => 'new-password',
+     45▕             ]);
+     46▕ 
+     47▕         $response
+  ➜  48▕             ->assertSessionHasErrorsIn('updatePassword', 'current_password')
+     49▕             ->assertRedirect('/profile');
+     50▕     }
+     51▕ }
+     52▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Auth\RegistrationTest > new users can register         
+  The user is not authenticated
+Failed asserting that false is true.
+
+  at tests/Feature/Auth/RegistrationTest.php:28
+     24▕             'password' => 'password',
+     25▕             'password_confirmation' => 'password',
+     26▕         ]);
+     27▕ 
+  ➜  28▕         $this->assertAuthenticated();
+     29▕         $response->assertRedirect(route('dashboard', absolute: false));
+     30▕     }
+     31▕ }
+     32▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\MembrePolicyTest > superadmin can…  RoleDoesNotExist   
+  There is no role named `superadmin` for guard `web`.
+
+  at vendor/spatie/laravel-permission/src/Exceptions/RoleDoesNotExist.php:11
+      7▕ class RoleDoesNotExist extends InvalidArgumentException
+      8▕ {
+      9▕     public static function named(string $roleName, ?string $guardName)
+     10▕     {
+  ➜  11▕         return new static(__('There is no role named `:role` for guard `:guard`.', [
+     12▕             'role' => $roleName,
+     13▕             'guard' => $guardName,
+     14▕         ]));
+     15▕     }
+
+      [2m+7 vendor frames [22m
+  8   tests/Feature/MembrePolicyTest.php:18
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\MembrePolicyTest > admin can only view own s…  Error   
+  Class "Database\Factories\EcoleFactory" not found
+
+  at vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:884
+    880▕     public static function factoryForModel(string $modelName)
+    881▕     {
+    882▕         $factory = static::resolveFactoryName($modelName);
+    883▕ 
+  ➜ 884▕         return $factory::new();
+    885▕     }
+    886▕ 
+    887▕     /**
+    888▕      * Specify the callback that should be invoked to guess factory names based on dynamic relationship names.
+
+      [2m+2 vendor frames [22m
+  3   tests/Feature/MembrePolicyTest.php:28
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > profile page is displayed                
+  Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+  at tests/Feature/ProfileTest.php:21
+     17▕         $response = $this
+     18▕             ->actingAs($user)
+     19▕             ->get('/profile');
+     20▕ 
+  ➜  21▕         $response->assertOk();
+     22▕     }
+     23▕ 
+     24▕     public function test_profile_information_can_be_updated(): void
+     25▕     {
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > profile information can be updated       
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+Failed asserting that false is true.
+
+  at tests/Feature/ProfileTest.php:37
+     33▕             ]);
+     34▕ 
+     35▕         $response
+     36▕             ->assertSessionHasNoErrors()
+  ➜  37▕             ->assertRedirect('/profile');
+     38▕ 
+     39▕         $user->refresh();
+     40▕ 
+     41▕         $this->assertSame('Test User', $user->name);
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > email verification status is unchange…   
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+Failed asserting that false is true.
+
+  at tests/Feature/ProfileTest.php:59
+     55▕             ]);
+     56▕ 
+     57▕         $response
+     58▕             ->assertSessionHasNoErrors()
+  ➜  59▕             ->assertRedirect('/profile');
+     60▕ 
+     61▕         $this->assertNotNull($user->refresh()->email_verified_at);
+     62▕     }
+     63▕
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > user can delete their account            
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 419.
+Failed asserting that false is true.
+
+  at tests/Feature/ProfileTest.php:76
+     72▕             ]);
+     73▕ 
+     74▕         $response
+     75▕             ->assertSessionHasNoErrors()
+  ➜  76▕             ->assertRedirect('/');
+     77▕ 
+     78▕         $this->assertGuest();
+     79▕         $this->assertNull($user->fresh());
+     80▕     }
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > correct password must be provided to…    
+  Session is missing expected key [errors].
+Failed asserting that false is true.
+
+  at tests/Feature/ProfileTest.php:94
+     90▕                 'password' => 'wrong-password',
+     91▕             ]);
+     92▕ 
+     93▕         $response
+  ➜  94▕             ->assertSessionHasErrorsIn('userDeletion', 'password')
+     95▕             ->assertRedirect('/profile');
+     96▕ 
+     97▕         $this->assertNotNull($user->fresh());
+     98▕     }
+
+
+  Tests:    17 failed, 10 passed (32 assertions)
+  Duration: 5.85s
+

@@ -1,0 +1,47 @@
+=== TESTS LARAVEL ===
+--- COMMANDES ARTISAN ---
+Laravel Framework 12.19.3
+
+Usage:
+  command [options] [arguments]
+
+Options:
+  -h, --help            Display help for the given command. When no command is given display help for the list command
+      --silent          Do not output any message
+  -q, --quiet           Only errors are displayed. All other output is suppressed
+  -V, --version         Display this application version
+      --ansi|--no-ansi  Force (or disable --no-ansi) ANSI output
+  -n, --no-interaction  Do not ask any interactive question
+      --env[=ENV]       The environment the command should run under
+  -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+Available commands:
+  about                         Display basic information about your application
+  clear-compiled                Remove the compiled class file
+  completion                    Dump the shell completion script
+  db                            Start a new database CLI session
+
+--- TEST CONNEXION DATABASE ---
+DB Test: 127.0.0.1 via TCP/IP
+✅ Connexion database OK
+
+--- TEST MODÈLES ---
+Users count: 0
+✅ Modèle User accessible
+
+--- TEST ROUTES ---
+✅ Routes admin détectées
+
+--- TEST CACHE ---
+
+   INFO  Configuration cached successfully.  
+
+✅ Cache config OK
+
+   INFO  Routes cached successfully.  
+
+✅ Cache routes OK
+
+--- TEST PERMISSIONS ---
+✅ Spatie Permissions fonctionnel
+

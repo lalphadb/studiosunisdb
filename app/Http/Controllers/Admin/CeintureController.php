@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ceinture;
-use App\Models\Membre;
+use App\Models\User;
 use App\Models\MembreCeinture;
 use App\Models\Ecole;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ class CeintureController extends Controller
         $user = Auth::user();
         
         // Query de base avec relations
-        $query = MembreCeinture::with(['membre.ecole', 'ceinture']);
+        $query = MembreCeinture::with(['user.ecole', 'ceinture']);
         
         // Restriction par école sauf superadmin
         if (!$user->hasRole('superadmin')) {
@@ -57,7 +57,7 @@ class CeintureController extends Controller
         $user = Auth::user();
         
         // CORRECTION: Récupérer les membres actifs de l'école
-        $membresQuery = Membre::where('active', true);
+        $membresQuery = User::where('active', true);
         
         if (!$user->hasRole('superadmin')) {
             $membresQuery->where('ecole_id', $user->ecole_id);
@@ -67,8 +67,8 @@ class CeintureController extends Controller
         
         // Membre pré-sélectionné si ID passé en paramètre
         $membreSelectionne = null;
-        if ($request->filled('membre_id')) {
-            $membreSelectionne = $membres->find($request->membre_id);
+        if ($request->filled('user_id')) {
+            $membreSelectionne = $membres->find($request->user_id);
         }
         
         // Toutes les ceintures ordonnées
@@ -80,7 +80,7 @@ class CeintureController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'membre_id' => 'required|exists:membres,id',
+            'user_id' => 'required|exists:users,id',
             'ceinture_id' => 'required|exists:ceintures,id',
             'date_obtention' => 'required|date|before_or_equal:today',
             'examinateur' => 'nullable|string|max:255',
@@ -88,7 +88,7 @@ class CeintureController extends Controller
         ]);
         
         $user = Auth::user();
-        $membre = Membre::findOrFail($request->membre_id);
+        $membre = User::findOrFail($request->user_id);
         
         // Vérification permissions
         if (!$user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
@@ -96,7 +96,7 @@ class CeintureController extends Controller
         }
         
         $progression = MembreCeinture::create([
-            'membre_id' => $request->membre_id,
+            'user_id' => $request->user_id,
             'ceinture_id' => $request->ceinture_id,
             'date_obtention' => $request->date_obtention,
             'examinateur' => $request->examinateur ?? $user->name,
@@ -120,14 +120,14 @@ class CeintureController extends Controller
         $user = Auth::user();
         
         // Vérification permissions
-        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $ceinture->user->ecole_id !== $user->ecole_id) {
             abort(403);
         }
         
-        $ceinture->load(['membre.ecole', 'ceinture']);
+        $ceinture->load(['user.ecole', 'ceinture']);
         
         // Historique des progressions pour ce membre
-        $historique = MembreCeinture::where('membre_id', $ceinture->membre_id)
+        $historique = MembreCeinture::where('user_id', $ceinture->user_id)
             ->with('ceinture')
             ->orderBy('date_obtention', 'desc')
             ->get();
@@ -140,11 +140,11 @@ class CeintureController extends Controller
         $user = Auth::user();
         
         // Vérification permissions
-        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $ceinture->user->ecole_id !== $user->ecole_id) {
             abort(403);
         }
         
-        $membres = Membre::where('ecole_id', $ceinture->membre->ecole_id)
+        $$membres = User::whereHas('roles', function($q) { $q->whereIn('name', ['membre', 'instructeur']); })->where('ecole_id', $ceinture->user->ecole_id)
                          ->where('active', true)
                          ->orderBy('nom')
                          ->orderBy('prenom')
@@ -160,7 +160,7 @@ class CeintureController extends Controller
         $user = Auth::user();
         
         // Vérifications
-        if (!$user->hasRole('superadmin') && $ceinture->membre->ecole_id !== $user->ecole_id) {
+        if (!$user->hasRole('superadmin') && $ceinture->user->ecole_id !== $user->ecole_id) {
             abort(403);
         }
         
@@ -198,7 +198,7 @@ class CeintureController extends Controller
             abort(403, 'Seuls les super-administrateurs peuvent supprimer des progressions.');
         }
         
-        $nom = $ceinture->membre->nom_complet;
+        $nom = $ceinture->user->nom_complet;
         $ceintureNom = $ceinture->ceinture->nom;
         
         $ceinture->delete();

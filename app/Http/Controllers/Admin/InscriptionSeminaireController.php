@@ -25,8 +25,8 @@ class InscriptionSeminaireController extends Controller
     {
         $user = Auth::user();
 
-        $membres = Membre::with('ecole')
-            ->where('statut', 'actif')
+        $membres = User::with('ecole')
+            ->where('active", true')
             ->when(! $user->hasRole('superadmin'), function ($query) use ($user) {
                 return $query->where('ecole_id', $user->ecole_id);
             })
@@ -40,14 +40,14 @@ class InscriptionSeminaireController extends Controller
     {
         // Validation
         $request->validate([
-            'membre_id' => 'required|exists:membres,id',
+            'user_id' => 'required|exists:users,id',
         ]);
 
-        $membre = Membre::findOrFail($request->membre_id);
+        $membre = User::findOrFail($request->user_id);
 
         // Vérifier si déjà inscrit
         $existe = InscriptionSeminaire::where('seminaire_id', $seminaire->id)
-            ->where('membre_id', $membre->id)
+            ->where('user_id', $membre->id)
             ->exists();
 
         if ($existe) {
@@ -57,7 +57,7 @@ class InscriptionSeminaireController extends Controller
         // Créer inscription
         InscriptionSeminaire::create([
             'seminaire_id' => $seminaire->id,
-            'membre_id' => $membre->id,
+            'user_id' => $membre->id,
             'ecole_id' => $membre->ecole_id,
             'date_inscription' => now()->format('Y-m-d'),
             'statut' => 'inscrit',
@@ -85,7 +85,7 @@ class InscriptionSeminaireController extends Controller
 
     public function destroy(Seminaire $seminaire, InscriptionSeminaire $inscription)
     {
-        $membre_nom = $inscription->membre->nom ?? 'Membre';
+        $membre_nom = $inscription->user->nom ?? 'Membre';
         $inscription->delete();
 
         return back()->with('success', "Inscription de {$membre_nom} supprimée.");

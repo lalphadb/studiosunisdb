@@ -1,0 +1,16 @@
+RAPPORT D'AUDIT - MODÈLES & RELATIONS ELOQUENT
+Généré le : Sat Jun 21 03:27:48 PM EDT 2025
+==================================================
+\n--- LISTE DES FICHIERS DE MODÈLES ---
+app/Models/MembreCeinture.php
+app/Models/Ceinture.php
+app/Models/User.php
+app/Models/InscriptionCours.php
+app/Models/InscriptionSeminaire.php
+app/Models/Seminaire.php
+app/Models/CoursHoraire.php
+app/Models/Presence.php
+app/Models/Cours.php
+app/Models/Paiement.php
+app/Models/Ecole.php
+\n--- RELATIONS ELOQUENT DÉTECTÉES (grep) ---

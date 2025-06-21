@@ -1,0 +1,244 @@
+RAPPORT D'AUDIT - ARBORESCENCE DES FICHIERS
+Généré le : Sat Jun 21 03:27:48 PM EDT 2025
+==================================================
+\n--- Arborescence de app/ ---
+app/
+├── Console
+│   └── Commands
+│       └── AuditStudiosUnisDB.php
+├── Http
+│   ├── Controllers
+│   │   ├── Admin
+│   │   ├── Auth
+│   │   ├── Controller.php
+│   │   ├── LegalController.php
+│   │   └── ProfileController.php
+│   ├── Kernel.php
+│   ├── Middleware
+│   │   ├── EcoleRestrictionMiddleware.php
+│   │   └── TelescopeAccess.php
+│   └── Requests
+│       ├── Admin
+│       ├── Auth
+│       ├── CoursRequest.php
+│       └── ProfileUpdateRequest.php
+├── Models
+│   ├── Ceinture.php
+│   ├── CoursHoraire.php
+│   ├── Cours.php
+│   ├── Ecole.php
+│   ├── InscriptionCours.php
+│   ├── InscriptionSeminaire.php
+│   ├── MembreCeinture.php
+│   ├── Paiement.php
+│   ├── Presence.php
+│   ├── Seminaire.php
+│   └── User.php
+├── Policies
+│   ├── CeinturePolicy.php
+│   ├── CoursPolicy.php
+│   ├── EcolePolicy.php
+│   ├── MembrePolicy.php
+│   ├── PaiementPolicy.php
+│   ├── PresencePolicy.php
+│   └── SeminairePolicy.php
+├── Providers
+│   ├── AppServiceProvider.php
+│   ├── AuthServiceProvider.php
+│   ├── EventServiceProvider.php
+│   ├── RouteServiceProvider.php
+│   └── TelescopeServiceProvider.php
+└── View
+    └── Components
+        ├── AppLayout.php
+        └── GuestLayout.php
+
+16 directories, 34 files
+\n--- Arborescence de resources/views/ ---
+resources/views/
+├── admin
+│   ├── ceintures
+│   │   ├── assign.blade.php
+│   │   ├── attribuer.blade.php
+│   │   ├── create.blade.php
+│   │   ├── dashboard.blade.php
+│   │   ├── edit.blade.php
+│   │   ├── index.blade.php
+│   │   ├── show.blade.php
+│   │   └── types.blade.php
+│   ├── cours
+│   │   ├── create.blade.php
+│   │   ├── edit.blade.php
+│   │   ├── index.blade.php
+│   │   └── show.blade.php
+│   ├── dashboard
+│   │   ├── admin.blade.php
+│   │   ├── index.blade.php
+│   │   ├── instructeur.blade.php
+│   │   ├── membre.blade.php
+│   │   └── superadmin.blade.php
+│   ├── dashboard.blade.php
+│   ├── ecoles
+│   │   ├── create.blade.php
+│   │   ├── edit.blade.php
+│   │   ├── index.blade.php
+│   │   └── show.blade.php
+│   ├── logs
+│   │   └── index.blade.php
+│   ├── membres
+│   │   ├── create.blade.php
+│   │   ├── create.blade.php.backup
+│   │   ├── edit.blade.php
+│   │   ├── index.blade.php
+│   │   ├── show.blade.php
+│   │   ├── show.blade.php.backup_design
+│   │   ├── show.blade.php.backup_rayures
+│   │   ├── show.blade.php.old
+│   │   ├── show.blade.php.save
+│   │   └── show.blade_theme_membre.save
+│   ├── paiements
+│   │   ├── create.blade.php
+│   │   ├── index.blade.php
+│   │   └── show.blade.php
+│   ├── partials
+│   │   └── telescope-widget.blade.php
+│   ├── presences
+│   │   ├── create.blade.php
+│   │   ├── edit.blade.php
+│   │   ├── index.blade.php
+│   │   ├── pdf.blade.php
+│   │   ├── prise-presence.blade.php
+│   │   └── show.blade.php
+│   ├── seminaires
+│   │   ├── create.blade.php
+│   │   ├── edit.blade.php
+│   │   ├── index.blade.php
+│   │   ├── inscriptions.blade.php
+│   │   ├── inscrire.blade.php
+│   │   └── show.blade.php
+│   └── users
+│       ├── create.blade.php
+│       ├── index.blade.php
+│       └── show.blade.php
+├── auth
+│   ├── confirm-password.blade.php
+│   ├── forgot-password.blade.php
+│   ├── login.blade.php
+│   ├── register.blade.php
+│   ├── reset-password.blade.php
+│   └── verify-email.blade.php
+├── components
+│   ├── application-logo.blade.php
+│   ├── auth-session-status.blade.php
+│   ├── danger-button.blade.php
+│   ├── dropdown.blade.php
+│   ├── dropdown-link.blade.php
+│   ├── input-error.blade.php
+│   ├── input-label.blade.php
+│   ├── modal.blade.php
+│   ├── nav-link.blade.php
+│   ├── primary-button.blade.php
+│   ├── responsive-nav-link.blade.php
+│   ├── secondary-button.blade.php
+│   └── text-input.blade.php
+├── dashboard.blade.php
+├── layouts
+│   ├── admin.blade.php
+│   ├── app.blade.php
+│   ├── guest.blade.php
+│   └── navigation.blade.php
+├── legal
+│   ├── contact.blade.php
+│   ├── privacy.blade.php
+│   └── terms.blade.php
+├── partials
+│   └── footer.blade.php
+├── profile
+│   ├── edit.blade.php
+│   └── partials
+│       ├── delete-user-form.blade.php
+│       ├── update-password-form.blade.php
+│       └── update-profile-information-form.blade.php
+└── welcome.blade.php
+
+20 directories, 85 files
+\n--- LISTE COMPLÈTE DES VUES BLADE ---
+resources/views/legal/contact.blade.php
+resources/views/legal/terms.blade.php
+resources/views/legal/privacy.blade.php
+resources/views/auth/confirm-password.blade.php
+resources/views/auth/register.blade.php
+resources/views/auth/forgot-password.blade.php
+resources/views/auth/reset-password.blade.php
+resources/views/auth/login.blade.php
+resources/views/auth/verify-email.blade.php
+resources/views/components/modal.blade.php
+resources/views/components/text-input.blade.php
+resources/views/components/responsive-nav-link.blade.php
+resources/views/components/dropdown.blade.php
+resources/views/components/primary-button.blade.php
+resources/views/components/application-logo.blade.php
+resources/views/components/input-error.blade.php
+resources/views/components/input-label.blade.php
+resources/views/components/secondary-button.blade.php
+resources/views/components/dropdown-link.blade.php
+resources/views/components/danger-button.blade.php
+resources/views/components/nav-link.blade.php
+resources/views/components/auth-session-status.blade.php
+resources/views/admin/ceintures/attribuer.blade.php
+resources/views/admin/ceintures/show.blade.php
+resources/views/admin/ceintures/dashboard.blade.php
+resources/views/admin/ceintures/index.blade.php
+resources/views/admin/ceintures/edit.blade.php
+resources/views/admin/ceintures/assign.blade.php
+resources/views/admin/ceintures/types.blade.php
+resources/views/admin/ceintures/create.blade.php
+resources/views/admin/paiements/show.blade.php
+resources/views/admin/paiements/index.blade.php
+resources/views/admin/paiements/create.blade.php
+resources/views/admin/dashboard.blade.php
+resources/views/admin/seminaires/inscriptions.blade.php
+resources/views/admin/seminaires/show.blade.php
+resources/views/admin/seminaires/index.blade.php
+resources/views/admin/seminaires/edit.blade.php
+resources/views/admin/seminaires/inscrire.blade.php
+resources/views/admin/seminaires/create.blade.php
+resources/views/admin/cours/show.blade.php
+resources/views/admin/cours/index.blade.php
+resources/views/admin/cours/edit.blade.php
+resources/views/admin/cours/create.blade.php
+resources/views/admin/presences/show.blade.php
+resources/views/admin/presences/index.blade.php
+resources/views/admin/presences/edit.blade.php
+resources/views/admin/presences/prise-presence.blade.php
+resources/views/admin/presences/pdf.blade.php
+resources/views/admin/presences/create.blade.php
+resources/views/admin/membres/show.blade.php
+resources/views/admin/membres/index.blade.php
+resources/views/admin/membres/edit.blade.php
+resources/views/admin/membres/create.blade.php
+resources/views/admin/ecoles/show.blade.php
+resources/views/admin/ecoles/index.blade.php
+resources/views/admin/ecoles/edit.blade.php
+resources/views/admin/ecoles/create.blade.php
+resources/views/admin/partials/telescope-widget.blade.php
+resources/views/admin/users/show.blade.php
+resources/views/admin/users/index.blade.php
+resources/views/admin/users/create.blade.php
+resources/views/admin/logs/index.blade.php
+resources/views/admin/dashboard/instructeur.blade.php
+resources/views/admin/dashboard/index.blade.php
+resources/views/admin/dashboard/superadmin.blade.php
+resources/views/admin/dashboard/admin.blade.php
+resources/views/admin/dashboard/membre.blade.php
+resources/views/dashboard.blade.php
+resources/views/partials/footer.blade.php
+resources/views/layouts/navigation.blade.php
+resources/views/layouts/guest.blade.php
+resources/views/layouts/admin.blade.php
+resources/views/layouts/app.blade.php
+resources/views/profile/edit.blade.php
+resources/views/profile/partials/update-profile-information-form.blade.php
+resources/views/profile/partials/update-password-form.blade.php
+resources/views/profile/partials/delete-user-form.blade.php
+resources/views/welcome.blade.php

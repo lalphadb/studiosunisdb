@@ -6,22 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('inscriptions_cours', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('membre_id')->constrained('membres')->onDelete('cascade');
-            $table->foreignId('cours_id')->constrained('cours')->onDelete('cascade');
-            $table->date('date_inscription')->default(now());
-            $table->enum('statut', ['active', 'suspendue', 'terminee', 'annulee'])->default('active');
+            $table->unsignedBigInteger('user_id'); // Changé de membre_id à user_id
+            $table->unsignedBigInteger('cours_id');
+            $table->date('date_inscription')->default(now()->format('Y-m-d'));
+            $table->enum('statut', ['inscrit', 'confirme', 'annule'])->default('inscrit');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
-            $table->unique(['membre_id', 'cours_id']);
+
+            $table->unique(['user_id', 'cours_id']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('cours_id')->references('id')->on('cours')->onDelete('cascade');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('inscriptions_cours');
     }

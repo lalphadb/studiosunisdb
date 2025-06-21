@@ -1,6 +1,0 @@
-
-In DashboardController.php line 132:
-                                                                  
-  syntax error, unexpected token "public", expecting end of file  
-                                                                  
-

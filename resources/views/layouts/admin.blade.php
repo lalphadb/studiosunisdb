@@ -4,184 +4,221 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Administration') - StudiosUnisDB</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        body { 
-            background-color: #0f172a !important; 
-            color: #f1f5f9 !important; 
-            min-height: 100vh;
-        }
-        .nav-bg { 
-            background: linear-gradient(135deg, #1e293b, #0f172a); 
-            border-bottom: 1px solid #334155;
-        }
-        .card-bg { 
-            background-color: #1e293b !important; 
-            border: 1px solid #334155;
-        }
-        .text-white { color: #f1f5f9 !important; }
-        .text-slate-400 { color: #94a3b8 !important; }
-        .hover-bg:hover { background-color: rgba(255,255,255,0.1); }
-    </style>
+    <title>@yield('title', 'Administration') - StudiosUnisDB v3.9.3</title>
+    @vite(['resources/css/app.css', 'resources/css/admin.css', 'resources/js/app.js'])
 </head>
-<body>
-    <!-- Navigation Dark -->
-    <nav class="nav-bg text-white shadow-xl">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center space-x-8">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-xl font-bold text-white">🥋 StudiosUnisDB</h1>
-                        <p class="text-xs text-blue-300">
-                            @if(auth()->user()->hasRole('superadmin'))
-                                SuperAdmin - Réseau Studios Unis
-                            @elseif(auth()->user()->ecole)
-                                {{ auth()->user()->ecole->nom }}
-                            @else
-                                École non assignée
-                            @endif
-                        </p>
+
+<body class="bg-gray-900 text-gray-100">
+    <div class="admin-layout">
+        {{-- SIDEBAR --}}
+        <aside class="admin-sidebar">
+            {{-- Logo --}}
+            <div class="sidebar-logo">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <span class="text-xl font-bold text-white">🥋</span>
                     </div>
-                    <div class="hidden md:flex md:space-x-4">
-                        <!-- Dashboard - Tous -->
-                        <a href="{{ route('admin.dashboard') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.dashboard*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            📊 Dashboard
-                        </a>
-                        
-                        <!-- Écoles - SEULEMENT SuperAdmin -->
+                    <div>
+                        <h1 class="text-lg font-bold text-white">StudiosUnisDB</h1>
+                        <p class="text-xs text-blue-300">v3.9.3-FINAL</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Navigation --}}
+            <nav class="sidebar-nav">
+                {{-- Dashboard --}}
+                <div class="nav-group">
+                    <div class="nav-group-title">Principal</div>
+                    <a href="{{ route('admin.dashboard') }}" 
+                       class="nav-item {{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">📊</span>
+                        Dashboard
+                    </a>
+                </div>
+
+                {{-- Gestion --}}
+                <div class="nav-group">
+                    <div class="nav-group-title">Gestion</div>
+                    
+                    <a href="{{ route('admin.ecoles.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.ecoles*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">🏯</span>
+                        Écoles
+                    </a>
+
+                    <a href="{{ route('admin.membres.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.membres*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">👥</span>
+                        Membres
+                    </a>
+
+                    <a href="{{ route('admin.cours.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.cours*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">📚</span>
+                        Cours
+                    </a>
+
+                    <a href="{{ route('admin.presences.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.presences*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">✅</span>
+                        Présences
+                    </a>
+                </div>
+
+                {{-- Progression --}}
+                <div class="nav-group">
+                    <div class="nav-group-title">Progression</div>
+                    
+                    <a href="{{ route('admin.ceintures.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.ceintures*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">🥋</span>
+                        Ceintures
+                    </a>
+
+                    <a href="{{ route('admin.seminaires.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.seminaires*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">🎓</span>
+                        Séminaires
+                    </a>
+                </div>
+
+                {{-- Finance --}}
+                <div class="nav-group">
+                    <div class="nav-group-title">Finance</div>
+                    
+                    <a href="{{ route('admin.paiements.index') }}" 
+                       class="nav-item {{ request()->routeIs('admin.paiements*') ? 'active' : '' }}">
+                        <span class="nav-item-icon">💳</span>
+                        Paiements
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        {{-- HEADER --}}
+        <header class="admin-header">
+            <div class="flex items-center space-x-4">
+                <h2 class="text-xl font-semibold text-white">
+                    @yield('page-title', 'Dashboard')
+                </h2>
+                @if(auth()->user()->ecole)
+                    <span class="text-sm text-blue-300">{{ auth()->user()->ecole->nom }}</span>
+                @endif
+            </div>
+
+            {{-- User dropdown FONCTIONNEL --}}
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" 
+                        class="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-700 hover:bg-opacity-50 transition-all focus:outline-none">
+                    {{-- Icône selon rôle --}}
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                         style="background: linear-gradient(135deg, 
+                         @if(auth()->user()->hasRole('superadmin')) #fbbf24, #f59e0b @elseif(auth()->user()->hasRole('admin')) #3b82f6, #1d4ed8 @elseif(auth()->user()->hasRole('instructeur')) #f59e0b, #d97706 @else #6b7280, #4b5563 @endif);">
                         @if(auth()->user()->hasRole('superadmin'))
-                        <a href="{{ route('admin.ecoles.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.ecoles*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            🏢 Écoles
-                        </a>
-                        @endif
-                        
-                        <!-- Membres - Admin et Instructeur -->
-                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
-                        <a href="{{ route('admin.membres.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.membres*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            👥 Membres
-                        </a>
-                        @endif
-                        
-                        <!-- Cours - Admin et Instructeur -->
-                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
-                        <a href="{{ route('admin.cours.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.cours*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            📚 Cours
-                        </a>
-                        @endif
-                        
-                        <!-- Présences - Admin et Instructeur -->
-                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
-                        <a href="{{ route('admin.presences.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.presences*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            ✅ Présences
-                        </a>
-                        @endif
-
-                        <!-- Ceintures - Admin et Instructeur -->
-                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
-                        <a href="{{ route('admin.ceintures.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.ceintures*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            🥋 Ceintures
-                        </a>
-                        @endif
-
-                        <!-- Séminaires - Admin et Instructeur -->
-                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin', 'instructeur']))
-                        <a href="{{ route('admin.seminaires.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.seminaires*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            🎓 Séminaires
-                        </a>
-                        @endif
-
-                        <!-- Paiements - SuperAdmin et Admin uniquement -->
-                        @if(auth()->user()->hasAnyRole(['superadmin', 'admin']))
-                        <a href="{{ route('admin.paiements.index') }}" 
-                           class="px-3 py-2 rounded-md hover-bg transition-all {{ request()->routeIs('admin.paiements*') ? 'bg-white bg-opacity-20' : 'text-gray-300' }}">
-                            💳 Paiements
-                        </a>
+                            ⭐
+                        @elseif(auth()->user()->hasRole('admin'))
+                            👑
+                        @elseif(auth()->user()->hasRole('instructeur'))
+                            🥋
+                        @else
+                            👤
                         @endif
                     </div>
-                </div>
-                <div class="flex items-center">
-                    <div class="relative">
-                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 hover-bg px-3 py-2 rounded-md transition-all">
-                            <span class="text-white">
-                                @if(auth()->user()->hasRole('superadmin'))
-                                    🔥 {{ Auth::user()->name }}
-                                @elseif(auth()->user()->hasRole('admin'))
-                                    👑 {{ Auth::user()->name }}
-                                @elseif(auth()->user()->hasRole('instructeur'))
-                                    🥋 {{ Auth::user()->name }}
-                                @else
-                                    👤 {{ Auth::user()->name }}
-                                @endif
+                    
+                    <div class="text-left">
+                        <p class="text-sm font-medium text-white">{{ Auth::user()->name }}</p>
+                        <p class="text-xs text-gray-400">{{ auth()->user()->roles->pluck('name')->map('ucfirst')->join(', ') }}</p>
+                    </div>
+                    
+                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" 
+                         :class="{ 'rotate-180': open }" 
+                         fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+
+                {{-- DROPDOWN MENU --}}
+                <div x-show="open" 
+                     @click.away="open = false"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute right-0 mt-3 w-64 bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700 py-2"
+                     style="z-index: 9999;">
+                    
+                    <div class="px-4 py-3 border-b border-gray-600">
+                        <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-gray-400">{{ auth()->user()->email }}</p>
+                        @foreach(auth()->user()->roles as $role)
+                            <span class="inline-block mt-1 px-2 py-1 rounded-full text-xs bg-blue-600 text-white mr-1">
+                                {{ ucfirst($role->name) }}
                             </span>
-                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                        <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 card-bg rounded-md shadow-xl py-1 z-50">
-                            <div class="px-4 py-2 text-xs text-slate-400 border-b border-slate-600">
-                                {{ auth()->user()->roles->pluck('name')->join(', ') }}
-                                @if(auth()->user()->ecole)
-                                    <br>{{ auth()->user()->ecole->nom }}
-                                @endif
-                            </div>
-                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-white hover-bg">👤 Profil</a>
-                            
-                            @if(auth()->user()->hasRole('superadmin'))
-                            <hr class="border-slate-600 my-1">
-                            <a href="{{ url('/telescope') }}" target="_blank" class="block px-4 py-2 text-sm text-white hover-bg">🔭 Telescope</a>
-                            @endif
-                            
-                            <hr class="border-slate-600 my-1">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-white hover-bg">
-                                    🚪 Déconnexion
-                                </button>
-                            </form>
-                        </div>
+                        @endforeach
+                        @if(auth()->user()->ecole)
+                            <p class="text-xs text-blue-300 mt-2">🏯 {{ auth()->user()->ecole->nom }}</p>
+                        @endif
+                    </div>
+                    
+                    <div class="py-2">
+                        <a href="{{ route('profile.edit') }}" 
+                           class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                            <span class="mr-3">👤</span>
+                            Profil utilisateur
+                        </a>
+                        
+                        @if(auth()->user()->hasRole('superadmin'))
+                        <a href="{{ url('/telescope') }}" target="_blank" 
+                           class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                            <span class="mr-3">🔭</span>
+                            Telescope
+                        </a>
+                        @endif
+                        
+                        <div class="border-t border-gray-600 my-2"></div>
+                        
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" 
+                                    class="flex items-center w-full px-4 py-2 text-sm text-red-300 hover:bg-red-900 hover:text-red-100 transition-colors">
+                                <span class="mr-3">🚪</span>
+                                Déconnexion
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <!-- Contenu principal -->
-    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        @if(session('success'))
-            <div class="mb-4 px-4 py-3 rounded-md flex items-center" style="background-color: rgba(34, 197, 94, 0.2); border: 1px solid #16a34a; color: #4ade80;">
-                <span class="mr-2">✅</span>
-                {{ session('success') }}
-            </div>
-        @endif
+        {{-- MAIN CONTENT --}}
+        <main class="admin-main">
+            {{-- Messages flash --}}
+            @if(session('success'))
+                <div class="mb-6 card-glass p-6 flex items-center space-x-3 border-green-500 bg-green-600 bg-opacity-10">
+                    <span class="text-2xl">✅</span>
+                    <div>
+                        <p class="font-medium text-green-100">Succès</p>
+                        <p class="text-green-200">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
 
-        @if(session('error'))
-            <div class="mb-4 px-4 py-3 rounded-md flex items-center" style="background-color: rgba(239, 68, 68, 0.2); border: 1px solid #dc2626; color: #f87171;">
-                <span class="mr-2">❌</span>
-                {{ session('error') }}
-            </div>
-        @endif
+            @if(session('error'))
+                <div class="mb-6 card-glass p-6 flex items-center space-x-3 border-red-500 bg-red-600 bg-opacity-10">
+                    <span class="text-2xl">❌</span>
+                    <div>
+                        <p class="font-medium text-red-100">Erreur</p>
+                        <p class="text-red-200">{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
 
-        @yield('content')
-    </main>
-
-    <script>
-        function toggleDropdown() {
-            document.getElementById('userDropdown').classList.toggle('hidden');
-        }
-        
-        window.onclick = function(event) {
-            if (!event.target.closest('[onclick="toggleDropdown()"]')) {
-                document.getElementById('userDropdown').classList.add('hidden');
-            }
-        }
-    </script>
+            {{-- Page content --}}
+            @yield('content')
+        </main>
+    </div>
 </body>
 </html>

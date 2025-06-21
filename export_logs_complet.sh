@@ -1,73 +1,88 @@
 #!/bin/bash
-echo "📊 Export Complet Logs StudiosUnisDB"
-echo "===================================="
 
-cd /home/studiosdb/studiosunisdb/
+echo "🗂️ EXPORT COMPLET LOGS StudiosUnisDB"
+echo "====================================="
 
-# Créer dossier d'export
+# Créer dossier d'export avec timestamp
 EXPORT_DIR="logs_export_$(date +%Y%m%d_%H%M%S)"
 mkdir -p $EXPORT_DIR
 
-# 1. Logs Laravel
-echo "📝 Export logs Laravel..."
-cp storage/logs/laravel.log $EXPORT_DIR/laravel.log 2>/dev/null || echo "Pas de logs Laravel"
+cd /home/studiosdb/studiosunisdb/
 
-# 2. Logs système
-echo "🖥️ Export logs système..."
-journalctl -u nginx --since "24 hours ago" > $EXPORT_DIR/nginx_system.log 2>/dev/null || echo "Nginx logs non disponibles"
-tail -n 200 /var/log/nginx/error.log > $EXPORT_DIR/nginx_errors.log 2>/dev/null || echo "Nginx error logs non disponibles"
+echo "📁 Création du dossier : $EXPORT_DIR"
 
-# 3. Logs MySQL
-echo "🗄️ Export logs MySQL..."
-sudo tail -n 100 /var/log/mysql/error.log > $EXPORT_DIR/mysql_errors.log 2>/dev/null || echo "MySQL logs non disponibles"
+# 1. Laravel Logs
+echo "📋 Export Laravel logs..."
+if [ -f "storage/logs/laravel.log" ]; then
+    cp storage/logs/laravel.log $EXPORT_DIR/
+    tail -n 1000 storage/logs/laravel.log > $EXPORT_DIR/laravel_recent.log
+fi
 
-# 4. Status services
-echo "⚙️ Status des services..."
-systemctl status nginx > $EXPORT_DIR/nginx_status.txt
-systemctl status mysql > $EXPORT_DIR/mysql_status.txt
-php -v > $EXPORT_DIR/php_version.txt
+# 2. Logs par date (dernières 48h)
+echo "📅 Export logs récents..."
+find storage/logs/ -name "*.log" -mtime -2 -exec cp {} $EXPORT_DIR/ \; 2>/dev/null
 
-# 5. Info système
-echo "💻 Informations système..."
-df -h > $EXPORT_DIR/disk_usage.txt
-free -h > $EXPORT_DIR/memory_usage.txt
-uptime > $EXPORT_DIR/uptime.txt
+# 3. Erreurs uniquement
+echo "❌ Filtrage erreurs..."
+grep -E "(ERROR|CRITICAL|EMERGENCY|EXCEPTION)" storage/logs/laravel.log > $EXPORT_DIR/errors_only.txt 2>/dev/null
 
-# 6. Logs application spécifiques
-echo "🥋 Logs StudiosUnisDB spécifiques..."
-php artisan route:list > $EXPORT_DIR/routes_list.txt 2>&1
-php artisan migrate:status > $EXPORT_DIR/migrate_status.txt 2>&1
+# 4. État système
+echo "💻 État système..."
+echo "Date: $(date)" > $EXPORT_DIR/system_info.txt
+echo "Uptime: $(uptime)" >> $EXPORT_DIR/system_info.txt
+echo "Espace disque:" >> $EXPORT_DIR/system_info.txt
+df -h >> $EXPORT_DIR/system_info.txt
+echo "Mémoire:" >> $EXPORT_DIR/system_info.txt
+free -h >> $EXPORT_DIR/system_info.txt
 
-# Créer un résumé
-echo "📋 Création résumé..."
-cat > $EXPORT_DIR/RESUME.txt << 'RESUME'
-📊 EXPORT LOGS STUDIOSUNISDB
-============================
+# 5. Laravel info
+echo "🚀 Info Laravel..."
+php artisan --version > $EXPORT_DIR/laravel_version.txt 2>/dev/null
+php artisan route:list > $EXPORT_DIR/routes_list.txt 2>/dev/null
+php artisan config:show app > $EXPORT_DIR/app_config.txt 2>/dev/null
 
-Date: $(date)
-Serveur: $(hostname)
-Version Laravel: $(php artisan --version 2>/dev/null || echo "Non disponible")
+# 6. Base de données
+echo "🗄️ Info base de données..."
+mysql -u root -pLkmP0km1 -e "SHOW DATABASES;" > $EXPORT_DIR/mysql_databases.txt 2>/dev/null
+mysql -u root -pLkmP0km1 studiosdb -e "SHOW TABLES;" > $EXPORT_DIR/mysql_tables.txt 2>/dev/null
 
-CONTENU DE L'EXPORT:
-- laravel.log : Logs application Laravel
-- nginx_system.log : Logs système Nginx
-- nginx_errors.log : Erreurs Nginx
-- mysql_errors.log : Erreurs MySQL
-- *_status.txt : Status des services
-- *_usage.txt : Utilisation ressources système
+# 7. Nginx logs (si disponibles)
+echo "🌐 Logs Nginx..."
+if [ -f "/var/log/nginx/error.log" ]; then
+    sudo tail -n 500 /var/log/nginx/error.log > $EXPORT_DIR/nginx_errors.log 2>/dev/null
+fi
+
+# 8. Résumé
+echo "📊 Génération résumé..."
+cat > $EXPORT_DIR/RESUME.txt << 'RESUME_EOF'
+EXPORT LOGS StudiosUnisDB
+========================
+
+Contenu de cet export:
+- laravel.log : Logs Laravel complets
+- laravel_recent.log : 1000 dernières lignes
+- errors_only.txt : Erreurs uniquement
+- system_info.txt : État système
+- laravel_version.txt : Version Laravel
 - routes_list.txt : Liste des routes
-- migrate_status.txt : Status migrations
+- mysql_*.txt : Info base de données
 
-PROCHAINES ÉTAPES:
-1. Analyser les erreurs dans laravel.log
-2. Vérifier les erreurs 404/500 dans nginx_errors.log
-3. Contrôler les erreurs MySQL
-4. Vérifier l'espace disque
+Généré le: $(date)
+Serveur: $(hostname)
+RESUME_EOF
 
-RESUME
-
-# Compresser l'export
-echo "📦 Compression..."
+# 9. Compression
+echo "🗜️ Compression..."
 tar -czf ${EXPORT_DIR}.tar.gz $EXPORT_DIR/
-echo "✅ Export terminé: ${EXPORT_DIR}.tar.gz"
-echo "📂 Taille: $(du -h ${EXPORT_DIR}.tar.gz | cut -f1)"
+
+echo ""
+echo "✅ EXPORT TERMINÉ !"
+echo "📁 Dossier: $EXPORT_DIR"
+echo "📦 Archive: ${EXPORT_DIR}.tar.gz"
+echo "📊 Fichiers exportés:"
+ls -la $EXPORT_DIR/
+echo ""
+echo "💡 Pour consulter:"
+echo "   - cat $EXPORT_DIR/RESUME.txt"
+echo "   - tail -f $EXPORT_DIR/laravel_recent.log"
+echo "   - cat $EXPORT_DIR/errors_only.txt"

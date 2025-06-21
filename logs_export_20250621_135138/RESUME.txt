@@ -1,0 +1,14 @@
+EXPORT LOGS StudiosUnisDB
+========================
+
+Contenu de cet export:
+- laravel.log : Logs Laravel complets
+- laravel_recent.log : 1000 dernières lignes
+- errors_only.txt : Erreurs uniquement
+- system_info.txt : État système
+- laravel_version.txt : Version Laravel
+- routes_list.txt : Liste des routes
+- mysql_*.txt : Info base de données
+
+Généré le: $(date)
+Serveur: $(hostname)

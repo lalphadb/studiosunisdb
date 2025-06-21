@@ -11,32 +11,41 @@ class MembreCeinture extends Model
     use HasFactory;
 
     protected $fillable = [
-        'membre_id',
+        'user_id', // Changé de membre_id à user_id
         'ceinture_id',
         'date_obtention',
         'examinateur',
         'commentaires',
-        'valide'
+        'valide',
     ];
 
-    protected $casts = [
-        'date_obtention' => 'date',
-        'valide' => 'boolean',
-    ];
-
-    /**
-     * Membre qui a obtenu la ceinture
-     */
-    public function membre(): BelongsTo
+    protected function casts(): array
     {
-        return $this->belongsTo(Membre::class);
+        return [
+            'date_obtention' => 'date',
+            'valide' => 'boolean',
+        ];
     }
 
-    /**
-     * Ceinture obtenue
-     */
+    // Relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function ceinture(): BelongsTo
     {
         return $this->belongsTo(Ceinture::class);
+    }
+
+    // Scopes
+    public function scopeValides($query)
+    {
+        return $query->where('valide', true);
+    }
+
+    public function scopeForUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 }

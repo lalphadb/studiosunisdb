@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Paiement;
-use App\Models\Membre;
+use App\Models\User;
 use App\Models\Ecole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,7 @@ class PaiementController extends Controller
         $user = Auth::user();
         
         // Restriction par école sauf superadmin
-        $query = Paiement::with(['membre', 'ecole', 'validateur']);
+        $query = Paiement::with(['user', 'ecole', 'validateur']);
         
         if (!$user->hasRole('superadmin')) {
             $query->where('ecole_id', $user->ecole_id);
@@ -69,7 +69,7 @@ class PaiementController extends Controller
         $user = Auth::user();
         
         // Membres de l'école de l'utilisateur
-        $membres = Membre::where('ecole_id', $user->ecole_id)
+        $membres = User::where('ecole_id', $user->ecole_id)
                          ->orderBy('nom')
                          ->orderBy('prenom')
                          ->get();
@@ -82,7 +82,7 @@ class PaiementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'membre_id' => 'required|exists:membres,id',
+            'user_id' => 'required|exists:users,id',
             'motif' => 'required|in:session_automne,session_hiver,session_printemps,session_ete,seminaire,examen_ceinture,equipement,autre',
             'montant' => 'required|numeric|min:0.01',
             'frais' => 'nullable|numeric|min:0',
@@ -91,7 +91,7 @@ class PaiementController extends Controller
         ]);
         
         $user = Auth::user();
-        $membre = Membre::findOrFail($request->membre_id);
+        $membre = User::findOrFail($request->user_id);
         
         // Vérification permissions
         if (!$user->hasRole('superadmin') && $membre->ecole_id !== $user->ecole_id) {
@@ -100,7 +100,7 @@ class PaiementController extends Controller
 
         // Créer le paiement SANS reference_interne d'abord
         $paiement = Paiement::create([
-            'membre_id' => $membre->id,
+            'user_id' => $membre->id,
             'ecole_id' => $membre->ecole_id,
             'motif' => $request->motif,
             'montant' => $request->montant,
@@ -136,7 +136,7 @@ class PaiementController extends Controller
             abort(403);
         }
         
-        $paiement->load(['membre', 'ecole', 'validateur']);
+        $paiement->load(['user', 'ecole', 'validateur']);
         
         return view('admin.paiements.show', compact('paiement'));
     }
@@ -157,7 +157,7 @@ class PaiementController extends Controller
                 ->with('error', 'Ce paiement ne peut plus être modifié.');
         }
         
-        $membres = Membre::where('ecole_id', $paiement->ecole_id)
+        $membres = User::where('ecole_id', $paiement->ecole_id)
                          ->orderBy('nom')
                          ->orderBy('prenom')
                          ->get();

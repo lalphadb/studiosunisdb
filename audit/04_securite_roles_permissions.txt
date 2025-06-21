@@ -1,0 +1,46 @@
+RAPPORT D'AUDIT - RÔLES & PERMISSIONS (SPATIE)
+Généré le : Sat Jun 21 03:27:48 PM EDT 2025
+==================================================
+Guard: web
++---------------------+-------+-------------+--------+------------+
+|                     | admin | instructeur | membre | superadmin |
++---------------------+-------+-------------+--------+------------+
+| assign-ceintures    |  ·    |  ·          |  ·     |  ·         |
+| create-ceinture     |  ·    |  ·          |  ·     |  ·         |
+| create-cours        |  ·    |  ·          |  ·     |  ·         |
+| create-ecole        |  ·    |  ·          |  ·     |  ·         |
+| create-membre       |  ·    |  ·          |  ·     |  ·         |
+| create-paiements    |  ·    |  ·          |  ·     |  ·         |
+| create-presence     |  ·    |  ·          |  ·     |  ·         |
+| create-seminaire    |  ·    |  ·          |  ·     |  ·         |
+| delete-ceinture     |  ·    |  ·          |  ·     |  ·         |
+| delete-cours        |  ·    |  ·          |  ·     |  ·         |
+| delete-ecole        |  ·    |  ·          |  ·     |  ·         |
+| delete-membre       |  ·    |  ·          |  ·     |  ·         |
+| delete-paiements    |  ·    |  ·          |  ·     |  ·         |
+| delete-presence     |  ·    |  ·          |  ·     |  ·         |
+| delete-seminaire    |  ·    |  ·          |  ·     |  ·         |
+| ecole.export        |  ·    |  ·          |  ·     |  ·         |
+| edit-ceinture       |  ·    |  ·          |  ·     |  ·         |
+| edit-cours          |  ·    |  ·          |  ·     |  ·         |
+| edit-ecole          |  ·    |  ·          |  ·     |  ·         |
+| edit-membre         |  ·    |  ·          |  ·     |  ·         |
+| edit-paiements      |  ·    |  ·          |  ·     |  ·         |
+| edit-presence       |  ·    |  ·          |  ·     |  ·         |
+| edit-seminaire      |  ·    |  ·          |  ·     |  ·         |
+| export-paiements    |  ·    |  ·          |  ·     |  ·         |
+| inscribe-seminaires |  ·    |  ·          |  ·     |  ·         |
+| manage-ceintures    |  ·    |  ·          |  ·     |  ·         |
+| manage-roles        |  ·    |  ·          |  ·     |  ·         |
+| manage-seminaires   |  ·    |  ·          |  ·     |  ·         |
+| membre.export       |  ·    |  ·          |  ·     |  ·         |
+| presence.export     |  ·    |  ·          |  ·     |  ·         |
+| validate-paiements  |  ·    |  ·          |  ·     |  ·         |
+| view-ceintures      |  ·    |  ·          |  ·     |  ·         |
+| view-cours          |  ·    |  ·          |  ·     |  ·         |
+| view-ecoles         |  ·    |  ·          |  ·     |  ·         |
+| view-membres        |  ·    |  ·          |  ·     |  ·         |
+| view-paiements      |  ·    |  ·          |  ·     |  ·         |
+| view-presences      |  ·    |  ·          |  ·     |  ·         |
+| view-seminaires     |  ·    |  ·          |  ·     |  ·         |
++---------------------+-------+-------------+--------+------------+
