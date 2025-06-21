@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\{
     UserController,
     EcoleController,
     CoursController,
+    SeminaireController,
     PresenceController,
     PaiementController,
     CeintureController
@@ -28,6 +29,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     
     // Cours
     Route::resource('cours', CoursController::class);
+    
+    // Séminaires
+    Route::resource('seminaires', SeminaireController::class);
     
     // Présences
     Route::resource('presences', PresenceController::class);

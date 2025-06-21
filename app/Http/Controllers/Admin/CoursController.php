@@ -4,41 +4,24 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cours;
-use App\Models\Ecole;
-use App\Models\User as Utilisateur;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CoursController extends Controller
+class CoursController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return ['auth', 'verified'];
+    }
+
     public function index()
     {
-        $cours = Cours::with(['ecole'])->paginate(15);
-        
+        $cours = Cours::with('ecole')
+            ->when(auth()->user()->ecole_id, fn($q, $ecole_id) => $q->where('ecole_id', $ecole_id))
+            ->paginate(15);
+            
         return view('admin.cours.index', compact('cours'));
-    }
-
-    public function create()
-    {
-        $ecoles = Ecole::all();
-        return view('admin.cours.create', compact('ecoles'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'niveau' => 'required|in:debutant,intermediaire,avance,tous_niveaux',
-            'ecole_id' => 'required|exists:ecoles,id',
-            'capacite_max' => 'required|integer|min:1',
-            'prix' => 'nullable|numeric|min:0',
-            'duree_minutes' => 'required|integer|min:30',
-        ]);
-
-        Cours::create($validated);
-
-        return redirect()->route('admin.cours.index')
-                        ->with('success', 'Cours créé avec succès.');
     }
 
     public function show(Cours $cours)
@@ -46,35 +29,28 @@ class CoursController extends Controller
         return view('admin.cours.show', compact('cours'));
     }
 
+    public function create()
+    {
+        return view('admin.cours.create');
+    }
+
+    public function store(Request $request)
+    {
+        return redirect()->route('admin.cours.index');
+    }
+
     public function edit(Cours $cours)
     {
-        $ecoles = Ecole::all();
-        return view('admin.cours.edit', compact('cours', 'ecoles'));
+        return view('admin.cours.edit', compact('cours'));
     }
 
     public function update(Request $request, Cours $cours)
     {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'niveau' => 'required|in:debutant,intermediaire,avance,tous_niveaux',
-            'ecole_id' => 'required|exists:ecoles,id',
-            'capacite_max' => 'required|integer|min:1',
-            'prix' => 'nullable|numeric|min:0',
-            'duree_minutes' => 'required|integer|min:30',
-        ]);
-
-        $cours->update($validated);
-
-        return redirect()->route('admin.cours.index')
-                        ->with('success', 'Cours modifié avec succès.');
+        return redirect()->route('admin.cours.show', $cours);
     }
 
     public function destroy(Cours $cours)
     {
-        $cours->delete();
-
-        return redirect()->route('admin.cours.index')
-                        ->with('success', 'Cours supprimé avec succès.');
+        return redirect()->route('admin.cours.index');
     }
 }
