@@ -33,8 +33,8 @@
                 <div>
                     <h3 class="text-lg font-medium text-white mb-4">👤 Membre</h3>
                     <div class="space-y-2">
-                        <p class="text-slate-300"><strong>Nom:</strong> {{ $paiement->membre->nom }} {{ $paiement->membre->prenom }}</p>
-                        <p class="text-slate-300"><strong>Email:</strong> {{ $paiement->membre->email }}</p>
+                        <p class="text-slate-300"><strong>Nom:</strong> {{ $paiement->user->name }}</p>
+                        <p class="text-slate-300"><strong>Email:</strong> {{ $paiement->user->email }}</p>
                         <p class="text-slate-300"><strong>École:</strong> {{ $paiement->ecole->nom }}</p>
                     </div>
                 </div>

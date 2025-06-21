@@ -94,15 +94,15 @@
                             <div class="flex items-center">
                                 <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
                                     <span class="text-white font-medium text-sm">
-                                        {{ strtoupper(substr($progression->membre->prenom, 0, 1)) }}{{ strtoupper(substr($progression->membre->nom, 0, 1)) }}
+                                        {{ strtoupper(substr($progression->user->name, 0, 1)) }}
                                     </span>
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-white">
-                                        {{ $progression->membre->prenom }} {{ $progression->membre->nom }}
+                                        {{ $progression->user->name }}
                                     </div>
                                     <div class="text-sm text-gray-400">
-                                        Membre #{{ $progression->membre->id }}
+                                        Membre #{{ $progression->user->id }}
                                     </div>
                                 </div>
                             </div>
@@ -131,7 +131,7 @@
                         {{-- École --}}
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-300">
-                                {{ $progression->membre->ecole->nom ?? 'N/A' }}
+                                {{ $progression->user->ecole->nom ?? 'N/A' }}
                             </div>
                         </td>
 

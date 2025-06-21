@@ -9,7 +9,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold">✏️ Modifier Attribution</h1>
-                <p class="text-yellow-100 text-lg">{{ $progression->membre->nom_complet }} - {{ $progression->ceinture->nom }}</p>
+                <p class="text-yellow-100 text-lg">{{ $progression->user->nom_complet }} - {{ $progression->ceinture->nom }}</p>
             </div>
             <a href="{{ route('admin.ceintures.show', $progression) }}" class="bg-white text-yellow-600 hover:bg-yellow-50 px-4 py-2 rounded-lg font-medium transition-colors">
                 ← Retour aux détails
@@ -31,7 +31,7 @@
             {{-- Informations membre (lecture seule) --}}
             <div class="bg-gray-900 rounded-lg p-4">
                 <h4 class="font-medium text-white mb-2">👤 Membre</h4>
-                <p class="text-gray-300">{{ $progression->membre->nom_complet }} - {{ $progression->membre->ecole->nom ?? 'N/A' }}</p>
+                <p class="text-gray-300">{{ $progression->user->nom_complet }} - {{ $progression->user->ecole->nom ?? 'N/A' }}</p>
             </div>
 
             {{-- Sélection ceinture --}}

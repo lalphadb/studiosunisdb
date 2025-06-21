@@ -147,8 +147,8 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-white">{{ $paiement->membre->nom }} {{ $paiement->membre->prenom }}</div>
-                                    <div class="text-xs text-slate-400">{{ $paiement->membre->email }}</div>
+                                    <div class="text-sm font-medium text-white">{{ $paiement->user->name }}</div>
+                                    <div class="text-xs text-slate-400">{{ $paiement->user->email }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-slate-300">{{ $paiement->ecole->nom }}</div>

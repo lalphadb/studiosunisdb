@@ -97,7 +97,7 @@
             @foreach($recent as $attribution)
                 <div class="flex items-center justify-between p-3 border-b">
                     <div>
-                        <strong>{{ $attribution->membre->prenom }} {{ $attribution->membre->nom }}</strong>
+                        <strong>{{ $attribution }} {{ $attribution->user->name }}</strong>
                         a reçu la ceinture 
                         <span style="color: {{ $attribution->ceinture->couleur }}">●</span>
                         <strong>{{ $attribution->ceinture->nom }}</strong>

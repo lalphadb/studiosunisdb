@@ -9,7 +9,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold">🏆 Progression de Ceinture</h1>
-                <p class="text-blue-100 text-lg">{{ $progression->membre->nom_complet }} - {{ $progression->ceinture->nom }}</p>
+                <p class="text-blue-100 text-lg">{{ $progression->user->nom_complet }} - {{ $progression->ceinture->nom }}</p>
             </div>
             <div class="flex space-x-3">
                 <a href="{{ route('admin.ceintures.edit', $progression) }}" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg font-medium transition-colors">
@@ -36,20 +36,20 @@
                     <div class="space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-gray-400">Nom complet :</span>
-                            <span class="text-white font-medium">{{ $progression->membre->nom_complet }}</span>
+                            <span class="text-white font-medium">{{ $progression->user->nom_complet }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">École :</span>
-                            <span class="text-white">{{ $progression->membre->ecole->nom ?? 'N/A' }}</span>
+                            <span class="text-white">{{ $progression->user->ecole->nom ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">Email :</span>
-                            <span class="text-white">{{ $progression->membre->email ?? 'N/A' }}</span>
+                            <span class="text-white">{{ $progression->user->email ?? 'N/A' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">Statut :</span>
-                            <span class="px-2 py-1 rounded-full text-xs {{ $progression->membre->statut === 'actif' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300' }}">
-                                {{ ucfirst($progression->membre->statut) }}
+                            <span class="px-2 py-1 rounded-full text-xs {{ $progression->user->statut === 'actif' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300' }}">
+                                {{ ucfirst($progression->user->statut) }}
                             </span>
                         </div>
                     </div>
@@ -95,7 +95,7 @@
     <div class="bg-gray-800 rounded-lg shadow-md border border-gray-700">
         <div class="p-6 border-b border-gray-700">
             <h3 class="text-lg font-medium text-white">📈 Historique des Progressions</h3>
-            <p class="text-sm text-gray-400 mt-1">Toutes les ceintures obtenues par {{ $progression->membre->prenom }}</p>
+            <p class="text-sm text-gray-400 mt-1">Toutes les ceintures obtenues par {{ $progression->user->prenom }}</p>
         </div>
 
         <div class="p-6">
@@ -146,12 +146,12 @@
                 ✏️ Modifier cette Attribution
             </a>
             
-            <a href="{{ route('admin.ceintures.create', ['membre_id' => $progression->membre->id]) }}" 
+            <a href="{{ route('admin.ceintures.create', ['membre_id' => $progression->user->id]) }}" 
                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 🥋 Attribuer Nouvelle Ceinture
             </a>
             
-            <a href="{{ route('admin.membres.show', $progression->membre) }}" 
+            <a href="{{ route('admin.users.show', $progression->membre) }}" 
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 👤 Voir Profil Membre
             </a>

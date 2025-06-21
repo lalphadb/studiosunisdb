@@ -160,10 +160,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
                                         <div class="text-sm font-medium text-gray-900">
-                                            {{ $assignation->membre->prenom }} {{ $assignation->membre->nom }}
+                                            {{ $assignation }} {{ $assignation->user->name }}
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            {{ $assignation->membre->ecole->nom ?? 'École inconnue' }}
+                                            {{ $assignation->user->ecole->nom ?? 'École inconnue' }}
                                         </div>
                                     </div>
                                 </td>
