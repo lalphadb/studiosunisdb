@@ -14,15 +14,12 @@ class Cours extends Model
     protected $fillable = [
         'ecole_id',
         'nom',
-        'description',
+        'description', 
         'niveau',
-        'instructeur_principal_id',
-        'instructeur_assistant_id',
         'capacite_max',
-        'age_min',
-        'age_max',
-        'prix_session',
-        'duree_session_semaines',
+        'prix',
+        'duree_minutes',
+        'instructeur',
         'active',
     ];
 
@@ -30,6 +27,7 @@ class Cours extends Model
     {
         return [
             'active' => 'boolean',
+            'prix' => 'decimal:2',
         ];
     }
 
@@ -37,16 +35,6 @@ class Cours extends Model
     public function ecole(): BelongsTo
     {
         return $this->belongsTo(Ecole::class);
-    }
-
-    public function instructeur_principal(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'instructeur_principal_id');
-    }
-
-    public function instructeur_assistant(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'instructeur_assistant_id');
     }
 
     public function horaires(): HasMany
@@ -59,8 +47,16 @@ class Cours extends Model
         return $this->hasMany(InscriptionCours::class);
     }
 
-    public function presences(): HasMany
+    // Méthodes utiles pour statistiques
+    public function getPlacesDisponiblesAttribute()
     {
-        return $this->hasMany(Presence::class);
+        $inscriptions_actives = $this->inscriptions()->count();
+        return $this->capacite_max - $inscriptions_actives;
+    }
+
+    public function getStatutOccupationAttribute()
+    {
+        $inscriptions = $this->inscriptions()->count();
+        return $inscriptions . '/' . $this->capacite_max;
     }
 }

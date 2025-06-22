@@ -40,41 +40,45 @@
                         </div>
                         
                         <div>
-                            <span class="text-slate-400 text-sm font-medium">Type:</span>
+                            <span class="text-slate-400 text-sm font-medium">Niveau:</span>
                             <div class="mt-1">
-                                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                    {{ ucfirst($cours->type_cours) }}
+                                @php
+                                    $niveauClasses = [
+                                        'debutant' => 'bg-green-600',
+                                        'intermediaire' => 'bg-yellow-600',
+                                        'avance' => 'bg-red-600',
+                                        'tous_niveaux' => 'bg-blue-600'
+                                    ];
+                                    $niveauClass = $niveauClasses[$cours->niveau] ?? 'bg-slate-600';
+                                @endphp
+                                <span class="{{ $niveauClass }} text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ ucfirst(str_replace('_', ' ', $cours->niveau)) }}
                                 </span>
                             </div>
                         </div>
                         
                         <div>
-                            <span class="text-slate-400 text-sm font-medium">Niveau requis:</span>
-                            <div class="text-white font-semibold">{{ $cours->niveau_requis ?? 'Tous niveaux' }}</div>
-                        </div>
-                        
-                        <div>
-                            <span class="text-slate-400 text-sm font-medium">Tranche d'âge:</span>
-                            <div class="text-white font-semibold">{{ $cours->age_min }} - {{ $cours->age_max }} ans</div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <span class="text-slate-400 text-sm font-medium">Capacité:</span>
-                            <div class="text-white font-semibold">{{ $cours->capacite_max }} places</div>
+                            <span class="text-slate-400 text-sm font-medium">Instructeur:</span>
+                            <div class="text-white font-semibold">{{ $cours->instructeur ?? 'Non assigné' }}</div>
                         </div>
                         
                         <div>
                             <span class="text-slate-400 text-sm font-medium">Durée:</span>
                             <div class="text-white font-semibold">{{ $cours->duree_minutes }} minutes</div>
                         </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Capacité:</span>
+                            <div class="text-white font-semibold">{{ $cours->statut_occupation }}</div>
+                        </div>
                         
                         <div>
-                            <span class="text-slate-400 text-sm font-medium">Prix mensuel:</span>
+                            <span class="text-slate-400 text-sm font-medium">Prix session:</span>
                             <div class="text-white font-semibold">
-                                @if($cours->prix_mensuel)
-                                    ${{ number_format($cours->prix_mensuel, 2) }}
+                                @if($cours->prix)
+                                    ${{ number_format($cours->prix, 2) }}
                                 @else
                                     Non défini
                                 @endif
@@ -82,8 +86,17 @@
                         </div>
                         
                         <div>
-                            <span class="text-slate-400 text-sm font-medium">Salle:</span>
-                            <div class="text-white font-semibold">{{ $cours->salle ?? 'Non spécifiée' }}</div>
+                            <span class="text-slate-400 text-sm font-medium">Statut:</span>
+                            <div class="mt-1">
+                                <span class="{{ $cours->active ? 'bg-green-600' : 'bg-slate-600' }} text-white px-3 py-1 rounded-full text-sm font-medium">
+                                    {{ $cours->active ? 'Actif' : 'Inactif' }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="text-slate-400 text-sm font-medium">Créé le:</span>
+                            <div class="text-white font-semibold">{{ $cours->created_at->format('d/m/Y à H:i') }}</div>
                         </div>
                     </div>
                 </div>
@@ -96,31 +109,31 @@
                 @endif
             </div>
 
-            <!-- Instructeurs -->
-            @if($cours->instructeurPrincipal)
+            <!-- Horaires (si existants) -->
+            @if($cours->horaires->count() > 0)
             <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
                 <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-3">
-                    👨‍🏫 Instructeur(s)
+                    📅 Horaires
                 </h3>
                 
                 <div class="space-y-3">
-                    <div>
-                        <span class="text-slate-400 text-sm font-medium">Instructeur principal:</span>
-                        <div class="text-white font-semibold">{{ $cours->instructeurPrincipal->name }}</div>
+                    @foreach($cours->horaires as $horaire)
+                    <div class="flex items-center justify-between bg-slate-900 rounded-lg p-3">
+                        <div>
+                            <span class="text-white font-medium">{{ ucfirst($horaire->jour_semaine) }}</span>
+                            <span class="text-slate-400 ml-2">{{ $horaire->heure_debut->format('H:i') }} - {{ $horaire->heure_fin->format('H:i') }}</span>
+                        </div>
+                        <span class="{{ $horaire->active ? 'bg-green-600' : 'bg-slate-600' }} text-white px-2 py-1 rounded text-xs">
+                            {{ $horaire->active ? 'Actif' : 'Inactif' }}
+                        </span>
                     </div>
-                    
-                    @if($cours->instructeurAssistant)
-                    <div>
-                        <span class="text-slate-400 text-sm font-medium">Instructeur assistant:</span>
-                        <div class="text-white font-semibold">{{ $cours->instructeurAssistant->name }}</div>
-                    </div>
-                    @endif
+                    @endforeach
                 </div>
             </div>
             @endif
         </div>
 
-        <!-- Sidebar - Statistiques et Statut -->
+        <!-- Sidebar - Statistiques -->
         <div class="space-y-6">
             <!-- Statistiques -->
             <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
@@ -130,41 +143,19 @@
                 
                 <div class="space-y-4">
                     <div class="text-center bg-slate-900 rounded-lg p-4">
-                        <div class="text-3xl font-bold text-blue-400">{{ $stats['total_inscriptions'] ?? 0 }}</div>
+                        <div class="text-3xl font-bold text-blue-400">{{ $stats['total_inscriptions'] }}</div>
                         <div class="text-slate-400 text-sm">Inscriptions actives</div>
                     </div>
                     
                     <div class="text-center bg-slate-900 rounded-lg p-4">
-                        <div class="text-3xl font-bold text-green-400">{{ $stats['places_disponibles'] ?? 0 }}</div>
+                        <div class="text-3xl font-bold text-green-400">{{ $stats['places_disponibles'] }}</div>
                         <div class="text-slate-400 text-sm">Places disponibles</div>
                     </div>
                     
                     <div class="text-center bg-slate-900 rounded-lg p-4">
-                        <div class="text-3xl font-bold text-purple-400">${{ number_format($stats['revenus_mensuels'] ?? 0, 2) }}</div>
-                        <div class="text-slate-400 text-sm">Revenus mensuels</div>
+                        <div class="text-3xl font-bold text-purple-400">${{ number_format($stats['revenus_session'], 2) }}</div>
+                        <div class="text-slate-400 text-sm">Revenus session</div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Statut -->
-            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-3">
-                    🏷️ Statut
-                </h3>
-                
-                <div class="text-center">
-                    @php
-                        $statusClasses = [
-                            'actif' => 'bg-green-600',
-                            'inactif' => 'bg-slate-600',
-                            'complet' => 'bg-yellow-600',
-                            'annule' => 'bg-red-600'
-                        ];
-                        $statusClass = $statusClasses[$cours->status] ?? 'bg-slate-600';
-                    @endphp
-                    <span class="{{ $statusClass }} text-white px-6 py-3 rounded-lg text-lg font-semibold">
-                        {{ ucfirst($cours->status) }}
-                    </span>
                 </div>
             </div>
 
@@ -189,6 +180,25 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Suppression -->
+            @if(auth()->user()->hasRole('superadmin'))
+            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-red-400 mb-4 border-b border-slate-700 pb-3">
+                    ⚠️ Zone dangereuse
+                </h3>
+                
+                <form method="POST" action="{{ route('admin.cours.destroy', $cours) }}" 
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" 
+                            class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                        🗑️ Supprimer le cours
+                    </button>
+                </form>
+            </div>
+            @endif
         </div>
     </div>
 </div>

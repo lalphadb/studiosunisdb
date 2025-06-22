@@ -1,0 +1,1145 @@
+[1mdiff --git a/app/Http/Controllers/Admin/CoursController.php b/app/Http/Controllers/Admin/CoursController.php[m
+[1mindex e9b198c..e5c3d5d 100755[m
+[1m--- a/app/Http/Controllers/Admin/CoursController.php[m
+[1m+++ b/app/Http/Controllers/Admin/CoursController.php[m
+[36m@@ -4,6 +4,7 @@[m
+ [m
+ use App\Http\Controllers\Controller;[m
+ use App\Models\Cours;[m
+[32m+[m[32muse App\Models\Ecole;[m
+ use Illuminate\Http\Request;[m
+ use Illuminate\Routing\Controllers\HasMiddleware;[m
+ use Illuminate\Routing\Controllers\Middleware;[m
+[36m@@ -17,7 +18,7 @@[m [mpublic static function middleware(): array[m
+ [m
+     public function index()[m
+     {[m
+[31m-        $cours = Cours::with('ecole')[m
+[32m+[m[32m        $cours = Cours::with(['ecole', 'inscriptions'])[m
+             ->when(auth()->user()->ecole_id, fn($q, $ecole_id) => $q->where('ecole_id', $ecole_id))[m
+             ->paginate(15);[m
+             [m
+[36m@@ -26,31 +27,93 @@[m [mpublic function index()[m
+ [m
+     public function show(Cours $cours)[m
+     {[m
+[31m-        return view('admin.cours.show', compact('cours'));[m
+[32m+[m[32m        $cours->load(['ecole', 'horaires', 'inscriptions']);[m
+[32m+[m[41m        [m
+[32m+[m[32m        $stats = [[m
+[32m+[m[32m            'total_inscriptions' => $cours->inscriptions()->count(),[m
+[32m+[m[32m            'places_disponibles' => $cours->places_disponibles,[m
+[32m+[m[32m            'revenus_session' => $cours->inscriptions()->count() * ($cours->prix ?? 0),[m
+[32m+[m[32m        ];[m
+[32m+[m[41m        [m
+[32m+[m[32m        return view('admin.cours.show', compact('cours', 'stats'));[m
+     }[m
+ [m
+     public function create()[m
+     {[m
+[31m-        return view('admin.cours.create');[m
+[32m+[m[32m        $ecoles = auth()->user()->hasRole('superadmin')[m[41m [m
+[32m+[m[32m            ? Ecole::all()[m[41m [m
+[32m+[m[32m            : collect([auth()->user()->ecole]);[m
+[32m+[m[41m            [m
+[32m+[m[32m        return view('admin.cours.create', compact('ecoles'));[m
+     }[m
+ [m
+     public function store(Request $request)[m
+     {[m
+[31m-        return redirect()->route('admin.cours.index');[m
+[32m+[m[32m        $validated = $request->validate([[m
+[32m+[m[32m            'ecole_id' => 'required|exists:ecoles,id',[m
+[32m+[m[32m            'nom' => 'required|string|max:191',[m
+[32m+[m[32m            'description' => 'nullable|string',[m
+[32m+[m[32m            'niveau' => 'required|in:debutant,intermediaire,avance,tous_niveaux',[m
+[32m+[m[32m            'capacite_max' => 'required|integer|min:1|max:100',[m
+[32m+[m[32m            'prix' => 'nullable|numeric|min:0',[m
+[32m+[m[32m            'duree_minutes' => 'required|integer|min:30|max:180',[m
+[32m+[m[32m            'instructeur' => 'nullable|string|max:191',[m
+[32m+[m[32m            'active' => 'boolean',[m
+[32m+[m[32m        ]);[m
+[32m+[m
+[32m+[m[32m        if (!auth()->user()->hasRole('superadmin')) {[m
+[32m+[m[32m            $validated['ecole_id'] = auth()->user()->ecole_id;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        Cours::create($validated);[m
+[32m+[m
+[32m+[m[32m        return redirect()->route('admin.cours.index')[m
+[32m+[m[32m            ->with('success', 'Cours créé avec succès !');[m
+     }[m
+ [m
+     public function edit(Cours $cours)[m
+     {[m
+[31m-        return view('admin.cours.edit', compact('cours'));[m
+[32m+[m[32m        $ecoles = auth()->user()->hasRole('superadmin')[m[41m [m
+[32m+[m[32m            ? Ecole::all()[m[41m [m
+[32m+[m[32m            : collect([auth()->user()->ecole]);[m
+[32m+[m[41m            [m
+[32m+[m[32m        return view('admin.cours.edit', compact('cours', 'ecoles'));[m
+     }[m
+ [m
+     public function update(Request $request, Cours $cours)[m
+     {[m
+[31m-        return redirect()->route('admin.cours.show', $cours);[m
+[32m+[m[32m        $validated = $request->validate([[m
+[32m+[m[32m            'ecole_id' => 'required|exists:ecoles,id',[m
+[32m+[m[32m            'nom' => 'required|string|max:191',[m
+[32m+[m[32m            'description' => 'nullable|string',[m
+[32m+[m[32m            'niveau' => 'required|in:debutant,intermediaire,avance,tous_niveaux',[m
+[32m+[m[32m            'capacite_max' => 'required|integer|min:1|max:100',[m
+[32m+[m[32m            'prix' => 'nullable|numeric|min:0',[m
+[32m+[m[32m            'duree_minutes' => 'required|integer|min:30|max:180',[m
+[32m+[m[32m            'instructeur' => 'nullable|string|max:191',[m
+[32m+[m[32m            'active' => 'boolean',[m
+[32m+[m[32m        ]);[m
+[32m+[m
+[32m+[m[32m        if (!auth()->user()->hasRole('superadmin')) {[m
+[32m+[m[32m            $validated['ecole_id'] = auth()->user()->ecole_id;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        $cours->update($validated);[m
+[32m+[m
+[32m+[m[32m        return redirect()->route('admin.cours.show', $cours)[m
+[32m+[m[32m            ->with('success', 'Cours modifié avec succès !');[m
+     }[m
+ [m
+     public function destroy(Cours $cours)[m
+     {[m
+[31m-        return redirect()->route('admin.cours.index');[m
+[32m+[m[32m        if ($cours->inscriptions()->count() > 0) {[m
+[32m+[m[32m            return redirect()->route('admin.cours.index')[m
+[32m+[m[32m                ->with('error', 'Impossible de supprimer un cours avec des inscriptions actives.');[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        $cours->delete();[m
+[32m+[m
+[32m+[m[32m        return redirect()->route('admin.cours.index')[m
+[32m+[m[32m            ->with('success', 'Cours supprimé avec succès !');[m
+     }[m
+ }[m
+[1mdiff --git a/app/Http/Controllers/Admin/DashboardController.php b/app/Http/Controllers/Admin/DashboardController.php[m
+[1mindex 3b95a01..b14b1dd 100755[m
+[1m--- a/app/Http/Controllers/Admin/DashboardController.php[m
+[1m+++ b/app/Http/Controllers/Admin/DashboardController.php[m
+[36m@@ -6,43 +6,54 @@[m
+ use App\Models\User;[m
+ use App\Models\Ecole;[m
+ use App\Models\Ceinture;[m
+[32m+[m[32muse App\Models\Cours;[m
+[32m+[m[32muse Illuminate\Http\Request;[m
+[32m+[m[32muse Illuminate\Routing\Controllers\HasMiddleware;[m
+ [m
+[31m-class DashboardController extends Controller[m
+[32m+[m[32mclass DashboardController extends Controller implements HasMiddleware[m
+ {[m
+[32m+[m[32m    public static function middleware(): array[m
+[32m+[m[32m    {[m
+[32m+[m[32m        return ['auth', 'verified'];[m
+[32m+[m[32m    }[m
+[32m+[m
+     public function index()[m
+     {[m
+         $user = auth()->user();[m
+         [m
+[31m-        // Informations utilisateur[m
+[32m+[m[32m        // Informations utilisateur pour la vue[m
+         $userInfo = [[m
+             'name' => $user->name,[m
+[31m-            'role' => $user->roles->first()?->name ?? 'membre',[m
+[31m-            'ecole' => $user->ecole ? $user->ecole->nom : 'Global'[m
+[32m+[m[32m            'email' => $user->email,[m
+[32m+[m[32m            'role' => $user->getRoleNames()->first() ?? 'membre',[m
+[32m+[m[32m            'ecole' => $user->ecole->nom ?? 'Aucune école assignée',[m
+         ];[m
+         [m
+         // Statistiques selon le rôle[m
+[31m-        $stats = $this->getStats($user);[m
+[31m-        [m
+[31m-        return view('admin.dashboard', compact('userInfo', 'stats'));  // ✅ CORRECTION ICI[m
+[31m-    }[m
+[31m-    [m
+[31m-    private function getStats($user)[m
+[31m-    {[m
+         if ($user->hasRole('superadmin')) {[m
+[31m-            return [[m
+[32m+[m[32m            // SuperAdmin voit tout[m
+[32m+[m[32m            $stats = [[m
+                 'total_users' => User::count(),[m
+                 'total_ecoles' => Ecole::count(),[m
+[31m-                'total_cours' => 0,[m
+[31m-                'paiements_mois' => 0,[m
+[32m+[m[32m                'total_ceintures' => Ceinture::count(),[m
+[32m+[m[32m                'total_cours' => Cours::count(),[m
+[32m+[m[32m                'cours_actifs' => Cours::where('active', true)->count(),[m
+[32m+[m[32m                'users_actifs' => User::where('active', true)->count(),[m
+[32m+[m[32m                'paiements_mois' => 0, // TODO: Calculer quand module paiements sera fait[m
+             ];[m
+         } else {[m
+[31m-            // Stats pour admin d'école[m
+[31m-            return [[m
+[32m+[m[32m            // Admin d'école voit son école seulement[m
+[32m+[m[32m            $stats = [[m
+                 'total_users' => User::where('ecole_id', $user->ecole_id)->count(),[m
+[31m-                'total_ecoles' => 1,[m
+[31m-                'total_cours' => 0,[m
+[31m-                'paiements_mois' => 0,[m
+[32m+[m[32m                'total_ecoles' => 1, // Son école[m
+[32m+[m[32m                'total_ceintures' => Ceinture::count(),[m
+[32m+[m[32m                'total_cours' => Cours::where('ecole_id', $user->ecole_id)->count(),[m
+[32m+[m[32m                'cours_actifs' => Cours::where('ecole_id', $user->ecole_id)->where('active', true)->count(),[m
+[32m+[m[32m                'users_actifs' => User::where('ecole_id', $user->ecole_id)->where('active', true)->count(),[m
+[32m+[m[32m                'paiements_mois' => 0, // TODO: Calculer quand module paiements sera fait[m
+             ];[m
+         }[m
+[32m+[m
+[32m+[m[32m        return view('admin.dashboard', compact('stats', 'userInfo'));[m
+     }[m
+ }[m
+[1mdiff --git a/app/Models/Cours.php b/app/Models/Cours.php[m
+[1mindex ea4b631..8bc8405 100755[m
+[1m--- a/app/Models/Cours.php[m
+[1m+++ b/app/Models/Cours.php[m
+[36m@@ -14,15 +14,12 @@[m [mclass Cours extends Model[m
+     protected $fillable = [[m
+         'ecole_id',[m
+         'nom',[m
+[31m-        'description',[m
+[32m+[m[32m        'description',[m[41m [m
+         'niveau',[m
+[31m-        'instructeur_principal_id',[m
+[31m-        'instructeur_assistant_id',[m
+         'capacite_max',[m
+[31m-        'age_min',[m
+[31m-        'age_max',[m
+[31m-        'prix_session',[m
+[31m-        'duree_session_semaines',[m
+[32m+[m[32m        'prix',[m
+[32m+[m[32m        'duree_minutes',[m
+[32m+[m[32m        'instructeur',[m
+         'active',[m
+     ];[m
+ [m
+[36m@@ -30,6 +27,7 @@[m [mprotected function casts(): array[m
+     {[m
+         return [[m
+             'active' => 'boolean',[m
+[32m+[m[32m            'prix' => 'decimal:2',[m
+         ];[m
+     }[m
+ [m
+[36m@@ -39,16 +37,6 @@[m [mpublic function ecole(): BelongsTo[m
+         return $this->belongsTo(Ecole::class);[m
+     }[m
+ [m
+[31m-    public function instructeur_principal(): BelongsTo[m
+[31m-    {[m
+[31m-        return $this->belongsTo(User::class, 'instructeur_principal_id');[m
+[31m-    }[m
+[31m-[m
+[31m-    public function instructeur_assistant(): BelongsTo[m
+[31m-    {[m
+[31m-        return $this->belongsTo(User::class, 'instructeur_assistant_id');[m
+[31m-    }[m
+[31m-[m
+     public function horaires(): HasMany[m
+     {[m
+         return $this->hasMany(CoursHoraire::class);[m
+[36m@@ -59,8 +47,16 @@[m [mpublic function inscriptions(): HasMany[m
+         return $this->hasMany(InscriptionCours::class);[m
+     }[m
+ [m
+[31m-    public function presences(): HasMany[m
+[32m+[m[32m    // Méthodes utiles pour statistiques[m
+[32m+[m[32m    public function getPlacesDisponiblesAttribute()[m
+[32m+[m[32m    {[m
+[32m+[m[32m        $inscriptions_actives = $this->inscriptions()->count();[m
+[32m+[m[32m        return $this->capacite_max - $inscriptions_actives;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public function getStatutOccupationAttribute()[m
+     {[m
+[31m-        return $this->hasMany(Presence::class);[m
+[32m+[m[32m        $inscriptions = $this->inscriptions()->count();[m
+[32m+[m[32m        return $inscriptions . '/' . $this->capacite_max;[m
+     }[m
+ }[m
+[1mdiff --git a/resources/views/admin/cours/create.blade.php b/resources/views/admin/cours/create.blade.php[m
+[1mindex 8c4a800..9197693 100755[m
+[1m--- a/resources/views/admin/cours/create.blade.php[m
+[1m+++ b/resources/views/admin/cours/create.blade.php[m
+[36m@@ -49,71 +49,43 @@[m [mclass="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py[m
+                         <label for="nom" class="block text-sm font-medium text-white mb-2">Nom du cours *</label>[m
+                         <input type="text" name="nom" id="nom" required[m
+                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('nom') border-red-500 @enderror" [m
+[31m-                               value="{{ old('nom') }}">[m
+[32m+[m[32m                               value="{{ old('nom') }}"[m
+[32m+[m[32m                               placeholder="Ex: Karaté parents-enfants 18h-19h">[m
+                         @error('nom')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+                     <div>[m
+                         <label for="description" class="block text-sm font-medium text-white mb-2">Description</label>[m
+                         <textarea name="description" id="description" rows="3"[m
+[31m-                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>[m
+[32m+[m[32m                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('description') border-red-500 @enderror"[m
+[32m+[m[32m                                  placeholder="Détails du cours, public cible, spécificités...">{{ old('description') }}</textarea>[m
+                         @error('description')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+[31m-                    <div class="grid grid-cols-2 gap-4">[m
+[31m-                        <div>[m
+[31m-                            <label for="type_cours" class="block text-sm font-medium text-white mb-2">Type *</label>[m
+[31m-                            <select name="type_cours" id="type_cours" required[m
+[31m-                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('type_cours') border-red-500 @enderror">[m
+[31m-                                <option value="">Sélectionner</option>[m
+[31m-                                <option value="regulier" {{ old('type_cours') == 'regulier' ? 'selected' : '' }}>Régulier</option>[m
+[31m-                                <option value="specialise" {{ old('type_cours') == 'specialise' ? 'selected' : '' }}>Spécialisé</option>[m
+[31m-                                <option value="competition" {{ old('type_cours') == 'competition' ? 'selected' : '' }}>Compétition</option>[m
+[31m-                                <option value="examen" {{ old('type_cours') == 'examen' ? 'selected' : '' }}>Examen</option>[m
+[31m-                            </select>[m
+[31m-                            @error('type_cours')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-[m
+[31m-                        <div>[m
+[31m-                            <label for="status" class="block text-sm font-medium text-white mb-2">Statut *</label>[m
+[31m-                            <select name="status" id="status" required[m
+[31m-                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('status') border-red-500 @enderror">[m
+[31m-                                <option value="actif" {{ old('status', 'actif') == 'actif' ? 'selected' : '' }}>Actif</option>[m
+[31m-                                <option value="inactif" {{ old('status') == 'inactif' ? 'selected' : '' }}>Inactif</option>[m
+[31m-                            </select>[m
+[31m-                            @error('status')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[32m+[m[32m                    <div>[m
+[32m+[m[32m                        <label for="niveau" class="block text-sm font-medium text-white mb-2">Niveau *</label>[m
+[32m+[m[32m                        <select name="niveau" id="niveau" required[m
+[32m+[m[32m                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('niveau') border-red-500 @enderror">[m
+[32m+[m[32m                            <option value="">Sélectionner un niveau</option>[m
+[32m+[m[32m                            <option value="debutant" {{ old('niveau') == 'debutant' ? 'selected' : '' }}>Débutant</option>[m
+[32m+[m[32m                            <option value="intermediaire" {{ old('niveau') == 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>[m
+[32m+[m[32m                            <option value="avance" {{ old('niveau') == 'avance' ? 'selected' : '' }}>Avancé</option>[m
+[32m+[m[32m                            <option value="tous_niveaux" {{ old('niveau') == 'tous_niveaux' ? 'selected' : '' }}>Tous niveaux</option>[m
+[32m+[m[32m                        </select>[m
+[32m+[m[32m                        @error('niveau')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+                 </div>[m
+ [m
+                 <!-- Colonne droite -->[m
+                 <div class="space-y-6">[m
+                     <h3 class="text-xl font-semibold text-white border-b border-slate-700 pb-3">[m
+[31m-                        Détails du cours[m
+[32m+[m[32m                        Détails pratiques[m
+                     </h3>[m
+ [m
+                     <div class="grid grid-cols-2 gap-4">[m
+                         <div>[m
+[31m-                            <label for="age_min" class="block text-sm font-medium text-white mb-2">Âge min *</label>[m
+[31m-                            <input type="number" name="age_min" id="age_min" min="3" max="99" required[m
+[31m-                                   class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('age_min') border-red-500 @enderror" [m
+[31m-                                   value="{{ old('age_min', 5) }}">[m
+[31m-                            @error('age_min')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-[m
+[31m-                        <div>[m
+[31m-                            <label for="age_max" class="block text-sm font-medium text-white mb-2">Âge max *</label>[m
+[31m-                            <input type="number" name="age_max" id="age_max" min="3" max="99" required[m
+[31m-                                   class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('age_max') border-red-500 @enderror" [m
+[31m-                                   value="{{ old('age_max', 99) }}">[m
+[31m-                            @error('age_max')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-                    </div>[m
+[31m-[m
+[31m-                    <div class="grid grid-cols-2 gap-4">[m
+[31m-                        <div>[m
+[31m-                            <label for="capacite_max" class="block text-sm font-medium text-white mb-2">Capacité *</label>[m
+[31m-                            <input type="number" name="capacite_max" id="capacite_max" min="1" max="50" required[m
+[32m+[m[32m                            <label for="capacite_max" class="block text-sm font-medium text-white mb-2">Capacité max *</label>[m
+[32m+[m[32m                            <input type="number" name="capacite_max" id="capacite_max" min="1" max="100" required[m
+                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('capacite_max') border-red-500 @enderror" [m
+                                    value="{{ old('capacite_max', 20) }}">[m
+                             @error('capacite_max')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[36m@@ -129,33 +101,31 @@[m [mclass="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py[m
+                     </div>[m
+ [m
+                     <div>[m
+[31m-                        <label for="prix_mensuel" class="block text-sm font-medium text-white mb-2">Prix mensuel ($)</label>[m
+[31m-                        <input type="number" name="prix_mensuel" id="prix_mensuel" min="0" step="0.01"[m
+[31m-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('prix_mensuel') border-red-500 @enderror" [m
+[31m-                               value="{{ old('prix_mensuel') }}">[m
+[31m-                        @error('prix_mensuel')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label for="prix" class="block text-sm font-medium text-white mb-2">Prix session ($)</label>[m
+[32m+[m[32m                        <input type="number" name="prix" id="prix" min="0" step="0.01"[m
+[32m+[m[32m                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('prix') border-red-500 @enderror"[m[41m [m
+[32m+[m[32m                               value="{{ old('prix') }}"[m
+[32m+[m[32m                               placeholder="Prix pour la session complète">[m
+[32m+[m[32m                        @error('prix')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+                     <div>[m
+[31m-                        <label for="instructeur_principal_id" class="block text-sm font-medium text-white mb-2">Instructeur principal</label>[m
+[31m-                        <select name="instructeur_principal_id" id="instructeur_principal_id"[m
+[31m-                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('instructeur_principal_id') border-red-500 @enderror">[m
+[31m-                            <option value="">Sélectionner</option>[m
+[31m-                            @foreach($instructeurs as $instructeur)[m
+[31m-                            <option value="{{ $instructeur->id }}" {{ old('instructeur_principal_id') == $instructeur->id ? 'selected' : '' }}>[m
+[31m-                                {{ $instructeur->name }}[m
+[31m-                            </option>[m
+[31m-                            @endforeach[m
+[31m-                        </select>[m
+[31m-                        @error('instructeur_principal_id')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label for="instructeur" class="block text-sm font-medium text-white mb-2">Instructeur</label>[m
+[32m+[m[32m                        <input type="text" name="instructeur" id="instructeur"[m
+[32m+[m[32m                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('instructeur') border-red-500 @enderror"[m[41m [m
+[32m+[m[32m                               value="{{ old('instructeur') }}"[m
+[32m+[m[32m                               placeholder="Nom de l'instructeur">[m
+[32m+[m[32m                        @error('instructeur')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+                     <div>[m
+[31m-                        <label for="salle" class="block text-sm font-medium text-white mb-2">Salle</label>[m
+[31m-                        <input type="text" name="salle" id="salle"[m
+[31m-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('salle') border-red-500 @enderror" [m
+[31m-                               value="{{ old('salle') }}">[m
+[31m-                        @error('salle')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label class="flex items-center space-x-3">[m
+[32m+[m[32m                            <input type="hidden" name="active" value="0">[m
+[32m+[m[32m                            <input type="checkbox" name="active" value="1"[m[41m [m
+[32m+[m[32m                                   class="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"[m
+[32m+[m[32m                                   {{ old('active', true) ? 'checked' : '' }}>[m
+[32m+[m[32m                            <span class="text-white font-medium">Cours actif</span>[m
+[32m+[m[32m                        </label>[m
+                     </div>[m
+                 </div>[m
+             </div>[m
+[1mdiff --git a/resources/views/admin/cours/edit.blade.php b/resources/views/admin/cours/edit.blade.php[m
+[1mindex 1efe00b..0a0d71c 100755[m
+[1m--- a/resources/views/admin/cours/edit.blade.php[m
+[1m+++ b/resources/views/admin/cours/edit.blade.php[m
+[36m@@ -50,82 +50,43 @@[m [mclass="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py[m
+                         <label for="nom" class="block text-sm font-medium text-white mb-2">Nom du cours *</label>[m
+                         <input type="text" name="nom" id="nom" required[m
+                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('nom') border-red-500 @enderror" [m
+[31m-                               value="{{ old('nom', $cours->nom) }}">[m
+[32m+[m[32m                               value="{{ old('nom', $cours->nom) }}"[m
+[32m+[m[32m                               placeholder="Ex: Karaté parents-enfants 18h-19h">[m
+                         @error('nom')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+                     <div>[m
+                         <label for="description" class="block text-sm font-medium text-white mb-2">Description</label>[m
+                         <textarea name="description" id="description" rows="3"[m
+[31m-                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('description') border-red-500 @enderror">{{ old('description', $cours->description) }}</textarea>[m
+[32m+[m[32m                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('description') border-red-500 @enderror"[m
+[32m+[m[32m                                  placeholder="Détails du cours, public cible, spécificités...">{{ old('description', $cours->description) }}</textarea>[m
+                         @error('description')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+[31m-                    <div class="grid grid-cols-2 gap-4">[m
+[31m-                        <div>[m
+[31m-                            <label for="type_cours" class="block text-sm font-medium text-white mb-2">Type *</label>[m
+[31m-                            <select name="type_cours" id="type_cours" required[m
+[31m-                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('type_cours') border-red-500 @enderror">[m
+[31m-                                <option value="">Sélectionner</option>[m
+[31m-                                <option value="regulier" {{ old('type_cours', $cours->type_cours) == 'regulier' ? 'selected' : '' }}>Régulier</option>[m
+[31m-                                <option value="specialise" {{ old('type_cours', $cours->type_cours) == 'specialise' ? 'selected' : '' }}>Spécialisé</option>[m
+[31m-                                <option value="competition" {{ old('type_cours', $cours->type_cours) == 'competition' ? 'selected' : '' }}>Compétition</option>[m
+[31m-                                <option value="examen" {{ old('type_cours', $cours->type_cours) == 'examen' ? 'selected' : '' }}>Examen</option>[m
+[31m-                            </select>[m
+[31m-                            @error('type_cours')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-[m
+[31m-                        <div>[m
+[31m-                            <label for="status" class="block text-sm font-medium text-white mb-2">Statut *</label>[m
+[31m-                            <select name="status" id="status" required[m
+[31m-                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('status') border-red-500 @enderror">[m
+[31m-                                <option value="actif" {{ old('status', $cours->status) == 'actif' ? 'selected' : '' }}>Actif</option>[m
+[31m-                                <option value="inactif" {{ old('status', $cours->status) == 'inactif' ? 'selected' : '' }}>Inactif</option>[m
+[31m-                                <option value="complet" {{ old('status', $cours->status) == 'complet' ? 'selected' : '' }}>Complet</option>[m
+[31m-                                <option value="annule" {{ old('status', $cours->status) == 'annule' ? 'selected' : '' }}>Annulé</option>[m
+[31m-                            </select>[m
+[31m-                            @error('status')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-                    </div>[m
+[31m-[m
+                     <div>[m
+[31m-                        <label for="niveau_requis" class="block text-sm font-medium text-white mb-2">Niveau requis</label>[m
+[31m-                        <input type="text" name="niveau_requis" id="niveau_requis"[m
+[31m-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('niveau_requis') border-red-500 @enderror" [m
+[31m-                               value="{{ old('niveau_requis', $cours->niveau_requis) }}" [m
+[31m-                               placeholder="Ex: Débutant, Ceinture jaune...">[m
+[31m-                        @error('niveau_requis')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label for="niveau" class="block text-sm font-medium text-white mb-2">Niveau *</label>[m
+[32m+[m[32m                        <select name="niveau" id="niveau" required[m
+[32m+[m[32m                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('niveau') border-red-500 @enderror">[m
+[32m+[m[32m                            <option value="">Sélectionner un niveau</option>[m
+[32m+[m[32m                            <option value="debutant" {{ old('niveau', $cours->niveau) == 'debutant' ? 'selected' : '' }}>Débutant</option>[m
+[32m+[m[32m                            <option value="intermediaire" {{ old('niveau', $cours->niveau) == 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>[m
+[32m+[m[32m                            <option value="avance" {{ old('niveau', $cours->niveau) == 'avance' ? 'selected' : '' }}>Avancé</option>[m
+[32m+[m[32m                            <option value="tous_niveaux" {{ old('niveau', $cours->niveau) == 'tous_niveaux' ? 'selected' : '' }}>Tous niveaux</option>[m
+[32m+[m[32m                        </select>[m
+[32m+[m[32m                        @error('niveau')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+                 </div>[m
+ [m
+                 <!-- Colonne droite -->[m
+                 <div class="space-y-6">[m
+                     <h3 class="text-xl font-semibold text-white border-b border-slate-700 pb-3">[m
+[31m-                        Détails du cours[m
+[32m+[m[32m                        Détails pratiques[m
+                     </h3>[m
+ [m
+                     <div class="grid grid-cols-2 gap-4">[m
+                         <div>[m
+[31m-                            <label for="age_min" class="block text-sm font-medium text-white mb-2">Âge min *</label>[m
+[31m-                            <input type="number" name="age_min" id="age_min" min="3" max="99" required[m
+[31m-                                   class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('age_min') border-red-500 @enderror" [m
+[31m-                                   value="{{ old('age_min', $cours->age_min) }}">[m
+[31m-                            @error('age_min')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-[m
+[31m-                        <div>[m
+[31m-                            <label for="age_max" class="block text-sm font-medium text-white mb-2">Âge max *</label>[m
+[31m-                            <input type="number" name="age_max" id="age_max" min="3" max="99" required[m
+[31m-                                   class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('age_max') border-red-500 @enderror" [m
+[31m-                                   value="{{ old('age_max', $cours->age_max) }}">[m
+[31m-                            @error('age_max')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[31m-                        </div>[m
+[31m-                    </div>[m
+[31m-[m
+[31m-                    <div class="grid grid-cols-2 gap-4">[m
+[31m-                        <div>[m
+[31m-                            <label for="capacite_max" class="block text-sm font-medium text-white mb-2">Capacité *</label>[m
+[31m-                            <input type="number" name="capacite_max" id="capacite_max" min="1" max="50" required[m
+[32m+[m[32m                            <label for="capacite_max" class="block text-sm font-medium text-white mb-2">Capacité max *</label>[m
+[32m+[m[32m                            <input type="number" name="capacite_max" id="capacite_max" min="1" max="100" required[m
+                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('capacite_max') border-red-500 @enderror" [m
+                                    value="{{ old('capacite_max', $cours->capacite_max) }}">[m
+                             @error('capacite_max')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[36m@@ -141,33 +102,31 @@[m [mclass="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py[m
+                     </div>[m
+ [m
+                     <div>[m
+[31m-                        <label for="prix_mensuel" class="block text-sm font-medium text-white mb-2">Prix mensuel ($)</label>[m
+[31m-                        <input type="number" name="prix_mensuel" id="prix_mensuel" min="0" step="0.01"[m
+[31m-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('prix_mensuel') border-red-500 @enderror" [m
+[31m-                               value="{{ old('prix_mensuel', $cours->prix_mensuel) }}">[m
+[31m-                        @error('prix_mensuel')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label for="prix" class="block text-sm font-medium text-white mb-2">Prix session ($)</label>[m
+[32m+[m[32m                        <input type="number" name="prix" id="prix" min="0" step="0.01"[m
+[32m+[m[32m                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('prix') border-red-500 @enderror"[m[41m [m
+[32m+[m[32m                               value="{{ old('prix', $cours->prix) }}"[m
+[32m+[m[32m                               placeholder="Prix pour la session complète">[m
+[32m+[m[32m                        @error('prix')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+                     <div>[m
+[31m-                        <label for="instructeur_principal_id" class="block text-sm font-medium text-white mb-2">Instructeur principal</label>[m
+[31m-                        <select name="instructeur_principal_id" id="instructeur_principal_id"[m
+[31m-                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('instructeur_principal_id') border-red-500 @enderror">[m
+[31m-                            <option value="">Sélectionner</option>[m
+[31m-                            @foreach($instructeurs as $instructeur)[m
+[31m-                            <option value="{{ $instructeur->id }}" {{ old('instructeur_principal_id', $cours->instructeur_principal_id) == $instructeur->id ? 'selected' : '' }}>[m
+[31m-                                {{ $instructeur->name }}[m
+[31m-                            </option>[m
+[31m-                            @endforeach[m
+[31m-                        </select>[m
+[31m-                        @error('instructeur_principal_id')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label for="instructeur" class="block text-sm font-medium text-white mb-2">Instructeur</label>[m
+[32m+[m[32m                        <input type="text" name="instructeur" id="instructeur"[m
+[32m+[m[32m                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('instructeur') border-red-500 @enderror"[m[41m [m
+[32m+[m[32m                               value="{{ old('instructeur', $cours->instructeur) }}"[m
+[32m+[m[32m                               placeholder="Nom de l'instructeur">[m
+[32m+[m[32m                        @error('instructeur')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+                     </div>[m
+ [m
+                     <div>[m
+[31m-                        <label for="salle" class="block text-sm font-medium text-white mb-2">Salle</label>[m
+[31m-                        <input type="text" name="salle" id="salle"[m
+[31m-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('salle') border-red-500 @enderror" [m
+[31m-                               value="{{ old('salle', $cours->salle) }}">[m
+[31m-                        @error('salle')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror[m
+[32m+[m[32m                        <label class="flex items-center space-x-3">[m
+[32m+[m[32m                            <input type="hidden" name="active" value="0">[m
+[32m+[m[32m                            <input type="checkbox" name="active" value="1"[m[41m [m
+[32m+[m[32m                                   class="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"[m
+[32m+[m[32m                                   {{ old('active', $cours->active) ? 'checked' : '' }}>[m
+[32m+[m[32m                            <span class="text-white font-medium">Cours actif</span>[m
+[32m+[m[32m                        </label>[m
+                     </div>[m
+                 </div>[m
+             </div>[m
+[36m@@ -180,7 +139,7 @@[m [mclass="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semi[m
+                 <button type="submit" [m
+                         class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2">[m
+                     <span>💾</span>[m
+[31m-                    <span>Modifier le cours</span>[m
+[32m+[m[32m                    <span>Sauvegarder</span>[m
+                 </button>[m
+             </div>[m
+         </form>[m
+[1mdiff --git a/resources/views/admin/cours/index.blade.php b/resources/views/admin/cours/index.blade.php[m
+[1mindex b876367..07cbf39 100755[m
+[1m--- a/resources/views/admin/cours/index.blade.php[m
+[1m+++ b/resources/views/admin/cours/index.blade.php[m
+[36m@@ -1,7 +1,6 @@[m
+ @extends('layouts.admin')[m
+ [m
+ @section('title', 'Gestion des Cours')[m
+[31m-@section('page-title', 'Cours')[m
+ [m
+ @section('content')[m
+ <div class="space-y-8">[m
+[36m@@ -13,7 +12,7 @@[m
+                 <p class="text-purple-100 text-lg">Planning et organisation des cours de karaté</p>[m
+             </div>[m
+             <div class="flex space-x-3">[m
+[31m-                <a href="{{ route('admin.cours.create') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg font-medium transition-all">[m
+[32m+[m[32m                <a href="{{ route('admin.cours.create') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-6 py-3 rounded-lg font-medium transition-all">[m
+                     ➕ Nouveau cours[m
+                 </a>[m
+             </div>[m
+[36m@@ -22,7 +21,7 @@[m
+ [m
+     {{-- Statistiques --}}[m
+     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">[m
+[31m-        <div class="card-glass p-6">[m
+[32m+[m[32m        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+             <div class="flex items-center justify-between">[m
+                 <div>[m
+                     <p class="text-gray-400 text-sm font-medium">Total cours</p>[m
+[36m@@ -34,7 +33,7 @@[m
+             </div>[m
+         </div>[m
+ [m
+[31m-        <div class="card-glass p-6">[m
+[32m+[m[32m        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+             <div class="flex items-center justify-between">[m
+                 <div>[m
+                     <p class="text-gray-400 text-sm font-medium">Cours actifs</p>[m
+[36m@@ -46,33 +45,33 @@[m
+             </div>[m
+         </div>[m
+ [m
+[31m-        <div class="card-glass p-6">[m
+[32m+[m[32m        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+             <div class="flex items-center justify-between">[m
+                 <div>[m
+[31m-                    <p class="text-gray-400 text-sm font-medium">Cette semaine</p>[m
+[31m-                    <p class="text-3xl font-bold text-white">0</p>[m
+[32m+[m[32m                    <p class="text-gray-400 text-sm font-medium">Inscriptions</p>[m
+[32m+[m[32m                    <p class="text-3xl font-bold text-white">{{ $cours->sum(function($c) { return $c->inscriptions->count(); }) }}</p>[m
+                 </div>[m
+                 <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">[m
+[31m-                    <span class="text-2xl">📅</span>[m
+[32m+[m[32m                    <span class="text-2xl">👥</span>[m
+                 </div>[m
+             </div>[m
+         </div>[m
+ [m
+[31m-        <div class="card-glass p-6">[m
+[32m+[m[32m        <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+             <div class="flex items-center justify-between">[m
+                 <div>[m
+[31m-                    <p class="text-gray-400 text-sm font-medium">Inscrits total</p>[m
+[31m-                    <p class="text-3xl font-bold text-white">0</p>[m
+[32m+[m[32m                    <p class="text-gray-400 text-sm font-medium">Revenus</p>[m
+[32m+[m[32m                    <p class="text-3xl font-bold text-white">${{ number_format($cours->sum(function($c) { return $c->inscriptions->count() * ($c->prix ?? 0); }), 2) }}</p>[m
+                 </div>[m
+                 <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">[m
+[31m-                    <span class="text-2xl">👥</span>[m
+[32m+[m[32m                    <span class="text-2xl">💰</span>[m
+                 </div>[m
+             </div>[m
+         </div>[m
+     </div>[m
+ [m
+     {{-- Liste des cours --}}[m
+[31m-    <div class="card-glass">[m
+[32m+[m[32m    <div class="bg-slate-800 border border-slate-700 rounded-lg">[m
+         <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-t-xl">[m
+             <h3 class="text-xl font-bold text-white">📋 Liste des cours</h3>[m
+         </div>[m
+[36m@@ -85,8 +84,9 @@[m
+                                 <th class="text-left py-3 px-4 font-medium text-gray-300">Cours</th>[m
+                                 <th class="text-left py-3 px-4 font-medium text-gray-300">École</th>[m
+                                 <th class="text-left py-3 px-4 font-medium text-gray-300">Niveau</th>[m
+[31m-                                <th class="text-left py-3 px-4 font-medium text-gray-300">Capacité</th>[m
+[32m+[m[32m                                <th class="text-left py-3 px-4 font-medium text-gray-300">Occupation</th>[m
+                                 <th class="text-left py-3 px-4 font-medium text-gray-300">Prix</th>[m
+[32m+[m[32m                                <th class="text-left py-3 px-4 font-medium text-gray-300">Statut</th>[m
+                                 <th class="text-left py-3 px-4 font-medium text-gray-300">Actions</th>[m
+                             </tr>[m
+                         </thead>[m
+[36m@@ -96,46 +96,51 @@[m
+                                 <td class="py-4 px-4">[m
+                                     <div>[m
+                                         <p class="font-medium text-white">{{ $coursItem->nom }}</p>[m
+[31m-                                        <p class="text-sm text-gray-400">{{ $coursItem->duree_minutes }}min</p>[m
+[32m+[m[32m                                        <p class="text-sm text-gray-400">{{ $coursItem->duree_minutes }}min • {{ $coursItem->instructeur ?? 'Pas d\'instructeur' }}</p>[m
+                                     </div>[m
+                                 </td>[m
+                                 <td class="py-4 px-4">[m
+                                     <span class="px-2 py-1 rounded-full text-xs bg-blue-600 text-white">[m
+[31m-                                        {{ $coursItem->ecole->nom ?? 'Non assigné' }}[m
+[32m+[m[32m                                        {{ $coursItem->ecole->code ?? 'N/A' }}[m
+                                     </span>[m
+                                 </td>[m
+                                 <td class="py-4 px-4">[m
+[31m-                                    <span class="px-2 py-1 rounded-full text-xs [m
+[31m-                                        @if($coursItem->niveau == 'debutant') bg-green-600 [m
+[31m-                                        @elseif($coursItem->niveau == 'intermediaire') bg-yellow-600 [m
+[31m-                                        @elseif($coursItem->niveau == 'avance') bg-red-600 [m
+[31m-                                        @else bg-purple-600 @endif text-white">[m
+[31m-                                        {{ ucfirst($coursItem->niveau) }}[m
+[32m+[m[32m                                    @php[m
+[32m+[m[32m                                        $niveauClasses = [[m
+[32m+[m[32m                                            'debutant' => 'bg-green-600',[m
+[32m+[m[32m                                            'intermediaire' => 'bg-yellow-600',[m
+[32m+[m[32m                                            'avance' => 'bg-red-600',[m
+[32m+[m[32m                                            'tous_niveaux' => 'bg-blue-600'[m
+[32m+[m[32m                                        ];[m
+[32m+[m[32m                                        $niveauClass = $niveauClasses[$coursItem->niveau] ?? 'bg-slate-600';[m
+[32m+[m[32m                                    @endphp[m
+[32m+[m[32m                                    <span class="px-2 py-1 rounded-full text-xs {{ $niveauClass }} text-white">[m
+[32m+[m[32m                                        {{ ucfirst(str_replace('_', ' ', $coursItem->niveau)) }}[m
+                                     </span>[m
+                                 </td>[m
+                                 <td class="py-4 px-4">[m
+[31m-                                    <span class="text-gray-300">{{ $coursItem->capacite_max }} places</span>[m
+[32m+[m[32m                                    <span class="text-gray-300 font-medium">{{ $coursItem->statut_occupation }}</span>[m
+                                 </td>[m
+                                 <td class="py-4 px-4">[m
+                                     <span class="text-green-400 font-medium">[m
+[31m-                                        {{ $coursItem->prix ? $coursItem->prix . '$' : 'Gratuit' }}[m
+[32m+[m[32m                                        {{ $coursItem->prix ? '$' . number_format($coursItem->prix, 2) : 'Gratuit' }}[m
+[32m+[m[32m                                    </span>[m
+[32m+[m[32m                                </td>[m
+[32m+[m[32m                                <td class="py-4 px-4">[m
+[32m+[m[32m                                    <span class="{{ $coursItem->active ? 'bg-green-600' : 'bg-slate-600' }} text-white px-2 py-1 rounded-full text-xs">[m
+[32m+[m[32m                                        {{ $coursItem->active ? 'Actif' : 'Inactif' }}[m
+                                     </span>[m
+                                 </td>[m
+                                 <td class="py-4 px-4">[m
+                                     <div class="flex space-x-2">[m
+[32m+[m[32m                                        <a href="{{ route('admin.cours.show', $coursItem) }}"[m[41m [m
+[32m+[m[32m                                           class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">[m
+[32m+[m[32m                                            👁️ Voir[m
+[32m+[m[32m                                        </a>[m
+                                         <a href="{{ route('admin.cours.edit', $coursItem) }}" [m
+[31m-                                           class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">[m
+[32m+[m[32m                                           class="px-3 py-1 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm">[m
+                                             ✏️ Modifier[m
+                                         </a>[m
+[31m-                                        <form method="POST" action="{{ route('admin.cours.destroy', $coursItem) }}" class="inline">[m
+[31m-                                            @csrf[m
+[31m-                                            @method('DELETE')[m
+[31m-                                            <button type="submit" [m
+[31m-                                                    onclick="return confirm('Supprimer ce cours ?')"[m
+[31m-                                                    class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">[m
+[31m-                                                🗑️ Supprimer[m
+[31m-                                            </button>[m
+[31m-                                        </form>[m
+                                     </div>[m
+                                 </td>[m
+                             </tr>[m
+[1mdiff --git a/resources/views/admin/cours/show.blade.php b/resources/views/admin/cours/show.blade.php[m
+[1mindex e8704a7..4ed28f7 100755[m
+[1m--- a/resources/views/admin/cours/show.blade.php[m
+[1m+++ b/resources/views/admin/cours/show.blade.php[m
+[36m@@ -40,41 +40,45 @@[m [mclass="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semi[m
+                         </div>[m
+                         [m
+                         <div>[m
+[31m-                            <span class="text-slate-400 text-sm font-medium">Type:</span>[m
+[32m+[m[32m                            <span class="text-slate-400 text-sm font-medium">Niveau:</span>[m
+                             <div class="mt-1">[m
+[31m-                                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">[m
+[31m-                                    {{ ucfirst($cours->type_cours) }}[m
+[32m+[m[32m                                @php[m
+[32m+[m[32m                                    $niveauClasses = [[m
+[32m+[m[32m                                        'debutant' => 'bg-green-600',[m
+[32m+[m[32m                                        'intermediaire' => 'bg-yellow-600',[m
+[32m+[m[32m                                        'avance' => 'bg-red-600',[m
+[32m+[m[32m                                        'tous_niveaux' => 'bg-blue-600'[m
+[32m+[m[32m                                    ];[m
+[32m+[m[32m                                    $niveauClass = $niveauClasses[$cours->niveau] ?? 'bg-slate-600';[m
+[32m+[m[32m                                @endphp[m
+[32m+[m[32m                                <span class="{{ $niveauClass }} text-white px-3 py-1 rounded-full text-sm font-medium">[m
+[32m+[m[32m                                    {{ ucfirst(str_replace('_', ' ', $cours->niveau)) }}[m
+                                 </span>[m
+                             </div>[m
+                         </div>[m
+                         [m
+                         <div>[m
+[31m-                            <span class="text-slate-400 text-sm font-medium">Niveau requis:</span>[m
+[31m-                            <div class="text-white font-semibold">{{ $cours->niveau_requis ?? 'Tous niveaux' }}</div>[m
+[32m+[m[32m                            <span class="text-slate-400 text-sm font-medium">Instructeur:</span>[m
+[32m+[m[32m                            <div class="text-white font-semibold">{{ $cours->instructeur ?? 'Non assigné' }}</div>[m
+                         </div>[m
+                         [m
+                         <div>[m
+[31m-                            <span class="text-slate-400 text-sm font-medium">Tranche d'âge:</span>[m
+[31m-                            <div class="text-white font-semibold">{{ $cours->age_min }} - {{ $cours->age_max }} ans</div>[m
+[32m+[m[32m                            <span class="text-slate-400 text-sm font-medium">Durée:</span>[m
+[32m+[m[32m                            <div class="text-white font-semibold">{{ $cours->duree_minutes }} minutes</div>[m
+                         </div>[m
+                     </div>[m
+                     [m
+                     <div class="space-y-4">[m
+                         <div>[m
+                             <span class="text-slate-400 text-sm font-medium">Capacité:</span>[m
+[31m-                            <div class="text-white font-semibold">{{ $cours->capacite_max }} places</div>[m
+[31m-                        </div>[m
+[31m-                        [m
+[31m-                        <div>[m
+[31m-                            <span class="text-slate-400 text-sm font-medium">Durée:</span>[m
+[31m-                            <div class="text-white font-semibold">{{ $cours->duree_minutes }} minutes</div>[m
+[32m+[m[32m                            <div class="text-white font-semibold">{{ $cours->statut_occupation }}</div>[m
+                         </div>[m
+                         [m
+                         <div>[m
+[31m-                            <span class="text-slate-400 text-sm font-medium">Prix mensuel:</span>[m
+[32m+[m[32m                            <span class="text-slate-400 text-sm font-medium">Prix session:</span>[m
+                             <div class="text-white font-semibold">[m
+[31m-                                @if($cours->prix_mensuel)[m
+[31m-                                    ${{ number_format($cours->prix_mensuel, 2) }}[m
+[32m+[m[32m                                @if($cours->prix)[m
+[32m+[m[32m                                    ${{ number_format($cours->prix, 2) }}[m
+                                 @else[m
+                                     Non défini[m
+                                 @endif[m
+[36m@@ -82,8 +86,17 @@[m [mclass="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semi[m
+                         </div>[m
+                         [m
+                         <div>[m
+[31m-                            <span class="text-slate-400 text-sm font-medium">Salle:</span>[m
+[31m-                            <div class="text-white font-semibold">{{ $cours->salle ?? 'Non spécifiée' }}</div>[m
+[32m+[m[32m                            <span class="text-slate-400 text-sm font-medium">Statut:</span>[m
+[32m+[m[32m                            <div class="mt-1">[m
+[32m+[m[32m                                <span class="{{ $cours->active ? 'bg-green-600' : 'bg-slate-600' }} text-white px-3 py-1 rounded-full text-sm font-medium">[m
+[32m+[m[32m                                    {{ $cours->active ? 'Actif' : 'Inactif' }}[m
+[32m+[m[32m                                </span>[m
+[32m+[m[32m                            </div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[41m                        [m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <span class="text-slate-400 text-sm font-medium">Créé le:</span>[m
+[32m+[m[32m                            <div class="text-white font-semibold">{{ $cours->created_at->format('d/m/Y à H:i') }}</div>[m
+                         </div>[m
+                     </div>[m
+                 </div>[m
+[36m@@ -96,31 +109,31 @@[m [mclass="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semi[m
+                 @endif[m
+             </div>[m
+ [m
+[31m-            <!-- Instructeurs -->[m
+[31m-            @if($cours->instructeurPrincipal)[m
+[32m+[m[32m            <!-- Horaires (si existants) -->[m
+[32m+[m[32m            @if($cours->horaires->count() > 0)[m
+             <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+                 <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-3">[m
+[31m-                    👨‍🏫 Instructeur(s)[m
+[32m+[m[32m                    📅 Horaires[m
+                 </h3>[m
+                 [m
+                 <div class="space-y-3">[m
+[31m-                    <div>[m
+[31m-                        <span class="text-slate-400 text-sm font-medium">Instructeur principal:</span>[m
+[31m-                        <div class="text-white font-semibold">{{ $cours->instructeurPrincipal->name }}</div>[m
+[31m-                    </div>[m
+[31m-                    [m
+[31m-                    @if($cours->instructeurAssistant)[m
+[31m-                    <div>[m
+[31m-                        <span class="text-slate-400 text-sm font-medium">Instructeur assistant:</span>[m
+[31m-                        <div class="text-white font-semibold">{{ $cours->instructeurAssistant->name }}</div>[m
+[32m+[m[32m                    @foreach($cours->horaires as $horaire)[m
+[32m+[m[32m                    <div class="flex items-center justify-between bg-slate-900 rounded-lg p-3">[m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <span class="text-white font-medium">{{ ucfirst($horaire->jour_semaine) }}</span>[m
+[32m+[m[32m                            <span class="text-slate-400 ml-2">{{ $horaire->heure_debut->format('H:i') }} - {{ $horaire->heure_fin->format('H:i') }}</span>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                        <span class="{{ $horaire->active ? 'bg-green-600' : 'bg-slate-600' }} text-white px-2 py-1 rounded text-xs">[m
+[32m+[m[32m                            {{ $horaire->active ? 'Actif' : 'Inactif' }}[m
+[32m+[m[32m                        </span>[m
+                     </div>[m
+[31m-                    @endif[m
+[32m+[m[32m                    @endforeach[m
+                 </div>[m
+             </div>[m
+             @endif[m
+         </div>[m
+ [m
+[31m-        <!-- Sidebar - Statistiques et Statut -->[m
+[32m+[m[32m        <!-- Sidebar - Statistiques -->[m
+         <div class="space-y-6">[m
+             <!-- Statistiques -->[m
+             <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+[36m@@ -130,44 +143,22 @@[m [mclass="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semi[m
+                 [m
+                 <div class="space-y-4">[m
+                     <div class="text-center bg-slate-900 rounded-lg p-4">[m
+[31m-                        <div class="text-3xl font-bold text-blue-400">{{ $stats['total_inscriptions'] ?? 0 }}</div>[m
+[32m+[m[32m                        <div class="text-3xl font-bold text-blue-400">{{ $stats['total_inscriptions'] }}</div>[m
+                         <div class="text-slate-400 text-sm">Inscriptions actives</div>[m
+                     </div>[m
+                     [m
+                     <div class="text-center bg-slate-900 rounded-lg p-4">[m
+[31m-                        <div class="text-3xl font-bold text-green-400">{{ $stats['places_disponibles'] ?? 0 }}</div>[m
+[32m+[m[32m                        <div class="text-3xl font-bold text-green-400">{{ $stats['places_disponibles'] }}</div>[m
+                         <div class="text-slate-400 text-sm">Places disponibles</div>[m
+                     </div>[m
+                     [m
+                     <div class="text-center bg-slate-900 rounded-lg p-4">[m
+[31m-                        <div class="text-3xl font-bold text-purple-400">${{ number_format($stats['revenus_mensuels'] ?? 0, 2) }}</div>[m
+[31m-                        <div class="text-slate-400 text-sm">Revenus mensuels</div>[m
+[32m+[m[32m                        <div class="text-3xl font-bold text-purple-400">${{ number_format($stats['revenus_session'], 2) }}</div>[m
+[32m+[m[32m                        <div class="text-slate-400 text-sm">Revenus session</div>[m
+                     </div>[m
+                 </div>[m
+             </div>[m
+ [m
+[31m-            <!-- Statut -->[m
+[31m-            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+[31m-                <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-3">[m
+[31m-                    🏷️ Statut[m
+[31m-                </h3>[m
+[31m-                [m
+[31m-                <div class="text-center">[m
+[31m-                    @php[m
+[31m-                        $statusClasses = [[m
+[31m-                            'actif' => 'bg-green-600',[m
+[31m-                            'inactif' => 'bg-slate-600',[m
+[31m-                            'complet' => 'bg-yellow-600',[m
+[31m-                            'annule' => 'bg-red-600'[m
+[31m-                        ];[m
+[31m-                        $statusClass = $statusClasses[$cours->status] ?? 'bg-slate-600';[m
+[31m-                    @endphp[m
+[31m-                    <span class="{{ $statusClass }} text-white px-6 py-3 rounded-lg text-lg font-semibold">[m
+[31m-                        {{ ucfirst($cours->status) }}[m
+[31m-                    </span>[m
+[31m-                </div>[m
+[31m-            </div>[m
+[31m-[m
+             <!-- Actions rapides -->[m
+             <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+                 <h3 class="text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-3">[m
+[36m@@ -189,6 +180,25 @@[m [mclass="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg[m
+                     </button>[m
+                 </div>[m
+             </div>[m
+[32m+[m
+[32m+[m[32m            <!-- Suppression -->[m
+[32m+[m[32m            @if(auth()->user()->hasRole('superadmin'))[m
+[32m+[m[32m            <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">[m
+[32m+[m[32m                <h3 class="text-lg font-semibold text-red-400 mb-4 border-b border-slate-700 pb-3">[m
+[32m+[m[32m                    ⚠️ Zone dangereuse[m
+[32m+[m[32m                </h3>[m
+[32m+[m[41m                [m
+[32m+[m[32m                <form method="POST" action="{{ route('admin.cours.destroy', $cours) }}"[m[41m [m
+[32m+[m[32m                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.')">[m
+[32m+[m[32m                    @csrf[m
+[32m+[m[32m                    @method('DELETE')[m
+[32m+[m[32m                    <button type="submit"[m[41m [m
+[32m+[m[32m                            class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">[m
+[32m+[m[32m                        🗑️ Supprimer le cours[m
+[32m+[m[32m                    </button>[m
+[32m+[m[32m                </form>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            @endif[m
+         </div>[m
+     </div>[m
+ </div>[m
+[1mdiff --git a/resources/views/admin/dashboard.blade.php b/resources/views/admin/dashboard.blade.php[m
+[1mindex 5a292f2..7b3e34c 100755[m
+[1m--- a/resources/views/admin/dashboard.blade.php[m
+[1m+++ b/resources/views/admin/dashboard.blade.php[m
+[36m@@ -21,7 +21,7 @@[m
+             </div>[m
+             <div class="text-right">[m
+                 <div class="text-blue-100 text-sm">{{ now()->format('d/m/Y H:i') }}</div>[m
+[31m-                <div class="text-blue-200 text-xs">StudiosUnisDB v4.0-FINAL</div>[m
+[32m+[m[32m                <div class="text-blue-200 text-xs">StudiosUnisDB v4.1-FINAL</div>[m
+             </div>[m
+         </div>[m
+     </div>[m
+[36m@@ -40,7 +40,7 @@[m
+                         @endif[m
+                     </p>[m
+                     <p class="text-3xl font-bold">{{ $stats['total_users'] }}</p>[m
+[31m-                    <p class="text-blue-200 text-xs">Actifs</p>[m
+[32m+[m[32m                    <p class="text-blue-200 text-xs">Actifs: {{ $stats['users_actifs'] }}</p>[m
+                 </div>[m
+                 <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">[m
+                     <span class="text-2xl">👥</span>[m
+[36m@@ -80,7 +80,7 @@[m
+                 <div>[m
+                     <p class="text-purple-100 text-sm">Cours Disponibles</p>[m
+                     <p class="text-3xl font-bold">{{ $stats['total_cours'] }}</p>[m
+[31m-                    <p class="text-purple-200 text-xs">Programmes</p>[m
+[32m+[m[32m                    <p class="text-purple-200 text-xs">Actifs: {{ $stats['cours_actifs'] }}</p>[m
+                 </div>[m
+                 <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">[m
+                     <span class="text-2xl">📚</span>[m
+[36m@@ -88,16 +88,16 @@[m
+             </div>[m
+         </div>[m
+ [m
+[31m-        <!-- Revenus -->[m
+[32m+[m[32m        <!-- Ceintures -->[m
+         <div class="bg-gradient-to-br from-yellow-600 to-orange-600 rounded-xl p-6 text-white">[m
+             <div class="flex items-center justify-between">[m
+                 <div>[m
+[31m-                    <p class="text-yellow-100 text-sm">Revenus ce mois</p>[m
+[31m-                    <p class="text-3xl font-bold">${{ number_format($stats['paiements_mois'], 2) }}</p>[m
+[31m-                    <p class="text-yellow-200 text-xs">{{ date('F Y') }}</p>[m
+[32m+[m[32m                    <p class="text-yellow-100 text-sm">Ceintures</p>[m
+[32m+[m[32m                    <p class="text-3xl font-bold">{{ $stats['total_ceintures'] }}</p>[m
+[32m+[m[32m                    <p class="text-yellow-200 text-xs">Niveaux disponibles</p>[m
+                 </div>[m
+                 <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">[m
+[31m-                    <span class="text-2xl">💰</span>[m
+[32m+[m[32m                    <span class="text-2xl">🥋</span>[m
+                 </div>[m
+             </div>[m
+         </div>[m
+[36m@@ -123,6 +123,15 @@[m [mclass="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg transition-colors[m
+                     </div>[m
+                 </a>[m
+                 [m
+[32m+[m[32m                <a href="{{ route('admin.cours.index') }}"[m[41m [m
+[32m+[m[32m                   class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">[m
+[32m+[m[32m                    <span class="text-2xl">📚</span>[m
+[32m+[m[32m                    <div>[m
+[32m+[m[32m                        <div class="font-medium">Gérer Cours</div>[m
+[32m+[m[32m                        <div class="text-purple-200 text-sm">{{ $stats['total_cours'] }} cours</div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </a>[m
+[32m+[m[41m                [m
+                 <a href="{{ route('admin.ceintures.index') }}" [m
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">[m
+                     <span class="text-2xl">🥋</span>[m
+[36m@@ -140,14 +149,6 @@[m [mclass="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg transition-colo[m
+                         <div class="text-green-200 text-sm">{{ $stats['total_ecoles'] }} studios</div>[m
+                     </div>[m
+                 </a>[m
+[31m-                [m
+[31m-                <div class="bg-purple-600 opacity-50 text-white p-4 rounded-lg flex items-center space-x-3">[m
+[31m-                    <span class="text-2xl">📚</span>[m
+[31m-                    <div>[m
+[31m-                        <div class="font-medium">Cours</div>[m
+[31m-                        <div class="text-purple-200 text-sm">Bientôt disponible</div>[m
+[31m-                    </div>[m
+[31m-                </div>[m
+             </div>[m
+         </div>[m
+     </div>[m
+[36m@@ -200,6 +201,49 @@[m [mclass="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg transition-colors[m
+         </div>[m
+     </div>[m
+     @endif[m
+[32m+[m
+[32m+[m[32m    <!-- Modules à venir -->[m
+[32m+[m[32m    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">[m
+[32m+[m[32m        <div class="bg-gradient-to-r from-slate-600 to-slate-700 p-4">[m
+[32m+[m[32m            <h3 class="text-lg font-bold text-white flex items-center">[m
+[32m+[m[32m                <span class="mr-2">🚧</span>[m
+[32m+[m[32m                Modules en Développement[m
+[32m+[m[32m            </h3>[m
+[32m+[m[32m        </div>[m
+[32m+[m[41m        [m
+[32m+[m[32m        <div class="p-6">[m
+[32m+[m[32m            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">[m
+[32m+[m[32m                <div class="bg-gray-700 p-4 rounded-lg opacity-60">[m
+[32m+[m[32m                    <div class="flex items-center space-x-3">[m
+[32m+[m[32m                        <span class="text-2xl">📅</span>[m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <div class="font-medium text-white">Séminaires</div>[m
+[32m+[m[32m                            <div class="text-gray-400 text-sm">Événements spéciaux</div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m[41m                [m
+[32m+[m[32m                <div class="bg-gray-700 p-4 rounded-lg opacity-60">[m
+[32m+[m[32m                    <div class="flex items-center space-x-3">[m
+[32m+[m[32m                        <span class="text-2xl">✅</span>[m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <div class="font-medium text-white">Présences</div>[m
+[32m+[m[32m                            <div class="text-gray-400 text-sm">QR Code scanning</div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m[41m                [m
+[32m+[m[32m                <div class="bg-gray-700 p-4 rounded-lg opacity-60">[m
+[32m+[m[32m                    <div class="flex items-center space-x-3">[m
+[32m+[m[32m                        <span class="text-2xl">💳</span>[m
+[32m+[m[32m                        <div>[m
+[32m+[m[32m                            <div class="font-medium text-white">Paiements</div>[m
+[32m+[m[32m                            <div class="text-gray-400 text-sm">Sessions + cartes</div>[m
+[32m+[m[32m                        </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    </div>[m
+ </div>[m
+ @endsection[m
+[31m-<-- Résultat : Empty set ( 0.00 sec StudiosUnisDB v4.1-FINAL - Nouvelles priorités: Cours, Séminaires, Présences, Paiements -->[m
+[1mdiff --git a/resources/views/layouts/admin.blade.php b/resources/views/layouts/admin.blade.php[m
+[1mindex 6f0aadf..054e4ff 100755[m
+[1m--- a/resources/views/layouts/admin.blade.php[m
+[1m+++ b/resources/views/layouts/admin.blade.php[m
+[36m@@ -57,6 +57,15 @@[m [mclass="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ requ[m
+                                         Écoles[m
+                                     </a>[m
+                                 </li>[m
+[32m+[m[32m                                <li>[m
+[32m+[m[32m                                    <a href="{{ route('admin.cours.index') }}"[m[41m [m
+[32m+[m[32m                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.cours.*') ? 'bg-gray-700 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700' }}">[m
+[32m+[m[32m                                        <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">[m
+[32m+[m[32m                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />[m
+[32m+[m[32m                                        </svg>[m
+[32m+[m[32m                                        Cours[m
+[32m+[m[32m                                    </a>[m
+[32m+[m[32m                                </li>[m
+                                 <li>[m
+                                     <a href="{{ route('admin.ceintures.index') }}" [m
+                                        class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.ceintures.*') ? 'bg-gray-700 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700' }}">[m
+[36m@@ -144,3 +153,11 @@[m [mclass="block w-full px-3 py-1 text-left text-sm leading-6 text-white hover:bg-gr[m
+     </div>[m
+ </body>[m
+ </html>[m
+[32m+[m[32m<!-- Ajouter cette section après la ligne des ceintures, avant </ul> -->[m
+[32m+[m[32m                                <li>[m
+[32m+[m[32m                                    <a href="{{ route('admin.cours.index') }}"[m[41m [m
+[32m+[m[32m                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.cours.*') ? 'bg-gray-700 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700' }}">[m
+[32m+[m[32m                                        <span class="h-6 w-6 shrink-0 text-lg">📚</span>[m
+[32m+[m[32m                                        Cours[m
+[32m+[m[32m                                    </a>[m
+[32m+[m[32m                                </li>[m
+[1mdiff --git a/routes/admin.php b/routes/admin.php[m
+[1mindex 9c92d4e..a9b6801 100755[m
+[1m--- a/routes/admin.php[m
+[1m+++ b/routes/admin.php[m
+[36m@@ -5,7 +5,8 @@[m
+     DashboardController,[m
+     UserController,[m
+     EcoleController,[m
+[31m-    CeintureController[m
+[32m+[m[32m    CeintureController,[m
+[32m+[m[32m    CoursController[m
+ };[m
+ [m
+ // Routes Admin protégées[m
+[36m@@ -26,8 +27,10 @@[m
+     Route::resource('ceintures', CeintureController::class);[m
+     Route::post('ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');[m
+     [m
+[32m+[m[32m    // Cours - MAINTENANT ACTIF ![m
+[32m+[m[32m    Route::resource('cours', CoursController::class);[m
+[32m+[m[41m    [m
+     // TODO: Modules futurs[m
+[31m-    // Route::resource('cours', CoursController::class);[m
+     // Route::resource('seminaires', SeminaireController::class);[m
+     // Route::resource('presences', PresenceController::class);[m
+     // Route::resource('paiements', PaiementController::class);[m

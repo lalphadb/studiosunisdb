@@ -50,82 +50,43 @@
                         <label for="nom" class="block text-sm font-medium text-white mb-2">Nom du cours *</label>
                         <input type="text" name="nom" id="nom" required
                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('nom') border-red-500 @enderror" 
-                               value="{{ old('nom', $cours->nom) }}">
+                               value="{{ old('nom', $cours->nom) }}"
+                               placeholder="Ex: Karaté parents-enfants 18h-19h">
                         @error('nom')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label for="description" class="block text-sm font-medium text-white mb-2">Description</label>
                         <textarea name="description" id="description" rows="3"
-                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('description') border-red-500 @enderror">{{ old('description', $cours->description) }}</textarea>
+                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('description') border-red-500 @enderror"
+                                  placeholder="Détails du cours, public cible, spécificités...">{{ old('description', $cours->description) }}</textarea>
                         @error('description')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="type_cours" class="block text-sm font-medium text-white mb-2">Type *</label>
-                            <select name="type_cours" id="type_cours" required
-                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('type_cours') border-red-500 @enderror">
-                                <option value="">Sélectionner</option>
-                                <option value="regulier" {{ old('type_cours', $cours->type_cours) == 'regulier' ? 'selected' : '' }}>Régulier</option>
-                                <option value="specialise" {{ old('type_cours', $cours->type_cours) == 'specialise' ? 'selected' : '' }}>Spécialisé</option>
-                                <option value="competition" {{ old('type_cours', $cours->type_cours) == 'competition' ? 'selected' : '' }}>Compétition</option>
-                                <option value="examen" {{ old('type_cours', $cours->type_cours) == 'examen' ? 'selected' : '' }}>Examen</option>
-                            </select>
-                            @error('type_cours')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-white mb-2">Statut *</label>
-                            <select name="status" id="status" required
-                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('status') border-red-500 @enderror">
-                                <option value="actif" {{ old('status', $cours->status) == 'actif' ? 'selected' : '' }}>Actif</option>
-                                <option value="inactif" {{ old('status', $cours->status) == 'inactif' ? 'selected' : '' }}>Inactif</option>
-                                <option value="complet" {{ old('status', $cours->status) == 'complet' ? 'selected' : '' }}>Complet</option>
-                                <option value="annule" {{ old('status', $cours->status) == 'annule' ? 'selected' : '' }}>Annulé</option>
-                            </select>
-                            @error('status')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
-                        </div>
-                    </div>
-
                     <div>
-                        <label for="niveau_requis" class="block text-sm font-medium text-white mb-2">Niveau requis</label>
-                        <input type="text" name="niveau_requis" id="niveau_requis"
-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('niveau_requis') border-red-500 @enderror" 
-                               value="{{ old('niveau_requis', $cours->niveau_requis) }}" 
-                               placeholder="Ex: Débutant, Ceinture jaune...">
-                        @error('niveau_requis')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
+                        <label for="niveau" class="block text-sm font-medium text-white mb-2">Niveau *</label>
+                        <select name="niveau" id="niveau" required
+                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('niveau') border-red-500 @enderror">
+                            <option value="">Sélectionner un niveau</option>
+                            <option value="debutant" {{ old('niveau', $cours->niveau) == 'debutant' ? 'selected' : '' }}>Débutant</option>
+                            <option value="intermediaire" {{ old('niveau', $cours->niveau) == 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>
+                            <option value="avance" {{ old('niveau', $cours->niveau) == 'avance' ? 'selected' : '' }}>Avancé</option>
+                            <option value="tous_niveaux" {{ old('niveau', $cours->niveau) == 'tous_niveaux' ? 'selected' : '' }}>Tous niveaux</option>
+                        </select>
+                        @error('niveau')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
 
                 <!-- Colonne droite -->
                 <div class="space-y-6">
                     <h3 class="text-xl font-semibold text-white border-b border-slate-700 pb-3">
-                        Détails du cours
+                        Détails pratiques
                     </h3>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="age_min" class="block text-sm font-medium text-white mb-2">Âge min *</label>
-                            <input type="number" name="age_min" id="age_min" min="3" max="99" required
-                                   class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('age_min') border-red-500 @enderror" 
-                                   value="{{ old('age_min', $cours->age_min) }}">
-                            @error('age_min')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div>
-                            <label for="age_max" class="block text-sm font-medium text-white mb-2">Âge max *</label>
-                            <input type="number" name="age_max" id="age_max" min="3" max="99" required
-                                   class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('age_max') border-red-500 @enderror" 
-                                   value="{{ old('age_max', $cours->age_max) }}">
-                            @error('age_max')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="capacite_max" class="block text-sm font-medium text-white mb-2">Capacité *</label>
-                            <input type="number" name="capacite_max" id="capacite_max" min="1" max="50" required
+                            <label for="capacite_max" class="block text-sm font-medium text-white mb-2">Capacité max *</label>
+                            <input type="number" name="capacite_max" id="capacite_max" min="1" max="100" required
                                    class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('capacite_max') border-red-500 @enderror" 
                                    value="{{ old('capacite_max', $cours->capacite_max) }}">
                             @error('capacite_max')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
@@ -141,33 +102,31 @@
                     </div>
 
                     <div>
-                        <label for="prix_mensuel" class="block text-sm font-medium text-white mb-2">Prix mensuel ($)</label>
-                        <input type="number" name="prix_mensuel" id="prix_mensuel" min="0" step="0.01"
-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('prix_mensuel') border-red-500 @enderror" 
-                               value="{{ old('prix_mensuel', $cours->prix_mensuel) }}">
-                        @error('prix_mensuel')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
+                        <label for="prix" class="block text-sm font-medium text-white mb-2">Prix session ($)</label>
+                        <input type="number" name="prix" id="prix" min="0" step="0.01"
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('prix') border-red-500 @enderror" 
+                               value="{{ old('prix', $cours->prix) }}"
+                               placeholder="Prix pour la session complète">
+                        @error('prix')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
-                        <label for="instructeur_principal_id" class="block text-sm font-medium text-white mb-2">Instructeur principal</label>
-                        <select name="instructeur_principal_id" id="instructeur_principal_id"
-                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('instructeur_principal_id') border-red-500 @enderror">
-                            <option value="">Sélectionner</option>
-                            @foreach($instructeurs as $instructeur)
-                            <option value="{{ $instructeur->id }}" {{ old('instructeur_principal_id', $cours->instructeur_principal_id) == $instructeur->id ? 'selected' : '' }}>
-                                {{ $instructeur->name }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('instructeur_principal_id')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
+                        <label for="instructeur" class="block text-sm font-medium text-white mb-2">Instructeur</label>
+                        <input type="text" name="instructeur" id="instructeur"
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('instructeur') border-red-500 @enderror" 
+                               value="{{ old('instructeur', $cours->instructeur) }}"
+                               placeholder="Nom de l'instructeur">
+                        @error('instructeur')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
-                        <label for="salle" class="block text-sm font-medium text-white mb-2">Salle</label>
-                        <input type="text" name="salle" id="salle"
-                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 @error('salle') border-red-500 @enderror" 
-                               value="{{ old('salle', $cours->salle) }}">
-                        @error('salle')<p class="text-red-400 text-sm mt-1">{{ $message }}</p>@enderror
+                        <label class="flex items-center space-x-3">
+                            <input type="hidden" name="active" value="0">
+                            <input type="checkbox" name="active" value="1" 
+                                   class="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                                   {{ old('active', $cours->active) ? 'checked' : '' }}>
+                            <span class="text-white font-medium">Cours actif</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -180,7 +139,7 @@
                 <button type="submit" 
                         class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2">
                     <span>💾</span>
-                    <span>Modifier le cours</span>
+                    <span>Sauvegarder</span>
                 </button>
             </div>
         </form>

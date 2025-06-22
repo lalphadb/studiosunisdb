@@ -21,7 +21,7 @@
             </div>
             <div class="text-right">
                 <div class="text-blue-100 text-sm">{{ now()->format('d/m/Y H:i') }}</div>
-                <div class="text-blue-200 text-xs">StudiosUnisDB v4.0-FINAL</div>
+                <div class="text-blue-200 text-xs">StudiosUnisDB v4.1-FINAL</div>
             </div>
         </div>
     </div>
@@ -40,7 +40,7 @@
                         @endif
                     </p>
                     <p class="text-3xl font-bold">{{ $stats['total_users'] }}</p>
-                    <p class="text-blue-200 text-xs">Actifs</p>
+                    <p class="text-blue-200 text-xs">Actifs: {{ $stats['users_actifs'] }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
                     <span class="text-2xl">👥</span>
@@ -80,7 +80,7 @@
                 <div>
                     <p class="text-purple-100 text-sm">Cours Disponibles</p>
                     <p class="text-3xl font-bold">{{ $stats['total_cours'] }}</p>
-                    <p class="text-purple-200 text-xs">Programmes</p>
+                    <p class="text-purple-200 text-xs">Actifs: {{ $stats['cours_actifs'] }}</p>
                 </div>
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
                     <span class="text-2xl">📚</span>
@@ -88,16 +88,16 @@
             </div>
         </div>
 
-        <!-- Revenus -->
+        <!-- Ceintures -->
         <div class="bg-gradient-to-br from-yellow-600 to-orange-600 rounded-xl p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-yellow-100 text-sm">Revenus ce mois</p>
-                    <p class="text-3xl font-bold">${{ number_format($stats['paiements_mois'], 2) }}</p>
-                    <p class="text-yellow-200 text-xs">{{ date('F Y') }}</p>
+                    <p class="text-yellow-100 text-sm">Ceintures</p>
+                    <p class="text-3xl font-bold">{{ $stats['total_ceintures'] }}</p>
+                    <p class="text-yellow-200 text-xs">Niveaux disponibles</p>
                 </div>
                 <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
-                    <span class="text-2xl">💰</span>
+                    <span class="text-2xl">🥋</span>
                 </div>
             </div>
         </div>
@@ -123,6 +123,15 @@
                     </div>
                 </a>
                 
+                <a href="{{ route('admin.cours.index') }}" 
+                   class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">
+                    <span class="text-2xl">📚</span>
+                    <div>
+                        <div class="font-medium">Gérer Cours</div>
+                        <div class="text-purple-200 text-sm">{{ $stats['total_cours'] }} cours</div>
+                    </div>
+                </a>
+                
                 <a href="{{ route('admin.ceintures.index') }}" 
                    class="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">
                     <span class="text-2xl">🥋</span>
@@ -140,14 +149,6 @@
                         <div class="text-green-200 text-sm">{{ $stats['total_ecoles'] }} studios</div>
                     </div>
                 </a>
-                
-                <div class="bg-purple-600 opacity-50 text-white p-4 rounded-lg flex items-center space-x-3">
-                    <span class="text-2xl">📚</span>
-                    <div>
-                        <div class="font-medium">Cours</div>
-                        <div class="text-purple-200 text-sm">Bientôt disponible</div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -200,6 +201,49 @@
         </div>
     </div>
     @endif
+
+    <!-- Modules à venir -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-600 to-slate-700 p-4">
+            <h3 class="text-lg font-bold text-white flex items-center">
+                <span class="mr-2">🚧</span>
+                Modules en Développement
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-700 p-4 rounded-lg opacity-60">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">📅</span>
+                        <div>
+                            <div class="font-medium text-white">Séminaires</div>
+                            <div class="text-gray-400 text-sm">Événements spéciaux</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg opacity-60">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">✅</span>
+                        <div>
+                            <div class="font-medium text-white">Présences</div>
+                            <div class="text-gray-400 text-sm">QR Code scanning</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700 p-4 rounded-lg opacity-60">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">💳</span>
+                        <div>
+                            <div class="font-medium text-white">Paiements</div>
+                            <div class="text-gray-400 text-sm">Sessions + cartes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
-<-- Résultat : Empty set ( 0.00 sec StudiosUnisDB v4.1-FINAL - Nouvelles priorités: Cours, Séminaires, Présences, Paiements -->

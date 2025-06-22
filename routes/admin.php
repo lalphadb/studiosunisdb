@@ -5,7 +5,8 @@ use App\Http\Controllers\Admin\{
     DashboardController,
     UserController,
     EcoleController,
-    CeintureController
+    CeintureController,
+    CoursController
 };
 
 // Routes Admin protégées
@@ -26,8 +27,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('ceintures', CeintureController::class);
     Route::post('ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');
     
+    // Cours - MAINTENANT ACTIF !
+    Route::resource('cours', CoursController::class);
+    
     // TODO: Modules futurs
-    // Route::resource('cours', CoursController::class);
     // Route::resource('seminaires', SeminaireController::class);
     // Route::resource('presences', PresenceController::class);
     // Route::resource('paiements', PaiementController::class);
