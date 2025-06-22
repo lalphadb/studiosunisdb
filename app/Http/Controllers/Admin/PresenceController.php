@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\PresenceRequest;
 use App\Models\Presence;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -12,7 +13,14 @@ class PresenceController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
-        return ['auth', 'verified'];
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-presences', only: ['index', 'show']),
+            new Middleware('can:create-presence', only: ['create', 'store']),
+            new Middleware('can:edit-presence', only: ['edit', 'update']),
+            new Middleware('can:delete-presence', only: ['destroy']),
+        ];
     }
 
     public function index()
@@ -36,8 +44,9 @@ class PresenceController extends Controller implements HasMiddleware
         return view('admin.presences.create');
     }
 
-    public function store(Request $request)
+    public function store(PresenceRequest $request)
     {
+        // TODO: Implémenter
         return redirect()->route('admin.presences.index');
     }
 

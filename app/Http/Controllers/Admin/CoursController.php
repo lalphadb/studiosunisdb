@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\CoursRequest;
 use App\Models\Cours;
 use App\Models\Ecole;
 use Illuminate\Http\Request;
@@ -13,7 +14,14 @@ class CoursController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
-        return ['auth', 'verified'];
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-cours', only: ['index', 'show']),
+            new Middleware('can:create-cours', only: ['create', 'store']),
+            new Middleware('can:edit-cours', only: ['edit', 'update']),
+            new Middleware('can:delete-cours', only: ['destroy']),
+        ];
     }
 
     public function index()
@@ -40,7 +48,7 @@ class CoursController extends Controller implements HasMiddleware
 
     public function create()
     {
-        $ecoles = auth()->user()->hasRole('superadmin') 
+        $ecoles = auth()->user()->hasRole('super-admin') 
             ? Ecole::all() 
             : collect([auth()->user()->ecole]);
             
@@ -61,7 +69,7 @@ class CoursController extends Controller implements HasMiddleware
             'active' => 'boolean',
         ]);
 
-        if (!auth()->user()->hasRole('superadmin')) {
+        if (!auth()->user()->hasRole('super-admin')) {
             $validated['ecole_id'] = auth()->user()->ecole_id;
         }
 
@@ -73,7 +81,7 @@ class CoursController extends Controller implements HasMiddleware
 
     public function edit(Cours $cours)
     {
-        $ecoles = auth()->user()->hasRole('superadmin') 
+        $ecoles = auth()->user()->hasRole('super-admin') 
             ? Ecole::all() 
             : collect([auth()->user()->ecole]);
             
@@ -94,7 +102,7 @@ class CoursController extends Controller implements HasMiddleware
             'active' => 'boolean',
         ]);
 
-        if (!auth()->user()->hasRole('superadmin')) {
+        if (!auth()->user()->hasRole('super-admin')) {
             $validated['ecole_id'] = auth()->user()->ecole_id;
         }
 

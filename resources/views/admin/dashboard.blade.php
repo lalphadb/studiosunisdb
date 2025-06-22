@@ -1,246 +1,174 @@
 @extends('layouts.admin')
 
-@section('title', 'Dashboard StudiosUnisDB')
+@section('title', 'Dashboard SuperAdmin')
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header adaptatif selon le rôle -->
-    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white shadow-xl">
+    <!-- Header SuperAdmin -->
+    <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold flex items-center">
-                    <span class="mr-3">📊</span>
-                    Dashboard StudiosUnisDB
-                </h1>
-                <p class="text-blue-100 text-lg mt-2">
-                    Bienvenue {{ $userInfo['name'] }} - {{ ucfirst($userInfo['role']) }}
-                    @if($userInfo['ecole'] !== 'Global') 
-                        ({{ $userInfo['ecole'] }})
-                    @endif
-                </p>
+                <h1 class="text-3xl font-bold">👑 Dashboard SuperAdmin</h1>
+                <p class="text-purple-100 text-lg">Vue globale - {{ $stats['total_ecoles'] ?? 0 }} Studios Unis du Québec</p>
             </div>
             <div class="text-right">
-                <div class="text-blue-100 text-sm">{{ now()->format('d/m/Y H:i') }}</div>
-                <div class="text-blue-200 text-xs">StudiosUnisDB v4.1-FINAL</div>
+                <div class="bg-purple-500 bg-opacity-50 px-4 py-2 rounded-lg">
+                    <div class="text-sm text-purple-100">⭐ SuperAdministrateur</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Métriques adaptées selon le rôle -->
+    <!-- Telescope Monitoring -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-white flex items-center">
+                <span class="mr-2">🔭</span>
+                Telescope - Monitoring Système
+            </h3>
+            <a href="/telescope" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                🔍 Ouvrir Telescope
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-400">18</div>
+                <div class="text-sm text-slate-400">Exceptions</div>
+                <div class="text-xs text-slate-500">Dernières 24h</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-400">0</div>
+                <div class="text-sm text-slate-400">Logs Erreur</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-orange-400">0</div>
+                <div class="text-sm text-slate-400">Requêtes Lentes</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-400">54</div>
+                <div class="text-sm text-slate-400">Requêtes Échouées</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métriques principales -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <!-- Utilisateurs -->
-        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-blue-100 text-sm">
-                        @if(auth()->user()->hasRole('superadmin'))
-                            Utilisateurs Total
-                        @else
-                            Membres École
-                        @endif
-                    </p>
-                    <p class="text-3xl font-bold">{{ $stats['total_users'] }}</p>
-                    <p class="text-blue-200 text-xs">Actifs: {{ $stats['users_actifs'] }}</p>
+        <!-- Écoles -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-red-600">
+                    <span class="text-xl text-white">🏫</span>
                 </div>
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
-                    <span class="text-2xl">👥</span>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $stats['total_ecoles'] ?? 22 }}</div>
+                    <div class="text-sm text-slate-400">Écoles</div>
+                    <div class="text-xs text-slate-500">{{ $stats['total_ecoles'] ?? 22 }} actives</div>
                 </div>
             </div>
         </div>
 
-        <!-- Écoles -->
-        <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-xl p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-green-100 text-sm">
-                        @if(auth()->user()->hasRole('superadmin'))
-                            Écoles Total
-                        @else
-                            Mon École
-                        @endif
-                    </p>
-                    <p class="text-3xl font-bold">{{ $stats['total_ecoles'] }}</p>
-                    <p class="text-green-200 text-xs">
-                        @if(auth()->user()->hasRole('superadmin'))
-                            Studios Unis QC
-                        @else
-                            {{ auth()->user()->ecole->nom ?? 'N/A' }}
-                        @endif
-                    </p>
+        <!-- Membres -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-teal-600">
+                    <span class="text-xl text-white">👥</span>
                 </div>
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
-                    <span class="text-2xl">🏯</span>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $stats['total_users'] ?? 2 }}</div>
+                    <div class="text-sm text-slate-400">Membres</div>
+                    <div class="text-xs text-slate-500">{{ $stats['total_users'] ?? 2 }} actifs</div>
                 </div>
             </div>
         </div>
 
         <!-- Cours -->
-        <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-purple-100 text-sm">Cours Disponibles</p>
-                    <p class="text-3xl font-bold">{{ $stats['total_cours'] }}</p>
-                    <p class="text-purple-200 text-xs">Actifs: {{ $stats['cours_actifs'] }}</p>
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600">
+                    <span class="text-xl text-white">📚</span>
                 </div>
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
-                    <span class="text-2xl">📚</span>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $stats['total_cours'] ?? 0 }}</div>
+                    <div class="text-sm text-slate-400">Cours</div>
+                    <div class="text-xs text-slate-500">{{ $stats['cours_actifs'] ?? 0 }} actifs</div>
                 </div>
             </div>
         </div>
 
-        <!-- Ceintures -->
-        <div class="bg-gradient-to-br from-yellow-600 to-orange-600 rounded-xl p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-yellow-100 text-sm">Ceintures</p>
-                    <p class="text-3xl font-bold">{{ $stats['total_ceintures'] }}</p>
-                    <p class="text-yellow-200 text-xs">Niveaux disponibles</p>
+        <!-- Taux Présence -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-600">
+                    <span class="text-xl text-white">📊</span>
                 </div>
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white bg-opacity-20">
-                    <span class="text-2xl">🥋</span>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">85%</div>
+                    <div class="text-sm text-slate-400">Taux Présence</div>
+                    <div class="text-xs text-slate-500">Ce mois</div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions rapides -->
-    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
-            <h3 class="text-lg font-bold text-white flex items-center">
-                <span class="mr-2">⚡</span>
-                Actions Rapides
-            </h3>
-        </div>
-        
-        <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <a href="{{ route('admin.users.index') }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">
-                    <span class="text-2xl">👥</span>
-                    <div>
-                        <div class="font-medium">Gérer Utilisateurs</div>
-                        <div class="text-blue-200 text-sm">{{ $stats['total_users'] }} membres</div>
-                    </div>
-                </a>
-                
-                <a href="{{ route('admin.cours.index') }}" 
-                   class="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">
-                    <span class="text-2xl">📚</span>
-                    <div>
-                        <div class="font-medium">Gérer Cours</div>
-                        <div class="text-purple-200 text-sm">{{ $stats['total_cours'] }} cours</div>
-                    </div>
-                </a>
-                
-                <a href="{{ route('admin.ceintures.index') }}" 
-                   class="bg-yellow-600 hover:bg-yellow-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">
-                    <span class="text-2xl">🥋</span>
-                    <div>
-                        <div class="font-medium">Gérer Ceintures</div>
-                        <div class="text-yellow-200 text-sm">Progressions</div>
-                    </div>
-                </a>
-                
-                <a href="{{ route('admin.ecoles.index') }}" 
-                   class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg transition-colors flex items-center space-x-3">
-                    <span class="text-2xl">🏯</span>
-                    <div>
-                        <div class="font-medium">Gérer Écoles</div>
-                        <div class="text-green-200 text-sm">{{ $stats['total_ecoles'] }} studios</div>
-                    </div>
-                </a>
             </div>
         </div>
     </div>
 
-    <!-- Section SuperAdmin -->
-    @if(auth()->user()->hasRole('superadmin'))
-    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <div class="bg-gradient-to-r from-red-600 to-pink-600 p-4">
-            <h3 class="text-lg font-bold text-white flex items-center">
-                <span class="mr-2">⚙️</span>
-                Administration Système
-            </h3>
-        </div>
+    <!-- Utilisateurs par Rôle -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+            <span class="mr-2">👥</span>
+            Utilisateurs par Rôle
+        </h3>
         
-        <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="{{ route('admin.ecoles.index') }}" 
-                   class="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg transition-colors">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🏯</span>
-                        <div>
-                            <div class="font-medium">Gérer Écoles</div>
-                            <div class="text-gray-400 text-sm">{{ $stats['total_ecoles'] }} Studios Unis</div>
-                        </div>
-                    </div>
-                </a>
-                
-                <a href="/telescope" target="_blank"
-                   class="bg-gray-700 hover:bg-gray-600 text-white p-4 rounded-lg transition-colors">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">🔍</span>
-                        <div>
-                            <div class="font-medium">Telescope</div>
-                            <div class="text-gray-400 text-sm">Monitoring système</div>
-                        </div>
-                    </div>
-                </a>
-                
-                <div class="bg-gray-700 p-4 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">📈</span>
-                        <div>
-                            <div class="font-medium text-white">Système</div>
-                            <div class="text-gray-400 text-sm">Laravel 12.19.3</div>
-                            <div class="text-gray-400 text-sm">PHP {{ phpversion() }}</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center p-4 bg-slate-900 rounded-lg">
+                <div class="text-2xl font-bold text-purple-400">2</div>
+                <div class="text-sm text-slate-400">SuperAdmins</div>
+            </div>
+            <div class="text-center p-4 bg-slate-900 rounded-lg">
+                <div class="text-2xl font-bold text-blue-400">2</div>
+                <div class="text-sm text-slate-400">Admin École</div>
+            </div>
+            <div class="text-center p-4 bg-slate-900 rounded-lg">
+                <div class="text-2xl font-bold text-green-400">0</div>
+                <div class="text-sm text-slate-400">Instructeurs</div>
+            </div>
+            <div class="text-center p-4 bg-slate-900 rounded-lg">
+                <div class="text-2xl font-bold text-orange-400">0</div>
+                <div class="text-sm text-slate-400">Membres</div>
             </div>
         </div>
     </div>
-    @endif
 
-    <!-- Modules à venir -->
-    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-        <div class="bg-gradient-to-r from-slate-600 to-slate-700 p-4">
-            <h3 class="text-lg font-bold text-white flex items-center">
-                <span class="mr-2">🚧</span>
-                Modules en Développement
+    <!-- Top Écoles et Revenus -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top 5 Écoles -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <span class="mr-2">🏆</span>
+                Top 5 Écoles (Membres)
             </h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-slate-900 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-sm mr-3">1</div>
+                        <span class="text-white">Studios Unis St-Émile</span>
+                    </div>
+                    <span class="bg-blue-600 text-white px-2 py-1 rounded text-sm">2 membres</span>
+                </div>
+            </div>
         </div>
-        
-        <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gray-700 p-4 rounded-lg opacity-60">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">📅</span>
-                        <div>
-                            <div class="font-medium text-white">Séminaires</div>
-                            <div class="text-gray-400 text-sm">Événements spéciaux</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-700 p-4 rounded-lg opacity-60">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">✅</span>
-                        <div>
-                            <div class="font-medium text-white">Présences</div>
-                            <div class="text-gray-400 text-sm">QR Code scanning</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-700 p-4 rounded-lg opacity-60">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-2xl">💳</span>
-                        <div>
-                            <div class="font-medium text-white">Paiements</div>
-                            <div class="text-gray-400 text-sm">Sessions + cartes</div>
-                        </div>
-                    </div>
+
+        <!-- Top Revenus -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <span class="mr-2">💰</span>
+                Top Revenus (Estimation)
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-slate-900 rounded-lg">
+                    <span class="text-white">Studios Unis St-Émile</span>
+                    <span class="bg-green-600 text-white px-2 py-1 rounded text-sm">$160</span>
                 </div>
             </div>
         </div>

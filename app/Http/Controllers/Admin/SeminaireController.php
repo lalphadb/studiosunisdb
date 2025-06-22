@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SeminaireRequest;
 use App\Models\Seminaire;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -12,7 +13,14 @@ class SeminaireController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
-        return ['auth', 'verified'];
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-seminaires', only: ['index', 'show']),
+            new Middleware('can:create-seminaire', only: ['create', 'store']),
+            new Middleware('can:edit-seminaire', only: ['edit', 'update']),
+            new Middleware('can:delete-seminaire', only: ['destroy']),
+        ];
     }
 
     public function index()
@@ -34,7 +42,7 @@ class SeminaireController extends Controller implements HasMiddleware
         return view('admin.seminaires.create');
     }
 
-    public function store(Request $request)
+    public function store(SeminaireRequest $request)
     {
         // TODO: Implémenter
         return redirect()->route('admin.seminaires.index');
@@ -45,7 +53,7 @@ class SeminaireController extends Controller implements HasMiddleware
         return view('admin.seminaires.edit', compact('seminaire'));
     }
 
-    public function update(Request $request, Seminaire $seminaire)
+    public function update(SeminaireRequest $request, Seminaire $seminaire)
     {
         // TODO: Implémenter
         return redirect()->route('admin.seminaires.show', $seminaire);

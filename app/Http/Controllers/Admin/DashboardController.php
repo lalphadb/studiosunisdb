@@ -29,8 +29,8 @@ class DashboardController extends Controller implements HasMiddleware
             'ecole' => $user->ecole->nom ?? 'Aucune école assignée',
         ];
         
-        // Statistiques selon le rôle
-        if ($user->hasRole('superadmin')) {
+        // Statistiques selon le rôle - CORRECTION DES NOMS DE RÔLES
+        if ($user->hasRole('super-admin')) { // AVEC TIRET
             // SuperAdmin voit tout
             $stats = [
                 'total_users' => User::count(),
@@ -55,5 +55,40 @@ class DashboardController extends Controller implements HasMiddleware
         }
 
         return view('admin.dashboard', compact('stats', 'userInfo'));
+    }
+
+    /**
+     * Dashboard spécifique au SuperAdmin avec vue globale
+     */
+    public function superadminDashboard()
+    {
+        $stats = [
+            'total_users' => User::count(),
+            'total_ecoles' => Ecole::count(),
+            'total_cours' => Cours::count(),
+        ];
+        
+        return view('admin.dashboard.superadmin', compact('stats'));
+    }
+    
+    /**
+     * Dashboard spécifique à l'Admin d'école avec vue limitée
+     */
+    public function adminDashboard()
+    {
+        $admin = auth()->user();
+        $ecole = $admin->ecole;
+        
+        if (!$ecole) {
+            abort(403, 'Aucune école associée à cet administrateur');
+        }
+        
+        $stats = [
+            'my_school_users' => User::where('ecole_id', $ecole->id)->count(),
+            'my_school_cours' => Cours::where('ecole_id', $ecole->id)->count(),
+            'pending_paiements' => 0, // TODO: Calculer les paiements en attente
+        ];
+        
+        return view('admin.dashboard.admin', compact('stats', 'ecole'));
     }
 }

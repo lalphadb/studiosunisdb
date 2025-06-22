@@ -1,0 +1,83 @@
+
+[0;35m===============================================================================[0m
+[0;35m INITIALISATION AUDIT StudiosUnisDB[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:54][0m Audit initialisé - Dossier: /home/studiosdb/studiosunisdb/audit
+[0;32m[13:13:54][0m Log principal: /home/studiosdb/studiosunisdb/audit/audit_20250622_131354.log
+[0;32m[13:13:54][0m Résumé: /home/studiosdb/studiosunisdb/audit/audit_summary_20250622_131354.md
+[0;32m[13:13:54][0m Répertoire de travail: /home/studiosdb/studiosunisdb
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT ENVIRONNEMENT & VERSIONS[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:55][0m Environnement analysé -> /home/studiosdb/studiosunisdb/audit/environment_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT STRUCTURE PROJET[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:55][0m ✅ Structure Laravel complète
+[0;32m[13:13:55][0m Structure analysée -> /home/studiosdb/studiosunisdb/audit/structure_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT BASE DE DONNÉES[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:55][0m ✅ Connexion MySQL réussie
+[0;32m[13:13:55][0m Export de la structure de base de données...
+[0;32m[13:13:55][0m Tables analysées: 28
+[0;32m[13:13:55][0m Références obsolètes membre_id: 0
+[0;32m[13:13:55][0m Base de données analysée -> /home/studiosdb/studiosunisdb/audit/database_analysis_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT MODÈLES ELOQUENT[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:55][0m ✅ Modèle User.php trouvé et analysé
+[0;32m[13:13:55][0m Modèles analysés: 11
+[0;32m[13:13:55][0m Modèles analysés -> /home/studiosdb/studiosunisdb/audit/models_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT CONTRÔLEURS[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:56][0m Contrôleurs total: 23
+[0;32m[13:13:56][0m Contrôleurs Admin: 11
+[0;32m[13:13:56][0m Contrôleurs analysés -> /home/studiosdb/studiosunisdb/audit/controllers_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT ROUTES[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:56][0m Routes total: 110
+[0;32m[13:13:56][0m Routes admin: 36
+[0;32m[13:13:56][0m Routes obsolètes 'membres': 1
+[0;32m[13:13:56][0m Routes analysées -> /home/studiosdb/studiosunisdb/audit/routes_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT VUES BLADE[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:56][0m Vues total: 78
+[0;32m[13:13:56][0m Vues admin: 39
+[0;32m[13:13:56][0m Vues analysées -> /home/studiosdb/studiosunisdb/audit/views_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m AUDIT SÉCURITÉ[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:56][0m Score sécurité: 2/3
+[0;32m[13:13:56][0m Sécurité analysée -> /home/studiosdb/studiosunisdb/audit/security_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m TESTS FONCTIONNELS[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:58][0m Tests fonctionnels terminés
+[0;32m[13:13:58][0m Tests fonctionnels -> /home/studiosdb/studiosunisdb/audit/functional_tests_20250622_131354.txt
+
+[0;35m===============================================================================[0m
+[0;35m GÉNÉRATION RAPPORT FINAL[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:59][0m ✅ Rapport final généré: /home/studiosdb/studiosunisdb/audit/RAPPORT_FINAL_20250622_131354.md
+[0;32m[13:13:59][0m ✅ Prompt Claude généré: /home/studiosdb/studiosunisdb/audit/PROMPT_CLAUDE_20250622_131354.md
+
+[0;35m===============================================================================[0m
+[0;35m RÉSUMÉ AUDIT COMPLET[0m
+[0;35m===============================================================================[0m
+[0;32m[13:13:59][0m 🎉 AUDIT TERMINÉ AVEC SUCCÈS
+[0;32m[13:13:59][0m 📁 Tous les fichiers dans: /home/studiosdb/studiosunisdb/audit
+[0;32m[13:13:59][0m 📋 Rapport principal: /home/studiosdb/studiosunisdb/audit/RAPPORT_FINAL_20250622_131354.md
+[0;32m[13:13:59][0m 🤖 Prompt Claude: /home/studiosdb/studiosunisdb/audit/PROMPT_CLAUDE_20250622_131354.md

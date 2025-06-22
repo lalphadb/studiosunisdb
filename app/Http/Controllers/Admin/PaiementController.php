@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\PaiementRequest;
 use App\Models\Paiement;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -12,7 +13,14 @@ class PaiementController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
-        return ['auth', 'verified'];
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-paiements', only: ['index', 'show']),
+            new Middleware('can:create-paiement', only: ['create', 'store']),
+            new Middleware('can:edit-paiement', only: ['edit', 'update']),
+            new Middleware('can:delete-paiement', only: ['destroy']),
+        ];
     }
 
     public function index()
@@ -34,8 +42,9 @@ class PaiementController extends Controller implements HasMiddleware
         return view('admin.paiements.create');
     }
 
-    public function store(Request $request)
+    public function store(PaiementRequest $request)
     {
+        // TODO: Implémenter la création de paiement
         return redirect()->route('admin.paiements.index');
     }
 }
