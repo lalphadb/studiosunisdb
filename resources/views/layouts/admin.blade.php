@@ -20,7 +20,7 @@
                         </div>
                         <div>
                             <h1 class="text-lg font-bold text-white">StudiosUnisDB</h1>
-                            <p class="text-xs text-blue-300">v4.0-FINAL</p>
+                            <p class="text-xs text-blue-300">v4.1-FINAL</p>
                         </div>
                     </div>
                 </div>
