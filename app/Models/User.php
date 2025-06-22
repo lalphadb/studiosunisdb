@@ -6,18 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, LogsActivity;
+    use HasFactory, Notifiable, HasRoles;  // ✅ HasApiTokens supprimé
 
     protected $fillable = [
         'name',
         'email',
         'password',
         'ecole_id',
+        'famille_principale_id',
         'telephone',
         'date_naissance',
         'sexe',
@@ -44,7 +43,14 @@ class User extends Authenticatable
         'active' => 'boolean',
     ];
 
-    // Relations
+    public function getAgeAttribute()
+    {
+        if (!$this->date_naissance) {
+            return null;
+        }
+        return $this->date_naissance->age;
+    }
+
     public function ecole()
     {
         return $this->belongsTo(Ecole::class);
@@ -75,96 +81,52 @@ class User extends Authenticatable
         return $this->hasMany(Paiement::class);
     }
 
-    public function paiements_traites()
+    public function famillePrincipale()
     {
-        return $this->hasMany(Paiement::class, 'processed_by_user_id');
+        return $this->belongsTo(User::class, 'famille_principale_id');
     }
 
-    // Scopes
-    public function scopeMembresOnly($query)
+    public function membresFamille()
     {
-        return $query->whereHas('roles', fn($q) => $q->where('name', 'membre'));
+        return $this->hasMany(User::class, 'famille_principale_id');
     }
 
-    public function scopeInstructeurs($query)
+    public function isSuperAdmin()
     {
-        return $query->whereHas('roles', fn($q) => $q->where('name', 'instructeur'));
+        return $this->hasRole('superadmin');
     }
 
-    public function scopeAdmins($query)
+    public function isAdmin()
     {
-        return $query->whereHas('roles', fn($q) => $q->whereIn('name', ['admin', 'superadmin']));
+        return $this->hasRole('admin');
     }
 
-    public function scopeForEcole($query, $ecole_id)
+    public function isInstructeur()
     {
-        return $query->where('ecole_id', $ecole_id);
+        return $this->hasRole('instructeur');
+    }
+
+    public function isMembre()
+    {
+        return $this->hasRole('membre');
+    }
+
+    public function ceintureActuelle()
+    {
+        return $this->membre_ceintures()
+            ->with('ceinture')
+            ->where('valide', true)
+            ->orderBy('date_obtention', 'desc')
+            ->first();
+    }
+
+    public function scopeForEcole($query, $ecoleId)
+    {
+        return $query->where('ecole_id', $ecoleId);
     }
 
     public function scopeActive($query)
     {
         return $query->where('active', true);
-    }
-
-    public function scopeWithRole($query, $role)
-    {
-        return $query->whereHas('roles', fn($q) => $q->where('name', $role));
-    }
-
-    // Méthodes utilitaires pour les rôles
-    public function isSuperAdmin(): bool
-    {
-        return $this->hasRole('superadmin');
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->hasRole('admin');
-    }
-
-    public function isInstructeur(): bool
-    {
-        return $this->hasRole('instructeur');
-    }
-
-    public function isMembre(): bool
-    {
-        return $this->hasRole('membre');
-    }
-
-    public function canManageEcole($ecole_id): bool
-    {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
-
-        if ($this->isAdmin() && $this->ecole_id == $ecole_id) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // Accessors
-    public function getAgeAttribute()
-    {
-        if (!$this->date_naissance) {
-            return null;
-        }
-        return $this->date_naissance->diffInYears(now());
-    }
-
-    public function getNomCompletAttribute()
-    {
-        return $this->name;
-    }
-
-    // Activity Log
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'ecole_id', 'active'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
     }
 }

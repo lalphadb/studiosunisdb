@@ -1,0 +1,22 @@
+  GET|HEAD        admin/dashboard admin.dashboard › Admin\DashboardControlle…
+  GET|HEAD        dashboard ....................................... dashboard
+  GET|HEAD        login .. login › Auth\AuthenticatedSessionController@create
+  POST            login ........... Auth\AuthenticatedSessionController@store
+  POST            logout logout › Auth\AuthenticatedSessionController@destroy
+
+   INFO  Clearing cached bootstrap files.  
+
+  config ........................................................ 0.88ms DONE
+  cache ......................................................... 7.79ms DONE
+  compiled ...................................................... 0.66ms DONE
+  events ........................................................ 0.37ms DONE
+  routes ........................................................ 0.33ms DONE
+  views ......................................................... 2.55ms DONE
+
+
+   INFO  Configuration cache cleared successfully.  
+
+
+   INFO  Route cache cleared successfully.  
+
+studiosdb@lalpha:~/studiosunisdb (rebuild-quality-v4)$

@@ -1,0 +1,107 @@
+@extends('layouts.admin')
+
+@section('title', 'Connexion')
+
+@section('content')
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Header StudiosUnisDB -->
+        <div class="text-center">
+            <div class="flex justify-center">
+                <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+                    <span class="text-2xl font-bold text-white">🥋</span>
+                </div>
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-white">StudiosUnisDB</h2>
+            <p class="mt-2 text-sm text-gray-300">Connexion au système de gestion</p>
+            <p class="text-xs text-blue-300 font-medium">22 Studios Unis du Québec</p>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <div class="admin-card">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+                <h3 class="text-lg font-bold text-white text-center">🔐 Authentification</h3>
+            </div>
+            
+            <form class="p-6 space-y-6" method="POST" action="{{ route('login') }}">
+                @csrf
+
+                <!-- Session Status -->
+                @if (session('status'))
+                    <div class="bg-green-900 border border-green-700 text-green-100 px-4 py-3 rounded">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <!-- Email Address -->
+                <div>
+                    <label for="email" class="form-label">Adresse courriel</label>
+                    <input id="email" 
+                           type="email" 
+                           name="email" 
+                           value="{{ old('email') }}" 
+                           class="form-input @error('email') border-red-500 @enderror" 
+                           required 
+                           autofocus 
+                           autocomplete="username"
+                           placeholder="votre@email.com">
+                    @error('email')
+                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <input id="password" 
+                           type="password" 
+                           name="password" 
+                           class="form-input @error('password') border-red-500 @enderror" 
+                           required 
+                           autocomplete="current-password"
+                           placeholder="••••••••">
+                    @error('password')
+                        <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" 
+                               name="remember" 
+                               class="rounded border-gray-600 text-blue-600 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 bg-gray-700">
+                        <span class="ml-2 text-sm text-gray-300">Se souvenir de moi</span>
+                    </label>
+
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="text-sm text-blue-400 hover:text-blue-300">
+                            Mot de passe oublié?
+                        </a>
+                    @endif
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" class="w-full btn-primary justify-center py-3 text-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                        </svg>
+                        SE CONNECTER
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center">
+            <p class="text-xs text-gray-500">
+                StudiosUnisDB v4.0-FINAL &copy; {{ date('Y') }}
+            </p>
+            <p class="text-xs text-gray-600 mt-1">
+                Système de gestion pour écoles de karaté
+            </p>
+        </div>
+    </div>
+</div>
+@endsection
