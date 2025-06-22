@@ -14,7 +14,6 @@ use Illuminate\Routing\Controllers\Middleware;
 
 class UserController extends Controller implements HasMiddleware
 {
-    // ✅ NOUVELLE SYNTAXE LARAVEL 12
     public static function middleware(): array
     {
         return [
@@ -33,7 +32,8 @@ class UserController extends Controller implements HasMiddleware
         
         $query = User::with(['ecole', 'roles']);
         
-        if (!$user->isSuperAdmin()) {
+        // CORRECTION: Ne pas filtrer par école pour superadmin
+        if (!$user->hasRole('super-admin') && $user->ecole_id) {
             $query->where('ecole_id', $user->ecole_id);
         }
         
@@ -45,7 +45,7 @@ class UserController extends Controller implements HasMiddleware
             });
         }
         
-        if ($request->filled('ecole_id') && $user->isSuperAdmin()) {
+        if ($request->filled('ecole_id') && $user->hasRole('super-admin')) {
             $query->where('ecole_id', $request->ecole_id);
         }
         
@@ -55,10 +55,11 @@ class UserController extends Controller implements HasMiddleware
             });
         }
         
-        $users = $query->paginate(15);
+        // ORDRE PAR DATE DE CRÉATION (plus récent en premier)
+        $users = $query->orderBy('created_at', 'desc')->paginate(15);
         
         $ecoles = collect();
-        if ($user->isSuperAdmin()) {
+        if ($user->hasRole('super-admin')) {
             $ecoles = Ecole::where('active', true)->orderBy('nom')->get();
         }
         
@@ -79,7 +80,7 @@ class UserController extends Controller implements HasMiddleware
         $user = auth()->user();
         
         $ecoles = collect();
-        if ($user->isSuperAdmin()) {
+        if ($user->hasRole('super-admin')) {
             $ecoles = Ecole::where('active', true)->orderBy('nom')->get();
         } else {
             $ecoles = collect([$user->ecole]);
@@ -92,22 +93,59 @@ class UserController extends Controller implements HasMiddleware
 
     public function store(Request $request)
     {
-        return redirect()->route('admin.users.index')->with('success', 'Fonctionnalité create en cours de développement');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'ecole_id' => 'required|exists:ecoles,id',
+            'role' => 'required|exists:roles,name',
+            'telephone' => 'nullable|string|max:255',
+            'date_naissance' => 'nullable|date',
+            'sexe' => 'nullable|in:M,F,Autre',
+            'active' => 'boolean',
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['email_verified_at'] = now();
+        $validated['active'] = $request->boolean('active', true);
+        $validated['date_inscription'] = now()->format('Y-m-d');
+
+        $user = User::create($validated);
+        
+        // Assigner le rôle
+        $user->assignRole($validated['role']);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Utilisateur {$user->name} créé avec succès !");
     }
 
     public function edit(User $user)
     {
-        return redirect()->route('admin.users.show', $user)->with('info', 'Fonctionnalité edit en cours de développement');
+        $authUser = auth()->user();
+        
+        $ecoles = collect();
+        if ($authUser->hasRole('super-admin')) {
+            $ecoles = Ecole::where('active', true)->orderBy('nom')->get();
+        } else {
+            $ecoles = collect([$authUser->ecole]);
+        }
+        
+        $roles = Role::all();
+        
+        return view('admin.users.edit', compact('user', 'ecoles', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
-        return redirect()->route('admin.users.show', $user)->with('info', 'Fonctionnalité update en cours de développement');
+        // TODO: Implémenter la mise à jour
+        return redirect()->route('admin.users.show', $user)
+            ->with('info', 'Fonctionnalité update en cours de développement');
     }
 
     public function destroy(User $user)
     {
-        return redirect()->route('admin.users.index')->with('info', 'Fonctionnalité delete en cours de développement');
+        return redirect()->route('admin.users.index')
+            ->with('info', 'Fonctionnalité delete en cours de développement');
     }
 
     private function getUserMetrics($user)
@@ -115,14 +153,15 @@ class UserController extends Controller implements HasMiddleware
         $metrics = [];
         
         try {
-            if ($user->isSuperAdmin()) {
+            if ($user->hasRole('super-admin')) {
                 $metrics['total_users'] = User::count();
-                $metrics['admins'] = User::role('admin')->count();
+                $metrics['admins'] = User::role('admin-ecole')->count() + User::role('super-admin')->count();
                 $metrics['instructeurs'] = User::role('instructeur')->count();
                 $metrics['membres'] = User::role('membre')->count();
             } else {
                 $ecoleUsers = User::where('ecole_id', $user->ecole_id);
-                $metrics['admins'] = (clone $ecoleUsers)->role('admin')->count();
+                $metrics['total_users'] = $ecoleUsers->count();
+                $metrics['admins'] = (clone $ecoleUsers)->whereHas('roles', fn($q) => $q->whereIn('name', ['admin-ecole', 'super-admin']))->count();
                 $metrics['instructeurs'] = (clone $ecoleUsers)->role('instructeur')->count();
                 $metrics['membres'] = (clone $ecoleUsers)->role('membre')->count();
             }
