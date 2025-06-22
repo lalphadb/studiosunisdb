@@ -9,16 +9,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
-    public function __construct()
+    // ✅ NOUVELLE SYNTAXE LARAVEL 12
+    public static function middleware(): array
     {
-        $this->middleware(['auth', 'verified']);
-        $this->middleware('can:view-users')->only(['index', 'show']);
-        $this->middleware('can:create-user')->only(['create', 'store']);
-        $this->middleware('can:edit-user')->only(['edit', 'update']);
-        $this->middleware('can:delete-user')->only(['destroy']);
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:view-users', only: ['index', 'show']),
+            new Middleware('can:create-user', only: ['create', 'store']),
+            new Middleware('can:edit-user', only: ['edit', 'update']),
+            new Middleware('can:delete-user', only: ['destroy']),
+        ];
     }
 
     public function index(Request $request)
@@ -86,39 +92,47 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        // Implémentation basique pour tester
-        return redirect()->route('admin.users.index')->with('success', 'Fonctionnalité en cours de développement');
+        return redirect()->route('admin.users.index')->with('success', 'Fonctionnalité create en cours de développement');
     }
 
     public function edit(User $user)
     {
-        return redirect()->route('admin.users.show', $user)->with('info', 'Fonctionnalité en cours de développement');
+        return redirect()->route('admin.users.show', $user)->with('info', 'Fonctionnalité edit en cours de développement');
     }
 
     public function update(Request $request, User $user)
     {
-        return redirect()->route('admin.users.show', $user)->with('info', 'Fonctionnalité en cours de développement');
+        return redirect()->route('admin.users.show', $user)->with('info', 'Fonctionnalité update en cours de développement');
     }
 
     public function destroy(User $user)
     {
-        return redirect()->route('admin.users.index')->with('info', 'Fonctionnalité en cours de développement');
+        return redirect()->route('admin.users.index')->with('info', 'Fonctionnalité delete en cours de développement');
     }
 
     private function getUserMetrics($user)
     {
         $metrics = [];
         
-        if ($user->isSuperAdmin()) {
-            $metrics['total_users'] = User::count();
-            $metrics['admins'] = User::role('admin')->count();
-            $metrics['instructeurs'] = User::role('instructeur')->count();
-            $metrics['membres'] = User::role('membre')->count();
-        } else {
-            $ecoleUsers = User::where('ecole_id', $user->ecole_id);
-            $metrics['admins'] = (clone $ecoleUsers)->role('admin')->count();
-            $metrics['instructeurs'] = (clone $ecoleUsers)->role('instructeur')->count();
-            $metrics['membres'] = (clone $ecoleUsers)->role('membre')->count();
+        try {
+            if ($user->isSuperAdmin()) {
+                $metrics['total_users'] = User::count();
+                $metrics['admins'] = User::role('admin')->count();
+                $metrics['instructeurs'] = User::role('instructeur')->count();
+                $metrics['membres'] = User::role('membre')->count();
+            } else {
+                $ecoleUsers = User::where('ecole_id', $user->ecole_id);
+                $metrics['admins'] = (clone $ecoleUsers)->role('admin')->count();
+                $metrics['instructeurs'] = (clone $ecoleUsers)->role('instructeur')->count();
+                $metrics['membres'] = (clone $ecoleUsers)->role('membre')->count();
+            }
+        } catch (\Exception $e) {
+            $metrics = [
+                'total_users' => User::count(),
+                'admins' => 0,
+                'instructeurs' => 0,
+                'membres' => 0
+            ];
         }
         
         return $metrics;

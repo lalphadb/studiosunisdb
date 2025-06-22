@@ -1,58 +1,42 @@
 @extends('layouts.admin')
 
-@section('title', $user->name)
+@section('title', 'Profil de ' . $user->name)
 
 @section('content')
-<div class="admin-content">
-    <!-- Header utilisateur -->
-    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white shadow-xl mb-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div class="flex items-center mb-4 lg:mb-0">
-                <div class="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-4">
-                    <span class="text-2xl font-bold">{{ substr($user->name, 0, 2) }}</span>
+<div class="space-y-6">
+    <!-- Header avec avatar et badges comme l'original -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white shadow-xl">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <!-- Avatar avec initiales -->
+                <div class="w-16 h-16 bg-gray-700 rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                    {{ strtoupper(substr($user->name, 0, 2)) }}
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold">{{ $user->name }}</h1>
                     <p class="text-blue-100">{{ $user->email }}</p>
-                    <div class="flex items-center mt-2 space-x-2">
-                        @if($user->roles->count() > 0)
-                            @foreach($user->roles as $role)
-                                @php
-                                    $roleColors = [
-                                        'superadmin' => 'bg-red-500',
-                                        'admin' => 'bg-purple-500',
-                                        'instructeur' => 'bg-green-500',
-                                        'membre' => 'bg-blue-500'
-                                    ];
-                                @endphp
-                                <span class="px-2 py-1 rounded-full text-xs font-medium text-white {{ $roleColors[$role->name] ?? 'bg-gray-500' }}">
-                                    {{ ucfirst($role->name) }}
-                                </span>
-                            @endforeach
+                    <div class="flex space-x-2 mt-2">
+                        @if($user->roles->isNotEmpty())
+                            <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">{{ ucfirst($user->roles->first()->name) }}</span>
                         @endif
-                        
                         @if($user->active)
-                            <span class="bg-green-500 text-white px-2 py-1 rounded-full text-xs">Actif</span>
+                            <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">Actif</span>
                         @else
-                            <span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs">Inactif</span>
+                            <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">Inactif</span>
                         @endif
                     </div>
                 </div>
             </div>
-            
             <div class="flex space-x-3">
-                @can('edit-user')
-                <a href="{{ route('admin.users.edit', $user) }}" class="btn-primary">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                <button class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                     </svg>
                     Modifier
-                </a>
-                @endcan
-                
-                <a href="{{ route('admin.users.index') }}" class="btn-secondary">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </button>
+                <a href="{{ route('admin.users.index') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
                     </svg>
                     Retour à la liste
                 </a>
@@ -61,265 +45,154 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Informations principales -->
+        <!-- Informations Personnelles - Colonne principale -->
         <div class="lg:col-span-2 space-y-6">
-            <!-- Informations personnelles -->
-            <div class="admin-card">
-                <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                        </svg>
-                        Informations Personnelles
-                    </h3>
+            <!-- Informations Personnelles -->
+            <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+                <div class="flex items-center mb-4">
+                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                    </svg>
+                    <h3 class="text-lg font-bold">Informations Personnelles</h3>
                 </div>
-                <div class="p-6 space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Nom complet</label>
-                            <p class="text-white">{{ $user->name }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Email</label>
-                            <p class="text-white">{{ $user->email }}</p>
-                        </div>
-                        @if($user->telephone)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Téléphone</label>
-                            <p class="text-white">{{ $user->telephone }}</p>
-                        </div>
-                        @endif
-                        @if($user->date_naissance)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Date de naissance</label>
-                            <p class="text-white">{{ $user->date_naissance->format('d/m/Y') }}</p>
-                            <p class="text-gray-400 text-sm">{{ $user->age ?? 'N/A' }} ans</p>
-                        </div>
-                        @endif
-                        @if($user->sexe)
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Sexe</label>
-                            <p class="text-white">{{ $user->sexe }}</p>
-                        </div>
-                        @endif
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-1">Date d'inscription</label>
-                            <p class="text-white">{{ $user->date_inscription ? $user->date_inscription->format('d/m/Y') : 'N/A' }}</p>
-                        </div>
-                    </div>
-                    
-                    @if($user->adresse)
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Adresse</label>
-                        <p class="text-white">{{ $user->adresse }}</p>
-                        @if($user->ville || $user->code_postal)
-                        <p class="text-gray-400">{{ $user->ville }} {{ $user->code_postal }}</p>
-                        @endif
-                    </div>
-                    @endif
-                    
-                    @if($user->contact_urgence_nom)
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Contact d'urgence</label>
-                        <p class="text-white">{{ $user->contact_urgence_nom }}</p>
-                        @if($user->contact_urgence_telephone)
-                        <p class="text-gray-400">{{ $user->contact_urgence_telephone }}</p>
-                        @endif
-                    </div>
-                    @endif
-                    
-                    @if($user->notes)
-                    <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Notes</label>
-                        <p class="text-gray-300">{{ $user->notes }}</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Progression ceintures -->
-            @if($user->membre_ceintures && $user->membre_ceintures->count() > 0)
-            <div class="admin-card">
-                <div class="bg-gradient-to-r from-yellow-600 to-orange-600 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Progression Ceintures ({{ $user->membre_ceintures->count() }})
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-3">
-                        @foreach($user->membre_ceintures->sortByDesc('date_obtention') as $progression)
-                        <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full mr-3" style="background-color: {{ $progression->ceinture->couleur ?? '#666' }}"></div>
-                                <div>
-                                    <p class="text-white font-medium">{{ $progression->ceinture->nom ?? 'Ceinture inconnue' }}</p>
-                                    <p class="text-gray-400 text-sm">{{ $progression->date_obtention->format('d/m/Y') }}</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                @if($progression->valide)
-                                    <span class="badge-success">Validé</span>
-                                @else
-                                    <span class="badge-warning">En attente</span>
-                                @endif
-                                @if($progression->examinateur)
-                                <p class="text-gray-400 text-xs mt-1">{{ $progression->examinateur }}</p>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            <!-- Présences récentes -->
-            @if($user->presences && $user->presences->count() > 0)
-            <div class="admin-card">
-                <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Présences Récentes ({{ $user->presences->count() }})
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-2">
-                        @foreach($user->presences->take(5) as $presence)
-                        <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
+                        <div class="space-y-4">
                             <div>
-                                <p class="text-white text-sm">{{ $presence->cours->nom ?? 'Cours supprimé' }}</p>
-                                <p class="text-gray-400 text-xs">{{ $presence->date_cours->format('d/m/Y') }}</p>
+                                <label class="block text-blue-200 text-sm font-medium mb-1">Nom complet</label>
+                                <p class="text-white font-medium">{{ $user->name }}</p>
                             </div>
-                            @if($presence->present)
-                                <span class="badge-success">Présent</span>
-                            @else
-                                <span class="badge-danger">Absent</span>
+                            <div>
+                                <label class="block text-blue-200 text-sm font-medium mb-1">Email</label>
+                                <p class="text-white">{{ $user->email }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-blue-200 text-sm font-medium mb-1">Téléphone</label>
+                                <p class="text-white">{{ $user->telephone ?? 'Non renseigné' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-blue-200 text-sm font-medium mb-1">Date de naissance</label>
+                                <p class="text-white">{{ $user->date_naissance?->format('d/m/Y') ?? 'Non renseignée' }}</p>
+                                @if($user->date_naissance)
+                                    <p class="text-blue-200 text-sm">{{ $user->date_naissance->diffInYears(now()) }} ans</p>
+                                @endif
+                            </div>
+                            <div>
+                                <label class="block text-blue-200 text-sm font-medium mb-1">Sexe</label>
+                                <p class="text-white">{{ $user->sexe ?? 'Non renseigné' }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-blue-200 text-sm font-medium mb-1">Date d'inscription</label>
+                                <p class="text-white">{{ $user->date_inscription?->format('d/m/Y') ?? $user->created_at?->format('d/m/Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse -->
+                @if($user->adresse || $user->ville || $user->code_postal)
+                <div class="mt-6 pt-6 border-t border-blue-500 border-opacity-30">
+                    <label class="block text-blue-200 text-sm font-medium mb-2">Adresse</label>
+                    <div class="text-white">
+                        @if($user->adresse)
+                            <p>{{ $user->adresse }}</p>
+                        @endif
+                        @if($user->ville || $user->code_postal)
+                            <p>{{ $user->ville }}{{ $user->ville && $user->code_postal ? ', ' : '' }}{{ $user->code_postal }}</p>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                <!-- Contact d'urgence - PETIT ENCADRÉ ROUGE -->
+                @if($user->contact_urgence_nom || $user->contact_urgence_telephone)
+                <div class="mt-6 pt-6 border-t border-blue-500 border-opacity-30">
+                    <div class="bg-red-500 bg-opacity-20 border border-red-400 rounded-lg p-3">
+                        <label class="block text-red-200 text-sm font-medium mb-2 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Contact d'urgence
+                        </label>
+                        <div class="text-red-100 text-sm space-y-1">
+                            @if($user->contact_urgence_nom)
+                                <p><strong>{{ $user->contact_urgence_nom }}</strong></p>
+                            @endif
+                            @if($user->contact_urgence_telephone)
+                                <p>{{ $user->contact_urgence_telephone }}</p>
                             @endif
                         </div>
-                        @endforeach
                     </div>
                 </div>
+                @endif
             </div>
-            @endif
         </div>
 
-        <!-- Sidebar droite -->
+        <!-- Sidebar droite - École et Actions -->
         <div class="space-y-6">
-            <!-- École d'appartenance -->
-            <div class="admin-card">
-                <div class="bg-gradient-to-r from-green-600 to-teal-600 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.84L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.84l-7-3z"/>
-                        </svg>
-                        École
-                    </h3>
-                </div>
-                <div class="p-6">
+            <!-- École -->
+            <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-xl p-6 text-white text-center">
+                <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
                     @if($user->ecole)
-                    <div class="text-center">
-                        <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-teal-400 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <span class="text-white font-bold text-lg">{{ $user->ecole->code }}</span>
-                        </div>
-                        <h4 class="text-white font-medium text-lg">{{ $user->ecole->nom }}</h4>
-                        <p class="text-gray-400">{{ $user->ecole->ville }}, {{ $user->ecole->province }}</p>
-                        @if($user->ecole->telephone)
-                        <p class="text-gray-400 text-sm mt-2">{{ $user->ecole->telephone }}</p>
-                        @endif
-                        <div class="mt-4">
-                            <a href="{{ route('admin.ecoles.show', $user->ecole) }}" class="text-blue-400 hover:text-blue-300 text-sm">
-                                Voir détails de l'école →
-                            </a>
-                        </div>
-                    </div>
+                        <span class="text-2xl font-bold">{{ $user->ecole->code }}</span>
                     @else
-                    <div class="text-center py-4">
-                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
                         </svg>
-                        <p class="text-gray-400">Aucune école assignée</p>
-                    </div>
                     @endif
                 </div>
+                @if($user->ecole)
+                    <h3 class="text-lg font-bold">{{ $user->ecole->nom }}</h3>
+                    <p class="text-green-200 text-sm">{{ $user->ecole->ville }}, {{ $user->ecole->province }}</p>
+                    <a href="#" class="inline-block mt-3 text-green-200 hover:text-white text-sm underline">
+                        Voir détails de l'école →
+                    </a>
+                @else
+                    <h3 class="text-lg font-bold">Aucune École</h3>
+                    <p class="text-green-200 text-sm">Non assigné</p>
+                @endif
             </div>
 
-            <!-- Actions rapides -->
-            <div class="admin-card">
-                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                        </svg>
-                        Actions
-                    </h3>
+            <!-- Actions -->
+            <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-6 text-white">
+                <div class="flex items-center mb-4">
+                    <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 002 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"/>
+                    </svg>
+                    <h3 class="text-lg font-bold">Actions</h3>
                 </div>
-                <div class="p-6 space-y-3">
-                    @can('edit-user')
-                    <a href="{{ route('admin.users.edit', $user) }}" 
-                       class="block w-full text-center btn-primary">
+                
+                <div class="space-y-3">
+                    <button class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-all text-left">
                         Modifier utilisateur
-                    </a>
-                    @endcan
-                    
-                    <button onclick="alert('QR Code à implémenter')" 
-                            class="block w-full text-center btn-secondary">
+                    </button>
+                    <button class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-all text-left">
                         Générer QR Code
                     </button>
-                    
-                    @if($user->ecole)
-                    <a href="{{ route('admin.ecoles.show', $user->ecole) }}" 
-                       class="block w-full text-center btn-secondary">
+                    <button class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white py-2 px-4 rounded-lg transition-all text-left">
                         Voir son école
-                    </a>
-                    @endif
-                    
-                    @can('delete-user')
-                    @if($user->id !== auth()->id())
-                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" 
-                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')" 
-                          class="w-full">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="block w-full text-center btn-danger">
-                            Supprimer utilisateur
-                        </button>
-                    </form>
-                    @endif
-                    @endcan
-                </div>
-            </div>
-
-            <!-- Statistiques -->
-            <div class="admin-card">
-                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-4">
-                    <h3 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-                        </svg>
-                        Statistiques
-                    </h3>
-                </div>
-                <div class="p-6 space-y-4">
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-white">{{ $user->membre_ceintures->count() }}</div>
-                        <div class="text-gray-400 text-sm">Ceintures obtenues</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-white">{{ $user->presences->where('present', true)->count() }}</div>
-                        <div class="text-gray-400 text-sm">Présences</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-white">{{ $user->inscriptions_cours->count() }}</div>
-                        <div class="text-gray-400 text-sm">Cours inscrits</div>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Notes administratives -->
+    @if($user->notes)
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+            <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+            </svg>
+            Notes Administratives
+        </h3>
+        <p class="text-gray-300 bg-gray-700 p-4 rounded">{{ $user->notes }}</p>
+    </div>
+    @endif
 </div>
 @endsection
