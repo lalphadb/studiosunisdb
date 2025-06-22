@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SeminaireRequest;
 use App\Models\Seminaire;
+use App\Models\Ecole;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -28,8 +29,14 @@ class SeminaireController extends Controller implements HasMiddleware
         $seminaires = Seminaire::with('ecole')
             ->when(auth()->user()->ecole_id, fn($q, $ecole_id) => $q->where('ecole_id', $ecole_id))
             ->paginate(15);
+        
+        // Ajouter les variables manquantes pour la vue
+        $ecoles = collect();
+        if (auth()->user()->hasRole('super-admin')) {
+            $ecoles = Ecole::orderBy('nom')->get();
+        }
             
-        return view('admin.seminaires.index', compact('seminaires'));
+        return view('admin.seminaires.index', compact('seminaires', 'ecoles'));
     }
 
     public function show(Seminaire $seminaire)
@@ -39,7 +46,11 @@ class SeminaireController extends Controller implements HasMiddleware
 
     public function create()
     {
-        return view('admin.seminaires.create');
+        $ecoles = auth()->user()->hasRole('super-admin') 
+            ? Ecole::all() 
+            : collect([auth()->user()->ecole]);
+            
+        return view('admin.seminaires.create', compact('ecoles'));
     }
 
     public function store(SeminaireRequest $request)
@@ -50,7 +61,11 @@ class SeminaireController extends Controller implements HasMiddleware
 
     public function edit(Seminaire $seminaire)
     {
-        return view('admin.seminaires.edit', compact('seminaire'));
+        $ecoles = auth()->user()->hasRole('super-admin') 
+            ? Ecole::all() 
+            : collect([auth()->user()->ecole]);
+            
+        return view('admin.seminaires.edit', compact('seminaire', 'ecoles'));
     }
 
     public function update(SeminaireRequest $request, Seminaire $seminaire)
