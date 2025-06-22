@@ -1,5 +1,6 @@
 # Laravel
 /node_modules
+/public/build
 /public/hot
 /public/storage
 /storage/*.key
@@ -15,47 +16,30 @@ npm-debug.log
 yarn-error.log
 
 # IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+/.fleet
+/.idea
+/.vscode
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Cache
-bootstrap/cache/*
-!bootstrap/cache/.gitkeep
-storage/framework/cache/*
-!storage/framework/cache/.gitkeep
-storage/framework/sessions/*
-!storage/framework/sessions/.gitkeep
-storage/framework/testing/*
-!storage/framework/testing/.gitkeep
-storage/framework/views/*
-!storage/framework/views/.gitkeep
-
 # Logs
-*.log
-storage/logs/*
-!storage/logs/.gitkeep
+/storage/logs/*.log
 
-# Temp files
-*.tmp
+# Backups et anciens fichiers
+*.backup
+*.old
 *.bak
-*~
-'nullable*'
-'required*'
-RAPPORT_*.txt
+routes/web.php.backup
+resources/views/**/*.backup
 
-# Build
-/public/build
-/public/mix-manifest.json
+# Cache
+/bootstrap/cache/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
 
-# Fichiers temporaires créés accidentellement
-*$*
-*'*
-*"*
-*.tmp
-*->*
+# Tests
+/phpunit.xml
+/.phpunit.cache
