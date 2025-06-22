@@ -1,6 +1,5 @@
 # Laravel
 /node_modules
-/public/build
 /public/hot
 /public/storage
 /storage/*.key
@@ -16,30 +15,35 @@ npm-debug.log
 yarn-error.log
 
 # IDE
-/.fleet
 /.idea
 /.vscode
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
 # Logs
-/storage/logs/*.log
-
-# Backups et anciens fichiers
-*.backup
-*.old
-*.bak
-routes/web.php.backup
-resources/views/**/*.backup
+storage/logs/*.log
+storage/debugbar/
 
 # Cache
-/bootstrap/cache/*
-/storage/framework/cache/*
-/storage/framework/sessions/*
-/storage/framework/views/*
+bootstrap/cache/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
 
-# Tests
-/phpunit.xml
-/.phpunit.cache
+# Keep directories
+!storage/app/.gitkeep
+!storage/framework/.gitkeep
+!storage/logs/.gitkeep
+!bootstrap/cache/.gitkeep
+
+# Telescope
+storage/telescope/
+
+# Backup
+*.sql
+*.dump

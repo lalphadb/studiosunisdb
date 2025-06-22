@@ -24,57 +24,63 @@ app/Http/Controllers/LegalController.php
 app/Http/Controllers/ProfileController.php
 
 === CONTRÔLEURS ADMIN ===
-total 68
+total 72
 drwxr-xr-x 2 studiosdb studiosdb 4096 Jun 21 22:38 .
 drwxr-xr-x 4 studiosdb studiosdb 4096 Jun 16 17:41 ..
--rwxr-xr-x 1 studiosdb studiosdb 4586 Jun 22 12:45 CeintureController.php
--rwxr-xr-x 1 studiosdb studiosdb 3919 Jun 21 22:41 CoursController.php
--rwxr-xr-x 1 studiosdb studiosdb 2174 Jun 21 22:53 DashboardController.php
+-rwxr-xr-x 1 studiosdb studiosdb 5835 Jun 22 14:19 CeintureController.php
+-rwxr-xr-x 1 studiosdb studiosdb 4285 Jun 22 14:14 CoursController.php
+-rwxr-xr-x 1 studiosdb studiosdb 3273 Jun 22 13:49 DashboardController.php
 -rwxr-xr-x 1 studiosdb studiosdb 7802 Jun 21 21:13 EcoleController.php
 -rwxr-xr-x 1 studiosdb studiosdb 3030 Jun 21 14:28 InscriptionSeminaireController.php
 -rwxr-xr-x 1 studiosdb studiosdb 1968 Jun 19 13:13 LogController.php
--rwxr-xr-x 1 studiosdb studiosdb 1038 Jun 21 21:13 PaiementController.php
--rwxr-xr-x 1 studiosdb studiosdb 1229 Jun 21 21:13 PresenceController.php
--rwxr-xr-x 1 studiosdb studiosdb 1532 Jun 21 21:13 SeminaireController.php
+-rwxr-xr-x 1 studiosdb studiosdb 1479 Jun 22 14:14 PaiementController.php
+-rwxr-xr-x 1 studiosdb studiosdb 1645 Jun 22 14:18 PresenceController.php
+-rwxr-xr-x 1 studiosdb studiosdb 2498 Jun 22 14:35 SeminaireController.php
 -rwxr-xr-x 1 studiosdb studiosdb 4487 Jun 20 11:10 TelescopeController.php
--rwxr-xr-x 1 studiosdb studiosdb 4508 Jun 21 21:23 UserController.php
+-rwxr-xr-x 1 studiosdb studiosdb 6125 Jun 22 14:55 UserController.php
 
 === ANALYSE DES CONTRÔLEURS ADMIN ===
 --- CeintureController ---
-26:    public function index(Request $request)
-46:    public function show(MembreCeinture $ceinture)
-54:    public function create(Request $request)
-67:    public function store(CeintureRequest $request)
-78:    public function edit(MembreCeinture $ceinture)
-85:    public function update(CeintureRequest $request, MembreCeinture $ceinture)
-95:    public function destroy(MembreCeinture $ceinture)
-9:use Illuminate\Routing\Controllers\HasMiddleware;
-10:use Illuminate\Routing\Controllers\Middleware;
-12:class CeintureController extends Controller implements HasMiddleware
-14:    public static function middleware(): array
-18:            new Middleware('can:view-ceintures', only: ['index', 'show']),
-19:            new Middleware('can:create-ceinture', only: ['create', 'store']),
-20:            new Middleware('can:edit-ceinture', only: ['edit', 'update']),
-21:            new Middleware('can:delete-ceinture', only: ['destroy']),
-22:            new Middleware('can:assign-ceintures', only: ['attribuer']),
+29:    public function index(Request $request)
+55:    public function create()
+74:    public function store(Request $request)
+108:    public function show(MembreCeinture $ceinture)
+122:    public function edit(MembreCeinture $ceinture)
+132:    public function update(Request $request, MembreCeinture $ceinture)
+156:    public function destroy(MembreCeinture $ceinture)
+11:use Illuminate\Routing\Controllers\HasMiddleware;
+12:use Illuminate\Routing\Controllers\Middleware;
+14:class CeintureController extends Controller implements HasMiddleware
+16:    public static function middleware(): array
+21:            new Middleware('can:view-ceintures', only: ['index', 'show']),
+22:            new Middleware('can:create-ceinture', only: ['create', 'store']),
+23:            new Middleware('can:edit-ceinture', only: ['edit', 'update']),
+24:            new Middleware('can:delete-ceinture', only: ['destroy']),
+25:            new Middleware('can:assign-ceintures', only: ['attribuer']),
 ✅ Aucune référence obsolète
 
 --- CoursController ---
-19:    public function index()
-28:    public function show(Cours $cours)
-41:    public function create()
-50:    public function store(Request $request)
-74:    public function edit(Cours $cours)
-83:    public function update(Request $request, Cours $cours)
-107:    public function destroy(Cours $cours)
-9:use Illuminate\Routing\Controllers\HasMiddleware;
-10:use Illuminate\Routing\Controllers\Middleware;
-12:class CoursController extends Controller implements HasMiddleware
-14:    public static function middleware(): array
+27:    public function index()
+36:    public function show(Cours $cours)
+49:    public function create()
+58:    public function store(Request $request)
+82:    public function edit(Cours $cours)
+91:    public function update(Request $request, Cours $cours)
+115:    public function destroy(Cours $cours)
+10:use Illuminate\Routing\Controllers\HasMiddleware;
+11:use Illuminate\Routing\Controllers\Middleware;
+13:class CoursController extends Controller implements HasMiddleware
+15:    public static function middleware(): array
+20:            new Middleware('can:view-cours', only: ['index', 'show']),
+21:            new Middleware('can:create-cours', only: ['create', 'store']),
+22:            new Middleware('can:edit-cours', only: ['edit', 'update']),
+23:            new Middleware('can:delete-cours', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- DashboardController ---
 20:    public function index()
+63:    public function superadminDashboard()
+77:    public function adminDashboard()
 11:use Illuminate\Routing\Controllers\HasMiddleware;
 13:class DashboardController extends Controller implements HasMiddleware
 15:    public static function middleware(): array
@@ -113,40 +119,52 @@ Pas de middleware
 ✅ Aucune référence obsolète
 
 --- PaiementController ---
-18:    public function index()
-27:    public function show(Paiement $paiement)
-32:    public function create()
-37:    public function store(Request $request)
-8:use Illuminate\Routing\Controllers\HasMiddleware;
-9:use Illuminate\Routing\Controllers\Middleware;
-11:class PaiementController extends Controller implements HasMiddleware
-13:    public static function middleware(): array
+26:    public function index()
+35:    public function show(Paiement $paiement)
+40:    public function create()
+45:    public function store(PaiementRequest $request)
+9:use Illuminate\Routing\Controllers\HasMiddleware;
+10:use Illuminate\Routing\Controllers\Middleware;
+12:class PaiementController extends Controller implements HasMiddleware
+14:    public static function middleware(): array
+19:            new Middleware('can:view-paiements', only: ['index', 'show']),
+20:            new Middleware('can:create-paiement', only: ['create', 'store']),
+21:            new Middleware('can:edit-paiement', only: ['edit', 'update']),
+22:            new Middleware('can:delete-paiement', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- PresenceController ---
-18:    public function index()
-29:    public function show(Presence $presence)
-34:    public function create()
-39:    public function store(Request $request)
-44:    public function scanQR(Request $request)
-8:use Illuminate\Routing\Controllers\HasMiddleware;
-9:use Illuminate\Routing\Controllers\Middleware;
-11:class PresenceController extends Controller implements HasMiddleware
-13:    public static function middleware(): array
+26:    public function index()
+37:    public function show(Presence $presence)
+42:    public function create()
+47:    public function store(PresenceRequest $request)
+53:    public function scanQR(Request $request)
+9:use Illuminate\Routing\Controllers\HasMiddleware;
+10:use Illuminate\Routing\Controllers\Middleware;
+12:class PresenceController extends Controller implements HasMiddleware
+14:    public static function middleware(): array
+19:            new Middleware('can:view-presences', only: ['index', 'show']),
+20:            new Middleware('can:create-presence', only: ['create', 'store']),
+21:            new Middleware('can:edit-presence', only: ['edit', 'update']),
+22:            new Middleware('can:delete-presence', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- SeminaireController ---
-18:    public function index()
-27:    public function show(Seminaire $seminaire)
-32:    public function create()
-37:    public function store(Request $request)
-43:    public function edit(Seminaire $seminaire)
-48:    public function update(Request $request, Seminaire $seminaire)
-54:    public function destroy(Seminaire $seminaire)
-8:use Illuminate\Routing\Controllers\HasMiddleware;
-9:use Illuminate\Routing\Controllers\Middleware;
-11:class SeminaireController extends Controller implements HasMiddleware
-13:    public static function middleware(): array
+27:    public function index()
+42:    public function show(Seminaire $seminaire)
+47:    public function create()
+56:    public function store(SeminaireRequest $request)
+62:    public function edit(Seminaire $seminaire)
+71:    public function update(SeminaireRequest $request, Seminaire $seminaire)
+77:    public function destroy(Seminaire $seminaire)
+10:use Illuminate\Routing\Controllers\HasMiddleware;
+11:use Illuminate\Routing\Controllers\Middleware;
+13:class SeminaireController extends Controller implements HasMiddleware
+15:    public static function middleware(): array
+20:            new Middleware('can:view-seminaires', only: ['index', 'show']),
+21:            new Middleware('can:create-seminaire', only: ['create', 'store']),
+22:            new Middleware('can:edit-seminaire', only: ['edit', 'update']),
+23:            new Middleware('can:delete-seminaire', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- TelescopeController ---
@@ -158,21 +176,21 @@ Pas de middleware
 ✅ Aucune référence obsolète
 
 --- UserController ---
-30:    public function index(Request $request)
-71:    public function show(User $user)
-77:    public function create()
-93:    public function store(Request $request)
-98:    public function edit(User $user)
-103:    public function update(Request $request, User $user)
-108:    public function destroy(User $user)
+29:    public function index(Request $request)
+72:    public function show(User $user)
+78:    public function create()
+94:    public function store(Request $request)
+122:    public function edit(User $user)
+138:    public function update(Request $request, User $user)
+145:    public function destroy(User $user)
 12:use Illuminate\Routing\Controllers\HasMiddleware;
 13:use Illuminate\Routing\Controllers\Middleware;
 15:class UserController extends Controller implements HasMiddleware
-18:    public static function middleware(): array
-23:            new Middleware('can:view-users', only: ['index', 'show']),
-24:            new Middleware('can:create-user', only: ['create', 'store']),
-25:            new Middleware('can:edit-user', only: ['edit', 'update']),
-26:            new Middleware('can:delete-user', only: ['destroy']),
+17:    public static function middleware(): array
+22:            new Middleware('can:view-users', only: ['index', 'show']),
+23:            new Middleware('can:create-user', only: ['create', 'store']),
+24:            new Middleware('can:edit-user', only: ['edit', 'update']),
+25:            new Middleware('can:delete-user', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 === MIDDLEWARE GLOBAL ===

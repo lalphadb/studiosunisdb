@@ -13,7 +13,7 @@ DB_CONNECTION=DB_CONNECTION=mysql
 -rwxr-xr-x 1 studiosdb studiosdb  919 Jun 16 17:41 .env.example
 
 --- PROTECTION CSRF ---
-Tokens CSRF trouvés: 49
+Tokens CSRF trouvés: 50
 
 --- MIDDLEWARE SÉCURITÉ ---
             'throttle:api',
@@ -21,14 +21,14 @@ Tokens CSRF trouvés: 49
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
 
 --- VALIDATION DANS CONTRÔLEURS ---
-Validations trouvées: 100
+Validations trouvées: 106
 
 --- SPATIE PERMISSIONS ---
 ✅ Config Spatie Permission présente
 Permissions
-0
+31
 Roles
-0
+4
 
 --- TELESCOPE ---
 ✅ Telescope configuré

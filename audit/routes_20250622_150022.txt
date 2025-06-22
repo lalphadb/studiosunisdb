@@ -1,8 +1,9 @@
 === FICHIERS DE ROUTES ===
-total 32
-drwxr-xr-x  2 studiosdb studiosdb 4096 Jun 21 21:13 .
-drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 13:06 ..
--rwxr-xr-x  1 studiosdb studiosdb 1359 Jun 21 22:44 admin.php
+total 40
+drwxr-xr-x  2 studiosdb studiosdb 4096 Jun 22 13:39 .
+drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 14:57 ..
+-rwxr-xr-x  1 studiosdb studiosdb 2528 Jun 22 14:11 admin.php
+-rwxr-xr-x  1 studiosdb studiosdb 4219 Jun 22 13:39 admin.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb  720 Jun 16 17:41 api.php
 -rwxr-xr-x  1 studiosdb studiosdb 2360 Jun 21 20:06 auth.php
 -rwxr-xr-x  1 studiosdb studiosdb  592 Jun 16 17:41 console.php
@@ -19,6 +20,7 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 13:06 ..
   GET|HEAD        _debugbar/open ..................... debugbar.openhandler › Barryvdh\Debugbar › OpenHandlerController@handle
   POST            _debugbar/queries/explain ......... debugbar.queries.explain › Barryvdh\Debugbar › QueriesController@explain
   GET|HEAD        _debugbar/telescope/{id} ................. debugbar.telescope › Barryvdh\Debugbar › TelescopeController@show
+  GET|HEAD        admin ......................................................... admin.home › Admin\DashboardController@index
   GET|HEAD        admin/ceintures ..................................... admin.ceintures.index › Admin\CeintureController@index
   POST            admin/ceintures ..................................... admin.ceintures.store › Admin\CeintureController@store
   GET|HEAD        admin/ceintures/create ............................ admin.ceintures.create › Admin\CeintureController@create
@@ -42,6 +44,34 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 13:06 ..
   PUT|PATCH       admin/ecoles/{ecole} .................................... admin.ecoles.update › Admin\EcoleController@update
   DELETE          admin/ecoles/{ecole} .................................. admin.ecoles.destroy › Admin\EcoleController@destroy
   GET|HEAD        admin/ecoles/{ecole}/edit ................................... admin.ecoles.edit › Admin\EcoleController@edit
+  GET|HEAD        admin/inscriptions-seminaires admin.inscriptions-seminaires.index › Admin\InscriptionSeminaireController@in…
+  DELETE          admin/inscriptions-seminaires/{inscription} admin.inscriptions-seminaires.destroy › Admin\InscriptionSemina…
+  GET|HEAD        admin/logs .................................................... admin.logs.index › Admin\LogController@index
+  GET|HEAD        admin/logs/{log} ................................................ admin.logs.show › Admin\LogController@show
+  GET|HEAD        admin/paiements ..................................... admin.paiements.index › Admin\PaiementController@index
+  POST            admin/paiements ..................................... admin.paiements.store › Admin\PaiementController@store
+  GET|HEAD        admin/paiements/create ............................ admin.paiements.create › Admin\PaiementController@create
+  GET|HEAD        admin/paiements/{paiement} ............................ admin.paiements.show › Admin\PaiementController@show
+  PUT|PATCH       admin/paiements/{paiement} ........................ admin.paiements.update › Admin\PaiementController@update
+  DELETE          admin/paiements/{paiement} ...................... admin.paiements.destroy › Admin\PaiementController@destroy
+  GET|HEAD        admin/paiements/{paiement}/edit ....................... admin.paiements.edit › Admin\PaiementController@edit
+  GET|HEAD        admin/presences ..................................... admin.presences.index › Admin\PresenceController@index
+  POST            admin/presences ..................................... admin.presences.store › Admin\PresenceController@store
+  GET|HEAD        admin/presences/create ............................ admin.presences.create › Admin\PresenceController@create
+  GET|HEAD        admin/presences/{presence} ............................ admin.presences.show › Admin\PresenceController@show
+  PUT|PATCH       admin/presences/{presence} ........................ admin.presences.update › Admin\PresenceController@update
+  DELETE          admin/presences/{presence} ...................... admin.presences.destroy › Admin\PresenceController@destroy
+  GET|HEAD        admin/presences/{presence}/edit ....................... admin.presences.edit › Admin\PresenceController@edit
+  GET|HEAD        admin/seminaires .................................. admin.seminaires.index › Admin\SeminaireController@index
+  POST            admin/seminaires .................................. admin.seminaires.store › Admin\SeminaireController@store
+  GET|HEAD        admin/seminaires/create ......................... admin.seminaires.create › Admin\SeminaireController@create
+  GET|HEAD        admin/seminaires/{seminaire} ........................ admin.seminaires.show › Admin\SeminaireController@show
+  PUT|PATCH       admin/seminaires/{seminaire} .................... admin.seminaires.update › Admin\SeminaireController@update
+  DELETE          admin/seminaires/{seminaire} .................. admin.seminaires.destroy › Admin\SeminaireController@destroy
+  GET|HEAD        admin/seminaires/{seminaire}/edit ................... admin.seminaires.edit › Admin\SeminaireController@edit
+  GET|HEAD        admin/seminaires/{seminaire}/inscrire admin.seminaires.inscrire › Admin\InscriptionSeminaireController@crea…
+  POST            admin/seminaires/{seminaire}/inscrire admin.seminaires.inscription.store › Admin\InscriptionSeminaireContro…
+  GET|HEAD        admin/test ................................................................................ admin.admin.test
   GET|HEAD        admin/users ................................................. admin.users.index › Admin\UserController@index
   POST            admin/users ................................................. admin.users.store › Admin\UserController@store
   GET|HEAD        admin/users/create ........................................ admin.users.create › Admin\UserController@create
@@ -118,11 +148,12 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 13:06 ..
   GET|HEAD        verify-email .................................. verification.notice › Auth\EmailVerificationPromptController
   GET|HEAD        verify-email/{id}/{hash} .................................. verification.verify › Auth\VerifyEmailController
 
-                                                                                                          Showing [106] routes
+                                                                                                          Showing [135] routes
 
 
 === ROUTES ADMIN ===
 
+  GET|HEAD        admin ......................................................... admin.home › Admin\DashboardController@index
   GET|HEAD        admin/ceintures ..................................... admin.ceintures.index › Admin\CeintureController@index
   POST            admin/ceintures ..................................... admin.ceintures.store › Admin\CeintureController@store
   GET|HEAD        admin/ceintures/create ............................ admin.ceintures.create › Admin\CeintureController@create
@@ -146,6 +177,34 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 13:06 ..
   PUT|PATCH       admin/ecoles/{ecole} .................................... admin.ecoles.update › Admin\EcoleController@update
   DELETE          admin/ecoles/{ecole} .................................. admin.ecoles.destroy › Admin\EcoleController@destroy
   GET|HEAD        admin/ecoles/{ecole}/edit ................................... admin.ecoles.edit › Admin\EcoleController@edit
+  GET|HEAD        admin/inscriptions-seminaires admin.inscriptions-seminaires.index › Admin\InscriptionSeminaireController@in…
+  DELETE          admin/inscriptions-seminaires/{inscription} admin.inscriptions-seminaires.destroy › Admin\InscriptionSemina…
+  GET|HEAD        admin/logs .................................................... admin.logs.index › Admin\LogController@index
+  GET|HEAD        admin/logs/{log} ................................................ admin.logs.show › Admin\LogController@show
+  GET|HEAD        admin/paiements ..................................... admin.paiements.index › Admin\PaiementController@index
+  POST            admin/paiements ..................................... admin.paiements.store › Admin\PaiementController@store
+  GET|HEAD        admin/paiements/create ............................ admin.paiements.create › Admin\PaiementController@create
+  GET|HEAD        admin/paiements/{paiement} ............................ admin.paiements.show › Admin\PaiementController@show
+  PUT|PATCH       admin/paiements/{paiement} ........................ admin.paiements.update › Admin\PaiementController@update
+  DELETE          admin/paiements/{paiement} ...................... admin.paiements.destroy › Admin\PaiementController@destroy
+  GET|HEAD        admin/paiements/{paiement}/edit ....................... admin.paiements.edit › Admin\PaiementController@edit
+  GET|HEAD        admin/presences ..................................... admin.presences.index › Admin\PresenceController@index
+  POST            admin/presences ..................................... admin.presences.store › Admin\PresenceController@store
+  GET|HEAD        admin/presences/create ............................ admin.presences.create › Admin\PresenceController@create
+  GET|HEAD        admin/presences/{presence} ............................ admin.presences.show › Admin\PresenceController@show
+  PUT|PATCH       admin/presences/{presence} ........................ admin.presences.update › Admin\PresenceController@update
+  DELETE          admin/presences/{presence} ...................... admin.presences.destroy › Admin\PresenceController@destroy
+  GET|HEAD        admin/presences/{presence}/edit ....................... admin.presences.edit › Admin\PresenceController@edit
+  GET|HEAD        admin/seminaires .................................. admin.seminaires.index › Admin\SeminaireController@index
+  POST            admin/seminaires .................................. admin.seminaires.store › Admin\SeminaireController@store
+  GET|HEAD        admin/seminaires/create ......................... admin.seminaires.create › Admin\SeminaireController@create
+  GET|HEAD        admin/seminaires/{seminaire} ........................ admin.seminaires.show › Admin\SeminaireController@show
+  PUT|PATCH       admin/seminaires/{seminaire} .................... admin.seminaires.update › Admin\SeminaireController@update
+  DELETE          admin/seminaires/{seminaire} .................. admin.seminaires.destroy › Admin\SeminaireController@destroy
+  GET|HEAD        admin/seminaires/{seminaire}/edit ................... admin.seminaires.edit › Admin\SeminaireController@edit
+  GET|HEAD        admin/seminaires/{seminaire}/inscrire admin.seminaires.inscrire › Admin\InscriptionSeminaireController@crea…
+  POST            admin/seminaires/{seminaire}/inscrire admin.seminaires.inscription.store › Admin\InscriptionSeminaireContro…
+  GET|HEAD        admin/test ................................................................................ admin.admin.test
   GET|HEAD        admin/users ................................................. admin.users.index › Admin\UserController@index
   POST            admin/users ................................................. admin.users.store › Admin\UserController@store
   GET|HEAD        admin/users/create ........................................ admin.users.create › Admin\UserController@create
@@ -156,7 +215,7 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 22 13:06 ..
   GET|HEAD        admin/users/{user}/edit ....................................... admin.users.edit › Admin\UserController@edit
   GET|HEAD        admin/users/{user}/qrcode ................................. admin.users.qrcode › Admin\UserController@qrcode
 
-                                                                                                           Showing [32] routes
+                                                                                                           Showing [61] routes
 
 
 === ROUTES API ===
@@ -204,34 +263,53 @@ use App\Http\Controllers\Admin\{
     DashboardController,
     UserController,
     EcoleController,
+    CoursController,
     CeintureController,
-    CoursController
+    SeminaireController,
+    InscriptionSeminaireController,
+    PaiementController,
+    PresenceController,
+    LogController
 };
 
-// Routes Admin protégées
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Dashboard
+    // Route de test temporaire
+    Route::get('/test', function() {
+        $user = auth()->user();
+        return response()->json([
+            'connected' => auth()->check(),
+            'user' => $user ? $user->name : 'Non connecté',
+            'roles' => $user ? $user->getRoleNames() : [],
+            'route_works' => true
+        ]);
+    })->name('admin.test');
+    
+    // Dashboard principal accessible à tous les admins (DEUX ROUTES)
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Users (ex-membres) - PAS membres !
+    // Routes temporaires sans restrictions pour débugger
     Route::resource('users', UserController::class);
-    Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
-    Route::get('users/export', [UserController::class, 'export'])->name('users.export');
-    
-    // Écoles (permissions vérifiées dans le contrôleur)
     Route::resource('ecoles', EcoleController::class);
-    
-    // Ceintures
+    Route::resource('cours', CoursController::class);
     Route::resource('ceintures', CeintureController::class);
+    Route::resource('seminaires', SeminaireController::class);
+    Route::resource('paiements', PaiementController::class);
+    Route::resource('presences', PresenceController::class);
+    
+    // Routes spéciales
+    Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+    Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
     Route::post('ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');
     
-    // Cours - MAINTENANT ACTIF !
-    Route::resource('cours', CoursController::class);
+    // Inscriptions seminaires
+    Route::get('seminaires/{seminaire}/inscrire', [InscriptionSeminaireController::class, 'create'])->name('seminaires.inscrire');
+    Route::post('seminaires/{seminaire}/inscrire', [InscriptionSeminaireController::class, 'store'])->name('seminaires.inscription.store');
+    Route::get('inscriptions-seminaires', [InscriptionSeminaireController::class, 'index'])->name('inscriptions-seminaires.index');
+    Route::delete('inscriptions-seminaires/{inscription}', [InscriptionSeminaireController::class, 'destroy'])->name('inscriptions-seminaires.destroy');
     
-    // TODO: Modules futurs
-    // Route::resource('seminaires', SeminaireController::class);
-    // Route::resource('presences', PresenceController::class);
-    // Route::resource('paiements', PaiementController::class);
+    // Logs
+    Route::resource('logs', LogController::class)->only(['index', 'show']);
 });
 

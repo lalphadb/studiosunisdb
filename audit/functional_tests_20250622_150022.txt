@@ -26,7 +26,7 @@ DB Test: 127.0.0.1 via TCP/IP
 ✅ Connexion database OK
 
 --- TEST MODÈLES ---
-Users count: 0
+Users count: 4
 ✅ Modèle User accessible
 
 --- TEST ROUTES ---
@@ -43,5 +43,15 @@ Users count: 0
 ✅ Cache routes OK
 
 --- TEST PERMISSIONS ---
+Guard: web
++------------------+-------------+-------------+--------+-------------+
+|                  | admin-ecole | instructeur | membre | super-admin |
++------------------+-------------+-------------+--------+-------------+
+| assign-ceintures |  ✔          |  ✔          |  ·     |  ✔          |
+| create-ceinture  |  ·          |  ·          |  ·     |  ✔          |
+| create-cours     |  ✔          |  ·          |  ·     |  ✔          |
+| create-ecole     |  ·          |  ·          |  ·     |  ✔          |
+| create-paiement  |  ✔          |  ·          |  ·     |  ✔          |
+| create-presence  |  ✔          |  ✔          |  ·     |  ✔          |
 ✅ Spatie Permissions fonctionnel
 

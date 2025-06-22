@@ -1,9 +1,9 @@
 === INFORMATIONS SYSTÈME ===
-Date: Sun Jun 22 13:13:54 EDT 2025
+Date: Sun Jun 22 15:00:23 EDT 2025
 Hostname: lalpha
 User: studiosdb
 PWD: /home/studiosdb/studiosunisdb
-Uptime:  13:13:54 up 3 days, 19:10,  1 user,  load average: 0.13, 0.37, 0.58
+Uptime:  15:00:23 up 3 days, 20:57,  1 user,  load average: 0.28, 0.65, 0.95
 
 === VERSIONS LOGICIELS ===
 OS: Ubuntu 24.04.2 LTS
@@ -28,7 +28,7 @@ shm                                 64M     0   64M   0% /var/snap/microk8s/comm
 
 === MÉMOIRE ===
                total        used        free      shared  buff/cache   available
-Mem:            46Gi       7.9Gi        27Gi       289Mi        12Gi        39Gi
+Mem:            46Gi       8.8Gi        26Gi       305Mi        12Gi        38Gi
 Swap:          8.0Gi          0B       8.0Gi
 
 === LARAVEL INFO ===

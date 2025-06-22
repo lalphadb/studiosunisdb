@@ -1,0 +1,98 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\{
+    DashboardController,
+    UserController,
+    EcoleController,
+    CoursController,
+    CeintureController,
+    SeminaireController,
+    InscriptionSeminaireController,
+    PaiementController,
+    PresenceController,
+    LogController
+};
+
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Dashboard principal - accessible à tous les admins
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // === ROUTES POUR SUPERADMIN UNIQUEMENT ===
+    Route::middleware(['role:superadmin'])->group(function () {
+        
+        // Dashboard SuperAdmin avec vue globale
+        Route::get('/superadmin-dashboard', [DashboardController::class, 'superadminDashboard'])
+             ->name('superadmin.dashboard');
+        
+        // Gestion globale des utilisateurs (tous rôles)
+        Route::resource('users', UserController::class);
+        Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+        Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
+        
+        // Gestion des écoles (création, modification, suppression)
+        Route::resource('ecoles', EcoleController::class);
+        
+        // Logs système - SuperAdmin seulement
+        Route::resource('logs', LogController::class)->only(['index', 'show']);
+        
+        // Telescope - SuperAdmin seulement
+        Route::get('/telescope', function () {
+            return redirect('/telescope');
+        })->name('telescope');
+    });
+    
+    // === ROUTES POUR ADMIN D'ÉCOLE ===
+    Route::middleware(['role:admin'])->group(function () {
+        
+        // Dashboard Admin d'école avec vue limitée à son école
+        Route::get('/admin-dashboard', [DashboardController::class, 'adminDashboard'])
+             ->name('admin.dashboard');
+        
+        // Gestion des utilisateurs de son école uniquement
+        Route::get('my-school-users', [UserController::class, 'mySchoolUsers'])
+             ->name('users.my-school');
+        Route::get('my-school-users/{user}', [UserController::class, 'show'])
+             ->name('users.my-school.show');
+        Route::get('my-school-users/{user}/edit', [UserController::class, 'edit'])
+             ->name('users.my-school.edit');
+        Route::patch('my-school-users/{user}', [UserController::class, 'update'])
+             ->name('users.my-school.update');
+        
+        // Vue des informations de son école (lecture seule)
+        Route::get('my-school', [EcoleController::class, 'mySchool'])
+             ->name('ecoles.my-school');
+    });
+    
+    // === ROUTES COMMUNES AUX SUPERADMIN ET ADMIN ===
+    Route::middleware(['role:superadmin|admin'])->group(function () {
+        
+        // Gestion des cours
+        Route::resource('cours', CoursController::class);
+        
+        // Gestion des ceintures
+        Route::resource('ceintures', CeintureController::class);
+        Route::post('ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])
+             ->name('ceintures.attribuer');
+        
+        // Gestion des séminaires
+        Route::resource('seminaires', SeminaireController::class);
+        
+        // Gestion des inscriptions aux séminaires
+        Route::get('seminaires/{seminaire}/inscrire', [InscriptionSeminaireController::class, 'create'])
+             ->name('seminaires.inscrire');
+        Route::post('seminaires/{seminaire}/inscrire', [InscriptionSeminaireController::class, 'store'])
+             ->name('seminaires.inscription.store');
+        Route::get('inscriptions-seminaires', [InscriptionSeminaireController::class, 'index'])
+             ->name('inscriptions-seminaires.index');
+        Route::delete('inscriptions-seminaires/{inscription}', [InscriptionSeminaireController::class, 'destroy'])
+             ->name('inscriptions-seminaires.destroy');
+        
+        // Gestion des paiements
+        Route::resource('paiements', PaiementController::class);
+        
+        // Gestion des présences
+        Route::resource('presences', PresenceController::class);
+    });
+});
