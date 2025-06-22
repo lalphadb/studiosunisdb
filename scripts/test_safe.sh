@@ -7,6 +7,12 @@ if [ "$APP_ENV" = "production" ]; then
     exit 1
 fi
 
+# S'assurer que .env.testing a une clé valide
+if ! grep -q "APP_KEY=base64:" .env.testing; then
+    echo "🔑 Génération de la clé de test..."
+    php artisan key:generate --env=testing
+fi
+
 # Backup de la DB de dev
 if [ -f ".env" ]; then
     echo "💾 Backup de la base de développement..."
