@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -12,8 +11,10 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
+        // Test la redirection vers login au lieu de la page d'accueil
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertStatus(302); // Redirection
+        $response->assertRedirect('/login'); // Vers login comme configuré
     }
 }

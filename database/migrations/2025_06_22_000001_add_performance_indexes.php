@@ -3,67 +3,62 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    public function up()
-    {
-        // Vérifier et ajouter index seulement s'ils n'existent pas
-        $indexExists = DB::select("SHOW INDEX FROM users WHERE Key_name = 'users_ecole_id_active_index'");
-        
-        if (empty($indexExists)) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->index(['ecole_id', 'active'], 'users_ecole_id_active_index');
-            });
-        }
-        
-        $createdAtExists = DB::select("SHOW INDEX FROM users WHERE Key_name = 'users_created_at_index'");
-        
-        if (empty($createdAtExists)) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->index('created_at', 'users_created_at_index');
-            });
-        }
-        
-        // Autres tables si elles existent
-        if (Schema::hasTable('presences')) {
-            $presencesExists = DB::select("SHOW INDEX FROM presences WHERE Key_name = 'presences_cours_id_date_cours_index'");
-            
-            if (empty($presencesExists)) {
-                Schema::table('presences', function (Blueprint $table) {
-                    $table->index(['cours_id', 'date_cours'], 'presences_cours_id_date_cours_index');
-                });
-            }
-        }
-        
-        if (Schema::hasTable('paiements')) {
-            $paiementsExists = DB::select("SHOW INDEX FROM paiements WHERE Key_name = 'paiements_ecole_id_statut_index'");
-            
-            if (empty($paiementsExists)) {
-                Schema::table('paiements', function (Blueprint $table) {
-                    $table->index(['ecole_id', 'statut'], 'paiements_ecole_id_statut_index');
-                });
-            }
-        }
-    }
-    
-    public function down()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['created_at']);
+            // --- CORRECTION CLÉ ---
+            // On vérifie si l'index n'existe pas déjà avant de le créer.
+            // La méthode de vérification est différente pour mysql et sqlite.
+            $tableName = $table->getTable();
+            $connection = Schema::getConnection()->getDriverName();
+
+            $indexName = 'users_ecole_id_active_index';
+            if (!$this->indexExists($tableName, $indexName, $connection)) {
+                $table->index(['ecole_id', 'active'], $indexName);
+            }
+
+            $indexName = 'users_created_at_index';
+            if (!$this->indexExists($tableName, $indexName, $connection)) {
+                $table->index('created_at', $indexName);
+            }
         });
-        
-        if (Schema::hasTable('presences')) {
-            Schema::table('presences', function (Blueprint $table) {
-                $table->dropIndex(['cours_id', 'date_cours']);
-            });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIndexIfExists('users_ecole_id_active_index');
+            $table->dropIndexIfExists('users_created_at_index');
+        });
+    }
+
+    /**
+     * Vérifie si un index existe, compatible avec MySQL et SQLite.
+     */
+    private function indexExists(string $tableName, string $indexName, string $connection): bool
+    {
+        if ($connection === 'sqlite') {
+            $sql = "PRAGMA index_list(`{$tableName}`)";
+            $indexes = \Illuminate\Support\Facades\DB::select($sql);
+            foreach ($indexes as $index) {
+                if (isset($index->name) && $index->name === $indexName) {
+                    return true;
+                }
+            }
+            return false;
         }
-        
-        if (Schema::hasTable('paiements')) {
-            Schema::table('paiements', function (Blueprint $table) {
-                $table->dropIndex(['ecole_id', 'statut']);
-            });
-        }
+
+        // Pour MySQL
+        $sql = "SHOW INDEX FROM `{$tableName}` WHERE Key_name = '{$indexName}'";
+        return !empty(\Illuminate\Support\Facades\DB::select($sql));
     }
 };
