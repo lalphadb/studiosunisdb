@@ -31,7 +31,7 @@
                     <select name="user_id" id="user_id" required class="form-select @error('user_id') border-red-500 @enderror">
                         <option value="">Sélectionner un membre...</option>
                         @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ old('user_id', $userSelectionne?->id) == $user->id ? 'selected' : '' }}>
+                            <option value="{{ $user->id }}" {{ old('user_id', $userSelectionne?->id) == (isset($user) ? $user->id : null) ? 'selected' : '' }}>
                                 {{ $user->name }}
                                 @if($user->ecole)
                                     - {{ $user->ecole->nom }}
@@ -51,7 +51,7 @@
                     <select name="ceinture_id" id="ceinture_id" required class="form-select @error('ceinture_id') border-red-500 @enderror">
                         <option value="">Sélectionner une ceinture...</option>
                         @foreach($ceintures as $ceinture)
-                            <option value="{{ $ceinture->id }}" {{ old('ceinture_id') == $ceinture->id ? 'selected' : '' }}>
+                            <option value="{{ $ceinture->id }}" {{ old('ceinture_id') == (isset($ceinture) ? $ceinture->id : null) ? 'selected' : '' }}>
                                 {{ $ceinture->nom }} (Ordre {{ $ceinture->ordre }})
                             </option>
                         @endforeach

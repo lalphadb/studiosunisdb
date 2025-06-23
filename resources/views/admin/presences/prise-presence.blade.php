@@ -1,24 +1,8 @@
 @extends("layouts.admin")
 
-@section("content")
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-100 leading-tight">
-                {{ __('Prise de Présence') }} ⚡ - {{ $cours->nom }}
-            </h2>
-            <div class="flex space-x-3">
-                <a href="{{ route('admin.cours.show', $cours) }}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-eye mr-2"></i>Voir le cours
-                </a>
-                <a href="{{ route('admin.presences.index') }}" 
-                   class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
-                    <i class="fas fa-arrow-left mr-2"></i>Retour
-                </a>
-            </div>
-        </div>
-    </x-slot>
+@section("title", "Prise de Présence - " . $cours->nom)
 
+@section("content")
     <div class="py-6">
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             <!-- Info du cours -->
@@ -55,7 +39,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('admin.presences.store-prise-presence', $cours) }}">
+            <form method="POST" action="{{ route('admin.presences.store-prise-presence', $cours) }}" id="presenceForm">
                 @csrf
                 
                 <!-- Sélection de date -->
@@ -231,14 +215,17 @@
     </div>
 
     <script>
+        // Fonctions JavaScript corrigées
         function toggleHeureInput(index, show) {
             const heureDiv = document.querySelector('.heure-input-' + index);
-            if (show) {
-                heureDiv.classList.remove('hidden');
-            } else {
-                heureDiv.classList.add('hidden');
-                // Vider la valeur
-                heureDiv.querySelector('input').value = '';
+            if (heureDiv) {
+                if (show) {
+                    heureDiv.classList.remove('hidden');
+                } else {
+                    heureDiv.classList.add('hidden');
+                    const input = heureDiv.querySelector('input');
+                    if (input) input.value = '';
+                }
             }
         }
 
@@ -251,21 +238,30 @@
         }
 
         function reinitialiser() {
+            // Décocher tous les radio buttons
             const allRadios = document.querySelectorAll('input[type="radio"]');
             allRadios.forEach(radio => {
                 radio.checked = false;
             });
             
+            // Cacher toutes les sections heure et vider les champs
             const heureInputs = document.querySelectorAll('[class*="heure-input-"]');
             heureInputs.forEach(div => {
                 div.classList.add('hidden');
-                div.querySelector('input').value = '';
+                const input = div.querySelector('input');
+                if (input) input.value = '';
             });
             
+            // Vider les champs notes
             const notesInputs = document.querySelectorAll('input[name*="[notes]"]');
             notesInputs.forEach(input => {
                 input.value = '';
             });
         }
+
+        // Initialiser au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page de présences chargée');
+        });
     </script>
 @endsection

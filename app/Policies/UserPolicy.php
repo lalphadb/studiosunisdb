@@ -11,63 +11,68 @@ class UserPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('view-users');
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
     }
 
-    public function view(User $user, User $model): bool
+    public function view(User $user, User $targetUser): bool
     {
-        if ($user->can('view-users')) {
-            // Multi-tenant: admin d'école ne voit que ses utilisateurs
-            if ($user->ecole_id) {
-                return $model->ecole_id === $user->ecole_id;
-            }
-            return true;
-        }
-        
-        // Utilisateur peut voir son propre profil
-        return $user->id === $model->id;
+        return $this->viewAny($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->can('create-user');
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
     }
 
-    public function update(User $user, User $model): bool
+    public function update(User $user, User $targetUser): bool
     {
-        if ($user->can('edit-user')) {
-            // Multi-tenant
-            if ($user->ecole_id) {
-                return $model->ecole_id === $user->ecole_id;
+        // Ne peut pas modifier un utilisateur de niveau supérieur ou égal
+        return $this->canManageUser($user, $targetUser);
+    }
+
+    public function delete(User $user, User $targetUser): bool
+    {
+        // Ne peut pas supprimer soi-même
+        if ($user->id === $targetUser->id) {
+            return false;
+        }
+        
+        // Ne peut pas supprimer un utilisateur de niveau supérieur ou égal
+        return $this->canManageUser($user, $targetUser);
+    }
+
+    /**
+     * Vérifie si un utilisateur peut gérer un autre utilisateur
+     */
+    private function canManageUser(User $manager, User $target): bool
+    {
+        $hierarchy = [
+            'superadmin' => 5,
+            'admin_ecole' => 4,
+            'admin' => 3,
+            'instructeur' => 2,
+            'membre' => 1,
+        ];
+
+        $managerLevel = 0;
+        $targetLevel = 0;
+
+        // Récupérer le niveau le plus élevé du manager
+        foreach ($manager->roles as $role) {
+            $level = $hierarchy[$role->name] ?? 0;
+            if ($level > $managerLevel) {
+                $managerLevel = $level;
             }
-            return true;
         }
-        
-        // Utilisateur peut modifier son profil
-        return $user->id === $model->id;
-    }
 
-    public function delete(User $user, User $model): bool
-    {
-        if (!$user->can('delete-user')) {
-            return false;
+        // Récupérer le niveau le plus élevé du target
+        foreach ($target->roles as $role) {
+            $level = $hierarchy[$role->name] ?? 0;
+            if ($level > $targetLevel) {
+                $targetLevel = $level;
+            }
         }
-        
-        // Protection: pas de suicide
-        if ($user->id === $model->id) {
-            return false;
-        }
-        
-        // Protection: SuperAdmin ne peut être supprimé
-        if ($model->hasRole('superadmin')) {
-            return false;
-        }
-        
-        // Multi-tenant
-        if ($user->ecole_id) {
-            return $model->ecole_id === $user->ecole_id;
-        }
-        
-        return true;
+
+        return $managerLevel > $targetLevel;
     }
 }

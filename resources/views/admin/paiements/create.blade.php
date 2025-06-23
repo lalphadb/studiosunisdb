@@ -49,7 +49,7 @@
                                     class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('user_id') border-red-500 @enderror">
                                 <option value="">Sélectionner un membre</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                    <option value="{{ $user->id }}" {{ old('user_id') == (isset($user) ? $user->id : null) ? 'selected' : '' }}>
                                         {{ $user->nom }} {{ $user->prenom }} - {{ $user->email }}
                                     </option>
                                 @endforeach

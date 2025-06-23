@@ -36,7 +36,7 @@
                 </label>
                 <select name="ceinture_id" id="ceinture_id" required class="form-select @error('ceinture_id') border-red-500 @enderror">
                     @foreach($ceintures as $ceinture)
-                        <option value="{{ $ceinture->id }}" {{ old('ceinture_id', $progression->ceinture_id) == $ceinture->id ? 'selected' : '' }}>
+                        <option value="{{ $ceinture->id }}" {{ old('ceinture_id', $progression->ceinture_id) == (isset($ceinture) ? $ceinture->id : null) ? 'selected' : '' }}>
                             {{ $ceinture->nom }} (Ordre {{ $ceinture->ordre }})
                         </option>
                     @endforeach

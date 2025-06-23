@@ -35,7 +35,7 @@
                     <select name="user_id" id="user_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Sélectionner un membre --</option>
                         @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                            <option value="{{ $user->id }}" {{ old('user_id') == (isset($user) ? $user->id : null) ? 'selected' : '' }}>
                                 {{ $user->prenom }} {{ $user->nom }} 
                                 @if($user->ecole)
                                     ({{ $user->ecole->nom }})
@@ -59,7 +59,7 @@
                     <select name="ceinture_id" id="ceinture_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Sélectionner une ceinture --</option>
                         @foreach($ceintures as $ceinture)
-                            <option value="{{ $ceinture->id }}" {{ old('ceinture_id') == $ceinture->id ? 'selected' : '' }}>
+                            <option value="{{ $ceinture->id }}" {{ old('ceinture_id') == (isset($ceinture) ? $ceinture->id : null) ? 'selected' : '' }}>
                                 <span style="color: {{ $ceinture->couleur }}">●</span>
                                 {{ $ceinture->nom }} (Ordre {{ $ceinture->ordre }})
                             </option>

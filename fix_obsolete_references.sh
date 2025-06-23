@@ -1,27 +1,21 @@
 #!/bin/bash
 
-echo "🔧 Correction des références obsolètes dans les vues..."
+echo "🧹 Nettoyage des références obsolètes 'membre'..."
 
-# Backup des vues avant modification
-cp -r resources/views resources/views.backup.$(date +%Y%m%d_%H%M%S)
+# Sauvegarder le contrôleur original
+cp app/Http/Controllers/Admin/InscriptionSeminaireController.php app/Http/Controllers/Admin/InscriptionSeminaireController.php.backup
 
-# Correction des références 'membre_id' vers 'user_id'
-find resources/views -name "*.blade.php" -exec sed -i 's/membre_id/user_id/g' {} \;
+# Corriger les références dans UserController
+sed -i "s/\$metrics\['membres'\]/\$metrics['users']/g" app/Http/Controllers/Admin/UserController.php
+sed -i "s/'membres' => 0/'users' => 0/g" app/Http/Controllers/Admin/UserController.php
 
-# Correction des variables $membre vers $user
-find resources/views -name "*.blade.php" -exec sed -i 's/\$membre\b/\$user/g' {} \;
+# Corriger LogController
+sed -i "s/'App\\\\Models\\\\Membre'/'App\\\\Models\\\\User'/g" app/Http/Controllers/Admin/LogController.php
 
-# Correction des variables $membres vers $users  
-find resources/views -name "*.blade.php" -exec sed -i 's/\$membres\b/\$users/g' {} \;
+# Vider les caches
+php artisan route:clear
+php artisan config:clear
+php artisan view:clear
+php artisan cache:clear
 
-# Correction des références de modèle 'App\Models\Membre' vers 'App\Models\User'
-find resources/views -name "*.blade.php" -exec sed -i 's/App\\Models\\Membre/App\\Models\\User/g' {} \;
-
-# Correction des méthodes de relation
-find resources/views -name "*.blade.php" -exec sed -i 's/->membre\b/->user/g' {} \;
-
-echo "✅ Correction terminée !"
-echo "📁 Backup créé dans: resources/views.backup.$(date +%Y%m%d_%H%M%S)"
-echo ""
-echo "📋 Fichiers modifiés:"
-find resources/views -name "*.blade.php" -exec grep -l "user_id\|\\$user\|\\$users" {} \; | head -10
+echo "✅ Nettoyage terminé !"

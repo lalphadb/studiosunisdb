@@ -47,7 +47,7 @@
                                             <select name="ecole_id" id="ecole_id" class="form-control @error('ecole_id') is-invalid @enderror" required>
                                                 <option value="">Sélectionner une école</option>
                                                 @foreach($ecoles as $ecole_option)
-                                                    <option value="{{ $ecole_option->id }}" {{ old('ecole_id') == (isset($ecole_option) ? $ecole_option->id : null) ? 'selected' : '' }}>
+                                                    <option value="{{ $ecole_option->id }}" {{ old('ecole_id') == $ecole_option->id ? 'selected' : '' }}>
                                                         {{ $ecole_option->nom }}
                                                     </option>
                                                 @endforeach

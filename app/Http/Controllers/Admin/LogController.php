@@ -16,7 +16,7 @@ class LogController extends Controller
         // Si admin d'école (pas superadmin), filtrer par son école
         if (!auth()->user()->hasRole('superadmin') && auth()->user()->ecole_id) {
             $query->where(function($q) {
-                $q->whereHasMorph('subject', ['App\Models\Membre'], function($query) {
+                $q->whereHasMorph('subject', ['App\Models\User'], function($query) {
                     $query->where('ecole_id', auth()->user()->ecole_id);
                 })
                 ->orWhereHasMorph('subject', ['App\Models\Cours'], function($query) {

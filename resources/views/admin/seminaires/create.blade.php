@@ -57,7 +57,7 @@
                                     class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">Choisir une école</option>
                                 @foreach($ecoles as $ecole)
-                                <option value="{{ $ecole->id }}" {{ old('ecole_id') == $ecole->id ? 'selected' : '' }}>
+                                <option value="{{ $ecole->id }}" {{ old('ecole_id') == (isset($ecole) ? $ecole->id : null) ? 'selected' : '' }}>
                                     {{ $ecole->nom }}
                                 </option>
                                 @endforeach

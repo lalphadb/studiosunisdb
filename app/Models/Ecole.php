@@ -4,49 +4,51 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ecole extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'code',
         'nom',
+        'code',
         'adresse',
         'ville',
+        'province',
         'code_postal',
         'telephone',
         'email',
-        'directeur',
-        'capacite_max',
+        'site_web',
+        'description',
         'active',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'active' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'active' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
-    // Relations
-    public function users(): HasMany
+    // Relation avec users (PAS membres)
+    public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    public function cours(): HasMany
+    // Relation avec cours
+    public function cours()
     {
         return $this->hasMany(Cours::class);
     }
 
-    public function seminaires(): HasMany
+    // Relation avec seminaires
+    public function seminaires()
     {
         return $this->hasMany(Seminaire::class);
     }
 
-    public function paiements(): HasMany
+    // Relation avec paiements
+    public function paiements()
     {
         return $this->hasMany(Paiement::class);
     }
@@ -55,11 +57,5 @@ class Ecole extends Model
     public function scopeActive($query)
     {
         return $query->where('active', true);
-    }
-
-    // Accessors
-    public function getNomCompletAttribute(): string
-    {
-        return $this->code . ' - ' . $this->nom;
     }
 }

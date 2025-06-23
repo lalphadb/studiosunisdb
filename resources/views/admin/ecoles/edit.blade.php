@@ -66,6 +66,22 @@
                         @enderror
                     </div>
 
+                    <!-- Code -->
+                    <div>
+                        <label for="code" class="block text-sm font-medium text-gray-300 mb-2">
+                            Code de l'école *
+                        </label>
+                        <input type="text" 
+                               name="code" 
+                               id="code" 
+                               value="{{ old('code', $ecole->code) }}"
+                               class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('code') border-red-500 @enderror" 
+                               required>
+                        @error('code')
+                            <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Adresse -->
                     <div>
                         <label for="adresse" class="block text-sm font-medium text-gray-300 mb-2">
@@ -102,10 +118,10 @@
                                 Province
                             </label>
                             <select name="province" id="province" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('province') border-red-500 @enderror">
-                                <option value="Quebec" {{ old('province', $ecole->province) == 'Quebec' ? 'selected' : '' }}>Québec</option>
-                                <option value="Ontario" {{ old('province', $ecole->province) == 'Ontario' ? 'selected' : '' }}>Ontario</option>
-                                <option value="Alberta" {{ old('province', $ecole->province) == 'Alberta' ? 'selected' : '' }}>Alberta</option>
-                                <option value="British Columbia" {{ old('province', $ecole->province) == 'British Columbia' ? 'selected' : '' }}>Colombie-Britannique</option>
+                                <option value="QC" {{ old('province', $ecole->province) == 'QC' ? 'selected' : '' }}>Québec</option>
+                                <option value="ON" {{ old('province', $ecole->province) == 'ON' ? 'selected' : '' }}>Ontario</option>
+                                <option value="AB" {{ old('province', $ecole->province) == 'AB' ? 'selected' : '' }}>Alberta</option>
+                                <option value="BC" {{ old('province', $ecole->province) == 'BC' ? 'selected' : '' }}>Colombie-Britannique</option>
                             </select>
                             @error('province')
                                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -213,14 +229,14 @@
 
                     <!-- Statut -->
                     <div>
-                        <label for="statut" class="block text-sm font-medium text-gray-300 mb-2">
+                        <label for="active" class="block text-sm font-medium text-gray-300 mb-2">
                             Statut
                         </label>
-                        <select name="statut" id="statut" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('statut') border-red-500 @enderror">
-                            <option value="actif" {{ old('statut', $ecole->statut) == 'actif' ? 'selected' : '' }}>✅ Actif</option>
-                            <option value="inactif" {{ old('statut', $ecole->statut) == 'inactif' ? 'selected' : '' }}>❌ Inactif</option>
+                        <select name="active" id="active" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('active') border-red-500 @enderror">
+                            <option value="1" {{ old('active', $ecole->active) == 1 ? 'selected' : '' }}>✅ Actif</option>
+                            <option value="0" {{ old('active', $ecole->active) == 0 ? 'selected' : '' }}>❌ Inactif</option>
                         </select>
-                        @error('statut')
+                        @error('active')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
@@ -266,8 +282,8 @@
                     <span class="text-white ml-2">{{ $ecole->updated_at ? $ecole->updated_at->format('d/m/Y à H:i') : 'N/A' }}</span>
                 </div>
                 <div>
-                    <span class="text-gray-400">Membres inscrits:</span>
-                    <span class="text-white ml-2">{{ $ecole->membres()->count() ?? 0 }}</span>
+                    <span class="text-gray-400">Utilisateurs inscrits:</span>
+                    <span class="text-white ml-2">{{ $ecole->users()->count() ?? 0 }}</span>
                 </div>
             </div>
         </div>
