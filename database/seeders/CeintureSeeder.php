@@ -1,30 +1,32 @@
 <?php
+
 namespace Database\Seeders;
 
-use App\Models\Ceinture;
 use Illuminate\Database\Seeder;
+use App\Models\Ceinture;
 
 class CeintureSeeder extends Seeder
 {
     public function run()
     {
         $ceintures = [
-            ['nom' => 'Blanche', 'couleur' => '#FFFFFF', 'ordre' => 1, 'description' => 'Ceinture débutant'],
-            ['nom' => 'Jaune', 'couleur' => '#FFFF00', 'ordre' => 2, 'description' => 'Premier niveau coloré'],
-            ['nom' => 'Orange', 'couleur' => '#FFA500', 'ordre' => 3, 'description' => 'Progression intermédiaire'],
-            ['nom' => 'Verte', 'couleur' => '#008000', 'ordre' => 4, 'description' => 'Niveau intermédiaire'],
-            ['nom' => 'Bleue', 'couleur' => '#0000FF', 'ordre' => 5, 'description' => 'Niveau avancé débutant'],
-            ['nom' => 'Brune', 'couleur' => '#8B4513', 'ordre' => 6, 'description' => 'Niveau avancé'],
-            ['nom' => 'Noire 1er Dan', 'couleur' => '#000000', 'ordre' => 7, 'description' => 'Expert niveau 1'],
-            ['nom' => 'Noire 2e Dan', 'couleur' => '#000000', 'ordre' => 8, 'description' => 'Expert niveau 2'],
-            ['nom' => 'Noire 3e Dan', 'couleur' => '#000000', 'ordre' => 9, 'description' => 'Expert niveau 3'],
-            ['nom' => 'Noire 4e Dan', 'couleur' => '#000000', 'ordre' => 10, 'description' => 'Maître niveau 1'],
+            ['nom' => 'Blanche', 'couleur' => '#FFFFFF', 'ordre' => 1, 'description' => 'Débutant'],
+            ['nom' => 'Jaune', 'couleur' => '#FFFF00', 'ordre' => 2, 'description' => 'Premier niveau'],
+            ['nom' => 'Orange', 'couleur' => '#FFA500', 'ordre' => 3, 'description' => 'Deuxième niveau'],
+            ['nom' => 'Verte', 'couleur' => '#008000', 'ordre' => 4, 'description' => 'Troisième niveau'],
+            ['nom' => 'Bleue', 'couleur' => '#0000FF', 'ordre' => 5, 'description' => 'Quatrième niveau'],
+            ['nom' => 'Brune', 'couleur' => '#8B4513', 'ordre' => 6, 'description' => 'Cinquième niveau'],
+            ['nom' => 'Noire 1er Dan', 'couleur' => '#000000', 'ordre' => 7, 'description' => 'Premier Dan'],
+            ['nom' => 'Noire 2e Dan', 'couleur' => '#000000', 'ordre' => 8, 'description' => 'Deuxième Dan'],
+            ['nom' => 'Noire 3e Dan', 'couleur' => '#000000', 'ordre' => 9, 'description' => 'Troisième Dan'],
+            ['nom' => 'Noire 4e Dan', 'couleur' => '#000000', 'ordre' => 10, 'description' => 'Quatrième Dan'],
         ];
 
         foreach ($ceintures as $ceinture) {
-            Ceinture::firstOrCreate(['ordre' => $ceinture['ordre']], $ceinture);
+            Ceinture::updateOrCreate(
+                ['nom' => $ceinture['nom']],
+                $ceinture
+            );
         }
-        
-        $this->command->info('✅ 10 ceintures créées!');
     }
 }
