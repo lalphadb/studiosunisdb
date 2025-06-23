@@ -16,24 +16,13 @@ use App\Http\Controllers\Admin\{
 
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Route de test temporaire
-    Route::get('/test', function() {
-        $user = auth()->user();
-        return response()->json([
-            'connected' => auth()->check(),
-            'user' => $user ? $user->name : 'Non connecté',
-            'roles' => $user ? $user->getRoleNames() : [],
-            'route_works' => true
-        ]);
-    })->name('admin.test');
-    
-    // Dashboard principal accessible à tous les admins (DEUX ROUTES)
+    // Dashboard principal
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Routes temporaires sans restrictions pour débugger
-    Route::resource('users', UserController::class);
+    // Routes SANS middleware can: pour déboguer
     Route::resource('ecoles', EcoleController::class);
+    Route::resource('users', UserController::class);
     Route::resource('cours', CoursController::class);
     Route::resource('ceintures', CeintureController::class);
     Route::resource('seminaires', SeminaireController::class);
@@ -53,4 +42,13 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     
     // Logs
     Route::resource('logs', LogController::class)->only(['index', 'show']);
+    
+    // Route de test
+    Route::get('/test', function() {
+        return response()->json([
+            'status' => 'OK',
+            'user' => auth()->user()->name ?? 'Non connecté',
+            'timestamp' => now()
+        ]);
+    })->name('test');
 });

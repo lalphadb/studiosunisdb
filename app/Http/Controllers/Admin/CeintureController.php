@@ -52,7 +52,7 @@ class CeintureController extends Controller implements HasMiddleware
         return view('admin.ceintures.index', compact('progressions', 'ecoles'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $user = auth()->user();
         
@@ -68,7 +68,13 @@ class CeintureController extends Controller implements HasMiddleware
         // Ceintures disponibles
         $ceintures = Ceinture::orderBy('ordre')->get();
         
-        return view('admin.ceintures.create', compact('users', 'ceintures'));
+        // Si un user_id est passé en paramètre, le présélectionner
+        $userSelectionne = null;
+        if ($request->has('user_id')) {
+            $userSelectionne = User::find($request->get('user_id'));
+        }
+        
+        return view('admin.ceintures.create', compact('users', 'ceintures', 'userSelectionne'));
     }
 
     public function store(Request $request)
