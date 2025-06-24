@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'email',
@@ -30,11 +38,21 @@ class User extends Authenticatable
         'notes',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -43,90 +61,130 @@ class User extends Authenticatable
         'active' => 'boolean',
     ];
 
-    public function getAgeAttribute()
-    {
-        if (!$this->date_naissance) {
-            return null;
-        }
-        return $this->date_naissance->age;
-    }
-
+    /**
+     * Relation avec l'école
+     */
     public function ecole()
     {
         return $this->belongsTo(Ecole::class);
     }
 
-    public function membre_ceintures()
+    /**
+     * Relation avec le chef de famille
+     */
+    public function chefDeFamille()
     {
-        return $this->hasMany(MembreCeinture::class);
+        return $this->belongsTo(User::class, 'famille_principale_id');
     }
 
+    /**
+     * Relation avec les membres de la famille
+     */
+    public function membresDeFamille()
+    {
+        return $this->hasMany(User::class, 'famille_principale_id');
+    }
+
+    /**
+     * Relation avec les utilisateur_ceintures (selon structure DB réelle)
+     */
+    public function utilisateurCeintures()
+    {
+        return $this->hasMany(UtilisateurCeinture::class);
+    }
+
+    /**
+     * Relation avec les cours
+     */
+    public function cours()
+    {
+        return $this->belongsToMany(Cours::class, 'inscriptions_cours')
+            ->withPivot('date_inscription', 'date_fin', 'statut')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relation avec les inscriptions cours
+     */
+    public function inscriptionsCours()
+    {
+        return $this->hasMany(InscriptionCours::class);
+    }
+
+    /**
+     * Relation avec les présences
+     */
     public function presences()
     {
         return $this->hasMany(Presence::class);
     }
 
-    public function inscriptions_cours()
-    {
-        return $this->hasMany(InscriptionCours::class);
-    }
-
-    public function inscriptions_seminaires()
-    {
-        return $this->hasMany(InscriptionSeminaire::class);
-    }
-
+    /**
+     * Relation avec les paiements
+     */
     public function paiements()
     {
         return $this->hasMany(Paiement::class);
     }
 
-    public function famillePrincipale()
+    /**
+     * Relation avec les séminaires
+     */
+    public function seminaires()
     {
-        return $this->belongsTo(User::class, 'famille_principale_id');
+        return $this->belongsToMany(Seminaire::class, 'inscriptions_seminaires')
+            ->withPivot('date_inscription', 'statut', 'notes')
+            ->withTimestamps();
     }
 
-    public function membresFamille()
+    /**
+     * Relation avec les cours en tant qu'instructeur
+     */
+    public function coursInstructeur()
     {
-        return $this->hasMany(User::class, 'famille_principale_id');
+        return $this->hasMany(Cours::class, 'instructeur_id');
     }
 
-    public function isSuperAdmin()
-    {
-        return $this->hasRole('superadmin');
-    }
-
-    public function isAdmin()
-    {
-        return $this->hasRole('admin');
-    }
-
-    public function isInstructeur()
-    {
-        return $this->hasRole('instructeur');
-    }
-
-    public function isMembre()
-    {
-        return $this->hasRole('membre');
-    }
-
+    /**
+     * Obtenir la ceinture actuelle de l'utilisateur
+     */
     public function ceintureActuelle()
     {
-        return $this->membre_ceintures()
+        return $this->hasMany(UtilisateurCeinture::class, 'user_id')
             ->with('ceinture')
-            ->where('valide', true)
-            ->orderBy('date_obtention', 'desc')
+            ->latest('date_obtention')
             ->first();
     }
 
-    public function scopeForEcole($query, $ecoleId)
+    /**
+     * Obtenir l'âge de l'utilisateur
+     */
+    public function getAgeAttribute()
     {
-        return $query->where('ecole_id', $ecoleId);
+        return $this->date_naissance ? $this->date_naissance->age : null;
     }
 
+    /**
+     * Vérifier si l'utilisateur est actif
+     */
+    public function isActive()
+    {
+        return $this->active;
+    }
+
+    /**
+     * Scope pour les utilisateurs actifs
+     */
     public function scopeActive($query)
     {
         return $query->where('active', true);
+    }
+
+    /**
+     * Scope pour les utilisateurs d'une école spécifique
+     */
+    public function scopeByEcole($query, $ecoleId)
+    {
+        return $query->where('ecole_id', $ecoleId);
     }
 }

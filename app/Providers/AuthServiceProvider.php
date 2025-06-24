@@ -2,53 +2,42 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-
-// --- Modèles ---
-use App\Models\User;
+use App\Models\User as UserModel;
 use App\Models\Ecole;
 use App\Models\Cours;
-use App\Models\MembreCeinture;
+use App\Models\Ceinture;
+use App\Models\Seminaire;
 use App\Models\Paiement;
 use App\Models\Presence;
-use App\Models\Seminaire;
-
-// --- Policies ---
+use App\Models\InscriptionSeminaire;
 use App\Policies\UserPolicy;
 use App\Policies\EcolePolicy;
 use App\Policies\CoursPolicy;
-use App\Policies\MembreCeinturePolicy;
+use App\Policies\CeinturePolicy;
+use App\Policies\SeminairePolicy;
 use App\Policies\PaiementPolicy;
 use App\Policies\PresencePolicy;
-use App\Policies\SeminairePolicy;
+use App\Policies\InscriptionSeminairePolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
     protected $policies = [
-        // Règle générale pour l'application (correction Membre -> User)
-        User::class => UserPolicy::class,
+        UserModel::class => UserPolicy::class,
         Ecole::class => EcolePolicy::class,
-        
-        // Règle corrigée pour l'attribution des ceintures
-        MembreCeinture::class => MembreCeinturePolicy::class,
-
-        // Policies pour les autres modules
         Cours::class => CoursPolicy::class,
+        Ceinture::class => CeinturePolicy::class,
+        Seminaire::class => SeminairePolicy::class,
         Paiement::class => PaiementPolicy::class,
         Presence::class => PresencePolicy::class,
-        Seminaire::class => SeminairePolicy::class,
+        InscriptionSeminaire::class => InscriptionSeminairePolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
+        
+        // Pas de Gate::before car les Policies gèrent déjà super-admin
     }
 }

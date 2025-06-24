@@ -4,6 +4,14 @@
 
 @section('content')
 <div class="admin-content">
+   {{-- DEBUG TEMPORAIRE --}}
+   @if(isset($debugInfo))
+   <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+       <h4 class="font-bold">DEBUG INFO:</h4>
+       <pre>{{ json_encode($debugInfo, JSON_PRETTY_PRINT) }}</pre>
+   </div>
+   @endif
+
    {{-- Header uniforme --}}
    <x-module-header 
        title="Créer un Membre"
@@ -136,11 +144,15 @@
                        <select id="role" name="role" required
                                class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-blue-500">
                            <option value="">Sélectionner un rôle</option>
-                           @foreach($availableRoles as $roleValue => $roleLabel)
-                               <option value="{{ $roleValue }}" {{ old('role') == $roleValue ? 'selected' : '' }}>
-                                   {{ $roleLabel }}
-                               </option>
-                           @endforeach
+                           @if(isset($availableRoles) && count($availableRoles) > 0)
+                               @foreach($availableRoles as $roleValue => $roleLabel)
+                                   <option value="{{ $roleValue }}" {{ old('role') == $roleValue ? 'selected' : '' }}>
+                                       {{ $roleLabel }}
+                                   </option>
+                               @endforeach
+                           @else
+                               <option value="">Aucun rôle disponible</option>
+                           @endif
                        </select>
                        @error('role') <p class="text-red-400 text-sm mt-1">{{ $message }}</p> @enderror
                    </div>

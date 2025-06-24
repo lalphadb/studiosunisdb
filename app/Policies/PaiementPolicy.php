@@ -9,16 +9,16 @@ class PaiementPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function view(User $user, Paiement $paiement): bool
     {
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(['admin-ecole', 'admin']) && $user->ecole_id) {
             return $user->ecole_id === $paiement->ecole_id;
         }
 
@@ -27,16 +27,16 @@ class PaiementPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function update(User $user, Paiement $paiement): bool
     {
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(['admin-ecole', 'admin']) && $user->ecole_id) {
             return $user->ecole_id === $paiement->ecole_id;
         }
 

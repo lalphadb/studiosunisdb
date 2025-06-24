@@ -189,7 +189,21 @@
                     @if($ecole->description)
                     <div>
                         <span class="text-sm text-gray-400">Description:</span>
+
+                    @if($ecole->proprietaire)
+                    <div>
+                        <span class="text-sm text-gray-400">Propriétaire:</span>
+                        <p class="text-white">{{ $ecole->proprietaire }}</p>
+                    </div>
+                    @endif
                         <p class="text-white">{{ $ecole->description }}</p>
+
+                    @if($ecole->proprietaire)
+                    <div>
+                        <span class="text-sm text-gray-400">Propriétaire:</span>
+                        <p class="text-white">{{ $ecole->proprietaire }}</p>
+                    </div>
+                    @endif
                     </div>
                     @endif
                 </div>

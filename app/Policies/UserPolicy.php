@@ -11,68 +11,65 @@ class UserPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function view(User $user, User $targetUser): bool
     {
-        return $this->viewAny($user);
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $targetUser->ecole_id;
+        }
+        
+        if ($user->hasRole('admin')) {
+            return $user->ecole_id === $targetUser->ecole_id;
+        }
+        
+        return $user->id === $targetUser->id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function update(User $user, User $targetUser): bool
     {
-        // Ne peut pas modifier un utilisateur de niveau supérieur ou égal
-        return $this->canManageUser($user, $targetUser);
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $targetUser->ecole_id && 
+                   !$targetUser->hasAnyRole(['super-admin', 'admin-ecole']);
+        }
+        
+        if ($user->hasRole('admin')) {
+            return $user->ecole_id === $targetUser->ecole_id && 
+                   $targetUser->hasRole('membre');
+        }
+        
+        return false;
     }
 
     public function delete(User $user, User $targetUser): bool
     {
-        // Ne peut pas supprimer soi-même
         if ($user->id === $targetUser->id) {
-            return false;
+            return false; // Impossible de se supprimer soi-même
         }
         
-        // Ne peut pas supprimer un utilisateur de niveau supérieur ou égal
-        return $this->canManageUser($user, $targetUser);
-    }
-
-    /**
-     * Vérifie si un utilisateur peut gérer un autre utilisateur
-     */
-    private function canManageUser(User $manager, User $target): bool
-    {
-        $hierarchy = [
-            'superadmin' => 5,
-            'admin_ecole' => 4,
-            'admin' => 3,
-            'instructeur' => 2,
-            'membre' => 1,
-        ];
-
-        $managerLevel = 0;
-        $targetLevel = 0;
-
-        // Récupérer le niveau le plus élevé du manager
-        foreach ($manager->roles as $role) {
-            $level = $hierarchy[$role->name] ?? 0;
-            if ($level > $managerLevel) {
-                $managerLevel = $level;
-            }
+        if ($user->hasRole('super-admin')) {
+            return true;
         }
-
-        // Récupérer le niveau le plus élevé du target
-        foreach ($target->roles as $role) {
-            $level = $hierarchy[$role->name] ?? 0;
-            if ($level > $targetLevel) {
-                $targetLevel = $level;
-            }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $targetUser->ecole_id && 
+                   !$targetUser->hasAnyRole(['super-admin', 'admin-ecole']);
         }
-
-        return $managerLevel > $targetLevel;
+        
+        return false;
     }
 }

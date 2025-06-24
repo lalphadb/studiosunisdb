@@ -20,6 +20,7 @@ class Ecole extends Model
         'email',
         'site_web',
         'description',
+        'proprietaire',
         'active',
     ];
 
@@ -29,25 +30,22 @@ class Ecole extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relation avec users (PAS membres)
+    // Relations
     public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    // Relation avec cours
     public function cours()
     {
         return $this->hasMany(Cours::class);
     }
 
-    // Relation avec seminaires
     public function seminaires()
     {
         return $this->hasMany(Seminaire::class);
     }
 
-    // Relation avec paiements
     public function paiements()
     {
         return $this->hasMany(Paiement::class);

@@ -1,13 +1,11 @@
 ================================================
-ANALYSE PROJET LARAVEL - Mon Jun 23 07:54:47 EDT 2025
+ANALYSE PROJET LARAVEL - Tue Jun 24 12:46:43 EDT 2025
 ================================================
 
 🎨 FRAMEWORK CSS DÉTECTÉ:
 ------------------------
 Layout trouvé: resources/views/layouts/navigation.blade.php
 ❓ Framework non identifié dans resources/views/layouts/navigation.blade.php
-Layout trouvé: resources/views/layouts/admin-simple.blade.php
-❓ Framework non identifié dans resources/views/layouts/admin-simple.blade.php
 Layout trouvé: resources/views/layouts/guest.blade.php
 ❓ Framework non identifié dans resources/views/layouts/guest.blade.php
 Layout trouvé: resources/views/layouts/admin.blade.php
@@ -248,7 +246,7 @@ Seeder: CeintureSeeder.php
 ----------------------
 Contrôleur: Admin/UserController.php
    ✅ Middleware Laravel 12 (statique)
-   Méthodes: index show create store edit 
+   Méthodes: index create store show edit 
 Contrôleur: Admin/LogController.php
    Méthodes: index 
 Contrôleur: Admin/SeminaireController.php

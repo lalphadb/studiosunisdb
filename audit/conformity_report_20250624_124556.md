@@ -1,5 +1,5 @@
 # 📋 RAPPORT DE CONFORMITÉ D'ARCHITECTURE - StudiosUnisDB
-**Date de l'audit:** 2025-06-22 19:50:10
+**Date de l'audit:** 2025-06-24 12:45:56
 
 Ce rapport vérifie la conformité de chaque module par rapport au "Module Blueprint" standard.
 Légende: ✅Conforme, ⚠️Partiel/Non Standard, ❌Manquant.
@@ -11,7 +11,7 @@ Légende: ✅Conforme, ⚠️Partiel/Non Standard, ❌Manquant.
 | **Ceinture** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
 | **Cours** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
 | **Dashboard** | ❌ | ❌ | ⚠️ | ✅ | ❌ | 🟡 |
-| **Ecole** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
+| **Ecole** | ✅ | ✅ | ✅ | ✅ | ✅ | 🟢 |
 | **InscriptionSeminaire** | ✅ | ✅ | ⚠️ | ❌ | ❌ | 🟡 |
 | **Log** | ❌ | ❌ | ✅ | ❌ | ❌ | 🔴 |
 | **Paiement** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
@@ -21,18 +21,18 @@ Légende: ✅Conforme, ⚠️Partiel/Non Standard, ❌Manquant.
 | **User** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
 \n## ☠️ Détection de Terminologie Obsolète ()
 
-- 🚨 **145** références à 'membre' trouvées. Ci-dessous un échantillon :
+- 🚨 **157** références à 'membre' trouvées. Ci-dessous un échantillon :
 ```
-app/Http/Controllers/Admin/UserController.php:160:                $metrics['membres'] = User::role('membre')->count();
-app/Http/Controllers/Admin/UserController.php:166:                $metrics['membres'] = (clone $ecoleUsers)->role('membre')->count();
-app/Http/Controllers/Admin/UserController.php:173:                'membres' => 0
-app/Http/Controllers/Admin/LogController.php:19:                $q->whereHasMorph('subject', ['App\Models\Membre'], function($query) {
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:7:use App\Models\Membre;
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:17:            ->with(['membre', 'ecole'])
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:28:        $membres = User::with('ecole')
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:36:        return view('admin.seminaires.inscrire', compact('seminaire', 'membres'));
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:46:        $membre = User::findOrFail($request->user_id);
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:50:            ->where('user_id', $membre->id)
+app/Http/Controllers/Admin/UserController.php:57:            'membre' => 'Membre',
+app/Http/Controllers/Admin/UserController.php:134:            ->with('success', 'Membre créé avec succès.');
+app/Http/Controllers/Admin/UserController.php:152:            'membresFamille.roles',
+app/Http/Controllers/Admin/UserController.php:232:                if ($user->membresFamille->count() > 0) {
+app/Http/Controllers/Admin/UserController.php:233:                    $user->membresFamille()->update(['famille_principale_id' => null]);
+app/Http/Controllers/Admin/UserController.php:248:            ->with('success', 'Membre mis à jour avec succès.');
+app/Http/Controllers/Admin/UserController.php:261:        // Si ce membre a des membres de famille, les détacher
+app/Http/Controllers/Admin/UserController.php:262:        if ($user->membresFamille->count() > 0) {
+app/Http/Controllers/Admin/UserController.php:263:            $user->membresFamille()->update(['famille_principale_id' => null]);
+app/Http/Controllers/Admin/UserController.php:269:            ->with('success', 'Membre supprimé avec succès.');
 ```
 \n## 🛡️ Audit de Sécurité des Routes
 

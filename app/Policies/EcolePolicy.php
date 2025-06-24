@@ -9,44 +9,42 @@ class EcolePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('view-ecoles');
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function view(User $user, Ecole $ecole): bool
     {
-        if ($user->isSuperAdmin()) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        return $user->can('view-ecoles') && $user->ecole_id === $ecole->id;
+        if ($user->hasRole('admin-ecole') && $user->ecole_id) {
+            return $user->ecole_id === $ecole->id;
+        }
+
+        return false;
     }
 
     public function create(User $user): bool
     {
-        return $user->can('create-ecole');
+        return $user->hasRole('super-admin');
     }
 
     public function update(User $user, Ecole $ecole): bool
     {
-        if ($user->isSuperAdmin()) {
-            return $user->can('edit-ecole');
+        if ($user->hasRole('super-admin')) {
+            return true;
         }
 
-        return $user->can('edit-ecole') && $user->ecole_id === $ecole->id;
+        if ($user->hasRole('admin-ecole') && $user->ecole_id) {
+            return $user->ecole_id === $ecole->id;
+        }
+
+        return false;
     }
 
     public function delete(User $user, Ecole $ecole): bool
     {
-        return $user->isSuperAdmin() && $user->can('delete-ecole');
-    }
-
-    public function restore(User $user, Ecole $ecole): bool
-    {
-        return $user->isSuperAdmin() && $user->can('delete-ecole');
-    }
-
-    public function forceDelete(User $user, Ecole $ecole): bool
-    {
-        return $user->isSuperAdmin() && $user->can('delete-ecole');
+        return $user->hasRole('super-admin');
     }
 }

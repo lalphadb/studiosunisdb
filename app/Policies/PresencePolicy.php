@@ -9,16 +9,16 @@ class PresencePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
     }
 
     public function view(User $user, Presence $presence): bool
     {
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(['admin-ecole', 'admin', 'instructeur']) && $user->ecole_id) {
             return $user->ecole_id === $presence->cours->ecole_id;
         }
 
@@ -27,16 +27,16 @@ class PresencePolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
     }
 
     public function update(User $user, Presence $presence): bool
     {
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(['admin-ecole', 'admin', 'instructeur']) && $user->ecole_id) {
             return $user->ecole_id === $presence->cours->ecole_id;
         }
 

@@ -9,22 +9,20 @@ class SeminairePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function view(User $user, Seminaire $seminaire): bool
     {
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
-            // Si le séminaire est lié à une école, vérifier l'école
-            if ($seminaire->ecole_id) {
+        if ($user->hasAnyRole(['admin-ecole', 'admin'])) {
+            if ($seminaire->ecole_id && $user->ecole_id) {
                 return $user->ecole_id === $seminaire->ecole_id;
             }
-            // Sinon, tous les admins peuvent voir les séminaires généraux
-            return true;
+            return true; // Séminaires généraux
         }
 
         return false;
@@ -32,20 +30,20 @@ class SeminairePolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
     }
 
     public function update(User $user, Seminaire $seminaire): bool
     {
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('super-admin')) {
             return true;
         }
 
-        if ($user->hasRole('admin')) {
-            if ($seminaire->ecole_id) {
+        if ($user->hasAnyRole(['admin-ecole', 'admin'])) {
+            if ($seminaire->ecole_id && $user->ecole_id) {
                 return $user->ecole_id === $seminaire->ecole_id;
             }
-            return false; // Seul superadmin peut modifier les séminaires généraux
+            return false; // Séminaires généraux pour super-admin seulement
         }
 
         return false;

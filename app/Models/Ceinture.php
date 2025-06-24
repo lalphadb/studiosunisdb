@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ceinture extends Model
 {
@@ -17,28 +16,29 @@ class Ceinture extends Model
         'description',
     ];
 
-    protected function casts(): array
+    /**
+     * Relation avec les utilisateurs via la table pivot
+     */
+    public function utilisateurCeintures()
     {
-        return [
-            'ordre' => 'integer',
-        ];
+        return $this->hasMany(UtilisateurCeinture::class);
     }
 
-    // Relations
-    public function membre_ceintures(): HasMany
+    /**
+     * Relation avec les utilisateurs
+     */
+    public function users()
     {
-        return $this->hasMany(MembreCeinture::class);
+        return $this->belongsToMany(User::class, 'membre_ceintures')
+            ->withPivot('date_obtention', 'examinateur', 'commentaires', 'valide')
+            ->withTimestamps();
     }
 
-    // Scopes
+    /**
+     * Scope pour ordonner par ordre croissant
+     */
     public function scopeOrdered($query)
     {
         return $query->orderBy('ordre');
-    }
-
-    // Accessors
-    public function getNomCompletAttribute(): string
-    {
-        return $this->nom . ' (' . $this->couleur . ')';
     }
 }

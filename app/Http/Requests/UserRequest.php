@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class UserRequest extends FormRequest
 {
@@ -14,17 +15,15 @@ class UserRequest extends FormRequest
 
     public function rules(): array
     {
-        // Récupérer les rôles disponibles directement ici
-        $availableRoles = $this->getAvailableRolesForValidation();
+        $userId = $this->route('user')?->id;
         
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
             'ecole_id' => ['required', 'exists:ecoles,id'],
-            'role' => ['required', 'string', Rule::in(array_keys($availableRoles))],
             'telephone' => ['nullable', 'string', 'max:20'],
-            'date_naissance' => ['nullable', 'date', 'before:today'],
-            'sexe' => ['nullable', 'in:M,F,Autre'],
+            'date_naissance' => ['nullable', 'date'],
+            'sexe' => ['nullable', 'string', Rule::in(['M', 'F', 'Autre'])],
             'adresse' => ['nullable', 'string', 'max:500'],
             'ville' => ['nullable', 'string', 'max:100'],
             'code_postal' => ['nullable', 'string', 'max:10'],
@@ -34,14 +33,16 @@ class UserRequest extends FormRequest
             'date_inscription' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'famille_principale_id' => ['nullable', 'exists:users,id'],
+            'role' => ['required', 'string', Rule::in($this->getAvailableRoles())],
         ];
 
-        // Email unique sauf pour l'utilisateur actuel en mode édition
+        // Pour la création, mot de passe requis
         if ($this->isMethod('POST')) {
-            $rules['email'][] = 'unique:users,email';
             $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
-        } else {
-            $rules['email'][] = 'unique:users,email,' . $this->route('user')?->id;
+        }
+        
+        // Pour la modification, mot de passe optionnel
+        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
             $rules['password'] = ['nullable', 'string', 'min:8', 'confirmed'];
         }
 
@@ -51,50 +52,36 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Le nom complet est obligatoire.',
+            'name.required' => 'Le nom est obligatoire.',
             'email.required' => 'L\'email est obligatoire.',
+            'email.email' => 'L\'email doit être valide.',
             'email.unique' => 'Cet email est déjà utilisé.',
             'ecole_id.required' => 'L\'école est obligatoire.',
-            'role.required' => 'Le rôle est obligatoire.',
-            'role.in' => 'Le rôle sélectionné n\'est pas autorisé.',
+            'ecole_id.exists' => 'L\'école sélectionnée n\'existe pas.',
             'password.required' => 'Le mot de passe est obligatoire.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+            'role.required' => 'Le rôle est obligatoire.',
+            'role.in' => 'Le rôle sélectionné n\'est pas valide.',
         ];
     }
 
-    /**
-     * Version simple pour la validation
-     */
-    private function getAvailableRolesForValidation(): array
+    private function getAvailableRoles(): array
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
         if (!$user) {
-            return ['membre' => 'Membre'];
+            return [];
         }
-        
-        if ($user->hasRole('superadmin')) {
-            return [
-                'membre' => 'Membre',
-                'instructeur' => 'Instructeur', 
-                'admin' => 'Admin',
-                'admin_ecole' => 'Admin École',
-                'superadmin' => 'Superadmin'
-            ];
-        } elseif ($user->hasRole('admin_ecole')) {
-            return [
-                'membre' => 'Membre',
-                'instructeur' => 'Instructeur',
-                'admin' => 'Admin'
-            ];
+
+        if ($user->hasRole('super-admin')) {
+            return ['utilisateur', 'instructeur', 'admin', 'admin-ecole', 'super-admin'];
+        } elseif ($user->hasRole('admin-ecole')) {
+            return ['utilisateur', 'instructeur', 'admin'];
         } elseif ($user->hasRole('admin')) {
-            return [
-                'membre' => 'Membre',
-                'instructeur' => 'Instructeur'
-            ];
+            return ['utilisateur', 'instructeur'];
         }
         
-        return ['membre' => 'Membre'];
+        return [];
     }
 }

@@ -20,7 +20,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Routes SANS middleware can: pour déboguer
+    // Resources avec middleware sécurisé
     Route::resource('ecoles', EcoleController::class);
     Route::resource('users', UserController::class);
     Route::resource('cours', CoursController::class);
@@ -40,15 +40,18 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('inscriptions-seminaires', [InscriptionSeminaireController::class, 'index'])->name('inscriptions-seminaires.index');
     Route::delete('inscriptions-seminaires/{inscription}', [InscriptionSeminaireController::class, 'destroy'])->name('inscriptions-seminaires.destroy');
     
-    // Logs
-    Route::resource('logs', LogController::class)->only(['index', 'show']);
+    // Logs avec middleware admin (RÔLES AVEC TIRETS)
+    Route::resource('logs', LogController::class)
+        ->only(['index', 'show'])
+        ->middleware('role:super-admin|admin-ecole');
     
-    // Route de test
+    // Route de test (SuperAdmin seulement)
     Route::get('/test', function() {
         return response()->json([
             'status' => 'OK',
             'user' => auth()->user()->name ?? 'Non connecté',
-            'timestamp' => now()
+            'timestamp' => now(),
+            'roles' => auth()->user()->getRoleNames()
         ]);
-    })->name('test');
+    })->middleware('role:super-admin')->name('test');
 });

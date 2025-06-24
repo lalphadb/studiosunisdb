@@ -1,5 +1,5 @@
 # 📋 RAPPORT DE CONFORMITÉ D'ARCHITECTURE - StudiosUnisDB
-**Date de l'audit:** 2025-06-22 15:00:15
+**Date de l'audit:** 2025-06-24 14:56:55
 
 Ce rapport vérifie la conformité de chaque module par rapport au "Module Blueprint" standard.
 Légende: ✅Conforme, ⚠️Partiel/Non Standard, ❌Manquant.
@@ -10,8 +10,8 @@ Légende: ✅Conforme, ⚠️Partiel/Non Standard, ❌Manquant.
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Ceinture** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
 | **Cours** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
-| **Dashboard** | ❌ | ❌ | ⚠️ | ✅ | ❌ | 🟡 |
-| **Ecole** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
+| **Dashboard** | ❌ | ❌ | ⚠️ | ❌ | ❌ | 🔴 |
+| **Ecole** | ✅ | ✅ | ✅ | ✅ | ✅ | 🟢 |
 | **InscriptionSeminaire** | ✅ | ✅ | ⚠️ | ❌ | ❌ | 🟡 |
 | **Log** | ❌ | ❌ | ✅ | ❌ | ❌ | 🔴 |
 | **Paiement** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
@@ -21,18 +21,18 @@ Légende: ✅Conforme, ⚠️Partiel/Non Standard, ❌Manquant.
 | **User** | ✅ | ✅ | ✅ | ✅ | ❌ | 🟢 |
 \n## ☠️ Détection de Terminologie Obsolète ()
 
-- 🚨 **118** références à 'membre' trouvées. Ci-dessous un échantillon :
+- 🚨 **121** références à 'membre' trouvées. Ci-dessous un échantillon :
 ```
-app/Http/Controllers/Admin/UserController.php:160:                $metrics['membres'] = User::role('membre')->count();
-app/Http/Controllers/Admin/UserController.php:166:                $metrics['membres'] = (clone $ecoleUsers)->role('membre')->count();
-app/Http/Controllers/Admin/UserController.php:173:                'membres' => 0
-app/Http/Controllers/Admin/LogController.php:19:                $q->whereHasMorph('subject', ['App\Models\Membre'], function($query) {
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:7:use App\Models\Membre;
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:17:            ->with(['membre', 'ecole'])
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:28:        $membres = User::with('ecole')
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:36:        return view('admin.seminaires.inscrire', compact('seminaire', 'membres'));
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:46:        $membre = User::findOrFail($request->user_id);
-app/Http/Controllers/Admin/InscriptionSeminaireController.php:50:            ->where('user_id', $membre->id)
+app/Http/Controllers/Admin/UserController.php:143:                'membre' => 'Membre',
+app/Http/Controllers/Admin/UserController.php:151:                'membre' => 'Membre',
+app/Http/Controllers/Admin/UserController.php:157:                'membre' => 'Membre',
+app/Http/Controllers/Admin/UserController.php:168:            'membre' => 'Membre',
+app/Http/Controllers/Admin/CeintureController.php:8:use App\Models\MembreCeinture;
+app/Http/Controllers/Admin/CeintureController.php:31:        $query = MembreCeinture::with(['user', 'ceinture', 'user.ecole'])
+app/Http/Controllers/Admin/CeintureController.php:92:        $existeDeja = MembreCeinture::where('user_id', $request->user_id)
+app/Http/Controllers/Admin/CeintureController.php:101:        MembreCeinture::create([
+app/Http/Controllers/Admin/CeintureController.php:114:    public function show(MembreCeinture $ceinture)
+app/Http/Controllers/Admin/CeintureController.php:120:        $historique = MembreCeinture::where('user_id', $progression->user_id)
 ```
 \n## 🛡️ Audit de Sécurité des Routes
 
