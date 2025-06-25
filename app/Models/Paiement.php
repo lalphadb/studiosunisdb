@@ -4,14 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Paiement extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id', // Changé de membre_id à user_id
+        'user_id',
         'ecole_id',
         'processed_by_user_id',
         'reference_interne',
@@ -34,36 +33,32 @@ class Paiement extends Model
         'annee_fiscale',
         'recu_fiscal_emis',
         'metadonnees',
-        'notes_admin',
+        'notes_admin'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'montant' => 'decimal:2',
-            'frais' => 'decimal:2',
-            'montant_net' => 'decimal:2',
-            'date_facture' => 'datetime',
-            'date_echeance' => 'datetime',
-            'date_reception' => 'datetime',
-            'date_validation' => 'datetime',
-            'recu_fiscal_emis' => 'boolean',
-            'metadonnees' => 'array',
-        ];
-    }
+    protected $casts = [
+        'montant' => 'decimal:2',
+        'frais' => 'decimal:2',
+        'montant_net' => 'decimal:2',
+        'date_facture' => 'datetime',
+        'date_echeance' => 'datetime',
+        'date_reception' => 'datetime',
+        'date_validation' => 'datetime',
+        'recu_fiscal_emis' => 'boolean',
+        'metadonnees' => 'array'
+    ];
 
-    // Relations
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function ecole(): BelongsTo
+    public function ecole()
     {
         return $this->belongsTo(Ecole::class);
     }
 
-    public function processedBy(): BelongsTo
+    public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by_user_id');
     }

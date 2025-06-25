@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ceinture extends Model
 {
@@ -16,28 +17,50 @@ class Ceinture extends Model
         'description',
     ];
 
-    /**
-     * Relation avec les utilisateurs via la table pivot
-     */
-    public function utilisateurCeintures()
+    protected $casts = [
+        'ordre' => 'integer',
+    ];
+
+    // Relations
+    public function userCeintures(): HasMany
     {
-        return $this->hasMany(UtilisateurCeinture::class);
+        return $this->hasMany(UserCeinture::class);
     }
 
-    /**
-     * Relation avec les utilisateurs
-     */
-    public function users()
+    // Alias pour compatibilité
+    public function membreCeintures(): HasMany
     {
-        return $this->belongsToMany(User::class, 'membre_ceintures')
-            ->withPivot('date_obtention', 'examinateur', 'commentaires', 'valide')
-            ->withTimestamps();
+        return $this->userCeintures();
     }
 
-    /**
-     * Scope pour ordonner par ordre croissant
-     */
-    public function scopeOrdered($query)
+    // Accesseurs
+    public function getNombreUtilisateursAttribute()
+    {
+        return $this->userCeintures()->where('valide', true)->count();
+    }
+
+    public function getEstKyuAttribute()
+    {
+        return $this->ordre <= 10; // Supposons que les 10 premiers sont des Kyu
+    }
+
+    public function getEstDanAttribute()
+    {
+        return $this->ordre > 10; // Les suivants sont des Dan
+    }
+
+    // Scopes
+    public function scopeKyu($query)
+    {
+        return $query->where('ordre', '<=', 10)->orderBy('ordre');
+    }
+
+    public function scopeDan($query)
+    {
+        return $query->where('ordre', '>', 10)->orderBy('ordre');
+    }
+
+    public function scopeOrdreCroissant($query)
     {
         return $query->orderBy('ordre');
     }

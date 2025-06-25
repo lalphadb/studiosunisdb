@@ -3,28 +3,56 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EcoleRequest;
 use App\Models\Ecole;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class EcoleController extends Controller
+class EcoleController extends Controller implements HasMiddleware
 {
+    /**
+     * Middleware Laravel 12.19 avec autorisation selon les Policies
+     */
     public static function middleware(): array
     {
         return [
-            'can:viewAny,App\Models\Ecole' => ['only' => ['index']],
-            'can:view,ecole' => ['only' => ['show']],
-            'can:create,App\Models\Ecole' => ['only' => ['create', 'store']],
-            'can:update,ecole' => ['only' => ['edit', 'update']],
-            'can:delete,ecole' => ['only' => ['destroy']],
+            'auth',
+            'verified',
+            new Middleware('can:viewAny,App\Models\Ecole', only: ['index']),
+            new Middleware('can:view,ecole', only: ['show']),
+            new Middleware('can:create,App\Models\Ecole', only: ['create', 'store']),
+            new Middleware('can:update,ecole', only: ['edit', 'update']),
+            new Middleware('can:delete,ecole', only: ['destroy']),
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $ecoles = Ecole::withCount(['users', 'cours'])
-            ->orderBy('nom')
-            ->paginate(15);
-
+        $query = Ecole::withCount(['users'])->orderBy('nom');
+        
+        // Filtre par recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%")
+                  ->orWhere('ville', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filtre par province
+        if ($request->filled('province')) {
+            $query->where('province', $request->province);
+        }
+        
+        // Filtre par statut
+        if ($request->has('active')) {
+            $query->where('active', $request->boolean('active'));
+        }
+        
+        $ecoles = $query->paginate(15)->withQueryString();
+        
         return view('admin.ecoles.index', compact('ecoles'));
     }
 
@@ -33,32 +61,17 @@ class EcoleController extends Controller
         return view('admin.ecoles.create');
     }
 
-    public function store(Request $request)
+    public function store(EcoleRequest $request)
     {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:ecoles',
-            'adresse' => 'required|string|max:500',
-            'ville' => 'required|string|max:100',
-            'province' => 'required|string|max:50',
-            'code_postal' => 'required|string|max:10',
-            'telephone' => 'required|string|max:20',
-            'email' => 'required|email|max:255|unique:ecoles',
-            'site_web' => 'nullable|url|max:255',
-            'description' => 'nullable|string|max:1000',
-            'proprietaire' => 'nullable|string|max:255',
-            'active' => 'boolean',
-        ]);
-
-        Ecole::create($validated);
-
+        $ecole = Ecole::create($request->validated());
+        
         return redirect()->route('admin.ecoles.index')
             ->with('success', 'École créée avec succès.');
     }
 
     public function show(Ecole $ecole)
     {
-        $ecole->load(['users', 'cours']);
+        $ecole->load(['users.roles', 'cours']);
         
         return view('admin.ecoles.show', compact('ecole'));
     }
@@ -68,39 +81,19 @@ class EcoleController extends Controller
         return view('admin.ecoles.edit', compact('ecole'));
     }
 
-    public function update(Request $request, Ecole $ecole)
+    public function update(EcoleRequest $request, Ecole $ecole)
     {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:ecoles,code,' . $ecole->id,
-            'adresse' => 'required|string|max:500',
-            'ville' => 'required|string|max:100',
-            'province' => 'required|string|max:50',
-            'code_postal' => 'required|string|max:10',
-            'telephone' => 'required|string|max:20',
-            'email' => 'required|email|max:255|unique:ecoles,email,' . $ecole->id,
-            'site_web' => 'nullable|url|max:255',
-            'description' => 'nullable|string|max:1000',
-            'proprietaire' => 'nullable|string|max:255',
-            'active' => 'boolean',
-        ]);
-
-        $ecole->update($validated);
-
+        $ecole->update($request->validated());
+        
         return redirect()->route('admin.ecoles.index')
             ->with('success', 'École mise à jour avec succès.');
     }
 
     public function destroy(Ecole $ecole)
     {
-        if ($ecole->users()->count() > 0) {
-            return redirect()->route('admin.ecoles.index')
-                ->with('error', 'Impossible de supprimer une école qui a des utilisateurs.');
-        }
-
         $ecole->delete();
-
+        
         return redirect()->route('admin.ecoles.index')
-            ->with('success', 'École supprimée avec succès.');
+            ->with('success', 'École supprimée with succès.');
     }
 }

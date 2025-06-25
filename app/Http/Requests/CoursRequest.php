@@ -3,66 +3,70 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class CoursRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): bool
     {
-        return Auth::user()->can('create-cours') || Auth::user()->can('edit-cours');
+        return true;
     }
 
-    public function rules()
+    public function rules(): array
     {
-        $rules = [
-            'ecole_id' => 'required|exists:ecoles,id',
-            'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'type_cours' => 'required|in:regulier,specialise,competition,examen',
-            'niveau_requis' => 'nullable|string|max:100',
-            'age_min' => 'required|integer|min:3|max:99',
-            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
-            'capacite_max' => 'required|integer|min:1|max:50',
-            'duree_minutes' => 'required|integer|min:30|max:180',
-            'prix_mensuel' => 'nullable|numeric|min:0',
-            'prix_session' => 'nullable|numeric|min:0',
-            'instructeur_principal_id' => 'nullable|exists:users,id',
-            'instructeur_assistant_id' => 'nullable|exists:users,id|different:instructeur_principal_id',
-            'status' => 'required|in:actif,inactif,complet,annule',
-            'salle' => 'nullable|string|max:100',
-            'materiel_requis' => 'nullable|string',
-            'objectifs' => 'nullable|string',
-            'date_debut' => 'nullable|date',
-            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+        $coursId = $this->route('cours')?->id;
+        
+        return [
+            'ecole_id' => ['required', 'exists:ecoles,id'],
+            'nom' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'niveau' => ['required', 'string', Rule::in(['debutant', 'intermediaire', 'avance', 'tous_niveaux'])],
+            'capacite_max' => ['required', 'integer', 'min:1', 'max:100'],
+            'prix' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'duree_minutes' => ['required', 'integer', 'min:30', 'max:240'],
+            'instructeur' => ['nullable', 'string', 'max:255'],
+            'active' => ['boolean'],
             
-            // Horaires
-            'horaires' => 'required|array|min:1',
-            'horaires.*.jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'horaires.*.heure_debut' => 'required|date_format:H:i',
-            'horaires.*.heure_fin' => 'required|date_format:H:i|after:horaires.*.heure_debut',
-            'horaires.*.salle' => 'nullable|string|max:255'
+            // Horaires (optionnels)
+            'horaires' => ['nullable', 'array'],
+            'horaires.*.jour_semaine' => ['required_with:horaires', Rule::in(['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'])],
+            'horaires.*.heure_debut' => ['required_with:horaires', 'date_format:H:i'],
+            'horaires.*.heure_fin' => ['required_with:horaires', 'date_format:H:i', 'after:horaires.*.heure_debut'],
+            'horaires.*.date_debut' => ['nullable', 'date'],
+            'horaires.*.date_fin' => ['nullable', 'date', 'after_or_equal:horaires.*.date_debut'],
         ];
-
-        return $rules;
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
-            'nom.required' => 'Le nom du cours est obligatoire',
-            'ecole_id.required' => 'L\'école est obligatoire',
-            'age_max.gte' => 'L\'âge maximum doit être supérieur ou égal à l\'âge minimum',
-            'instructeur_assistant_id.different' => 'L\'instructeur assistant doit être différent de l\'instructeur principal',
-            'horaires.required' => 'Au moins un horaire est requis',
-            'horaires.*.heure_fin.after' => 'L\'heure de fin doit être après l\'heure de début'
+            'ecole_id.required' => 'L\'école est obligatoire.',
+            'ecole_id.exists' => 'L\'école sélectionnée n\'existe pas.',
+            'nom.required' => 'Le nom du cours est obligatoire.',
+            'niveau.required' => 'Le niveau est obligatoire.',
+            'niveau.in' => 'Le niveau doit être : débutant, intermédiaire, avancé ou tous niveaux.',
+            'capacite_max.required' => 'La capacité maximale est obligatoire.',
+            'capacite_max.min' => 'La capacité doit être d\'au moins 1 personne.',
+            'duree_minutes.required' => 'La durée est obligatoire.',
+            'duree_minutes.min' => 'La durée minimale est de 30 minutes.',
+            'prix.numeric' => 'Le prix doit être un nombre.',
+            'horaires.*.jour_semaine.required_with' => 'Le jour de la semaine est obligatoire.',
+            'horaires.*.heure_debut.required_with' => 'L\'heure de début est obligatoire.',
+            'horaires.*.heure_fin.after' => 'L\'heure de fin doit être après l\'heure de début.',
         ];
     }
 
-    protected function prepareForValidation()
+    protected function getAvailableEcoles(): array
     {
-        // Auto-assigner l'école si pas superadmin
-        if (!Auth::user()->hasRole('superadmin') && !$this->filled('ecole_id')) {
-            $this->merge(['ecole_id' => Auth::user()->ecole_id]);
+        $user = Auth::user();
+        
+        if ($user->hasRole('super-admin')) {
+            return \App\Models\Ecole::pluck('nom', 'id')->toArray();
+        } elseif ($user->hasRole('admin-ecole')) {
+            return \App\Models\Ecole::where('id', $user->ecole_id)->pluck('nom', 'id')->toArray();
         }
+        
+        return [];
     }
 }

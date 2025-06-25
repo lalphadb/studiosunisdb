@@ -2,96 +2,52 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class FixPermissionsSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Réinitialiser le cache des permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-
-        // 1. Créer/vérifier toutes les permissions nécessaires
-        $permissions = [
-            // Ceintures
-            'view-ceintures',
-            'create-ceinture',
-            'edit-ceinture',
-            'delete-ceinture',
-            'manage-ceintures',
-            'assign-ceintures',
-            'evaluate-ceintures',
-
-            // Présences
-            'view-presences',
-            'create-presence',
-            'edit-presence',
-            'delete-presence',
-            'presence.export',
-
-            // Autres permissions essentielles
-            'view-ecoles',
-            'view-membres',
-            'view-cours',
-            'view-seminaires',
-            'admin.dashboard',
+        // Créer les permissions pour les users
+        $userPermissions = [
+            'viewAny-users',
+            'view-users', 
+            'create-users',
+            'update-users',
+            'delete-users',
+            'export-users',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        foreach ($userPermissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web'
+            ]);
         }
 
-        // 2. Réassigner les permissions aux rôles
-        $superadmin = Role::firstOrCreate(['name' => 'superadmin']);
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $instructeur = Role::firstOrCreate(['name' => 'instructeur']);
-        $membre = Role::firstOrCreate(['name' => 'membre']);
+        // Assigner les permissions aux rôles existants
+        $adminEcole = Role::where('name', 'admin_ecole')->first();
+        if (!$adminEcole) {
+            $adminEcole = Role::where('name', 'admin-ecole')->first();
+        }
 
-        // SuperAdmin : toutes les permissions
-        $superadmin->syncPermissions(Permission::all());
+        if ($adminEcole) {
+            $adminEcole->givePermissionTo($userPermissions);
+            $this->command->info("Permissions ajoutées au rôle: {$adminEcole->name}");
+        }
 
-        // Admin : gestion de son école
-        $adminPermissions = [
-            'view-ceintures', 'create-ceinture', 'edit-ceinture', 'assign-ceintures',
-            'view-presences', 'create-presence', 'edit-presence', 'presence.export',
-            'view-ecoles', 'view-membres', 'view-cours', 'view-seminaires',
-            'admin.dashboard',
-        ];
-        $admin->syncPermissions($adminPermissions);
-
-        // Instructeur : cours et présences
-        $instructeurPermissions = [
-            'view-ceintures', 'assign-ceintures',
-            'view-presences', 'create-presence', 'edit-presence',
-            'view-membres', 'view-cours',
-            'admin.dashboard',
-        ];
-        $instructeur->syncPermissions($instructeurPermissions);
-
-        // 3. Réassigner les rôles aux utilisateurs existants
-        $this->fixUserRoles();
-
-        $this->command->info('Permissions restaurées avec succès !');
-    }
-
-    private function fixUserRoles()
-    {
-        // Utilisateurs spécifiques à restaurer
-        $users = [
-            'lalpha@4lb.ca' => 'superadmin',
-            'admin@studiosunisdb.com' => 'admin',
-            'root3d@4lb.ca' => 'instructeur',
-        ];
-
-        foreach ($users as $email => $roleName) {
-            $user = User::where('email', $email)->first();
-            if ($user) {
-                $user->syncRoles([$roleName]);
-                $this->command->info("Rôle {$roleName} assigné à {$email}");
+        // Vérifier les autres rôles similaires
+        $roles = ['superadmin', 'admin', 'super-admin'];
+        foreach ($roles as $roleName) {
+            $role = Role::where('name', $roleName)->first();
+            if ($role) {
+                $role->givePermissionTo($userPermissions);
+                $this->command->info("Permissions ajoutées au rôle: {$role->name}");
             }
         }
+
+        $this->command->info('Permissions pour les users créées et assignées !');
     }
 }

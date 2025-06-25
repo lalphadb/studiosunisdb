@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InscriptionSeminaire extends Model
 {
@@ -13,27 +12,23 @@ class InscriptionSeminaire extends Model
     protected $table = 'inscriptions_seminaires';
 
     protected $fillable = [
-        'user_id', // Changé de membre_id à user_id
+        'user_id',
         'seminaire_id',
         'date_inscription',
         'statut',
-        'notes',
+        'notes'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'date_inscription' => 'date',
-        ];
-    }
+    protected $casts = [
+        'date_inscription' => 'date'
+    ];
 
-    // Relations
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function seminaire(): BelongsTo
+    public function seminaire()
     {
         return $this->belongsTo(Seminaire::class);
     }

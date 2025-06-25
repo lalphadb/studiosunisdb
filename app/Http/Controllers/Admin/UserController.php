@@ -3,46 +3,59 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UserRequest;
 use App\Models\User;
-use App\Models\Ecole;
+use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
         return [
-            'can:viewAny,App\Models\User' => ['only' => ['index']],
-            'can:view,user' => ['only' => ['show']],
-            'can:create,App\Models\User' => ['only' => ['create', 'store']],
-            'can:update,user' => ['only' => ['edit', 'update']],
-            'can:delete,user' => ['only' => ['destroy']],
+            'auth',
+            new Middleware('can:viewAny,App\Models\User', only: ['index']),
+            new Middleware('can:view,user', only: ['show']),
+            new Middleware('can:create,App\Models\User', only: ['create', 'store']),
+            new Middleware('can:update,user', only: ['edit', 'update']),
+            new Middleware('can:delete,user', only: ['destroy']),
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with(['ecole', 'roles'])
-            ->when(!Auth::user()->hasRole('super-admin'), function ($query) {
-                $query->where('ecole_id', Auth::user()->ecole_id);
-            })
-            ->paginate(15);
-
-        $roles = $this->getRoleLabels();
-
-        return view('admin.users.index', compact('users', 'roles'));
+        $query = User::with(['ecole', 'roles']);
+        
+        // Multi-tenant: Admin d'école voit seulement ses users
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        // Filtrage par école pour SuperAdmin
+        if ($request->filled('ecole_id')) {
+            $query->where('ecole_id', $request->ecole_id);
+        }
+        
+        // Recherche
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+        
+        $users = $query->paginate(15);
+        
+        return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
         $ecoles = $this->getAvailableEcoles();
-        $availableRoles = $this->getAvailableRoles();
-        $chefsDesFamilles = $this->getChefsDesFamilles();
-
-        return view('admin.users.create', compact('ecoles', 'availableRoles', 'chefsDesFamilles'));
+        $roles = $this->getAvailableRoles();
+        
+        return view('admin.users.create', compact('ecoles', 'roles'));
     }
 
     public function store(UserRequest $request)
@@ -50,26 +63,22 @@ class UserController extends Controller
         $validated = $request->validated();
         $role = $validated['role'];
         unset($validated['role']);
-
-        // Hasher le mot de passe
+        
+        // Hash password
         if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+            $validated['password'] = bcrypt($validated['password']);
         }
-
-        // Gérer la case active
-        $validated['active'] = $request->has('active');
-
+        
         $user = User::create($validated);
         $user->assignRole($role);
-
-        return redirect()
-            ->route('admin.users.index')
+        
+        return redirect()->route('admin.users.index')
             ->with('success', 'Utilisateur créé avec succès.');
     }
 
     public function show(User $user)
     {
-        $user->load(['ecole', 'roles']);
+        $user->load(['ecole', 'roles', 'membre_ceintures.ceinture']);
         return view('admin.users.show', compact('user'));
     }
 
@@ -77,109 +86,77 @@ class UserController extends Controller
     {
         $ecoles = $this->getAvailableEcoles();
         $roles = $this->getAvailableRoles();
-        $chefsDesFamilles = $this->getChefsDesFamilles();
-
-        return view('admin.users.edit', compact('user', 'ecoles', 'roles', 'chefsDesFamilles'));
+        
+        return view('admin.users.edit', compact('user', 'ecoles', 'roles'));
     }
 
     public function update(UserRequest $request, User $user)
     {
         $validated = $request->validated();
-        $role = $validated['role'];
+        $role = $validated['role'] ?? null;
         unset($validated['role']);
-
-        // Hasher le mot de passe seulement s'il est fourni
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+        
+        // Hash password si fourni
+        if (isset($validated['password']) && !empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
         } else {
             unset($validated['password']);
         }
-
-        // Gérer la case active
-        $validated['active'] = $request->has('active');
-
+        
         $user->update($validated);
-        $user->syncRoles([$role]);
-
-        return redirect()
-            ->route('admin.users.show', $user)
-            ->with('success', 'Utilisateur mis à jour avec succès.');
+        
+        if ($role) {
+            $user->syncRoles([$role]);
+        }
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Utilisateur modifié avec succès.');
     }
 
     public function destroy(User $user)
     {
-        if ($user->id === Auth::id()) {
-            return redirect()
-                ->route('admin.users.index')
-                ->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
-        }
-
         $user->delete();
-
-        return redirect()
-            ->route('admin.users.index')
+        
+        return redirect()->route('admin.users.index')
             ->with('success', 'Utilisateur supprimé avec succès.');
     }
 
     private function getAvailableEcoles()
     {
-        $user = Auth::user();
-        
-        if ($user->hasRole('super-admin')) {
-            return Ecole::orderBy('nom')->get();
-        } elseif ($user->hasRole('admin-ecole')) {
-            return Ecole::where('id', $user->ecole_id)->get();
+        if (auth()->user()->hasRole('superadmin')) {
+            return \App\Models\Ecole::active()->get();
+        } elseif (auth()->user()->hasRole('admin_ecole')) {
+            return \App\Models\Ecole::where('id', auth()->user()->ecole_id)->get();
         }
         
         return collect();
     }
 
-    private function getAvailableRoles(): array
+    private function getAvailableRoles()
     {
-        $user = Auth::user();
+        $user = auth()->user();
         
-        if ($user->hasRole('super-admin')) {
+        if ($user->hasRole('superadmin')) {
             return [
-                'utilisateur' => 'Utilisateur',
+                'user' => 'Utilisateur',
                 'instructeur' => 'Instructeur',
                 'admin' => 'Admin',
-                'admin-ecole' => 'Admin École',
-                'super-admin' => 'Super Admin'
+                'admin_ecole' => 'Admin École',
+                'superadmin' => 'Super Admin'
             ];
-        } elseif ($user->hasRole('admin-ecole')) {
+        } elseif ($user->hasRole('admin_ecole')) {
             return [
-                'utilisateur' => 'Utilisateur',
+                'user' => 'Utilisateur',
                 'instructeur' => 'Instructeur',
                 'admin' => 'Admin'
             ];
         } elseif ($user->hasRole('admin')) {
             return [
-                'utilisateur' => 'Utilisateur',
+                'user' => 'Utilisateur',
                 'instructeur' => 'Instructeur'
             ];
         }
         
         return [];
-    }
-
-    private function getRoleLabels(): array
-    {
-        return [
-            'utilisateur' => 'Utilisateur',
-            'instructeur' => 'Instructeur',
-            'admin' => 'Admin',
-            'admin-ecole' => 'Admin École',
-            'super-admin' => 'Super Admin'
-        ];
-    }
-
-    private function getChefsDesFamilles()
-    {
-        return User::whereHas('roles', function ($query) {
-            $query->whereIn('name', ['admin', 'admin-ecole', 'super-admin']);
-        })
-        ->orWhereNotNull('famille_principale_id')
-        ->orderBy('name')
-        ->get();
     }
 }

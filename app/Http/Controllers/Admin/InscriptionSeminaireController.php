@@ -3,73 +3,87 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Seminaire, InscriptionSeminaire, User};
-use App\Http\Requests\Admin\InscriptionSeminaireRequest;
+use App\Http\Requests\InscriptionSeminaireRequest;
+use App\Models\InscriptionSeminaire;
+use App\Models\Seminaire;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class InscriptionSeminaireController extends Controller
+class InscriptionSeminaireController extends Controller implements HasMiddleware
 {
-    public function index(Seminaire $seminaire)
+    /**
+     * Middleware Laravel 12.19 avec autorisation selon les Policies
+     */
+    public static function middleware(): array
     {
-        $inscriptions = InscriptionSeminaire::where('seminaire_id', $seminaire->id)
-            ->with(['user', 'user.ecole'])
-            ->get();
-
-        return view('admin.seminaires.inscriptions', compact('seminaire', 'inscriptions'));
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:viewAny,App\Models\InscriptionSeminaire', only: ['index']),
+            new Middleware('can:delete,inscription', only: ['destroy']),
+        ];
     }
 
-    public function create(Seminaire $seminaire)
+    public function index(Request $request)
     {
-        $users = User::with('ecole')
-            ->where('active', true)
-            ->orderBy('name')
-            ->get();
-
-        return view('admin.seminaires.inscrire', compact('seminaire', 'users'));
-    }
-
-    public function store(Request $request, Seminaire $seminaire)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id'
-        ]);
-
-        $user = User::findOrFail($request->user_id);
-
-        // Vérifier si déjà inscrit
-        $existingInscription = InscriptionSeminaire::where('seminaire_id', $seminaire->id)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if ($existingInscription) {
-            return back()->withErrors(['user_id' => 'Cet utilisateur est déjà inscrit à ce séminaire.']);
+        $query = InscriptionSeminaire::with(['user', 'seminaire.ecole'])->orderBy('created_at', 'desc');
+        
+        // Filtre par école pour admin_ecole
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->whereHas('seminaire', function($q) {
+                $q->where('ecole_id', auth()->user()->ecole_id);
+            });
         }
-
-        InscriptionSeminaire::create([
-            'seminaire_id' => $seminaire->id,
-            'user_id' => $user->id,
-            'date_inscription' => now(),
-            'statut' => 'inscrit'
-        ]);
-
-        return redirect()->route('admin.seminaires.show', $seminaire)
-            ->with('success', 'Inscription ajoutée avec succès.');
+        
+        // Recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($uq) use ($search) {
+                    $uq->where('name', 'like', "%{$search}%");
+                })->orWhereHas('seminaire', function($sq) use ($search) {
+                    $sq->where('titre', 'like', "%{$search}%");
+                });
+            });
+        }
+        
+        // Filtre par statut
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        
+        // Filtre par séminaire
+        if ($request->filled('seminaire_id')) {
+            $query->where('seminaire_id', $request->seminaire_id);
+        }
+        
+        $inscriptions = $query->paginate(15)->withQueryString();
+        $seminaires = $this->getSeminairesForUser(auth()->user());
+        
+        return view('admin.inscriptions-seminaires.index', compact('inscriptions', 'seminaires'));
     }
 
-    public function update(Request $request, Seminaire $seminaire, InscriptionSeminaire $inscription)
-    {
-        $request->validate([
-            'statut' => 'required|in:inscrit,confirme,present,absent,annule'
-        ]);
-
-        $inscription->update($request->only('statut'));
-
-        return back()->with('success', 'Statut mis à jour.');
-    }
-
-    public function destroy(Seminaire $seminaire, InscriptionSeminaire $inscription)
+    public function destroy(InscriptionSeminaire $inscription)
     {
         $inscription->delete();
-        return back()->with('success', 'Inscription supprimée.');
+        
+        return redirect()->route('admin.inscriptions-seminaires.index')
+            ->with('success', 'Inscription supprimée avec succès.');
+    }
+
+    /**
+     * Obtenir les séminaires selon les permissions
+     */
+    private function getSeminairesForUser($user)
+    {
+        $query = Seminaire::with('ecole')->orderBy('titre');
+        
+        if ($user->hasRole('admin_ecole')) {
+            $query->where('ecole_id', $user->ecole_id);
+        }
+        
+        return $query->get();
     }
 }

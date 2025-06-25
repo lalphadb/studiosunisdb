@@ -21,16 +21,13 @@ class Ecole extends Model
         'site_web',
         'description',
         'proprietaire',
-        'active',
+        'active'
     ];
 
     protected $casts = [
-        'active' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'active' => 'boolean'
     ];
 
-    // Relations
     public function users()
     {
         return $this->hasMany(User::class);
@@ -49,11 +46,5 @@ class Ecole extends Model
     public function paiements()
     {
         return $this->hasMany(Paiement::class);
-    }
-
-    // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('active', true);
     }
 }

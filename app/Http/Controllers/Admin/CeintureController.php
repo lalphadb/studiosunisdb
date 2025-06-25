@@ -6,20 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CeintureRequest;
 use App\Models\Ceinture;
 use App\Models\User;
-use App\Models\UtilisateurCeinture;
+use App\Models\UserCeinture;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CeintureController extends Controller
+class CeintureController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
         return [
-            'can:viewAny,App\Models\Ceinture' => ['only' => ['index']],
-            'can:view,ceinture' => ['only' => ['show']],
-            'can:create,App\Models\Ceinture' => ['only' => ['create', 'store']],
-            'can:update,ceinture' => ['only' => ['edit', 'update']],
-            'can:delete,ceinture' => ['only' => ['destroy']],
+            new Middleware('role:superadmin|admin_ecole|admin-ecole|admin|instructeur', only: ['index', 'show']),
+            new Middleware('role:superadmin|admin_ecole|admin-ecole', only: ['create', 'store', 'edit', 'update', 'destroy']),
+            new Middleware('role:superadmin|admin_ecole|admin-ecole|admin', only: ['attribuer']),
         ];
     }
 
@@ -27,17 +26,33 @@ class CeintureController extends Controller
     {
         $ceintures = Ceinture::orderBy('ordre')->paginate(15);
         
-        $progressions = UtilisateurCeinture::with(['user', 'ceinture', 'user.ecole'])
-            ->when(!Auth::user()->hasRole('super-admin'), function ($query) {
-                $query->whereHas('user', function ($q) {
-                    $q->where('ecole_id', Auth::user()->ecole_id);
+        // Statistiques des progressions avec les bonnes relations
+        $progressions = UserCeinture::with(['user.ecole', 'ceinture'])
+            ->where('valide', true)
+            ->when(auth()->user()->hasAnyRole(['admin_ecole', 'admin-ecole']), function ($query) {
+                return $query->whereHas('user', function ($q) {
+                    $q->where('ecole_id', auth()->user()->ecole_id);
                 });
             })
-            ->latest('date_obtention')
-            ->take(10)
-            ->get();
+            ->get()
+            ->groupBy('ceinture_id');
 
-        return view('admin.ceintures.index', compact('ceintures', 'progressions'));
+        // Statistiques pour les métriques
+        $totalCeintures = Ceinture::count();
+        $totalProgressions = UserCeinture::where('valide', true)->count();
+        $totalUtilisateursAvecCeinture = UserCeinture::where('valide', true)->distinct('user_id')->count();
+        $ceinturesActives = Ceinture::whereHas('userCeintures', function($q) {
+            $q->where('valide', true);
+        })->count();
+
+        return view('admin.ceintures.index', compact(
+            'ceintures', 
+            'progressions',
+            'totalCeintures',
+            'totalProgressions', 
+            'totalUtilisateursAvecCeinture',
+            'ceinturesActives'
+        ));
     }
 
     public function create()
@@ -47,26 +62,26 @@ class CeintureController extends Controller
 
     public function store(CeintureRequest $request)
     {
-        Ceinture::create($request->validated());
+        $validated = $request->validated();
+        $ceinture = Ceinture::create($validated);
 
-        return redirect()
-            ->route('admin.ceintures.index')
+        return redirect()->route('admin.ceintures.index')
             ->with('success', 'Ceinture créée avec succès.');
     }
 
     public function show(Ceinture $ceinture)
     {
-        $utilisateurs = UtilisateurCeinture::where('ceinture_id', $ceinture->id)
-            ->with(['user', 'user.ecole'])
-            ->when(!Auth::user()->hasRole('super-admin'), function ($query) {
-                $query->whereHas('user', function ($q) {
-                    $q->where('ecole_id', Auth::user()->ecole_id);
+        $progressions = UserCeinture::with(['user.ecole'])
+            ->where('ceinture_id', $ceinture->id)
+            ->when(auth()->user()->hasAnyRole(['admin_ecole', 'admin-ecole']), function ($query) {
+                return $query->whereHas('user', function ($q) {
+                    $q->where('ecole_id', auth()->user()->ecole_id);
                 });
             })
-            ->latest('date_obtention')
-            ->paginate(15);
+            ->orderByDesc('date_obtention')
+            ->paginate(20);
 
-        return view('admin.ceintures.show', compact('ceinture', 'utilisateurs'));
+        return view('admin.ceintures.show', compact('ceinture', 'progressions'));
     }
 
     public function edit(Ceinture $ceinture)
@@ -76,55 +91,75 @@ class CeintureController extends Controller
 
     public function update(CeintureRequest $request, Ceinture $ceinture)
     {
-        $ceinture->update($request->validated());
+        $validated = $request->validated();
+        $ceinture->update($validated);
 
-        return redirect()
-            ->route('admin.ceintures.show', $ceinture)
-            ->with('success', 'Ceinture mise à jour avec succès.');
+        return redirect()->route('admin.ceintures.index')
+            ->with('success', 'Ceinture modifiée avec succès.');
     }
 
     public function destroy(Ceinture $ceinture)
     {
-        if ($ceinture->utilisateurCeintures()->exists()) {
-            return redirect()
-                ->route('admin.ceintures.index')
-                ->with('error', 'Impossible de supprimer cette ceinture car elle est attribuée à des utilisateurs.');
+        if (UserCeinture::where('ceinture_id', $ceinture->id)->exists()) {
+            return redirect()->route('admin.ceintures.index')
+                ->with('error', 'Cette ceinture ne peut pas être supprimée car elle est attribuée à des utilisateurs.');
         }
 
         $ceinture->delete();
 
-        return redirect()
-            ->route('admin.ceintures.index')
+        return redirect()->route('admin.ceintures.index')
             ->with('success', 'Ceinture supprimée avec succès.');
     }
 
     public function attribuer(Request $request, Ceinture $ceinture)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'date_obtention' => 'required|date',
-            'examinateur' => 'nullable|string|max:255',
-            'commentaires' => 'nullable|string',
-        ]);
+        if ($request->isMethod('post')) {
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'date_obtention' => 'required|date',
+                'examinateur' => 'nullable|string|max:255',
+                'commentaires' => 'nullable|string',
+                'valide' => 'boolean',
+            ]);
 
-        // Vérifier si l'utilisateur a déjà cette ceinture
-        $existeDeja = UtilisateurCeinture::where('user_id', $request->user_id)
-            ->where('ceinture_id', $ceinture->id)
-            ->exists();
+            $existing = UserCeinture::where('user_id', $request->user_id)
+                ->where('ceinture_id', $ceinture->id)
+                ->exists();
 
-        if ($existeDeja) {
-            return back()->with('error', 'Cet utilisateur possède déjà cette ceinture.');
+            if ($existing) {
+                return back()->with('error', 'Cet utilisateur possède déjà cette ceinture.');
+            }
+
+            UserCeinture::create([
+                'user_id' => $request->user_id,
+                'ceinture_id' => $ceinture->id,
+                'date_obtention' => $request->date_obtention,
+                'examinateur' => $request->examinateur,
+                'commentaires' => $request->commentaires,
+                'valide' => $request->boolean('valide', false),
+            ]);
+
+            return redirect()->route('admin.ceintures.show', $ceinture)
+                ->with('success', 'Ceinture attribuée avec succès.');
         }
 
-        UtilisateurCeinture::create([
-            'user_id' => $request->user_id,
-            'ceinture_id' => $ceinture->id,
-            'date_obtention' => $request->date_obtention,
-            'examinateur' => $request->examinateur,
-            'commentaires' => $request->commentaires,
-            'valide' => true,
-        ]);
+        $users = User::where('active', true)
+            ->when(auth()->user()->hasAnyRole(['admin_ecole', 'admin-ecole']), function ($query) {
+                return $query->where('ecole_id', auth()->user()->ecole_id);
+            })
+            ->orderBy('name')
+            ->get();
 
-        return back()->with('success', 'Ceinture attribuée avec succès.');
+        return view('admin.ceintures.attribuer', compact('ceinture', 'users'));
+    }
+
+    public function types()
+    {
+        $types = [
+            'kyu' => 'Ceintures Kyu (Grades inférieurs)',
+            'dan' => 'Ceintures Dan (Grades supérieurs)',
+        ];
+
+        return view('admin.ceintures.types', compact('types'));
     }
 }

@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UtilisateurCeinture extends Model
+class UserCeinture extends Model
 {
     use HasFactory;
 
-    protected $table = 'membre_ceintures';
+    protected $table = 'user_ceintures';
 
     protected $fillable = [
         'user_id',
@@ -25,27 +26,13 @@ class UtilisateurCeinture extends Model
         'valide' => 'boolean',
     ];
 
-    /**
-     * Relation avec l'utilisateur
-     */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Relation avec la ceinture
-     */
-    public function ceinture()
+    public function ceinture(): BelongsTo
     {
         return $this->belongsTo(Ceinture::class);
-    }
-
-    /**
-     * Relation avec l'examinateur (utilisateur)
-     */
-    public function examinateurUser()
-    {
-        return $this->belongsTo(User::class, 'examinateur');
     }
 }

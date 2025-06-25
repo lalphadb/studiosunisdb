@@ -1,113 +1,144 @@
 @extends('layouts.admin')
-
-@section('title', 'Modifier Attribution Ceinture')
+@section('title', 'Modifier Ceinture')
 
 @section('content')
-<div class="admin-content">
-    {{-- Header --}}
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">✏️ Modifier Attribution</h1>
-            <p class="admin-subtitle">{{ $progression->user->name }} - {{ $progression->ceinture->nom }}</p>
-        </div>
-        <div class="admin-actions">
-            <a href="{{ route('admin.ceintures.show', $progression) }}" class="btn btn-secondary">
-                ← Retour aux détails
-            </a>
+<div class="space-y-6">
+    <!-- Header avec couleur orange -->
+    <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Modifier {{ $ceinture->nom }}
+                </h1>
+                <p class="text-orange-100 text-lg">Ordre {{ $ceinture->ordre }}</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{{ route('admin.ceintures.show', $ceinture) }}" 
+                   class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition duration-200">
+                    Voir
+                </a>
+                <a href="{{ route('admin.ceintures.index') }}" 
+                   class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition duration-200">
+                    Retour
+                </a>
+            </div>
         </div>
     </div>
 
-    {{-- Formulaire --}}
-    <div class="admin-card">
-        <form method="POST" action="{{ route('admin.ceintures.update', $progression) }}" class="space-y-6">
-            @csrf
-            @method('PUT')
-
-            {{-- Informations membre (lecture seule) --}}
-            <div class="bg-gray-900 rounded-lg p-4">
-                <h4 class="font-medium text-white mb-2">👤 Membre</h4>
-                <p class="text-gray-300">{{ $progression->user->name }} - {{ $progression->user->ecole->nom ?? 'N/A' }}</p>
-            </div>
-
-            {{-- Sélection ceinture --}}
-            <div>
-                <label for="ceinture_id" class="form-label">
-                    🏆 Ceinture *
-                </label>
-                <select name="ceinture_id" id="ceinture_id" required class="form-select @error('ceinture_id') border-red-500 @enderror">
-                    @foreach($ceintures as $ceinture)
-                        <option value="{{ $ceinture->id }}" {{ old('ceinture_id', $progression->ceinture_id) == (isset($ceinture) ? $ceinture->id : null) ? 'selected' : '' }}>
-                            {{ $ceinture->nom }} (Ordre {{ $ceinture->ordre }})
-                        </option>
-                    @endforeach
-                </select>
-                @error('ceinture_id')
-                    <p class="form-error">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Date et examinateur --}}
+    <!-- Formulaire -->
+    <form method="POST" action="{{ route('admin.ceintures.update', $ceinture) }}">
+        @csrf
+        @method('PUT')
+        
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Nom -->
                 <div>
-                    <label for="date_obtention" class="form-label">
-                        📅 Date d'Obtention *
+                    <label for="nom" class="block text-sm font-medium text-slate-300 mb-2">
+                        Nom de la Ceinture <span class="text-red-400">*</span>
                     </label>
-                    <input type="date" name="date_obtention" id="date_obtention" required
-                           value="{{ old('date_obtention', $progression->date_obtention->format('Y-m-d')) }}"
-                           max="{{ date('Y-m-d') }}"
-                           class="form-input @error('date_obtention') border-red-500 @enderror">
-                    @error('date_obtention')
-                        <p class="form-error">{{ $message }}</p>
+                    <input type="text" 
+                           id="nom" 
+                           name="nom" 
+                           value="{{ old('nom', $ceinture->nom) }}"
+                           required
+                           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('nom') border-red-500 @enderror">
+                    @error('nom')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
 
+                <!-- Couleur -->
                 <div>
-                    <label for="examinateur" class="form-label">
-                        👨‍🏫 Examinateur
+                    <label for="couleur" class="block text-sm font-medium text-slate-300 mb-2">
+                        Couleur <span class="text-red-400">*</span>
                     </label>
-                    <input type="text" name="examinateur" id="examinateur" 
-                           value="{{ old('examinateur', $progression->examinateur) }}"
-                           class="form-input @error('examinateur') border-red-500 @enderror">
-                    @error('examinateur')
-                        <p class="form-error">{{ $message }}</p>
+                    <select id="couleur" 
+                            name="couleur" 
+                            required
+                            class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('couleur') border-red-500 @enderror">
+                        <option value="#FFFFFF" {{ old('couleur', $ceinture->couleur) == '#FFFFFF' ? 'selected' : '' }}>Blanc</option>
+                        <option value="#FFFF00" {{ old('couleur', $ceinture->couleur) == '#FFFF00' ? 'selected' : '' }}>Jaune</option>
+                        <option value="#FFA500" {{ old('couleur', $ceinture->couleur) == '#FFA500' ? 'selected' : '' }}>Orange</option>
+                        <option value="#008000" {{ old('couleur', $ceinture->couleur) == '#008000' ? 'selected' : '' }}>Vert</option>
+                        <option value="#0000FF" {{ old('couleur', $ceinture->couleur) == '#0000FF' ? 'selected' : '' }}>Bleu</option>
+                        <option value="#8B4513" {{ old('couleur', $ceinture->couleur) == '#8B4513' ? 'selected' : '' }}>Marron</option>
+                        <option value="#000000" {{ old('couleur', $ceinture->couleur) == '#000000' ? 'selected' : '' }}>Noir</option>
+                        <option value="#FF0000" {{ old('couleur', $ceinture->couleur) == '#FF0000' ? 'selected' : '' }}>Rouge</option>
+                    </select>
+                    @error('couleur')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Ordre -->
+                <div>
+                    <label for="ordre" class="block text-sm font-medium text-slate-300 mb-2">
+                        Ordre <span class="text-red-400">*</span>
+                    </label>
+                    <input type="number" 
+                           id="ordre" 
+                           name="ordre" 
+                           value="{{ old('ordre', $ceinture->ordre) }}"
+                           required
+                           min="1"
+                           max="100"
+                           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('ordre') border-red-500 @enderror">
+                    @error('ordre')
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            {{-- Commentaires --}}
-            <div>
-                <label for="commentaires" class="form-label">
-                    📝 Commentaires
+            <!-- Description -->
+            <div class="mt-6">
+                <label for="description" class="block text-sm font-medium text-slate-300 mb-2">
+                    Description
                 </label>
-                <textarea name="commentaires" id="commentaires" rows="4"
-                          placeholder="Commentaires sur l'attribution..."
-                          class="form-textarea @error('commentaires') border-red-500 @enderror">{{ old('commentaires', $progression->commentaires) }}</textarea>
-                @error('commentaires')
-                    <p class="form-error">{{ $message }}</p>
+                <textarea id="description" 
+                          name="description" 
+                          rows="4"
+                          class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 @error('description') border-red-500 @enderror">{{ old('description', $ceinture->description) }}</textarea>
+                @error('description')
+                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- Validation --}}
-            <div class="flex items-center">
-                <input type="checkbox" name="valide" id="valide" value="1" 
-                       {{ old('valide', $progression->valide) ? 'checked' : '' }}
-                       class="rounded border-gray-600 text-blue-600 focus:ring-blue-500 bg-gray-700">
-                <label for="valide" class="ml-2 text-sm text-gray-300">
-                    Ceinture validée
-                </label>
-            </div>
-
-            {{-- Actions --}}
-            <div class="flex items-center justify-between pt-6 border-t border-gray-700">
-                <a href="{{ route('admin.ceintures.show', $progression) }}" class="btn btn-secondary">
-                    ❌ Annuler
+            <!-- Boutons d'action -->
+            <div class="flex items-center justify-between mt-8 pt-6 border-t border-slate-700">
+                <a href="{{ route('admin.ceintures.show', $ceinture) }}" 
+                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
+                    Annuler
                 </a>
                 
-                <button type="submit" class="btn btn-primary">
-                    ✅ Mettre à Jour
+                <button type="submit" 
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
+                    Mettre à jour
                 </button>
             </div>
-        </form>
+        </div>
+    </form>
+
+    <!-- Statistiques actuelles -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+        <h3 class="text-lg font-medium text-white mb-4">📊 Statistiques</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+                <span class="text-slate-400">Créée le:</span>
+                <span class="text-white ml-2">{{ $ceinture->created_at->format('d/m/Y') }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400">Modifiée le:</span>
+                <span class="text-white ml-2">{{ $ceinture->updated_at->format('d/m/Y') }}</span>
+            </div>
+            <div>
+                <span class="text-slate-400">Utilisateurs:</span>
+                <span class="text-white ml-2">{{ $ceinture->userCeintures()->where('valide', true)->count() }}</span>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

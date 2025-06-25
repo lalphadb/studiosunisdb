@@ -1,0 +1,2991 @@
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m        📋 RÉFÉRENCES StudiosUnisDB v4.0 (AUDIT RÉEL)          [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+Date: Wed Jun 25 09:50:54 AM EDT 2025
+Path: /home/studiosdb/studiosunisdb
+Laravel: Laravel Framework 12.19.3
+PHP: PHP 8.3.6 (cli) (built: Mar 19 2025 10:08:38) (NTS)
+Base audit: 2025-06-25 09:32:43
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                🎮 CONTRÔLEURS DE RÉFÉRENCE                   [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- UserController (RÉFÉRENCE PRINCIPALE) ---[0m
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Http\Requests\UserRequest;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class UserController extends Controller implements HasMiddleware
+{
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            new Middleware('can:viewAny,App\Models\User', only: ['index']),
+            new Middleware('can:view,user', only: ['show']),
+            new Middleware('can:create,App\Models\User', only: ['create', 'store']),
+            new Middleware('can:update,user', only: ['edit', 'update']),
+            new Middleware('can:delete,user', only: ['destroy']),
+        ];
+    }
+
+    public function index(Request $request)
+    {
+        $query = User::with(['ecole', 'roles']);
+        
+        // Multi-tenant: Admin d'école voit seulement ses users
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        // Filtrage par école pour SuperAdmin
+        if ($request->filled('ecole_id')) {
+            $query->where('ecole_id', $request->ecole_id);
+        }
+        
+        // Recherche
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+        
+        $users = $query->paginate(15);
+        
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function create()
+    {
+        $ecoles = $this->getAvailableEcoles();
+        $roles = $this->getAvailableRoles();
+        
+        return view('admin.users.create', compact('ecoles', 'roles'));
+    }
+
+    public function store(UserRequest $request)
+    {
+        $validated = $request->validated();
+        $role = $validated['role'];
+        unset($validated['role']);
+        
+        // Hash password
+        if (isset($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        }
+        
+        $user = User::create($validated);
+        $user->assignRole($role);
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Utilisateur créé avec succès.');
+    }
+
+    public function show(User $user)
+    {
+        $user->load(['ecole', 'roles', 'membre_ceintures.ceinture']);
+        return view('admin.users.show', compact('user'));
+    }
+
+    public function edit(User $user)
+    {
+        $ecoles = $this->getAvailableEcoles();
+        $roles = $this->getAvailableRoles();
+        
+        return view('admin.users.edit', compact('user', 'ecoles', 'roles'));
+    }
+
+    public function update(UserRequest $request, User $user)
+    {
+        $validated = $request->validated();
+        $role = $validated['role'] ?? null;
+        unset($validated['role']);
+        
+        // Hash password si fourni
+        if (isset($validated['password']) && !empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+        
+        $user->update($validated);
+        
+        if ($role) {
+            $user->syncRoles([$role]);
+        }
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Utilisateur modifié avec succès.');
+    }
+
+    public function destroy(User $user)
+    {
+        $user->delete();
+        
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Utilisateur supprimé avec succès.');
+    }
+
+    private function getAvailableEcoles()
+    {
+        if (auth()->user()->hasRole('superadmin')) {
+            return \App\Models\Ecole::active()->get();
+        } elseif (auth()->user()->hasRole('admin_ecole')) {
+            return \App\Models\Ecole::where('id', auth()->user()->ecole_id)->get();
+        }
+        
+        return collect();
+    }
+
+    private function getAvailableRoles()
+    {
+        $user = auth()->user();
+        
+        if ($user->hasRole('superadmin')) {
+            return [
+                'user' => 'Utilisateur',
+                'instructeur' => 'Instructeur',
+                'admin' => 'Admin',
+                'admin_ecole' => 'Admin École',
+                'superadmin' => 'Super Admin'
+            ];
+        } elseif ($user->hasRole('admin_ecole')) {
+            return [
+                'user' => 'Utilisateur',
+                'instructeur' => 'Instructeur',
+                'admin' => 'Admin'
+            ];
+        } elseif ($user->hasRole('admin')) {
+            return [
+                'user' => 'Utilisateur',
+                'instructeur' => 'Instructeur'
+            ];
+        }
+        
+        return [];
+    }
+}
+[0;32m✅ UserController collecté[0m
+
+[1;33m--- EcoleController (RÉFÉRENCE VALIDÉE) ---[0m
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\EcoleRequest;
+use App\Models\Ecole;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class EcoleController extends Controller implements HasMiddleware
+{
+    /**
+     * Middleware Laravel 12.19 avec autorisation selon les Policies
+     */
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:viewAny,App\Models\Ecole', only: ['index']),
+            new Middleware('can:view,ecole', only: ['show']),
+            new Middleware('can:create,App\Models\Ecole', only: ['create', 'store']),
+            new Middleware('can:update,ecole', only: ['edit', 'update']),
+            new Middleware('can:delete,ecole', only: ['destroy']),
+        ];
+    }
+
+    public function index(Request $request)
+    {
+        $query = Ecole::withCount(['users'])->orderBy('nom');
+        
+        // Filtre par recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%")
+                  ->orWhere('ville', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filtre par province
+        if ($request->filled('province')) {
+            $query->where('province', $request->province);
+        }
+        
+        // Filtre par statut
+        if ($request->has('active')) {
+            $query->where('active', $request->boolean('active'));
+        }
+        
+        $ecoles = $query->paginate(15)->withQueryString();
+        
+        return view('admin.ecoles.index', compact('ecoles'));
+    }
+
+    public function create()
+    {
+        return view('admin.ecoles.create');
+    }
+
+    public function store(EcoleRequest $request)
+    {
+        $ecole = Ecole::create($request->validated());
+        
+        return redirect()->route('admin.ecoles.index')
+            ->with('success', 'École créée avec succès.');
+    }
+
+    public function show(Ecole $ecole)
+    {
+        $ecole->load(['users.roles', 'cours']);
+        
+        return view('admin.ecoles.show', compact('ecole'));
+    }
+
+    public function edit(Ecole $ecole)
+    {
+        return view('admin.ecoles.edit', compact('ecole'));
+    }
+
+    public function update(EcoleRequest $request, Ecole $ecole)
+    {
+        $ecole->update($request->validated());
+        
+        return redirect()->route('admin.ecoles.index')
+            ->with('success', 'École mise à jour avec succès.');
+    }
+
+    public function destroy(Ecole $ecole)
+    {
+        $ecole->delete();
+        
+        return redirect()->route('admin.ecoles.index')
+            ->with('success', 'École supprimée with succès.');
+    }
+}
+[0;32m✅ EcoleController collecté[0m
+
+[1;33m--- CoursController (RÉFÉRENCE VALIDÉE) ---[0m
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CoursRequest;
+use App\Models\Cours;
+use App\Models\Ecole;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class CoursController extends Controller implements HasMiddleware
+{
+    /**
+     * Middleware Laravel 12.19 avec autorisation selon les Policies
+     */
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:viewAny,App\Models\Cours', only: ['index']),
+            new Middleware('can:view,cours', only: ['show']),
+            new Middleware('can:create,App\Models\Cours', only: ['create', 'store']),
+            new Middleware('can:update,cours', only: ['edit', 'update']),
+            new Middleware('can:delete,cours', only: ['destroy']),
+        ];
+    }
+
+    public function index(Request $request)
+    {
+        $query = Cours::with(['ecole'])->orderBy('created_at', 'desc');
+        
+        // Filtre par école pour admin_ecole
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        // Recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nom', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('instructeur', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filtre par école
+        if ($request->filled('ecole_id')) {
+            $query->where('ecole_id', $request->ecole_id);
+        }
+        
+        // Filtre par niveau
+        if ($request->filled('niveau')) {
+            $query->where('niveau', $request->niveau);
+        }
+        
+        // Filtre par statut
+        if ($request->has('active')) {
+            $query->where('active', $request->boolean('active'));
+        }
+        
+        $cours = $query->paginate(15)->withQueryString();
+        $ecoles = $this->getEcolesForUser(auth()->user());
+        
+        return view('admin.cours.index', compact('cours', 'ecoles'));
+    }
+
+    public function create()
+    {
+        $ecoles = $this->getEcolesForUser(auth()->user());
+        
+        return view('admin.cours.create', compact('ecoles'));
+    }
+
+    public function store(CoursRequest $request)
+    {
+        $validated = $request->validated();
+        
+        // Assigner l'école pour admin_ecole
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $validated['ecole_id'] = auth()->user()->ecole_id;
+        }
+        
+        $cours = Cours::create($validated);
+        
+        return redirect()->route('admin.cours.index')
+            ->with('success', 'Cours créé avec succès.');
+    }
+
+    public function show(Cours $cours)
+    {
+        $cours->load(['ecole', 'horaires', 'inscriptions.user']);
+        
+        return view('admin.cours.show', compact('cours'));
+    }
+
+    public function edit(Cours $cours)
+    {
+        $ecoles = $this->getEcolesForUser(auth()->user());
+        
+        return view('admin.cours.edit', compact('cours', 'ecoles'));
+    }
+
+    public function update(CoursRequest $request, Cours $cours)
+    {
+        $validated = $request->validated();
+        
+        // Assigner l'école pour admin_ecole
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $validated['ecole_id'] = auth()->user()->ecole_id;
+        }
+        
+        $cours->update($validated);
+        
+        return redirect()->route('admin.cours.index')
+            ->with('success', 'Cours mis à jour avec succès.');
+    }
+
+    public function destroy(Cours $cours)
+    {
+        $cours->delete();
+        
+        return redirect()->route('admin.cours.index')
+            ->with('success', 'Cours supprimé avec succès.');
+    }
+
+    /**
+     * Obtenir les écoles selon les permissions
+     */
+    private function getEcolesForUser($user)
+    {
+        if ($user->hasRole('superadmin')) {
+            return Ecole::orderBy('nom')->get();
+        } elseif ($user->hasRole('admin_ecole')) {
+            return Ecole::where('id', $user->ecole_id)->get();
+        }
+        
+        return Ecole::orderBy('nom')->get();
+    }
+}
+[0;32m✅ CoursController collecté[0m
+
+[1;33m--- DashboardController ---[0m
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Ecole;
+use App\Models\Cours;
+use App\Models\Seminaire;
+use App\Models\Paiement;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+class DashboardController extends Controller implements HasMiddleware
+{
+    /**
+     * Middleware Laravel 12.19 avec autorisation selon les Policies
+     */
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+        ];
+    }
+
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Statistiques globales pour SuperAdmin
+        if ($user->hasRole('superadmin')) {
+            $stats = [
+                'total_users' => User::count(),
+                'total_ecoles' => Ecole::count(),
+                'total_cours' => Cours::count(),
+                'total_seminaires' => Seminaire::count(),
+                'revenus_mois' => Paiement::where('statut', 'valide')
+                    ->whereMonth('created_at', now()->month)
+                    ->sum('montant_net'),
+                'users_actifs' => User::where('active', true)->count(),
+                'ecoles_actives' => Ecole::where('active', true)->count(),
+                'seminaires_a_venir' => Seminaire::where('date_debut', '>', now())->count(),
+            ];
+            
+            // Graphiques pour SuperAdmin
+            $charts = [
+                'users_par_mois' => $this->getUsersParMois(),
+                'revenus_par_mois' => $this->getRevenusParMois(),
+                'ecoles_par_province' => $this->getEcolesParProvince(),
+            ];
+            
+        // Statistiques pour Admin École
+        } elseif ($user->hasRole('admin_ecole')) {
+            $ecole_id = $user->ecole_id;
+            
+            $stats = [
+                'total_users' => User::where('ecole_id', $ecole_id)->count(),
+                'total_cours' => Cours::where('ecole_id', $ecole_id)->count(),
+                'total_seminaires' => Seminaire::where('ecole_id', $ecole_id)->count(),
+                'revenus_mois' => Paiement::where('ecole_id', $ecole_id)
+                    ->where('statut', 'valide')
+                    ->whereMonth('created_at', now()->month)
+                    ->sum('montant_net'),
+                'users_actifs' => User::where('ecole_id', $ecole_id)->where('active', true)->count(),
+                'cours_actifs' => Cours::where('ecole_id', $ecole_id)->where('active', true)->count(),
+                'seminaires_a_venir' => Seminaire::where('ecole_id', $ecole_id)->where('date_debut', '>', now())->count(),
+            ];
+            
+            // Graphiques pour Admin École
+            $charts = [
+                'users_par_mois' => $this->getUsersParMoisEcole($ecole_id),
+                'revenus_par_mois' => $this->getRevenusParMoisEcole($ecole_id),
+            ];
+            
+        // Statistiques pour autres rôles
+        } else {
+            $stats = [
+                'total_users' => User::count(),
+                'total_ecoles' => Ecole::count(),
+                'total_cours' => Cours::count(),
+                'total_seminaires' => Seminaire::count(),
+            ];
+            
+            $charts = [];
+        }
+        
+        // Activités récentes
+        $activites_recentes = $this->getActivitesRecentes($user);
+        
+        return view('admin.dashboard', compact('stats', 'charts', 'activites_recentes'));
+    }
+
+    /**
+     * Obtenir les utilisateurs par mois (Global)
+     */
+    private function getUsersParMois()
+    {
+        return User::selectRaw('MONTH(created_at) as mois, COUNT(*) as total')
+            ->whereYear('created_at', now()->year)
+            ->groupBy('mois')
+            ->orderBy('mois')
+            ->get()
+            ->pluck('total', 'mois')
+            ->toArray();
+    }
+
+    /**
+     * Obtenir les revenus par mois (Global)
+     */
+    private function getRevenusParMois()
+    {
+        return Paiement::selectRaw('MONTH(created_at) as mois, SUM(montant_net) as total')
+            ->where('statut', 'valide')
+            ->whereYear('created_at', now()->year)
+            ->groupBy('mois')
+            ->orderBy('mois')
+            ->get()
+            ->pluck('total', 'mois')
+            ->toArray();
+    }
+
+    /**
+     * Obtenir les écoles par province
+     */
+    private function getEcolesParProvince()
+    {
+        return Ecole::selectRaw('province, COUNT(*) as total')
+            ->groupBy('province')
+            ->get()
+            ->pluck('total', 'province')
+            ->toArray();
+    }
+
+    /**
+     * Obtenir les utilisateurs par mois pour une école
+     */
+    private function getUsersParMoisEcole($ecole_id)
+    {
+        return User::selectRaw('MONTH(created_at) as mois, COUNT(*) as total')
+            ->where('ecole_id', $ecole_id)
+            ->whereYear('created_at', now()->year)
+            ->groupBy('mois')
+            ->orderBy('mois')
+            ->get()
+            ->pluck('total', 'mois')
+            ->toArray();
+    }
+
+    /**
+     * Obtenir les revenus par mois pour une école
+     */
+    private function getRevenusParMoisEcole($ecole_id)
+    {
+        return Paiement::selectRaw('MONTH(created_at) as mois, SUM(montant_net) as total')
+            ->where('ecole_id', $ecole_id)
+            ->where('statut', 'valide')
+            ->whereYear('created_at', now()->year)
+            ->groupBy('mois')
+            ->orderBy('mois')
+            ->get()
+            ->pluck('total', 'mois')
+            ->toArray();
+    }
+
+    /**
+     * Obtenir les activités récentes
+     */
+    private function getActivitesRecentes($user)
+    {
+        $activites = collect();
+        
+        // Nouvelles inscriptions
+        $inscriptions = User::with('ecole')
+            ->when($user->hasRole('admin_ecole'), function($q) use ($user) {
+                $q->where('ecole_id', $user->ecole_id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function($user) {
+                return [
+                    'type' => 'inscription',
+                    'titre' => "Nouvelle inscription: {$user->name}",
+                    'date' => $user->created_at,
+                    'url' => route('admin.users.show', $user),
+                ];
+            });
+        
+        // Nouveaux paiements
+        $paiements = Paiement::with(['user', 'ecole'])
+            ->when($user->hasRole('admin_ecole'), function($q) use ($user) {
+                $q->where('ecole_id', $user->ecole_id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function($paiement) {
+                return [
+                    'type' => 'paiement',
+                    'titre' => "Nouveau paiement: {$paiement->user->name} - {$paiement->montant}$",
+                    'date' => $paiement->created_at,
+                    'url' => route('admin.paiements.show', $paiement),
+                ];
+            });
+        
+        return $activites->merge($inscriptions)
+            ->merge($paiements)
+            ->sortByDesc('date')
+            ->take(10);
+    }
+}
+[0;32m✅ DashboardController collecté[0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                🏗️ MODÈLES DE RÉFÉRENCE                      [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- User Model (MODÈLE CENTRAL) ---[0m
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'ecole_id',
+        'famille_principale_id',
+        'telephone',
+        'date_naissance',
+        'sexe',
+        'adresse',
+        'ville',
+        'code_postal',
+        'contact_urgence_nom',
+        'contact_urgence_telephone',
+        'active',
+        'date_inscription',
+        'notes',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'date_naissance' => 'date',  
+        'date_inscription' => 'date',
+        'active' => 'boolean',
+    ];
+
+    // Relations
+    public function ecole(): BelongsTo
+    {
+        return $this->belongsTo(Ecole::class);
+    }
+
+    public function famillePrincipale(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'famille_principale_id');
+    }
+
+    public function membresFamille(): HasMany
+    {
+        return $this->hasMany(User::class, 'famille_principale_id');
+    }
+
+    // NOUVELLE RELATION STANDARDISÉE
+    public function userCeintures(): HasMany
+    {
+        return $this->hasMany(UserCeinture::class);
+    }
+
+    // ALIAS pour compatibilité avec l'ancien code
+    public function membreCeintures(): HasMany
+    {
+        return $this->userCeintures();
+    }
+
+    public function inscriptionsCours(): HasMany
+    {
+        return $this->hasMany(InscriptionCours::class);
+    }
+
+    public function inscriptionsSeminaires(): HasMany
+    {
+        return $this->hasMany(InscriptionSeminaire::class);
+    }
+
+    public function presences(): HasMany
+    {
+        return $this->hasMany(Presence::class);
+    }
+
+    public function paiements(): HasMany
+    {
+        return $this->hasMany(Paiement::class);
+    }
+
+    // Accesseurs
+    public function getCeintureActuelleAttribute()
+    {
+        return $this->userCeintures()
+            ->where('valide', true)
+            ->with('ceinture')
+            ->orderByDesc('date_obtention')
+            ->first()?->ceinture;
+    }
+
+    public function getAgeAttribute()
+    {
+        return $this->date_naissance?->age;
+    }
+
+    public function getRolePrincipalAttribute()
+    {
+        return $this->roles->first()?->name ?? 'user';
+    }
+}
+[0;32m✅ User Model collecté[0m
+
+[1;33m--- Ecole Model ---[0m
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Ecole extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'nom',
+        'code',
+        'adresse',
+        'ville',
+        'province',
+        'code_postal',
+        'telephone',
+        'email',
+        'site_web',
+        'description',
+        'proprietaire',
+        'active'
+    ];
+
+    protected $casts = [
+        'active' => 'boolean'
+    ];
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function cours()
+    {
+        return $this->hasMany(Cours::class);
+    }
+
+    public function seminaires()
+    {
+        return $this->hasMany(Seminaire::class);
+    }
+
+    public function paiements()
+    {
+        return $this->hasMany(Paiement::class);
+    }
+}
+[0;32m✅ Ecole Model collecté[0m
+
+[1;33m--- Cours Model ---[0m
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Cours extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'ecole_id',
+        'nom',
+        'description',
+        'niveau',
+        'capacite_max',
+        'prix',
+        'duree_minutes',
+        'instructeur',
+        'active'
+    ];
+
+    protected $casts = [
+        'prix' => 'decimal:2',
+        'active' => 'boolean'
+    ];
+
+    public function ecole()
+    {
+        return $this->belongsTo(Ecole::class);
+    }
+
+    public function horaires()
+    {
+        return $this->hasMany(CoursHoraire::class);
+    }
+
+    public function inscriptions()
+    {
+        return $this->hasMany(InscriptionCours::class);
+    }
+
+    public function presences()
+    {
+        return $this->hasMany(Presence::class);
+    }
+}
+[0;32m✅ Cours Model collecté[0m
+
+[1;33m--- Autres Modèles ---[0m
+✅ Ceinture.php présent
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Ceinture extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'nom',
+        'couleur',
+        'ordre',
+        'description',
+    ];
+
+    protected $casts = [
+        'ordre' => 'integer',
+    ];
+
+    // Relations
+    public function userCeintures(): HasMany
+    {
+        return $this->hasMany(UserCeinture::class);
+    }
+
+    // Alias pour compatibilité
+    public function membreCeintures(): HasMany
+    {
+        return $this->userCeintures();
+    }
+
+    // Accesseurs
+    public function getNombreUtilisateursAttribute()
+    {
+        return $this->userCeintures()->where('valide', true)->count();
+    }
+
+    public function getEstKyuAttribute()
+    {
+        return $this->ordre <= 10; // Supposons que les 10 premiers sont des Kyu
+    }
+
+    public function getEstDanAttribute()
+    {
+        return $this->ordre > 10; // Les suivants sont des Dan
+    }
+✅ Presence.php présent
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Presence extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'cours_id',
+        'date_cours',
+        'present',
+        'notes'
+    ];
+
+    protected $casts = [
+        'date_cours' => 'date',
+        'present' => 'boolean'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function cours()
+    {
+        return $this->belongsTo(Cours::class);
+    }
+}
+✅ Paiement.php présent
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Paiement extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'ecole_id',
+        'processed_by_user_id',
+        'reference_interne',
+        'type_paiement',
+        'motif',
+        'description',
+        'montant',
+        'frais',
+        'montant_net',
+        'email_expediteur',
+        'nom_expediteur',
+        'reference_interac',
+        'message_interac',
+        'statut',
+        'date_facture',
+        'date_echeance',
+        'date_reception',
+        'date_validation',
+        'periode_facturation',
+        'annee_fiscale',
+        'recu_fiscal_emis',
+        'metadonnees',
+        'notes_admin'
+    ];
+
+    protected $casts = [
+        'montant' => 'decimal:2',
+        'frais' => 'decimal:2',
+        'montant_net' => 'decimal:2',
+        'date_facture' => 'datetime',
+        'date_echeance' => 'datetime',
+        'date_reception' => 'datetime',
+        'date_validation' => 'datetime',
+        'recu_fiscal_emis' => 'boolean',
+        'metadonnees' => 'array'
+    ];
+
+✅ Seminaire.php présent
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Seminaire extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'ecole_id',
+        'titre',
+        'description',
+        'type',
+        'date_debut',
+        'date_fin',
+        'heure_debut',
+        'heure_fin',
+        'instructeur',
+        'capacite_max',
+        'prix',
+        'niveau_requis',
+        'inscription_ouverte',
+        'materiel_requis'
+    ];
+
+    protected $casts = [
+        'date_debut' => 'date',
+        'date_fin' => 'date',
+        'heure_debut' => 'datetime:H:i',
+        'heure_fin' => 'datetime:H:i',
+        'prix' => 'decimal:2',
+        'inscription_ouverte' => 'boolean'
+    ];
+
+    public function ecole()
+    {
+        return $this->belongsTo(Ecole::class);
+    }
+
+    public function inscriptions()
+    {
+        return $this->hasMany(InscriptionSeminaire::class);
+    }
+}
+❌ MembreCeinture.php manquant
+✅ InscriptionCours.php présent
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class InscriptionCours extends Model
+{
+    use HasFactory;
+
+    protected $table = 'inscriptions_cours';
+
+    protected $fillable = [
+        'user_id',
+        'cours_id',
+        'date_inscription',
+        'statut',
+        'notes'
+    ];
+
+    protected $casts = [
+        'date_inscription' => 'date'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function cours()
+    {
+        return $this->belongsTo(Cours::class);
+    }
+}
+✅ InscriptionSeminaire.php présent
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class InscriptionSeminaire extends Model
+{
+    use HasFactory;
+
+    protected $table = 'inscriptions_seminaires';
+
+    protected $fillable = [
+        'user_id',
+        'seminaire_id',
+        'date_inscription',
+        'statut',
+        'notes'
+    ];
+
+    protected $casts = [
+        'date_inscription' => 'date'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function seminaire()
+    {
+        return $this->belongsTo(Seminaire::class);
+    }
+}
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                📝 FORMREQUESTS DE RÉFÉRENCE                  [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- UserRequest ---[0m
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UserRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        $userId = $this->route('user')?->id;
+
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
+            'password' => $this->isMethod('POST') ? ['required', 'string', 'min:8'] : ['nullable', 'string', 'min:8'],
+            'ecole_id' => ['nullable', 'exists:ecoles,id'],
+            'role' => ['required', 'string', Rule::in($this->getAvailableRoles())],
+            'telephone' => ['nullable', 'string', 'max:20'],
+            'date_naissance' => ['nullable', 'date', 'before:today'],
+            'sexe' => ['nullable', Rule::in(['M', 'F', 'Autre'])],
+            'adresse' => ['nullable', 'string', 'max:500'],
+            'ville' => ['nullable', 'string', 'max:100'],
+            'code_postal' => ['nullable', 'string', 'max:10'],
+            'contact_urgence_nom' => ['nullable', 'string', 'max:255'],
+            'contact_urgence_telephone' => ['nullable', 'string', 'max:20'],
+            'active' => ['boolean'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email doit être valide.',
+            'email.unique' => 'Cette adresse email est déjà utilisée.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'role.required' => 'Le rôle est obligatoire.',
+            'role.in' => 'Le rôle sélectionné n\'est pas valide.',
+            'ecole_id.exists' => 'L\'école sélectionnée n\'existe pas.',
+            'date_naissance.before' => 'La date de naissance doit être antérieure à aujourd\'hui.',
+            'sexe.in' => 'Le sexe sélectionné n\'est pas valide.',
+        ];
+    }
+
+    private function getAvailableRoles(): array
+    {
+        $user = auth()->user();
+        
+        if ($user->hasRole('superadmin')) {
+            return ['user', 'instructeur', 'admin', 'admin_ecole', 'superadmin'];
+        } elseif ($user->hasRole('admin_ecole')) {
+            return ['user', 'instructeur', 'admin'];
+        } elseif ($user->hasRole('admin')) {
+            return ['user', 'instructeur'];
+        }
+
+        return ['user'];
+    }
+}
+[0;32m✅ UserRequest collecté[0m
+
+[1;33m--- EcoleRequest ---[0m
+[0;31m❌ EcoleRequest manquant[0m
+
+[1;33m--- CoursRequest ---[0m
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+
+class CoursRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        $coursId = $this->route('cours')?->id;
+        
+        return [
+            'ecole_id' => ['required', 'exists:ecoles,id'],
+            'nom' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'niveau' => ['required', 'string', Rule::in(['debutant', 'intermediaire', 'avance', 'tous_niveaux'])],
+            'capacite_max' => ['required', 'integer', 'min:1', 'max:100'],
+            'prix' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'duree_minutes' => ['required', 'integer', 'min:30', 'max:240'],
+            'instructeur' => ['nullable', 'string', 'max:255'],
+            'active' => ['boolean'],
+            
+            // Horaires (optionnels)
+            'horaires' => ['nullable', 'array'],
+            'horaires.*.jour_semaine' => ['required_with:horaires', Rule::in(['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'])],
+            'horaires.*.heure_debut' => ['required_with:horaires', 'date_format:H:i'],
+            'horaires.*.heure_fin' => ['required_with:horaires', 'date_format:H:i', 'after:horaires.*.heure_debut'],
+            'horaires.*.date_debut' => ['nullable', 'date'],
+            'horaires.*.date_fin' => ['nullable', 'date', 'after_or_equal:horaires.*.date_debut'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'ecole_id.required' => 'L\'école est obligatoire.',
+            'ecole_id.exists' => 'L\'école sélectionnée n\'existe pas.',
+            'nom.required' => 'Le nom du cours est obligatoire.',
+            'niveau.required' => 'Le niveau est obligatoire.',
+            'niveau.in' => 'Le niveau doit être : débutant, intermédiaire, avancé ou tous niveaux.',
+            'capacite_max.required' => 'La capacité maximale est obligatoire.',
+            'capacite_max.min' => 'La capacité doit être d\'au moins 1 personne.',
+            'duree_minutes.required' => 'La durée est obligatoire.',
+            'duree_minutes.min' => 'La durée minimale est de 30 minutes.',
+            'prix.numeric' => 'Le prix doit être un nombre.',
+            'horaires.*.jour_semaine.required_with' => 'Le jour de la semaine est obligatoire.',
+            'horaires.*.heure_debut.required_with' => 'L\'heure de début est obligatoire.',
+            'horaires.*.heure_fin.after' => 'L\'heure de fin doit être après l\'heure de début.',
+        ];
+    }
+
+    protected function getAvailableEcoles(): array
+    {
+        $user = Auth::user();
+        
+        if ($user->hasRole('super-admin')) {
+            return \App\Models\Ecole::pluck('nom', 'id')->toArray();
+        } elseif ($user->hasRole('admin-ecole')) {
+            return \App\Models\Ecole::where('id', $user->ecole_id)->pluck('nom', 'id')->toArray();
+        }
+        
+        return [];
+    }
+}
+[0;32m✅ CoursRequest collecté[0m
+
+[1;33m--- CeintureRequest ---[0m
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class CeintureRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        $ceintureId = $this->route('ceinture')?->id;
+
+        return [
+            'nom' => ['required', 'string', 'max:255'],
+            'couleur' => ['required', 'string', 'max:50'],
+            'ordre' => [
+                'required', 
+                'integer', 
+                'min:1', 
+                'max:100',
+                Rule::unique('ceintures')->ignore($ceintureId)
+            ],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nom.required' => 'Le nom de la ceinture est obligatoire.',
+            'nom.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'couleur.required' => 'La couleur est obligatoire.',
+            'couleur.max' => 'La couleur ne peut pas dépasser 50 caractères.',
+            'ordre.required' => 'L\'ordre est obligatoire.',
+            'ordre.integer' => 'L\'ordre doit être un nombre entier.',
+            'ordre.min' => 'L\'ordre doit être au minimum 1.',
+            'ordre.max' => 'L\'ordre ne peut pas dépasser 100.',
+            'ordre.unique' => 'Cet ordre est déjà utilisé par une autre ceinture.',
+            'description.max' => 'La description ne peut pas dépasser 1000 caractères.',
+        ];
+    }
+}
+[0;32m✅ CeintureRequest collecté[0m
+
+[1;33m--- PresenceRequest ---[0m
+[0;31m❌ PresenceRequest manquant[0m
+
+[1;33m--- PaiementRequest ---[0m
+[0;31m❌ PaiementRequest manquant[0m
+
+[1;33m--- SeminaireRequest ---[0m
+[0;31m❌ SeminaireRequest manquant[0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                🛡️ POLICIES DE RÉFÉRENCE                     [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- UserPolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class UserPolicy
+{
+    use HandlesAuthorization;
+
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function view(User $user, User $targetUser): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $targetUser->ecole_id;
+        }
+        
+        if ($user->hasRole('admin')) {
+            return $user->ecole_id === $targetUser->ecole_id;
+        }
+        
+        return $user->id === $targetUser->id;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function update(User $user, User $targetUser): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $targetUser->ecole_id && 
+                   !$targetUser->hasAnyRole(['super-admin', 'admin-ecole']);
+        }
+        
+        if ($user->hasRole('admin')) {
+            return $user->ecole_id === $targetUser->ecole_id && 
+                   $targetUser->hasRole('membre');
+        }
+        
+        return false;
+    }
+
+    public function delete(User $user, User $targetUser): bool
+    {
+        if ($user->id === $targetUser->id) {
+            return false; // Impossible de se supprimer soi-même
+        }
+        
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $targetUser->ecole_id && 
+                   !$targetUser->hasAnyRole(['super-admin', 'admin-ecole']);
+        }
+        
+        return false;
+    }
+}
+[0;32m✅ UserPolicy collecté[0m
+
+[1;33m--- EcolePolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Ecole;
+
+class EcolePolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function view(User $user, Ecole $ecole): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('admin-ecole') && $user->ecole_id) {
+            return $user->ecole_id === $ecole->id;
+        }
+
+        return false;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasRole('super-admin');
+    }
+
+    public function update(User $user, Ecole $ecole): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('admin-ecole') && $user->ecole_id) {
+            return $user->ecole_id === $ecole->id;
+        }
+
+        return false;
+    }
+
+    public function delete(User $user, Ecole $ecole): bool
+    {
+        return $user->hasRole('super-admin');
+    }
+}
+[0;32m✅ EcolePolicy collecté[0m
+
+[1;33m--- CoursPolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Cours;
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class CoursPolicy
+{
+    use HandlesAuthorization;
+
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
+    }
+
+    public function view(User $user, Cours $cours): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasAnyRole(['admin-ecole', 'admin', 'instructeur'])) {
+            return $user->ecole_id === $cours->ecole_id;
+        }
+        
+        return false;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function update(User $user, Cours $cours): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasAnyRole(['admin-ecole', 'admin'])) {
+            return $user->ecole_id === $cours->ecole_id;
+        }
+        
+        return false;
+    }
+
+    public function delete(User $user, Cours $cours): bool
+    {
+        // Vérifier s'il y a des inscriptions
+        if ($cours->inscriptions()->exists()) {
+            return false;
+        }
+        
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        
+        if ($user->hasRole('admin-ecole')) {
+            return $user->ecole_id === $cours->ecole_id;
+        }
+        
+        return false;
+    }
+
+    public function inscrire(User $user, Cours $cours): bool
+    {
+        // Un utilisateur peut s'inscrire à un cours de son école
+        return $user->ecole_id === $cours->ecole_id && $cours->active && !$cours->isComplet();
+    }
+}
+[0;32m✅ CoursPolicy collecté[0m
+
+[1;33m--- CeinturePolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Ceinture;
+
+class CeinturePolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
+    }
+
+    public function view(User $user, Ceinture $ceinture): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole']);
+    }
+
+    public function update(User $user, Ceinture $ceinture): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole']);
+    }
+
+    public function delete(User $user, Ceinture $ceinture): bool
+    {
+        return $user->hasRole('super-admin');
+    }
+}
+[0;32m✅ CeinturePolicy collecté[0m
+
+[1;33m--- PresencePolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Presence;
+
+class PresencePolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
+    }
+
+    public function view(User $user, Presence $presence): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasAnyRole(['admin-ecole', 'admin', 'instructeur']) && $user->ecole_id) {
+            return $user->ecole_id === $presence->cours->ecole_id;
+        }
+
+        return false;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin', 'instructeur']);
+    }
+
+    public function update(User $user, Presence $presence): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasAnyRole(['admin-ecole', 'admin', 'instructeur']) && $user->ecole_id) {
+            return $user->ecole_id === $presence->cours->ecole_id;
+        }
+
+        return false;
+    }
+
+    public function delete(User $user, Presence $presence): bool
+    {
+        return $this->update($user, $presence);
+    }
+}
+[0;32m✅ PresencePolicy collecté[0m
+
+[1;33m--- PaiementPolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Paiement;
+
+class PaiementPolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function view(User $user, Paiement $paiement): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasAnyRole(['admin-ecole', 'admin']) && $user->ecole_id) {
+            return $user->ecole_id === $paiement->ecole_id;
+        }
+
+        return false;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function update(User $user, Paiement $paiement): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasAnyRole(['admin-ecole', 'admin']) && $user->ecole_id) {
+            return $user->ecole_id === $paiement->ecole_id;
+        }
+
+        return false;
+    }
+
+    public function delete(User $user, Paiement $paiement): bool
+    {
+        return $this->update($user, $paiement);
+    }
+}
+[0;32m✅ PaiementPolicy collecté[0m
+
+[1;33m--- SeminairePolicy ---[0m
+<?php
+
+namespace App\Policies;
+
+use App\Models\User;
+use App\Models\Seminaire;
+
+class SeminairePolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function view(User $user, Seminaire $seminaire): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasAnyRole(['admin-ecole', 'admin'])) {
+            if ($seminaire->ecole_id && $user->ecole_id) {
+                return $user->ecole_id === $seminaire->ecole_id;
+            }
+            return true; // Séminaires généraux
+        }
+
+        return false;
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+    }
+
+    public function update(User $user, Seminaire $seminaire): bool
+    {
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($user->hasAnyRole(['admin-ecole', 'admin'])) {
+            if ($seminaire->ecole_id && $user->ecole_id) {
+                return $user->ecole_id === $seminaire->ecole_id;
+            }
+            return false; // Séminaires généraux pour super-admin seulement
+        }
+
+        return false;
+    }
+
+    public function delete(User $user, Seminaire $seminaire): bool
+    {
+        return $this->update($user, $seminaire);
+    }
+}
+[0;32m✅ SeminairePolicy collecté[0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                🛣️ ROUTES & CONFIGURATION (RÉELS)             [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- Routes Admin (admin.php) ---[0m
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\EcoleController;
+use App\Http\Controllers\Admin\CoursController;
+use App\Http\Controllers\Admin\CeintureController;
+use App\Http\Controllers\Admin\SeminaireController;
+use App\Http\Controllers\Admin\PaiementController;
+use App\Http\Controllers\Admin\PresenceController;
+use App\Http\Controllers\Admin\InscriptionSeminaireController;
+
+/*
+|--------------------------------------------------------------------------
+| Routes Administrateur - Laravel 12.19
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard principal
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    
+    // Gestion des utilisateurs
+    Route::resource('users', UserController::class);
+    Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
+    Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+    
+    // Gestion des écoles
+    Route::resource('ecoles', EcoleController::class);
+    
+    // Gestion des cours
+    Route::resource('cours', CoursController::class);
+    
+    // Gestion des ceintures - ROUTES SPÉCIALES EN PREMIER
+    Route::get('ceintures/types', [CeintureController::class, 'types'])->name('ceintures.types');
+    Route::match(['get', 'post'], 'ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');
+    
+    // Gestion des ceintures - RESOURCE APRÈS
+    Route::resource('ceintures', CeintureController::class);
+    
+    // Gestion des séminaires
+    Route::resource('seminaires', SeminaireController::class);
+    Route::match(['get', 'post'], 'seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('seminaires.inscrire');
+    
+    // Gestion des paiements
+    Route::resource('paiements', PaiementController::class);
+    
+    // Gestion des présences
+    Route::resource('presences', PresenceController::class);
+    
+    // Gestion des inscriptions aux séminaires
+    Route::resource('inscriptions-seminaires', InscriptionSeminaireController::class)->only(['index', 'destroy']);
+    
+    // Logs et monitoring (accès restreint)
+    Route::get('logs', function() {
+        abort_unless(auth()->user()->hasRole('superadmin'), 403);
+        return view('admin.logs.index');
+    })->name('logs.index');
+    
+    Route::get('logs/{log}', function($log) {
+        abort_unless(auth()->user()->hasRole('superadmin'), 403);
+        return view('admin.logs.show', compact('log'));
+    })->name('logs.show');
+    
+});
+[0;32m✅ Routes admin.php collectées[0m
+
+[1;33m--- Routes Web (web.php) ---[0m
+<?php
+
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return redirect('/login');
+});
+
+// REDIRECTION: dashboard -> admin/dashboard (pour Breeze)
+Route::get('/dashboard', function () {
+    return redirect('/admin/dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
+
+// Charger les routes admin
+require __DIR__.'/admin.php';
+[0;32m✅ Routes web.php collectées[0m
+
+[1;33m--- Routes Auth (auth.php) ---[0m
+<?php
+
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('guest')->group(function () {
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
+    Route::post('register', [RegisteredUserController::class, 'store']);
+
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+        ->name('password.request');
+
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+
+    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+        ->name('password.reset');
+
+    Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->name('password.store');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('verify-email', EmailVerificationPromptController::class)
+        ->name('verification.notice');
+
+    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+
+    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+
+    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
+[0;32m✅ Routes auth.php collectées (extrait)[0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                ⚙️ CONFIGURATION SYSTÈME                      [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- Configuration Permissions ---[0m
+<?php
+
+return [
+    'models' => [
+        'permission' => Spatie\Permission\Models\Permission::class,
+        'role' => Spatie\Permission\Models\Role::class,
+    ],
+
+    'table_names' => [
+        'roles' => 'roles',
+        'permissions' => 'permissions',
+        'model_has_permissions' => 'model_has_permissions',
+        'model_has_roles' => 'model_has_roles',
+        'role_has_permissions' => 'role_has_permissions',
+    ],
+
+    'column_names' => [
+        'role_foreign_key' => 'role_id',
+        'permission_foreign_key' => 'permission_id',
+        'model_morph_key' => 'model_id',
+        'team_foreign_key' => 'team_id',
+    ],
+
+    'register_permission_check_method' => true,
+    'teams' => false,
+    'use_passport_client_credentials' => false,
+    'display_permission_in_exception' => false,
+    'display_role_in_exception' => false,
+    'enable_wildcard_permission' => false,
+    'cache' => [
+        'expiration_time' => \DateInterval::createFromDateString('24 hours'),
+        'key' => 'spatie.permission.cache',
+        'store' => 'default',
+    ],
+];
+[0;32m✅ Config permissions collectée[0m
+
+[1;33m--- Configuration App ---[0m
+    | Service Providers
+    |--------------------------------------------------------------------------
+    | SECTION MANQUANTE DANS VOTRE FICHIER !
+    */
+
+    'providers' => [
+
+        /*
+         * Laravel Framework Service Providers...
+         */
+        Illuminate\Auth\AuthServiceProvider::class,
+--
+    | Class Aliases
+    |--------------------------------------------------------------------------
+    | SECTION AUSSI MANQUANTE !
+    */
+
+    'aliases' => [
+
+        'App' => Illuminate\Support\Facades\App::class,
+        'Arr' => Illuminate\Support\Arr::class,
+        'Artisan' => Illuminate\Support\Facades\Artisan::class,
+        'Auth' => Illuminate\Support\Facades\Auth::class,
+[0;32m✅ Config app collectée (extrait)[0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                🗄️ STRUCTURE BASE DE DONNÉES (28 TABLES)     [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- Migration Users (Table Centrale) ---[0m
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('sessions');
+    }
+};
+[0;32m✅ Migration users collectée[0m
+
+[1;33m--- Migration Ecoles ---[0m
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('ecoles', function (Blueprint $table) {
+            $table->id();
+            $table->string('nom');
+            $table->string('code', 10)->unique();
+            $table->string('adresse');
+            $table->string('ville');
+            $table->string('province')->default('QC');
+            $table->string('code_postal');
+            $table->string('telephone')->nullable();
+            $table->string('email')->nullable();
+            $table->string('site_web')->nullable();
+            $table->text('description')->nullable();
+            $table->boolean('active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('ecoles');
+    }
+};
+[0;32m✅ Migration ecoles collectée[0m
+
+[1;33m--- Migration Permissions Spatie ---[0m
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        $tableNames = config('permission.table_names');
+        $columnNames = config('permission.column_names');
+        $teams = config('permission.teams');
+
+        if (empty($tableNames)) {
+            throw new \Exception('Error: config/permission.php not loaded. Run [php artisan config:clear] and try again.');
+        }
+        if ($teams && empty($columnNames['team_foreign_key'] ?? null)) {
+            throw new \Exception('Error: team_foreign_key on config/permission.php not loaded. Run [php artisan config:clear] and try again.');
+        }
+
+        Schema::create($tableNames['permissions'], function (Blueprint $table) {
+            $table->bigIncrements('id'); // permission id
+            $table->string('name');       // For MySQL 8.0 use string('name', 125);
+            $table->string('guard_name'); // For MySQL 8.0 use string('guard_name', 125);
+            $table->timestamps();
+
+            $table->unique(['name', 'guard_name']);
+        });
+
+        Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {
+            $table->bigIncrements('id'); // role id
+            if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
+                $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
+                $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
+            }
+            $table->string('name');       // For MySQL 8.0 use string('name', 125);
+            $table->string('guard_name'); // For MySQL 8.0 use string('guard_name', 125);
+            $table->timestamps();
+            if ($teams || config('permission.testing')) {
+                $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
+            } else {
+                $table->unique(['name', 'guard_name']);
+            }
+        });
+
+        Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames, $columnNames, $teams) {
+            $table->unsignedBigInteger(PermissionTableNames::getColumnName('permission_id'));
+
+            $table->string('model_type');
+            $table->unsignedBigInteger($columnNames['model_morph_key']);
+            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_permissions_model_id_model_type_index');
+
+            $table->foreign(PermissionTableNames::getColumnName('permission_id'))
+                ->references('id') // permission id
+                ->on($tableNames['permissions'])
+                ->onDelete('cascade');
+            if ($teams) {
+                $table->unsignedBigInteger($columnNames['team_foreign_key']);
+                $table->index($columnNames['team_foreign_key'], 'model_has_permissions_team_foreign_key_index');
+
+                $table->primary([$columnNames['team_foreign_key'], PermissionTableNames::getColumnName('permission_id'), $columnNames['model_morph_key'], 'model_type'],
+                    'model_has_permissions_permission_model_type_primary');
+            } else {
+                $table->primary([PermissionTableNames::getColumnName('permission_id'), $columnNames['model_morph_key'], 'model_type'],
+                    'model_has_permissions_permission_model_type_primary');
+            }
+
+        });
+
+        Schema::create($tableNames['model_has_roles'], function (Blueprint $table) use ($tableNames, $columnNames, $teams) {
+            $table->unsignedBigInteger(PermissionTableNames::getColumnName('role_id'));
+
+            $table->string('model_type');
+            $table->unsignedBigInteger($columnNames['model_morph_key']);
+            $table->index([$columnNames['model_morph_key'], 'model_type'], 'model_has_roles_model_id_model_type_index');
+
+            $table->foreign(PermissionTableNames::getColumnName('role_id'))
+                ->references('id') // role id
+                ->on($tableNames['roles'])
+                ->onDelete('cascade');
+
+            if ($teams) {
+                $table->unsignedBigInteger($columnNames['team_foreign_key']);
+                $table->index($columnNames['team_foreign_key'], 'model_has_roles_team_foreign_key_index');
+
+                $table->primary([$columnNames['team_foreign_key'], PermissionTableNames::getColumnName('role_id'), $columnNames['model_morph_key'], 'model_type'],
+                    'model_has_roles_role_model_type_primary');
+            } else {
+                $table->primary([PermissionTableNames::getColumnName('role_id'), $columnNames['model_morph_key'], 'model_type'],
+                    'model_has_roles_role_model_type_primary');
+            }
+        });
+
+        Schema::create($tableNames['role_has_permissions'], function (Blueprint $table) use ($tableNames) {
+            $table->unsignedBigInteger(PermissionTableNames::getColumnName('permission_id'));
+            $table->unsignedBigInteger(PermissionTableNames::getColumnName('role_id'));
+
+            $table->foreign(PermissionTableNames::getColumnName('permission_id'))
+                ->references('id') // permission id
+                ->on($tableNames['permissions'])
+                ->onDelete('cascade');
+
+            $table->foreign(PermissionTableNames::getColumnName('role_id'))
+                ->references('id') // role id
+                ->on($tableNames['roles'])
+                ->onDelete('cascade');
+
+            $table->primary([PermissionTableNames::getColumnName('permission_id'), PermissionTableNames::getColumnName('role_id')], 'role_has_permissions_permission_id_role_id_primary');
+        });
+
+        app('cache')
+            ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
+            ->forget(config('permission.cache.key'));
+    }
+
+    public function down()
+    {
+        $tableNames = config('permission.table_names');
+
+        if (empty($tableNames)) {
+            throw new \Exception('Error: config/permission.php not found and defaults could not be merged. Please publish the package configuration before proceeding, or drop the tables manually.');
+        }
+
+        Schema::drop($tableNames['role_has_permissions']);
+        Schema::drop($tableNames['model_has_roles']);
+        Schema::drop($tableNames['model_has_permissions']);
+        Schema::drop($tableNames['roles']);
+        Schema::drop($tableNames['permissions']);
+    }
+};
+
+class PermissionTableNames
+{
+    public static function getColumnName(string $name): string
+    {
+        return config('permission.column_names.' . $name, $name);
+    }
+}
+[0;32m✅ Migration permissions collectée[0m
+
+[1;33m--- Autres Migrations Importantes ---[0m
+✅ Migration cours présente
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('cours', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('ecole_id')->constrained('ecoles')->onDelete('cascade');
+            $table->string('nom');
+            $table->text('description')->nullable();
+            $table->enum('niveau', ['debutant', 'intermediaire', 'avance', 'tous_niveaux']);
+            $table->integer('capacite_max')->default(20);
+            $table->decimal('prix', 8, 2)->nullable();
+            $table->integer('duree_minutes')->default(60);
+            $table->string('instructeur')->nullable();
+            $table->boolean('active')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('cours');
+    }
+};
+✅ Migration ceintures présente
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('ceintures', function (Blueprint $table) {
+            $table->id();
+            $table->string('nom');
+            $table->string('couleur');
+            $table->integer('ordre');
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('ceintures');
+    }
+};
+✅ Migration presences présente
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('presences', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id'); // Changé de membre_id à user_id
+            $table->unsignedBigInteger('cours_id');
+            $table->date('date_cours');
+            $table->boolean('present')->default(true);
+            $table->text('notes')->nullable();
+            $table->timestamps();
+
+            $table->unique(['user_id', 'cours_id', 'date_cours']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('cours_id')->references('id')->on('cours')->onDelete('cascade');
+            
+            $table->index(['cours_id', 'date_cours']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('presences');
+    }
+};
+✅ Migration paiements présente
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('paiements', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id'); // Changé de membre_id à user_id
+            $table->unsignedBigInteger('ecole_id');
+            $table->unsignedBigInteger('processed_by_user_id')->nullable(); // User qui a traité le paiement
+            $table->string('reference_interne')->unique()->nullable();
+            $table->string('type_paiement')->default('interac');
+            $table->enum('motif', ['session_automne', 'session_hiver', 'session_printemps', 'session_ete', 'seminaire', 'examen_ceinture', 'equipement', 'autre']);
+            $table->string('description')->nullable();
+            $table->decimal('montant', 10, 2);
+            $table->decimal('frais', 10, 2)->default(0);
+            $table->decimal('montant_net', 10, 2);
+            $table->string('email_expediteur')->nullable();
+            $table->string('nom_expediteur')->nullable();
+            $table->string('reference_interac')->nullable();
+            $table->text('message_interac')->nullable();
+            $table->enum('statut', ['en_attente', 'recu', 'valide', 'rejete', 'rembourse'])->default('en_attente');
+            $table->timestamp('date_facture')->nullable();
+            $table->timestamp('date_echeance')->nullable();
+            $table->timestamp('date_reception')->nullable();
+            $table->timestamp('date_validation')->nullable();
+            $table->string('periode_facturation')->nullable();
+            $table->year('annee_fiscale')->default(date('Y'));
+            $table->boolean('recu_fiscal_emis')->default(false);
+            $table->json('metadonnees')->nullable();
+            $table->text('notes_admin')->nullable();
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('ecole_id')->references('id')->on('ecoles')->onDelete('cascade');
+            $table->foreign('processed_by_user_id')->references('id')->on('users')->onDelete('set null');
+            
+            $table->index(['ecole_id', 'statut']);
+            $table->index(['user_id', 'created_at']);
+            $table->index('reference_interne');
+            $table->index(['type_paiement', 'statut']);
+        });
+    }
+
+    public function down(): void
+✅ Migration seminaires présente
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up()
+    {
+        Schema::create('seminaires', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('ecole_id')->constrained('ecoles')->onDelete('cascade');
+            $table->string('titre');
+            $table->text('description')->nullable();
+            $table->enum('type', ['technique', 'kata', 'competition', 'arbitrage']);
+            $table->date('date_debut');
+            $table->date('date_fin');
+            $table->time('heure_debut');
+            $table->time('heure_fin');
+            $table->string('instructeur');
+            $table->integer('capacite_max')->default(30);
+            $table->decimal('prix', 8, 2)->nullable();
+            $table->enum('niveau_requis', ['debutant', 'intermediaire', 'avance', 'tous_niveaux']);
+            $table->boolean('inscription_ouverte')->default(true);
+            $table->text('materiel_requis')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('seminaires');
+    }
+};
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                🎨 VUES DE RÉFÉRENCE (79 VUES TOTAL)          [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- Layout Admin ---[0m
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-900">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Admin') - StudiosUnisDB</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="h-full bg-gray-900 text-white antialiased">
+    <div class="min-h-full">
+        <!-- SIDEBAR BEAUTIFUL -->
+        <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+            <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-slate-800 px-6 pb-4">
+                <!-- Logo Header -->
+                <div class="flex h-16 shrink-0 items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-blue-600">
+                            <span class="text-xl font-bold text-white">🥋</span>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold text-white">StudiosUnisDB</h1>
+                            <p class="text-xs text-purple-300">v3.9.3-FINAL</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex flex-1 flex-col">
+                    <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                        <li>
+                            <!-- PRINCIPAL -->
+                            <div class="text-xs font-semibold leading-6 text-slate-400 uppercase tracking-wider">Principal</div>
+                            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                                <li>
+                                    <a href="{{ route('admin.dashboard') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.dashboard') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">📊</span>
+                                        Dashboard
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <!-- GESTION -->
+                            <div class="text-xs font-semibold leading-6 text-slate-400 uppercase tracking-wider">Gestion</div>
+                            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                                <li>
+                                    <a href="{{ route('admin.ecoles.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.ecoles.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">🏫</span>
+                                        Écoles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.users.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.users.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">👥</span>
+                                        Membres
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.cours.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.cours.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">📚</span>
+                                        Cours
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.presences.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.presences.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">✅</span>
+                                        Présences
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <!-- PROGRESSION -->
+                            <div class="text-xs font-semibold leading-6 text-slate-400 uppercase tracking-wider">Progression</div>
+                            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                                <li>
+                                    <a href="{{ route('admin.ceintures.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.ceintures.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">🥋</span>
+                                        Ceintures
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.seminaires.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.seminaires.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">🎯</span>
+                                        Séminaires
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <!-- FINANCES -->
+                            <div class="text-xs font-semibold leading-6 text-slate-400 uppercase tracking-wider">Finances</div>
+                            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                                <li>
+                                    <a href="{{ route('admin.paiements.index') }}" 
+                                       class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.paiements.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700' }}">
+                                        <span class="h-6 w-6 shrink-0 text-lg">💰</span>
+                                        Paiements
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- CONTENU PRINCIPAL -->
+        <div class="lg:pl-72">
+            <!-- Top bar avec dropdown -->
+            <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-700 bg-slate-800 px-4 shadow-sm">
+                <div class="flex flex-1 gap-x-4 self-stretch">
+                    <div class="flex flex-1 items-center">
+                        <h1 class="text-lg font-semibold leading-6 text-white">
+                            @yield('title', 'Cours')
+                        </h1>
+                    </div>
+                    
+                    <!-- Profile dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button type="button" 
+                                @click="open = !open"
+                                class="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-slate-700 rounded-lg">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500 to-orange-600">
+                                <span class="text-white font-bold text-sm">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium">{{ auth()->user()->name }}</div>
+                                <div class="text-xs text-slate-400">{{ auth()->user()->getRoleNames()->first() ?? 'superadmin' }}</div>
+                            </div>
+                            <svg class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" 
+                             @click.outside="open = false"
+                             x-transition
+                             class="absolute right-0 z-10 mt-2.5 w-56 origin-top-right rounded-md bg-slate-800 py-2 shadow-lg ring-1 ring-slate-700">
+[0;32m✅ Layout admin collecté[0m
+
+[1;33m--- Vue Users Index ---[0m
+@extends('layouts.admin')
+@section('title', 'Gestion des Utilisateurs')
+
+@section('content')
+<div class="space-y-6">
+    <!-- Header avec couleur bleue -->
+    <div class="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Gestion des Utilisateurs
+                </h1>
+                <p class="text-blue-100 text-lg">Gestion de vos utilisateurs du réseau</p>
+            </div>
+            <a href="{{ route('admin.users.create') }}" 
+               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nouvel Utilisateur
+            </a>
+        </div>
+    </div>
+
+    <!-- Métriques avec couleur bleue -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $users->total() }}</div>
+                    <div class="text-sm text-slate-400">Total Utilisateurs</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $users->where('active', true)->count() }}</div>
+                    <div class="text-sm text-slate-400">Actifs</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v12m7-10V9a2 2 0 00-2-2H9a2 2 0 00-2 2v2m4 4h2m-2 4h2"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $users->filter(function($user) { return $user->hasRole('instructeur'); })->count() }}</div>
+                    <div class="text-sm text-slate-400">Instructeurs</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+            <div class="flex items-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-white">{{ $users->filter(function($user) { return $user->hasRole('membre'); })->count() }}</div>
+                    <div class="text-sm text-slate-400">Membres</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Vos Utilisateurs avec couleur bleue -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div class="bg-blue-600 px-6 py-4">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                Vos Utilisateurs
+            </h3>
+        </div>
+
+        <!-- Barre de recherche -->
+        <div class="px-6 py-4 border-b border-slate-700">
+            <div class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <input type="text" 
+                           placeholder="Rechercher un utilisateur par nom, email..."
+                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Rechercher
+                </button>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-slate-900">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Utilisateur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">École</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Rôle</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700">
+                    @forelse($users as $user)
+                    <tr class="hover:bg-slate-700/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-12 w-12">
+                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                                        <span class="text-white font-bold text-sm">{{ substr($user->name, 0, 2) }}</span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-white">{{ $user->name }}</div>
+                                    <div class="text-sm text-slate-400">{{ $user->email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-white">{{ $user->ecole->nom ?? 'Non assignée' }}</div>
+                            <div class="text-sm text-slate-400">{{ $user->ecole->ville ?? '' }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($user->roles->isNotEmpty())
+                                @foreach($user->roles as $role)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900 text-blue-300 mr-1">
+                                    {{ $roles[$role->name] ?? ucfirst($role->name) }}
+                                </span>
+                                @endforeach
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-900 text-gray-300">
+                                    Aucun rôle
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($user->active)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-300">
+                                    ✓ Actif
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-300">
+                                    ✗ Inactif
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                <!-- Bouton Voir -->
+                                <a href="{{ route('admin.users.show', $user) }}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
+                                   title="Voir les détails">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                                
+                                <!-- Bouton Modifier -->
+                                <a href="{{ route('admin.users.edit', $user) }}" 
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white transition-colors duration-200"
+                                   title="Modifier">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+                                
+                                <!-- Bouton Supprimer -->
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
+                                            title="Supprimer"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="text-slate-400">
+                                <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-slate-300">Aucun utilisateur trouvé</h3>
+                                <p class="mt-1 text-sm text-slate-500">Commencez par créer un premier utilisateur.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        
+        @if($users->hasPages())
+        <div class="px-6 py-4 border-t border-slate-700">
+            {{ $users->links() }}
+        </div>
+        @endif
+    </div>
+</div>
+@endsection
+[0;32m✅ Vue users index collectée[0m
+
+[1;33m--- Autres Vues Admin ---[0m
+✅ Dossier vues ecoles présent
+total 96
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 24 14:21 .
+drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
+-rwxr-xr-x  1 studiosdb studiosdb 15222 Jun 23 07:53 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 12610 Jun 22 19:58 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 20702 Jun 24 14:21 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14138 Jun 24 13:46 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14910 Jun 24 14:21 show.blade.php
+✅ Dossier vues cours présent
+total 116
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 22 19:38 .
+drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
+-rwxr-xr-x  1 studiosdb studiosdb 23355 Jun 24 15:52 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  9829 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 25430 Jun 24 15:46 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  9230 Jun 22 19:38 edit.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 15875 Jun 24 15:22 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 15932 Jun 24 15:41 show.blade.php
+✅ Dossier vues ceintures présent
+total 100
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 25 09:18 .
+drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
+-rwxr-xr-x  1 studiosdb studiosdb 10460 Jun 22 19:38 assign.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  8248 Jun 24 16:06 attribuer.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  7017 Jun 25 09:25 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  5751 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  7936 Jun 25 09:26 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  4977 Jun 22 19:38 edit.blade.php.backup
+-rw-rw-r--  1 studiosdb studiosdb 14742 Jun 25 09:25 index.blade.php
+✅ Dossier vues presences présent
+total 76
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 22 13:24 .
+drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
+-rwxr-xr-x  1 studiosdb studiosdb 10306 Jun 22 13:24 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 12015 Jun 22 13:24 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3343 Jun 22 14:19 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  5495 Jun 22 13:24 pdf.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 16325 Jun 22 19:49 prise-presence.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 13486 Jun 22 13:24 show.blade.php
+✅ Dossier vues paiements présent
+total 72
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 22 19:38 .
+drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
+-rwxr-xr-x  1 studiosdb studiosdb 19085 Jun 22 19:38 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 19061 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  8478 Jun 22 14:38 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3345 Jun 22 14:35 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  4688 Jun 22 13:24 show.blade.php
+✅ Dossier vues seminaires présent
+total 148
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 22 19:38 .
+drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
+-rwxr-xr-x  1 studiosdb studiosdb 14728 Jun 22 19:38 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14703 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 20609 Jun 22 19:38 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 20584 Jun 22 19:38 edit.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  3239 Jun 22 14:35 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 20342 Jun 22 19:49 inscriptions.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3253 Jun 22 19:54 inscrire.blade.php
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                📊 INFORMATIONS SYSTÈME                      [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m--- Packages Composer ---[0m
+    "require": {
+        "php": "^8.2",
+        "barryvdh/laravel-dompdf": "*",
+        "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/telescope": "^5.0",
+        "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "^3.1",
+        "spatie/laravel-activitylog": "^4.8",
+        "spatie/laravel-permission": "^6.0"
+    },
+    "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.15",
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.13",
+        "laravel/sail": "^1.26",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+[0;32m✅ Packages collectés[0m
+
+[1;33m--- Permissions/Rôles Spatie ---[0m
+Tentative de lecture des rôles/permissions...
+RÔLES CONFIGURÉS:
+- superadmin
+- admin_ecole
+- instructeur
+- admin
+- membre
+- user
+- admin-ecole
+- super-admin
+
+PERMISSIONS CONFIGURÉES:
+- view-presences
+- create-presence
+- edit-presence
+- delete-presence
+- view-ecoles
+- create-ecole
+- edit-ecole
+- delete-ecole
+- view-ceintures
+- create-ceinture
+
+[1;33m--- Middleware Laravel ---[0m
+    protected $middleware = [
+        \App\Http\Middleware\TrustProxies::class,
+        \Illuminate\Http\Middleware\HandleCors::class,
+        \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
+        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+        \App\Http\Middleware\TrimStrings::class,
+        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+    ];
+
+    /**
+     * The application's route middleware groups.
+     *
+     * @var array<string, array<int, class-string|string>>
+     */
+    protected $middlewareGroups = [
+        'web' => [
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+
+        'api' => [
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+    ];
+
+    /**
+     * The application's middleware aliases.
+     *
+     * @var array<string, class-string|string>
+     */
+    protected $middlewareAliases = [
+        'auth' => \App\Http\Middleware\Authenticate::class,
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
+        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'can' => \Illuminate\Auth\Middleware\Authorize::class,
+        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
+        'signed' => \App\Http\Middleware\ValidateSignature::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+    ];
+}
+[0;32m✅ Middleware collecté[0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m
+
+[1;33m                ✅ COLLECTE TERMINÉE                          [0m
+
+[1;33m═══════════════════════════════════════════════════════════════[0m

@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\MembreCeinture;
+use App\Models\UserCeinture;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class MembreCeinturePolicy
+class UserCeinturePolicy
 {
     use HandlesAuthorization;
 
@@ -15,7 +15,7 @@ class MembreCeinturePolicy
         return $user->can('view-ceintures');
     }
 
-    public function view(User $user, MembreCeinture $membreCeinture): bool
+    public function view(User $user, UserCeinture $membreCeinture): bool
     {
         if ($user->hasRole('superadmin')) {
             return true;
@@ -29,7 +29,7 @@ class MembreCeinturePolicy
         return $user->can('create-ceinture');
     }
 
-    public function update(User $user, MembreCeinture $membreCeinture): bool
+    public function update(User $user, UserCeinture $membreCeinture): bool
     {
         if ($user->hasRole('superadmin')) {
             return true;
@@ -37,7 +37,7 @@ class MembreCeinturePolicy
         return $user->can('edit-ceinture') && ($user->ecole_id === $membreCeinture->user->ecole_id);
     }
 
-    public function delete(User $user, MembreCeinture $membreCeinture): bool
+    public function delete(User $user, UserCeinture $membreCeinture): bool
     {
          if ($user->hasRole('superadmin')) {
             return true;

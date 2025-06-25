@@ -14,25 +14,19 @@ class Presence extends Model
         'cours_id',
         'date_cours',
         'present',
-        'notes',
+        'notes'
     ];
 
     protected $casts = [
         'date_cours' => 'date',
-        'present' => 'boolean',
+        'present' => 'boolean'
     ];
 
-    /**
-     * Relation avec l'utilisateur
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Relation avec le cours
-     */
     public function cours()
     {
         return $this->belongsTo(Cours::class);

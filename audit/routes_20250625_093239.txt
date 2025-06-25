@@ -1,0 +1,326 @@
+=== FICHIERS DE ROUTES ===
+total 40
+drwxr-xr-x  2 studiosdb studiosdb 4096 Jun 24 16:47 .
+drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
+-rwxr-xr-x  1 studiosdb studiosdb 2898 Jun 24 16:47 admin.php
+-rwxr-xr-x  1 studiosdb studiosdb 4219 Jun 22 13:39 admin.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  720 Jun 16 17:41 api.php
+-rwxr-xr-x  1 studiosdb studiosdb 2360 Jun 21 20:06 auth.php
+-rwxr-xr-x  1 studiosdb studiosdb  592 Jun 16 17:41 console.php
+-rwxr-xr-x  1 studiosdb studiosdb  938 Jun 21 21:13 web.php
+-rwxr-xr-x  1 studiosdb studiosdb 1070 Jun 21 21:13 web.php.backup
+
+=== LISTE COMPLÈTE DES ROUTES ===
+
+  GET|HEAD        / .............................................................................. generated::0d66ppi06Ohp1S3b
+  GET|HEAD        _debugbar/assets/javascript .................... debugbar.assets.js › Barryvdh\Debugbar › AssetController@js
+  GET|HEAD        _debugbar/assets/stylesheets ................. debugbar.assets.css › Barryvdh\Debugbar › AssetController@css
+  DELETE          _debugbar/cache/{key}/{tags?} ........... debugbar.cache.delete › Barryvdh\Debugbar › CacheController@delete
+  GET|HEAD        _debugbar/clockwork/{id} .......... debugbar.clockwork › Barryvdh\Debugbar › OpenHandlerController@clockwork
+  GET|HEAD        _debugbar/open ..................... debugbar.openhandler › Barryvdh\Debugbar › OpenHandlerController@handle
+  POST            _debugbar/queries/explain ......... debugbar.queries.explain › Barryvdh\Debugbar › QueriesController@explain
+  GET|HEAD        _debugbar/telescope/{id} ................. debugbar.telescope › Barryvdh\Debugbar › TelescopeController@show
+  GET|HEAD        admin .................................................... admin.dashboard › Admin\DashboardController@index
+  GET|HEAD        admin/ceintures ..................................... admin.ceintures.index › Admin\CeintureController@index
+  POST            admin/ceintures ..................................... admin.ceintures.store › Admin\CeintureController@store
+  GET|HEAD        admin/ceintures/create ............................ admin.ceintures.create › Admin\CeintureController@create
+  GET|HEAD        admin/ceintures/types ............................... admin.ceintures.types › Admin\CeintureController@types
+  GET|HEAD        admin/ceintures/{ceinture} ............................ admin.ceintures.show › Admin\CeintureController@show
+  PUT|PATCH       admin/ceintures/{ceinture} ........................ admin.ceintures.update › Admin\CeintureController@update
+  DELETE          admin/ceintures/{ceinture} ...................... admin.ceintures.destroy › Admin\CeintureController@destroy
+  GET|POST|HEAD   admin/ceintures/{ceinture}/attribuer ........ admin.ceintures.attribuer › Admin\CeintureController@attribuer
+  GET|HEAD        admin/ceintures/{ceinture}/edit ....................... admin.ceintures.edit › Admin\CeintureController@edit
+  GET|HEAD        admin/cours ................................................ admin.cours.index › Admin\CoursController@index
+  POST            admin/cours ................................................ admin.cours.store › Admin\CoursController@store
+  GET|HEAD        admin/cours/create ....................................... admin.cours.create › Admin\CoursController@create
+  GET|HEAD        admin/cours/{cour} ........................................... admin.cours.show › Admin\CoursController@show
+  PUT|PATCH       admin/cours/{cour} ....................................... admin.cours.update › Admin\CoursController@update
+  DELETE          admin/cours/{cour} ..................................... admin.cours.destroy › Admin\CoursController@destroy
+  GET|HEAD        admin/cours/{cour}/edit ...................................... admin.cours.edit › Admin\CoursController@edit
+  GET|HEAD        admin/dashboard .................................... admin.dashboard.index › Admin\DashboardController@index
+  GET|HEAD        admin/ecoles .............................................. admin.ecoles.index › Admin\EcoleController@index
+  POST            admin/ecoles .............................................. admin.ecoles.store › Admin\EcoleController@store
+  GET|HEAD        admin/ecoles/create ..................................... admin.ecoles.create › Admin\EcoleController@create
+  GET|HEAD        admin/ecoles/{ecole} ........................................ admin.ecoles.show › Admin\EcoleController@show
+  PUT|PATCH       admin/ecoles/{ecole} .................................... admin.ecoles.update › Admin\EcoleController@update
+  DELETE          admin/ecoles/{ecole} .................................. admin.ecoles.destroy › Admin\EcoleController@destroy
+  GET|HEAD        admin/ecoles/{ecole}/edit ................................... admin.ecoles.edit › Admin\EcoleController@edit
+  GET|HEAD        admin/inscriptions-seminaires admin.inscriptions-seminaires.index › Admin\InscriptionSeminaireController@in…
+  DELETE          admin/inscriptions-seminaires/{inscriptions_seminaire} admin.inscriptions-seminaires.destroy › Admin\Inscri…
+  GET|HEAD        admin/logs ................................................................................ admin.logs.index
+  GET|HEAD        admin/logs/{log} ........................................................................... admin.logs.show
+  GET|HEAD        admin/paiements ..................................... admin.paiements.index › Admin\PaiementController@index
+  POST            admin/paiements ..................................... admin.paiements.store › Admin\PaiementController@store
+  GET|HEAD        admin/paiements/create ............................ admin.paiements.create › Admin\PaiementController@create
+  GET|HEAD        admin/paiements/{paiement} ............................ admin.paiements.show › Admin\PaiementController@show
+  PUT|PATCH       admin/paiements/{paiement} ........................ admin.paiements.update › Admin\PaiementController@update
+  DELETE          admin/paiements/{paiement} ...................... admin.paiements.destroy › Admin\PaiementController@destroy
+  GET|HEAD        admin/paiements/{paiement}/edit ....................... admin.paiements.edit › Admin\PaiementController@edit
+  GET|HEAD        admin/presences ..................................... admin.presences.index › Admin\PresenceController@index
+  POST            admin/presences ..................................... admin.presences.store › Admin\PresenceController@store
+  GET|HEAD        admin/presences/create ............................ admin.presences.create › Admin\PresenceController@create
+  GET|HEAD        admin/presences/{presence} ............................ admin.presences.show › Admin\PresenceController@show
+  PUT|PATCH       admin/presences/{presence} ........................ admin.presences.update › Admin\PresenceController@update
+  DELETE          admin/presences/{presence} ...................... admin.presences.destroy › Admin\PresenceController@destroy
+  GET|HEAD        admin/presences/{presence}/edit ....................... admin.presences.edit › Admin\PresenceController@edit
+  GET|HEAD        admin/seminaires .................................. admin.seminaires.index › Admin\SeminaireController@index
+  POST            admin/seminaires .................................. admin.seminaires.store › Admin\SeminaireController@store
+  GET|HEAD        admin/seminaires/create ......................... admin.seminaires.create › Admin\SeminaireController@create
+  GET|HEAD        admin/seminaires/{seminaire} ........................ admin.seminaires.show › Admin\SeminaireController@show
+  PUT|PATCH       admin/seminaires/{seminaire} .................... admin.seminaires.update › Admin\SeminaireController@update
+  DELETE          admin/seminaires/{seminaire} .................. admin.seminaires.destroy › Admin\SeminaireController@destroy
+  GET|HEAD        admin/seminaires/{seminaire}/edit ................... admin.seminaires.edit › Admin\SeminaireController@edit
+  GET|POST|HEAD   admin/seminaires/{seminaire}/inscrire ....... admin.seminaires.inscrire › Admin\SeminaireController@inscrire
+  GET|HEAD        admin/users ................................................. admin.users.index › Admin\UserController@index
+  POST            admin/users ................................................. admin.users.store › Admin\UserController@store
+  GET|HEAD        admin/users/create ........................................ admin.users.create › Admin\UserController@create
+  GET|HEAD        admin/users/export ........................................ admin.users.export › Admin\UserController@export
+  GET|HEAD        admin/users/{user} ............................................ admin.users.show › Admin\UserController@show
+  PUT|PATCH       admin/users/{user} ........................................ admin.users.update › Admin\UserController@update
+  DELETE          admin/users/{user} ...................................... admin.users.destroy › Admin\UserController@destroy
+  GET|HEAD        admin/users/{user}/edit ....................................... admin.users.edit › Admin\UserController@edit
+  GET|HEAD        admin/users/{user}/qrcode ................................. admin.users.qrcode › Admin\UserController@qrcode
+  GET|HEAD        api/user ....................................................................... generated::36IGJJ6ccjz4howu
+  GET|HEAD        confirm-password ................................ password.confirm › Auth\ConfirmablePasswordController@show
+  POST            confirm-password .................... generated::oytXiH1acY0c5qml › Auth\ConfirmablePasswordController@store
+  GET|HEAD        dashboard ........................................................................................ dashboard
+  POST            email/verification-notification ..... verification.send › Auth\EmailVerificationNotificationController@store
+  GET|HEAD        forgot-password ................................. password.request › Auth\PasswordResetLinkController@create
+  POST            forgot-password .................................... password.email › Auth\PasswordResetLinkController@store
+  GET|HEAD        login ................................................... login › Auth\AuthenticatedSessionController@create
+  POST            login .............................. generated::P6X6DZdvE6z93z36 › Auth\AuthenticatedSessionController@store
+  POST            logout ................................................ logout › Auth\AuthenticatedSessionController@destroy
+  PUT             password .................................................. password.update › Auth\PasswordController@update
+  GET|HEAD        profile .............................................................. profile.edit › ProfileController@edit
+  PATCH           profile .......................................................... profile.update › ProfileController@update
+  DELETE          profile ........................................................ profile.destroy › ProfileController@destroy
+  GET|HEAD        register ................................................... register › Auth\RegisteredUserController@create
+  POST            register ................................. generated::mDxKS05fGW0grlxq › Auth\RegisteredUserController@store
+  POST            reset-password ........................................... password.store › Auth\NewPasswordController@store
+  GET|HEAD        reset-password/{token} .................................. password.reset › Auth\NewPasswordController@create
+  GET|HEAD        sanctum/csrf-cookie ...................... sanctum.csrf-cookie › Laravel\Sanctum › CsrfCookieController@show
+  GET|HEAD        storage/{path} ............................................................................... storage.local
+  POST            telescope/telescope-api/batches generated::UgBDonDiYqCiLUP7 › Laravel\Telescope › QueueBatchesController@in…
+  GET|HEAD        telescope/telescope-api/batches/{telescopeEntryId} generated::D4zvwGNfl7UgtapX › Laravel\Telescope › QueueB…
+  POST            telescope/telescope-api/cache ...... generated::7QKqfO6rZYy0kwtZ › Laravel\Telescope › CacheController@index
+  GET|HEAD        telescope/telescope-api/cache/{telescopeEntryId} generated::hpWoT88NpxdZPfks › Laravel\Telescope › CacheCon…
+  POST            telescope/telescope-api/client-requests generated::37haWfuvFJ0oypzc › Laravel\Telescope › ClientRequestCont…
+  GET|HEAD        telescope/telescope-api/client-requests/{telescopeEntryId} generated::lyHZhwLrCyWFwUJO › Laravel\Telescope …
+  POST            telescope/telescope-api/commands generated::garvAxEOJ73ahAuT › Laravel\Telescope › CommandsController@index
+  GET|HEAD        telescope/telescope-api/commands/{telescopeEntryId} generated::JBm4peqWmWqykV21 › Laravel\Telescope › Comma…
+  POST            telescope/telescope-api/dumps ....... generated::QuQqMLWJrtmKm92t › Laravel\Telescope › DumpController@index
+  DELETE          telescope/telescope-api/entries generated::hQBRKzpnZkPpn6kO › Laravel\Telescope › EntriesController@destroy
+  POST            telescope/telescope-api/events .... generated::3eDKoraIWxbrwlH6 › Laravel\Telescope › EventsController@index
+  GET|HEAD        telescope/telescope-api/events/{telescopeEntryId} generated::Xn2sVmEuO1ERWjTS › Laravel\Telescope › EventsC…
+  POST            telescope/telescope-api/exceptions generated::mdR3EXG1PvbNLIyR › Laravel\Telescope › ExceptionController@in…
+  GET|HEAD        telescope/telescope-api/exceptions/{telescopeEntryId} generated::cg65IdjKobWqkQg5 › Laravel\Telescope › Exc…
+  PUT             telescope/telescope-api/exceptions/{telescopeEntryId} generated::2RIZczZyARrkEfuE › Laravel\Telescope › Exc…
+  POST            telescope/telescope-api/gates ...... generated::kyMuUyOg9kdgdIna › Laravel\Telescope › GatesController@index
+  GET|HEAD        telescope/telescope-api/gates/{telescopeEntryId} generated::Et7EVC8POt6Q9noH › Laravel\Telescope › GatesCon…
+  POST            telescope/telescope-api/jobs ....... generated::kYUMDzElc8ogYG5G › Laravel\Telescope › QueueController@index
+  GET|HEAD        telescope/telescope-api/jobs/{telescopeEntryId} generated::o99xMSzvqEF061XQ › Laravel\Telescope › QueueCont…
+  POST            telescope/telescope-api/logs ......... generated::BEP4a0e1uKVdgfhn › Laravel\Telescope › LogController@index
+  GET|HEAD        telescope/telescope-api/logs/{telescopeEntryId} generated::oKYIIwONisrrRemc › Laravel\Telescope › LogContro…
+  POST            telescope/telescope-api/mail ........ generated::bn2Qtn0786ej0quv › Laravel\Telescope › MailController@index
+  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId} generated::vma1CvOO4Ku5Xu2g › Laravel\Telescope › MailContr…
+  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId}/download generated::OSoiItFCMFqMMeQF › Laravel\Telescope › …
+  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId}/preview generated::0YkZQbde4SUL0Zl8 › Laravel\Telescope › M…
+  POST            telescope/telescope-api/models .... generated::QYRXLASYuEvtdqkp › Laravel\Telescope › ModelsController@index
+  GET|HEAD        telescope/telescope-api/models/{telescopeEntryId} generated::nrU96XriuNNsuEqB › Laravel\Telescope › ModelsC…
+  GET|HEAD        telescope/telescope-api/monitored-tags generated::ceAqT0sscqbUGW3B › Laravel\Telescope › MonitoredTagContro…
+  POST            telescope/telescope-api/monitored-tags generated::AL3Am2ktKVjENmId › Laravel\Telescope › MonitoredTagContro…
+  POST            telescope/telescope-api/monitored-tags/delete generated::bM0hLawFV2SFHWlT › Laravel\Telescope › MonitoredTa…
+  POST            telescope/telescope-api/notifications generated::2lF2gdgTMY8YZMvX › Laravel\Telescope › NotificationsContro…
+  GET|HEAD        telescope/telescope-api/notifications/{telescopeEntryId} generated::WJp6rAbtwpIlNsqG › Laravel\Telescope › …
+  POST            telescope/telescope-api/queries .. generated::Ji6NjRCJNwIylrzA › Laravel\Telescope › QueriesController@index
+  GET|HEAD        telescope/telescope-api/queries/{telescopeEntryId} generated::nWOoE7DW8X9x5eon › Laravel\Telescope › Querie…
+  POST            telescope/telescope-api/redis ...... generated::BTCH80Ajlyf6XUoR › Laravel\Telescope › RedisController@index
+  GET|HEAD        telescope/telescope-api/redis/{telescopeEntryId} generated::wnTfngsfGrEQSRVj › Laravel\Telescope › RedisCon…
+  POST            telescope/telescope-api/requests generated::zxQDSlngzQlurgIa › Laravel\Telescope › RequestsController@index
+  GET|HEAD        telescope/telescope-api/requests/{telescopeEntryId} generated::XSxTzYZgbRe2sNA7 › Laravel\Telescope › Reque…
+  POST            telescope/telescope-api/schedule generated::L8L5EgVx9sVrX5Ae › Laravel\Telescope › ScheduleController@index
+  GET|HEAD        telescope/telescope-api/schedule/{telescopeEntryId} generated::VCM8xylu5JqbfhW2 › Laravel\Telescope › Sched…
+  POST            telescope/telescope-api/toggle-recording generated::QWu3sMqt68pSRult › Laravel\Telescope › RecordingControl…
+  POST            telescope/telescope-api/views ...... generated::Z1gJR8TEMs5xoncC › Laravel\Telescope › ViewsController@index
+  GET|HEAD        telescope/telescope-api/views/{telescopeEntryId} generated::bN8cocwtMYz94OIG › Laravel\Telescope › ViewsCon…
+  GET|HEAD        telescope/{view?} ..................................... telescope › Laravel\Telescope › HomeController@index
+  GET|HEAD        up ............................................................................. generated::Y7WapCaPVUf4TDsW
+  GET|HEAD        verify-email .................................. verification.notice › Auth\EmailVerificationPromptController
+  GET|HEAD        verify-email/{id}/{hash} .................................. verification.verify › Auth\VerifyEmailController
+
+                                                                                                          Showing [135] routes
+
+
+=== ROUTES ADMIN ===
+
+  GET|HEAD        admin .................................................... admin.dashboard › Admin\DashboardController@index
+  GET|HEAD        admin/ceintures ..................................... admin.ceintures.index › Admin\CeintureController@index
+  POST            admin/ceintures ..................................... admin.ceintures.store › Admin\CeintureController@store
+  GET|HEAD        admin/ceintures/create ............................ admin.ceintures.create › Admin\CeintureController@create
+  GET|HEAD        admin/ceintures/types ............................... admin.ceintures.types › Admin\CeintureController@types
+  GET|HEAD        admin/ceintures/{ceinture} ............................ admin.ceintures.show › Admin\CeintureController@show
+  PUT|PATCH       admin/ceintures/{ceinture} ........................ admin.ceintures.update › Admin\CeintureController@update
+  DELETE          admin/ceintures/{ceinture} ...................... admin.ceintures.destroy › Admin\CeintureController@destroy
+  GET|POST|HEAD   admin/ceintures/{ceinture}/attribuer ........ admin.ceintures.attribuer › Admin\CeintureController@attribuer
+  GET|HEAD        admin/ceintures/{ceinture}/edit ....................... admin.ceintures.edit › Admin\CeintureController@edit
+  GET|HEAD        admin/cours ................................................ admin.cours.index › Admin\CoursController@index
+  POST            admin/cours ................................................ admin.cours.store › Admin\CoursController@store
+  GET|HEAD        admin/cours/create ....................................... admin.cours.create › Admin\CoursController@create
+  GET|HEAD        admin/cours/{cour} ........................................... admin.cours.show › Admin\CoursController@show
+  PUT|PATCH       admin/cours/{cour} ....................................... admin.cours.update › Admin\CoursController@update
+  DELETE          admin/cours/{cour} ..................................... admin.cours.destroy › Admin\CoursController@destroy
+  GET|HEAD        admin/cours/{cour}/edit ...................................... admin.cours.edit › Admin\CoursController@edit
+  GET|HEAD        admin/dashboard .................................... admin.dashboard.index › Admin\DashboardController@index
+  GET|HEAD        admin/ecoles .............................................. admin.ecoles.index › Admin\EcoleController@index
+  POST            admin/ecoles .............................................. admin.ecoles.store › Admin\EcoleController@store
+  GET|HEAD        admin/ecoles/create ..................................... admin.ecoles.create › Admin\EcoleController@create
+  GET|HEAD        admin/ecoles/{ecole} ........................................ admin.ecoles.show › Admin\EcoleController@show
+  PUT|PATCH       admin/ecoles/{ecole} .................................... admin.ecoles.update › Admin\EcoleController@update
+  DELETE          admin/ecoles/{ecole} .................................. admin.ecoles.destroy › Admin\EcoleController@destroy
+  GET|HEAD        admin/ecoles/{ecole}/edit ................................... admin.ecoles.edit › Admin\EcoleController@edit
+  GET|HEAD        admin/inscriptions-seminaires admin.inscriptions-seminaires.index › Admin\InscriptionSeminaireController@in…
+  DELETE          admin/inscriptions-seminaires/{inscriptions_seminaire} admin.inscriptions-seminaires.destroy › Admin\Inscri…
+  GET|HEAD        admin/logs ................................................................................ admin.logs.index
+  GET|HEAD        admin/logs/{log} ........................................................................... admin.logs.show
+  GET|HEAD        admin/paiements ..................................... admin.paiements.index › Admin\PaiementController@index
+  POST            admin/paiements ..................................... admin.paiements.store › Admin\PaiementController@store
+  GET|HEAD        admin/paiements/create ............................ admin.paiements.create › Admin\PaiementController@create
+  GET|HEAD        admin/paiements/{paiement} ............................ admin.paiements.show › Admin\PaiementController@show
+  PUT|PATCH       admin/paiements/{paiement} ........................ admin.paiements.update › Admin\PaiementController@update
+  DELETE          admin/paiements/{paiement} ...................... admin.paiements.destroy › Admin\PaiementController@destroy
+  GET|HEAD        admin/paiements/{paiement}/edit ....................... admin.paiements.edit › Admin\PaiementController@edit
+  GET|HEAD        admin/presences ..................................... admin.presences.index › Admin\PresenceController@index
+  POST            admin/presences ..................................... admin.presences.store › Admin\PresenceController@store
+  GET|HEAD        admin/presences/create ............................ admin.presences.create › Admin\PresenceController@create
+  GET|HEAD        admin/presences/{presence} ............................ admin.presences.show › Admin\PresenceController@show
+  PUT|PATCH       admin/presences/{presence} ........................ admin.presences.update › Admin\PresenceController@update
+  DELETE          admin/presences/{presence} ...................... admin.presences.destroy › Admin\PresenceController@destroy
+  GET|HEAD        admin/presences/{presence}/edit ....................... admin.presences.edit › Admin\PresenceController@edit
+  GET|HEAD        admin/seminaires .................................. admin.seminaires.index › Admin\SeminaireController@index
+  POST            admin/seminaires .................................. admin.seminaires.store › Admin\SeminaireController@store
+  GET|HEAD        admin/seminaires/create ......................... admin.seminaires.create › Admin\SeminaireController@create
+  GET|HEAD        admin/seminaires/{seminaire} ........................ admin.seminaires.show › Admin\SeminaireController@show
+  PUT|PATCH       admin/seminaires/{seminaire} .................... admin.seminaires.update › Admin\SeminaireController@update
+  DELETE          admin/seminaires/{seminaire} .................. admin.seminaires.destroy › Admin\SeminaireController@destroy
+  GET|HEAD        admin/seminaires/{seminaire}/edit ................... admin.seminaires.edit › Admin\SeminaireController@edit
+  GET|POST|HEAD   admin/seminaires/{seminaire}/inscrire ....... admin.seminaires.inscrire › Admin\SeminaireController@inscrire
+  GET|HEAD        admin/users ................................................. admin.users.index › Admin\UserController@index
+  POST            admin/users ................................................. admin.users.store › Admin\UserController@store
+  GET|HEAD        admin/users/create ........................................ admin.users.create › Admin\UserController@create
+  GET|HEAD        admin/users/export ........................................ admin.users.export › Admin\UserController@export
+  GET|HEAD        admin/users/{user} ............................................ admin.users.show › Admin\UserController@show
+  PUT|PATCH       admin/users/{user} ........................................ admin.users.update › Admin\UserController@update
+  DELETE          admin/users/{user} ...................................... admin.users.destroy › Admin\UserController@destroy
+  GET|HEAD        admin/users/{user}/edit ....................................... admin.users.edit › Admin\UserController@edit
+  GET|HEAD        admin/users/{user}/qrcode ................................. admin.users.qrcode › Admin\UserController@qrcode
+
+                                                                                                           Showing [60] routes
+
+
+=== ROUTES API ===
+
+   ERROR  Your application doesn't have any routes matching the given criteria.  
+
+
+=== ANALYSE FICHIER WEB.PHP ===
+<?php
+
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    return redirect('/login');
+});
+
+// REDIRECTION: dashboard -> admin/dashboard (pour Breeze)
+Route::get('/dashboard', function () {
+    return redirect('/admin/dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
+
+// Charger les routes admin
+require __DIR__.'/admin.php';
+
+=== ANALYSE FICHIER ADMIN.PHP ===
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\EcoleController;
+use App\Http\Controllers\Admin\CoursController;
+use App\Http\Controllers\Admin\CeintureController;
+use App\Http\Controllers\Admin\SeminaireController;
+use App\Http\Controllers\Admin\PaiementController;
+use App\Http\Controllers\Admin\PresenceController;
+use App\Http\Controllers\Admin\InscriptionSeminaireController;
+
+/*
+|--------------------------------------------------------------------------
+| Routes Administrateur - Laravel 12.19
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard principal
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    
+    // Gestion des utilisateurs
+    Route::resource('users', UserController::class);
+    Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
+    Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+    
+    // Gestion des écoles
+    Route::resource('ecoles', EcoleController::class);
+    
+    // Gestion des cours
+    Route::resource('cours', CoursController::class);
+    
+    // Gestion des ceintures - ROUTES SPÉCIALES EN PREMIER
+    Route::get('ceintures/types', [CeintureController::class, 'types'])->name('ceintures.types');
+    Route::match(['get', 'post'], 'ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');
+    
+    // Gestion des ceintures - RESOURCE APRÈS
+    Route::resource('ceintures', CeintureController::class);
+    
+    // Gestion des séminaires
+    Route::resource('seminaires', SeminaireController::class);
+    Route::match(['get', 'post'], 'seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('seminaires.inscrire');
+    
+    // Gestion des paiements
+    Route::resource('paiements', PaiementController::class);
+    
+    // Gestion des présences
+    Route::resource('presences', PresenceController::class);
+    
+    // Gestion des inscriptions aux séminaires
+    Route::resource('inscriptions-seminaires', InscriptionSeminaireController::class)->only(['index', 'destroy']);
+    
+    // Logs et monitoring (accès restreint)
+    Route::get('logs', function() {
+        abort_unless(auth()->user()->hasRole('superadmin'), 403);
+        return view('admin.logs.index');
+    })->name('logs.index');
+    
+    Route::get('logs/{log}', function($log) {
+        abort_unless(auth()->user()->hasRole('superadmin'), 403);
+        return view('admin.logs.show', compact('log'));
+    })->name('logs.show');
+    
+});
+
