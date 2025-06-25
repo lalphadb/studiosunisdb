@@ -17,7 +17,7 @@ class CeintureAttributionMasseRequest extends FormRequest
             'ceinture_id' => ['required', 'exists:ceintures,id'],
             'ceinture_nom' => ['required', 'string'],
             'date_obtention' => ['required', 'date', 'before_or_equal:today'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'commentaires' => ['nullable', 'string', 'max:1000'],
             'attributions' => ['required', 'array', 'min:1'],
             'attributions.*.user_id' => ['required', 'exists:users,id'],
         ];

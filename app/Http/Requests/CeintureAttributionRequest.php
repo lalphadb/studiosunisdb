@@ -18,7 +18,7 @@ class CeintureAttributionRequest extends FormRequest
             'user_id' => ['required', 'exists:users,id'],
             'ceinture_id' => ['required', 'exists:ceintures,id'],
             'date_obtention' => ['required', 'date', 'before_or_equal:today'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'commentaires' => ['nullable', 'string', 'max:1000'],
             'valide' => ['boolean'],
         ];
     }
@@ -35,3 +35,5 @@ class CeintureAttributionRequest extends FormRequest
         ];
     }
 }
+            'examinateur' => ['nullable', 'string', 'max:255'],
+            'commentaires' => ['nullable', 'string', 'max:1000'],
