@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header avec actions -->
+    <!-- Header avec actions - DÉGRADÉ ORANGE COMME STANDARD -->
     <div class="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
@@ -23,10 +23,11 @@
                     </svg>
                     Attribution Individuelle
                 </a>
+                <!-- BOUTON ATTRIBUTION EN MASSE AVEC DÉGRADÉ -->
                 <a href="{{ route('admin.ceintures.create-masse') }}" 
-                   class="bg-white text-yellow-600 hover:bg-yellow-50 px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center">
+                   class="bg-gradient-to-r from-white to-yellow-50 text-orange-600 hover:from-yellow-50 hover:to-orange-50 px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center shadow-lg">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                     Attribution en Masse
                 </a>
@@ -34,11 +35,11 @@
         </div>
     </div>
 
-    <!-- Statistiques -->
+    <!-- Statistiques avec dégradés colorés -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
             <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
                     </svg>
@@ -52,7 +53,7 @@
         
         <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
             <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-emerald-600">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -66,7 +67,7 @@
         
         <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
             <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
@@ -80,7 +81,7 @@
         
         <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
             <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-600">
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-600">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
@@ -148,7 +149,7 @@
 
             <!-- Boutons -->
             <div class="flex items-end space-x-2">
-                <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                <button type="submit" class="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
@@ -161,9 +162,9 @@
         </form>
     </div>
 
-    <!-- Liste des attributions -->
+    <!-- Liste des attributions avec header dégradé orange -->
     <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-        <div class="bg-yellow-600 px-6 py-4">
+        <div class="bg-gradient-to-r from-yellow-500 to-orange-600 px-6 py-4">
             <h3 class="text-lg font-semibold text-white flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
@@ -179,7 +180,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Membre</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Ceinture</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Instructeur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Examinateur</th>
                         @if(auth()->user()->hasRole('superadmin'))
                         <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">École</th>
                         @endif
@@ -216,22 +217,22 @@
                             <div class="text-sm text-slate-400">{{ $attribution->date_obtention->diffForHumans() }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $attribution->instructeur->name ?? 'Non renseigné' }}</div>
+                            <div class="text-sm text-white">{{ $attribution->examinateur ?? 'Non renseigné' }}</div>
                             @if($attribution->examen_id)
                             <div class="text-xs text-blue-400">Examen groupé</div>
                             @endif
                         </td>
                         @if(auth()->user()->hasRole('superadmin'))
                         <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $attribution->ecole->nom }}</div>
-                            <div class="text-sm text-slate-400">{{ $attribution->ecole->ville }}</div>
+                            <div class="text-sm text-white">{{ $attribution->user->ecole->nom ?? 'Non assignée' }}</div>
+                            <div class="text-sm text-slate-400">{{ $attribution->user->ecole->ville ?? '' }}</div>
                         </td>
                         @endif
                         <td class="px-6 py-4">
                             <div class="flex items-center space-x-2">
                                 <!-- Bouton Modifier -->
                                 <a href="{{ route('admin.ceintures.edit', $attribution) }}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white transition-colors duration-200"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white transition-colors duration-200"
                                    title="Modifier">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
