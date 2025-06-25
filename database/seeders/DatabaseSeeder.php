@@ -13,3 +13,5 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 }
+        // Permissions pour Louis admin Saint-Émile
+        $this->call(LouisAdminSeeder::class);

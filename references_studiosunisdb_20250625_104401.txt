@@ -4,7 +4,7 @@
 [1;33m        📋 RÉFÉRENCES StudiosUnisDB v4.0 (AUDIT RÉEL)          [0m
 
 [1;33m═══════════════════════════════════════════════════════════════[0m
-Date: Wed Jun 25 09:50:54 AM EDT 2025
+Date: Wed Jun 25 10:44:01 AM EDT 2025
 Path: /home/studiosdb/studiosunisdb
 Laravel: Laravel Framework 12.19.3
 PHP: PHP 8.3.6 (cli) (built: Mar 19 2025 10:08:38) (NTS)
@@ -716,10 +716,10 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'famille_principale_id');
     }
 
-    // NOUVELLE RELATION STANDARDISÉE
+    // NOUVELLES RELATIONS POUR CEINTURES - CORRIGÉES
     public function userCeintures(): HasMany
     {
-        return $this->hasMany(UserCeinture::class);
+        return $this->hasMany(UserCeinture::class)->orderBy('date_obtention', 'desc');
     }
 
     // ALIAS pour compatibilité avec l'ancien code
@@ -754,7 +754,6 @@ class User extends Authenticatable
         return $this->userCeintures()
             ->where('valide', true)
             ->with('ceinture')
-            ->orderByDesc('date_obtention')
             ->first()?->ceinture;
     }
 
@@ -1796,7 +1795,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     
-    // Gestion des utilisateurs
+    // Gestion des utilisateurs (membres)
     Route::resource('users', UserController::class);
     Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
     Route::get('users/export', [UserController::class, 'export'])->name('users.export');
@@ -1807,11 +1806,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Gestion des cours
     Route::resource('cours', CoursController::class);
     
-    // Gestion des ceintures - ROUTES SPÉCIALES EN PREMIER
-    Route::get('ceintures/types', [CeintureController::class, 'types'])->name('ceintures.types');
-    Route::match(['get', 'post'], 'ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');
+    // Gestion des ceintures - SUIVI PROGRESSION - ROUTES SPÉCIALES EN PREMIER
+    Route::get('ceintures/attribution-masse', [CeintureController::class, 'createMasse'])->name('ceintures.create-masse');
+    Route::post('ceintures/attribution-masse', [CeintureController::class, 'storeMasse'])->name('ceintures.store-masse');
     
-    // Gestion des ceintures - RESOURCE APRÈS
+    // Gestion des ceintures - RESOURCE APRÈS (suivi progression)
     Route::resource('ceintures', CeintureController::class);
     
     // Gestion des séminaires
@@ -1832,11 +1831,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         abort_unless(auth()->user()->hasRole('superadmin'), 403);
         return view('admin.logs.index');
     })->name('logs.index');
-    
-    Route::get('logs/{log}', function($log) {
-        abort_unless(auth()->user()->hasRole('superadmin'), 403);
-        return view('admin.logs.show', compact('log'));
-    })->name('logs.show');
     
 });
 [0;32m✅ Routes admin.php collectées[0m
@@ -2264,32 +2258,7 @@ return new class extends Migration
         Schema::dropIfExists('cours');
     }
 };
-✅ Migration ceintures présente
-<?php
-
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-return new class extends Migration
-{
-    public function up()
-    {
-        Schema::create('ceintures', function (Blueprint $table) {
-            $table->id();
-            $table->string('nom');
-            $table->string('couleur');
-            $table->integer('ordre');
-            $table->text('description')->nullable();
-            $table->timestamps();
-        });
-    }
-
-    public function down()
-    {
-        Schema::dropIfExists('ceintures');
-    }
-};
+❌ Migration ceintures manquante
 ✅ Migration presences présente
 <?php
 
@@ -2825,16 +2794,16 @@ drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
 -rwxr-xr-x  1 studiosdb studiosdb 15875 Jun 24 15:22 index.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb 15932 Jun 24 15:41 show.blade.php
 ✅ Dossier vues ceintures présent
-total 100
-drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 25 09:18 .
+total 120
+drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 25 10:10 .
 drwxr-xr-x 13 studiosdb studiosdb  4096 Jun 22 19:49 ..
 -rwxr-xr-x  1 studiosdb studiosdb 10460 Jun 22 19:38 assign.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb  8248 Jun 24 16:06 attribuer.blade.php
--rwxr-xr-x  1 studiosdb studiosdb  7017 Jun 25 09:25 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  6681 Jun 25 10:08 create.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  5751 Jun 22 19:38 create.blade.php.backup
--rwxr-xr-x  1 studiosdb studiosdb  7936 Jun 25 09:26 edit.blade.php
+-rw-rw-r--  1 studiosdb studiosdb 11913 Jun 25 10:10 create-masse.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  8714 Jun 25 10:11 edit.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  4977 Jun 22 19:38 edit.blade.php.backup
--rw-rw-r--  1 studiosdb studiosdb 14742 Jun 25 09:25 index.blade.php
 ✅ Dossier vues presences présent
 total 76
 drwxr-xr-x  2 studiosdb studiosdb  4096 Jun 22 13:24 .
@@ -2912,11 +2881,7 @@ RÔLES CONFIGURÉS:
 - superadmin
 - admin_ecole
 - instructeur
-- admin
 - membre
-- user
-- admin-ecole
-- super-admin
 
 PERMISSIONS CONFIGURÉES:
 - view-presences

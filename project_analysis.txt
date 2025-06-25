@@ -1,5 +1,5 @@
 ================================================
-ANALYSE PROJET LARAVEL - Tue Jun 24 12:46:43 EDT 2025
+ANALYSE PROJET LARAVEL - Wed Jun 25 10:43:49 EDT 2025
 ================================================
 
 🎨 FRAMEWORK CSS DÉTECTÉ:
@@ -21,9 +21,9 @@ Route file: routes/api.php
 Route file: routes/admin.php
    ✅ Contient routes admin
    Structure détectée:
-17:Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
-20:    Route::get('/', [DashboardController::class, 'index'])->name('home');
-21:    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+20:Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+23:    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+24:    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 Route file: routes/web.php
    ✅ Contient routes admin
    Structure détectée:
@@ -39,15 +39,15 @@ Migrations trouvées:
    - Table: cache (0001_01_01_000001_create_cache_table.php)
    - Table: jobs (0001_01_01_000002_create_jobs_table.php)
    - Table: ecoles (2025_06_18_200100_create_ecoles_table.php)
-   - Table: ceintures (2025_06_18_200200_create_ceintures_table.php)
    - Table: cours (2025_06_18_200500_create_cours_table.php)
    - Table: seminaires (2025_06_18_200600_create_seminaires_table.php)
    - Table: cours_horaires (2025_06_18_200700_create_cours_horaires_table.php)
-   - Table: membre_ceintures (2025_06_18_200800_create_membre_ceintures_table.php)
    - Table: inscriptions_cours (2025_06_18_200900_create_inscriptions_cours_table.php)
    - Table: inscriptions_seminaires (2025_06_18_201000_create_inscriptions_seminaires_table.php)
    - Table: presences (2025_06_18_201100_create_presences_table.php)
    - Table: paiements (2025_06_18_201200_create_paiements_table.php)
+   - Table: membre_ceintures (2025_06_25_100060_migrate_and_cleanup_ceintures.php)
+   - Table: membre_ceintures (2025_06_25_100070_migrate_ceintures_correct_columns.php)
 
 🔐 PERMISSIONS RÉELLES:
 ----------------------
@@ -83,13 +83,13 @@ Seeder: PermissionsSeeder.php
      'create-ecole'
      'edit-ecole'
      'delete-ecole'
-     'view-membres'
+     'view-users'
    Rôles trouvés:
-     'superadmin'
-     'admin'
-     'membre'
-     'view-membres'
-     'create-membre'
+     'view-users'
+     'create-user'
+     'edit-user'
+     'delete-user'
+     'super-admin'
 Seeder: RestoreBaseDataSeeder.php
    Permissions trouvées:
      'view-dashboard'
@@ -143,6 +143,19 @@ Seeder: FinalRepairSeeder.php
      'edit-user'
      'delete-user'
      'superadmin'
+Seeder: StandardPermissionsSeeder.php
+   Permissions trouvées:
+     'viewAny'
+     'view'
+     'create'
+     'delete'
+     'viewAny'
+   Rôles trouvés:
+     'users'
+     'admin-access'
+     'superadmin'
+     'admin_ecole'
+     'viewAny-users'
 Seeder: PresencePermissionSeeder.php
    Permissions trouvées:
      'presence.view'
@@ -154,6 +167,14 @@ Seeder: PresencePermissionSeeder.php
      'superadmin'
      'admin'
 Seeder: EcoleSeeder.php
+Seeder: CleanRolesSeeder.php
+   Permissions trouvées:
+   Rôles trouvés:
+     'admin-ecole'
+     'super-admin'
+     'membre'
+     'user'
+     'user'
 Seeder: RolePermissionSeeder.php
    Permissions trouvées:
      'view-users'
@@ -167,6 +188,7 @@ Seeder: RolePermissionSeeder.php
      'edit-user'
      'delete-user'
      'export-users'
+Seeder: EcolesSeeder.php
 Seeder: PaiementPermissionsSeeder.php
    Permissions trouvées:
      'view-paiements'
@@ -182,6 +204,7 @@ Seeder: UsersTableSeeder.php
      'super-admin'
      'admin-ecole'
 Seeder: DatabaseSeeder.php
+   Permissions trouvées:
 Seeder: AdminUserSeeder.php
    Permissions trouvées:
      'view-dashboard'
@@ -207,6 +230,19 @@ Seeder: CompletePermissionsSeeder.php
      'edit-user'
      'delete-user'
      'export-users'
+Seeder: CeinturesPermissionsSeeder.php
+   Permissions trouvées:
+     'viewAny-ceintures'
+     'view-ceintures'
+     'create-ceintures'
+     'delete-ceintures'
+     'viewAny-ceintures'
+   Rôles trouvés:
+     'admin_ecole'
+     'admin-ecole'
+     'superadmin'
+     'super-admin'
+     'admin'
 Seeder: RichTestDataSeeder.php
    Rôles trouvés:
      'admin'
@@ -216,17 +252,16 @@ Seeder: CoursTestDataSeeder.php
      'membre_id'
 Seeder: FixPermissionsSeeder.php
    Permissions trouvées:
-     'view-ceintures'
-     'create-ceinture'
-     'edit-ceinture'
-     'delete-ceinture'
-     'view-presences'
+     'viewAny-users'
+     'view-users'
+     'create-users'
+     'delete-users'
    Rôles trouvés:
-     'view-membres'
-     'superadmin'
-     'admin'
-     'membre'
-     'view-membres'
+     'viewAny-users'
+     'view-users'
+     'create-users'
+     'update-users'
+     'delete-users'
 Seeder: PermissionSeeder.php
    Permissions trouvées:
      'view-presences'
@@ -251,30 +286,31 @@ Contrôleur: Admin/LogController.php
    Méthodes: index 
 Contrôleur: Admin/SeminaireController.php
    ✅ Middleware Laravel 12 (statique)
-   Méthodes: index show create store edit 
+   Méthodes: index create store show edit 
 Contrôleur: Admin/CoursController.php
    ✅ Middleware Laravel 12 (statique)
    Méthodes: index create store show edit 
 Contrôleur: Admin/InscriptionSeminaireController.php
-   Méthodes: index create store update destroy 
+   ✅ Middleware Laravel 12 (statique)
+   Méthodes: index destroy 
 Contrôleur: Admin/TelescopeController.php
    ✅ Middleware Laravel 12 (statique)
    Méthodes: stats clear getTelescopeStats 
 Contrôleur: Admin/PresenceController.php
    ✅ Middleware Laravel 12 (statique)
-   Méthodes: index show create store scanQR 
+   Méthodes: index create store show edit 
 Contrôleur: Admin/PaiementController.php
    ✅ Middleware Laravel 12 (statique)
-   Méthodes: index show create store 
+   Méthodes: index create store show edit 
 Contrôleur: Admin/EcoleController.php
    ✅ Middleware Laravel 12 (statique)
    Méthodes: index create store show edit 
 Contrôleur: Admin/CeintureController.php
    ✅ Middleware Laravel 12 (statique)
-   Méthodes: index create store show edit 
+   Méthodes: index create store createMasse storeMasse 
 Contrôleur: Admin/DashboardController.php
    ✅ Middleware Laravel 12 (statique)
-   Méthodes: index superadminDashboard adminDashboard 
+   Méthodes: index 
 Contrôleur: ProfileController.php
    Méthodes: edit update destroy 
 Contrôleur: Controller.php

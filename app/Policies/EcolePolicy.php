@@ -9,42 +9,34 @@ class EcolePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
     }
 
     public function view(User $user, Ecole $ecole): bool
     {
-        if ($user->hasRole('super-admin')) {
-            return true;
-        }
-
-        if ($user->hasRole('admin-ecole') && $user->ecole_id) {
+        if ($user->hasRole('superadmin')) return true;
+        if ($user->hasRole('admin_ecole')) {
             return $user->ecole_id === $ecole->id;
         }
-
         return false;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole('superadmin');
     }
 
     public function update(User $user, Ecole $ecole): bool
     {
-        if ($user->hasRole('super-admin')) {
-            return true;
-        }
-
-        if ($user->hasRole('admin-ecole') && $user->ecole_id) {
+        if ($user->hasRole('superadmin')) return true;
+        if ($user->hasRole('admin_ecole')) {
             return $user->ecole_id === $ecole->id;
         }
-
         return false;
     }
 
-    public function delete(User $user, Ecole $ecole): bool
+    public function delete(User $user): bool
     {
-        return $user->hasRole('super-admin');
+        return $user->hasRole('superadmin');
     }
 }

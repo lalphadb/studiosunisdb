@@ -3,126 +3,73 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class CompletePermissionsSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Réinitialiser les permissions cached
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-
-        // Supprimer les anciennes permissions si elles existent
-        Permission::whereIn('name', [
-            // Dashboard
-            'view-dashboard',
+        // 1. CRÉER TOUTES LES 38 PERMISSIONS
+        $permissions = [
+            // Users (8)
+            'viewAny-users', 'view-users', 'create-users', 'update-users', 'delete-users', 'export-users', 'assign-roles', 'manage-users',
             
-            // Users
-            'view-users', 'create-user', 'edit-user', 'delete-user', 'export-users',
+            // Écoles (5)  
+            'viewAny-ecoles', 'view-ecoles', 'create-ecoles', 'update-ecoles', 'delete-ecoles',
             
-            // Écoles  
-            'view-ecoles', 'create-ecole', 'edit-ecole', 'delete-ecole',
+            // Cours (6)
+            'viewAny-cours', 'view-cours', 'create-cours', 'update-cours', 'delete-cours', 'manage-cours',
             
-            // Ceintures
-            'view-ceintures', 'create-ceinture', 'edit-ceinture', 'delete-ceinture', 'assign-ceintures',
+            // Ceintures (6)
+            'viewAny-ceintures', 'view-ceintures', 'create-ceintures', 'update-ceintures', 'delete-ceintures', 'assign-ceintures',
             
-            // Cours
-            'view-cours', 'create-cours', 'edit-cours', 'delete-cours',
+            // Présences (5)
+            'viewAny-presences', 'view-presences', 'create-presences', 'update-presences', 'delete-presences',
             
-            // Modules futurs
-            'view-seminaires', 'create-seminaire', 'edit-seminaire', 'delete-seminaire',
-            'view-presences', 'create-presence', 'edit-presence', 'delete-presence',
-            'view-paiements', 'create-paiement', 'edit-paiement', 'delete-paiement',
-        ])->delete();
-
-        // Permissions Dashboard
-        Permission::create(['name' => 'view-dashboard', 'guard_name' => 'web']);
-
-        // Permissions Users
-        $userPermissions = [
-            'view-users', 'create-user', 'edit-user', 'delete-user', 'export-users'
-        ];
-        foreach ($userPermissions as $permission) {
-            Permission::create(['name' => $permission, 'guard_name' => 'web']);
-        }
-
-        // Permissions Écoles
-        $ecolePermissions = [
-            'view-ecoles', 'create-ecole', 'edit-ecole', 'delete-ecole'
-        ];
-        foreach ($ecolePermissions as $permission) {
-            Permission::create(['name' => $permission, 'guard_name' => 'web']);
-        }
-
-        // Permissions Ceintures
-        $ceinturePermissions = [
-            'view-ceintures', 'create-ceinture', 'edit-ceinture', 'delete-ceinture', 'assign-ceintures'
-        ];
-        foreach ($ceinturePermissions as $permission) {
-            Permission::create(['name' => $permission, 'guard_name' => 'web']);
-        }
-
-        // Permissions Cours
-        $coursPermissions = [
-            'view-cours', 'create-cours', 'edit-cours', 'delete-cours'
-        ];
-        foreach ($coursPermissions as $permission) {
-            Permission::create(['name' => $permission, 'guard_name' => 'web']);
-        }
-
-        // Permissions modules futurs
-        $futureModules = [
-            'seminaires' => ['view-seminaires', 'create-seminaire', 'edit-seminaire', 'delete-seminaire'],
-            'presences' => ['view-presences', 'create-presence', 'edit-presence', 'delete-presence'],
-            'paiements' => ['view-paiements', 'create-paiement', 'edit-paiement', 'delete-paiement'],
+            // Séminaires (5)
+            'viewAny-seminaires', 'view-seminaires', 'create-seminaires', 'update-seminaires', 'delete-seminaires',
+            
+            // Paiements (5)
+            'viewAny-paiements', 'view-paiements', 'create-paiements', 'update-paiements', 'delete-paiements',
         ];
 
-        foreach ($futureModules as $modulePermissions) {
-            foreach ($modulePermissions as $permission) {
-                Permission::create(['name' => $permission, 'guard_name' => 'web']);
-            }
+        // 2. CRÉER LES PERMISSIONS
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Supprimer les anciens rôles s'ils existent
-        Role::whereIn('name', ['super-admin', 'admin', 'instructeur', 'membre'])->delete();
+        // 3. CRÉER/METTRE À JOUR LES RÔLES AVEC UNDERSCORES
+        $superadmin = Role::firstOrCreate(['name' => 'superadmin']);
+        $adminEcole = Role::firstOrCreate(['name' => 'admin_ecole']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $instructeur = Role::firstOrCreate(['name' => 'instructeur']);
+        $membre = Role::firstOrCreate(['name' => 'membre']);
 
-        // Créer le rôle Super Admin et lui donner toutes les permissions
-        $superAdminRole = Role::create(['name' => 'super-admin', 'guard_name' => 'web']);
-        $superAdminRole->givePermissionTo(Permission::all());
+        // 4. ASSIGNER TOUTES LES PERMISSIONS À admin_ecole
+        $adminEcole->syncPermissions($permissions);
 
-        // Créer le rôle Admin
-        $adminRole = Role::create(['name' => 'admin', 'guard_name' => 'web']);
-        $adminRole->givePermissionTo([
-            'view-dashboard',
-            'view-users', 'create-user', 'edit-user', 'export-users',
-            'view-ecoles', 'create-ecole', 'edit-ecole',
-            'view-ceintures', 'create-ceinture', 'edit-ceinture', 'assign-ceintures',
-            'view-cours', 'create-cours', 'edit-cours',
-            'view-seminaires', 'create-seminaire', 'edit-seminaire',
-            'view-presences', 'create-presence', 'edit-presence',
-            'view-paiements', 'create-paiement', 'edit-paiement'
-        ]);
+        // 5. ASSIGNER TOUTES LES PERMISSIONS À superadmin
+        $superadmin->syncPermissions($permissions);
 
-        // Créer le rôle Instructeur
-        $instructeurRole = Role::create(['name' => 'instructeur', 'guard_name' => 'web']);
-        $instructeurRole->givePermissionTo([
-            'view-dashboard',
-            'view-users',
-            'view-cours', 'edit-cours',
-            'view-ceintures', 'assign-ceintures',
-            'view-presences', 'create-presence', 'edit-presence'
-        ]);
+        // 6. ASSIGNER PERMISSIONS LIMITÉES À admin
+        $adminPermissions = [
+            'viewAny-users', 'view-users', 'create-users', 'update-users',
+            'viewAny-cours', 'view-cours', 'create-cours', 'update-cours',
+            'viewAny-presences', 'view-presences', 'create-presences', 'update-presences',
+            'viewAny-ceintures', 'view-ceintures', 'assign-ceintures',
+        ];
+        $admin->syncPermissions($adminPermissions);
 
-        // Créer le rôle Membre (utilisateur standard)
-        $membreRole = Role::create(['name' => 'membre', 'guard_name' => 'web']);
-        $membreRole->givePermissionTo([
-            'view-dashboard'
-        ]);
+        // 7. METTRE À JOUR LOUIS
+        $user = User::where('email', 'louis@4lb.ca')->first();
+        if ($user) {
+            $user->syncRoles(['admin_ecole']);
+            $this->command->info("✅ Louis@4lb.ca: {$user->getAllPermissions()->count()} permissions assignées");
+        }
 
-        $this->command->info('✅ Permissions et rôles créés avec succès !');
-        $this->command->info('📊 Permissions créées: ' . Permission::count());
-        $this->command->info('🎭 Rôles créés: ' . Role::count());
+        $this->command->info("✅ Permissions créées: " . count($permissions));
+        $this->command->info("✅ Rôles mis à jour avec underscores");
     }
 }

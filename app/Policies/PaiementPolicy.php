@@ -9,16 +9,14 @@ class PaiementPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
     }
 
     public function view(User $user, Paiement $paiement): bool
     {
-        if ($user->hasRole('super-admin')) {
-            return true;
-        }
+        if ($user->hasRole('superadmin')) return true;
 
-        if ($user->hasAnyRole(['admin-ecole', 'admin']) && $user->ecole_id) {
+        if ($user->hasAnyRole(['admin_ecole', 'admin'])) {
             return $user->ecole_id === $paiement->ecole_id;
         }
 
@@ -27,16 +25,14 @@ class PaiementPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super-admin', 'admin-ecole', 'admin']);
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'admin']);
     }
 
     public function update(User $user, Paiement $paiement): bool
     {
-        if ($user->hasRole('super-admin')) {
-            return true;
-        }
+        if ($user->hasRole('superadmin')) return true;
 
-        if ($user->hasAnyRole(['admin-ecole', 'admin']) && $user->ecole_id) {
+        if ($user->hasAnyRole(['admin_ecole', 'admin'])) {
             return $user->ecole_id === $paiement->ecole_id;
         }
 
@@ -45,6 +41,12 @@ class PaiementPolicy
 
     public function delete(User $user, Paiement $paiement): bool
     {
-        return $this->update($user, $paiement);
+        if ($user->hasRole('superadmin')) return true;
+
+        if ($user->hasAnyRole(['admin_ecole', 'admin'])) {
+            return $user->ecole_id === $paiement->ecole_id;
+        }
+
+        return false;
     }
 }
