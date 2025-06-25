@@ -2,46 +2,57 @@
 
 namespace App\Policies;
 
-use App\Models\UserCeinture;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Models\UserCeinture;
 
 class UserCeinturePolicy
 {
-    use HandlesAuthorization;
-
     public function viewAny(User $user): bool
     {
-        return $user->can('view-ceintures');
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'instructeur']);
     }
 
-    public function view(User $user, UserCeinture $membreCeinture): bool
+    public function view(User $user, UserCeinture $userCeinture): bool
     {
         if ($user->hasRole('superadmin')) {
             return true;
         }
-        // Un admin/instructeur ne peut voir que les attributions de son école
-        return $user->ecole_id === $membreCeinture->user->ecole_id;
+
+        if ($user->hasAnyRole(['admin_ecole', 'instructeur'])) {
+            return $user->ecole_id === $userCeinture->ecole_id;
+        }
+
+        return false;
     }
 
     public function create(User $user): bool
     {
-        return $user->can('create-ceinture');
+        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'instructeur']);
     }
 
-    public function update(User $user, UserCeinture $membreCeinture): bool
+    public function update(User $user, UserCeinture $userCeinture): bool
     {
         if ($user->hasRole('superadmin')) {
             return true;
         }
-        return $user->can('edit-ceinture') && ($user->ecole_id === $membreCeinture->user->ecole_id);
+
+        if ($user->hasAnyRole(['admin_ecole', 'instructeur'])) {
+            return $user->ecole_id === $userCeinture->ecole_id;
+        }
+
+        return false;
     }
 
-    public function delete(User $user, UserCeinture $membreCeinture): bool
+    public function delete(User $user, UserCeinture $userCeinture): bool
     {
-         if ($user->hasRole('superadmin')) {
+        if ($user->hasRole('superadmin')) {
             return true;
         }
-        return $user->can('delete-ceinture') && ($user->ecole_id === $membreCeinture->user->ecole_id);
+
+        if ($user->hasRole('admin_ecole')) {
+            return $user->ecole_id === $userCeinture->ecole_id;
+        }
+
+        return false;
     }
 }

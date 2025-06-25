@@ -114,3 +114,24 @@ class User extends Authenticatable
         return $this->roles->first()?->name ?? 'user';
     }
 }
+
+    // NOUVELLES RELATIONS POUR CEINTURES
+    public function userCeintures(): HasMany
+    {
+        return $this->hasMany(UserCeinture::class)->orderBy('date_obtention', 'desc');
+    }
+
+    // ALIAS pour compatibilité avec l'ancien code
+    public function membreCeintures(): HasMany
+    {
+        return $this->userCeintures();
+    }
+
+    // ACCESSEUR - Ceinture actuelle
+    public function getCeintureActuelleAttribute()
+    {
+        return $this->userCeintures()
+            ->where('valide', true)
+            ->with('ceinture')
+            ->first()?->ceinture;
+    }
