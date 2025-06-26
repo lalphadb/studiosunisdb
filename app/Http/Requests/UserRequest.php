@@ -19,11 +19,12 @@ class UserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
-            'password' => $this->isMethod('POST') ? ['required', 'string', 'min:8'] : ['nullable', 'string', 'min:8'],
-            'ecole_id' => ['nullable', 'exists:ecoles,id'],
-            'role' => ['required', 'string', Rule::in($this->getAvailableRoles())],
+            'password' => $this->isMethod('POST') ? ['required', 'string', 'min:8', 'confirmed'] : ['nullable', 'string', 'min:8', 'confirmed'],
+            'ecole_id' => ['required', 'exists:ecoles,id'],
+            'famille_principale_id' => ['nullable', 'exists:users,id'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'date_naissance' => ['nullable', 'date', 'before:today'],
+            'date_inscription' => ['nullable', 'date'],
             'sexe' => ['nullable', Rule::in(['M', 'F', 'Autre'])],
             'adresse' => ['nullable', 'string', 'max:500'],
             'ville' => ['nullable', 'string', 'max:100'],
@@ -44,26 +45,24 @@ class UserRequest extends FormRequest
             'email.unique' => 'Cette adresse email est déjà utilisée.',
             'password.required' => 'Le mot de passe est obligatoire.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-            'role.required' => 'Le rôle est obligatoire.',
-            'role.in' => 'Le rôle sélectionné n\'est pas valide.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+            'ecole_id.required' => 'L\'école est obligatoire.',
             'ecole_id.exists' => 'L\'école sélectionnée n\'existe pas.',
             'date_naissance.before' => 'La date de naissance doit être antérieure à aujourd\'hui.',
             'sexe.in' => 'Le sexe sélectionné n\'est pas valide.',
         ];
     }
 
-    private function getAvailableRoles(): array
+    protected function prepareForValidation()
     {
-        $user = auth()->user();
-        
-        if ($user->hasRole('superadmin')) {
-            return ['user', 'instructeur', 'admin', 'admin_ecole', 'superadmin'];
-        } elseif ($user->hasRole('admin_ecole')) {
-            return ['user', 'instructeur', 'admin'];
-        } elseif ($user->hasRole('admin')) {
-            return ['user', 'instructeur'];
+        // Assigner l'école automatiquement pour admin_ecole
+        if (auth()->user()->hasRole('admin_ecole') && !$this->ecole_id) {
+            $this->merge(['ecole_id' => auth()->user()->ecole_id]);
         }
-
-        return ['user'];
+        
+        // Assigner date d'inscription par défaut
+        if ($this->isMethod('POST') && !$this->date_inscription) {
+            $this->merge(['date_inscription' => now()->format('Y-m-d')]);
+        }
     }
 }

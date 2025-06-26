@@ -18,6 +18,7 @@ class CeintureAttributionRequest extends FormRequest
             'user_id' => ['required', 'exists:users,id'],
             'ceinture_id' => ['required', 'exists:ceintures,id'],
             'date_obtention' => ['required', 'date', 'before_or_equal:today'],
+            'examinateur' => ['nullable', 'string', 'max:255'],
             'commentaires' => ['nullable', 'string', 'max:1000'],
             'valide' => ['boolean'],
         ];
@@ -27,13 +28,13 @@ class CeintureAttributionRequest extends FormRequest
     {
         return [
             'user_id.required' => 'Le membre est obligatoire.',
-            'user_id.exists' => 'Ce membre n\'existe pas.',
+            'user_id.exists' => 'Le membre sélectionné n\'existe pas.',
             'ceinture_id.required' => 'La ceinture est obligatoire.',
-            'ceinture_id.exists' => 'Cette ceinture n\'existe pas.',
+            'ceinture_id.exists' => 'La ceinture sélectionnée n\'existe pas.',
             'date_obtention.required' => 'La date d\'obtention est obligatoire.',
-            'date_obtention.before_or_equal' => 'La date ne peut pas être dans le futur.',
+            'date_obtention.before_or_equal' => 'La date d\'obtention ne peut pas être dans le futur.',
+            'examinateur.max' => 'Le nom de l\'examinateur ne peut pas dépasser 255 caractères.',
+            'commentaires.max' => 'Les commentaires ne peuvent pas dépasser 1000 caractères.',
         ];
     }
 }
-            'examinateur' => ['nullable', 'string', 'max:255'],
-            'commentaires' => ['nullable', 'string', 'max:1000'],

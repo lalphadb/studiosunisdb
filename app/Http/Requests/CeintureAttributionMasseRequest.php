@@ -17,7 +17,7 @@ class CeintureAttributionMasseRequest extends FormRequest
             'ceinture_id' => ['required', 'exists:ceintures,id'],
             'ceinture_nom' => ['required', 'string'],
             'date_obtention' => ['required', 'date', 'before_or_equal:today'],
-            'commentaires' => ['nullable', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:1000'],
             'attributions' => ['required', 'array', 'min:1'],
             'attributions.*.user_id' => ['required', 'exists:users,id'],
         ];
@@ -27,9 +27,10 @@ class CeintureAttributionMasseRequest extends FormRequest
     {
         return [
             'ceinture_id.required' => 'La ceinture est obligatoire.',
-            'date_obtention.required' => 'La date d\'examen est obligatoire.',
-            'attributions.required' => 'Vous devez sélectionner au moins un membre.',
-            'attributions.min' => 'Vous devez sélectionner au moins un membre.',
+            'date_obtention.required' => 'La date d\'obtention est obligatoire.',
+            'date_obtention.before_or_equal' => 'La date ne peut pas être dans le futur.',
+            'attributions.required' => 'Au moins un membre doit être sélectionné.',
+            'attributions.min' => 'Au moins un membre doit être sélectionné.',
             'attributions.*.user_id.exists' => 'Un des membres sélectionnés n\'existe pas.',
         ];
     }

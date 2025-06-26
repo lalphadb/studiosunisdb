@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use App\Models\UserCeinture;
+use App\Policies\UserCeinturePolicy;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Models\Ecole;
@@ -27,6 +29,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        UserCeinture::class => UserCeinturePolicy::class,
         User::class => UserPolicy::class,
         Ecole::class => EcolePolicy::class,
         Cours::class => CoursPolicy::class,

@@ -241,9 +241,9 @@
             @endif
         </div>
     </div>
-
-    <!-- Actions rapides - CARTES PLUS PETITES -->
+  <!-- Actions rapides - BOUTONS CORRIGÉS -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Modifier Profil -->
         <a href="{{ route('admin.users.edit', $user) }}" 
            class="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center transition-colors block">
             <div class="text-2xl mb-2">✏️</div>
@@ -251,24 +251,28 @@
             <p class="text-blue-200 text-xs mt-1">Informations personnelles</p>
         </a>
 
-        <a href="#" 
+        <!-- Attribuer Ceinture - ROUTE CORRIGÉE -->
+        <a href="{{ route('admin.ceintures.create') }}?user_id={{ $user->id }}" 
            class="bg-orange-600 hover:bg-orange-700 text-white p-4 rounded-lg text-center transition-colors block">
             <div class="text-2xl mb-2">🥋</div>
             <h4 class="font-medium text-sm">Attribuer Ceinture</h4>
             <p class="text-orange-200 text-xs mt-1">Gestion des grades</p>
         </a>
 
-        <div class="bg-red-600 hover:bg-red-700 text-white p-4 rounded-lg text-center transition-colors cursor-pointer">
+        <!-- Ajouter Séminaire - ROUTE CORRIGÉE -->
+        <a href="{{ route('admin.seminaires.index') }}" 
+           class="bg-red-600 hover:bg-red-700 text-white p-4 rounded-lg text-center transition-colors block">
             <div class="text-2xl mb-2">🎯</div>
-            <h4 class="font-medium text-sm">Ajouter Séminaire</h4>
-            <p class="text-red-200 text-xs mt-1">Inscrire à un séminaire</p>
-        </div>
+            <h4 class="font-medium text-sm">Voir Séminaires</h4>
+            <p class="text-red-200 text-xs mt-1">Consulter séminaires disponibles</p>
+        </a>
 
-        <div class="bg-slate-600 hover:bg-slate-700 text-white p-4 rounded-lg text-center transition-colors cursor-pointer">
+        <!-- Présences -->
+        <a href="{{ route('admin.presences.index') }}?user_id={{ $user->id }}" 
+           class="bg-slate-600 hover:bg-slate-700 text-white p-4 rounded-lg text-center transition-colors block">
             <div class="text-2xl mb-2">📊</div>
             <h4 class="font-medium text-sm">Présences</h4>
             <p class="text-slate-300 text-xs mt-1">{{ $user->presences->count() ?? 0 }} présences</p>
-        </div>
+        </a>
     </div>
-</div>
 @endsection

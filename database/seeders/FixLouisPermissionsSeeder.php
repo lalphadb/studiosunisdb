@@ -13,7 +13,7 @@ class FixLouisPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Trouver ou créer l'école Saint-Émile
+        // Trouver ou créer l'école Saint-Émile
         $ecole = Ecole::firstOrCreate(
             ['nom' => 'Club de Karaté Saint-Émile'],
             [
@@ -28,56 +28,24 @@ class FixLouisPermissionsSeeder extends Seeder
             ]
         );
 
-        // 2. Créer/mettre à jour Louis
+        // Créer/mettre à jour Louis avec le bon mot de passe
         $user = User::updateOrCreate(
             ['email' => 'louis@4lb.ca'],
             [
                 'name' => 'Louis Admin Saint-Émile',
-                'password' => Hash::make('StEmile2025!'),
+                'password' => Hash::make('password123'),  // MOT DE PASSE CORRECT
                 'ecole_id' => $ecole->id,
                 'active' => true,
                 'email_verified_at' => now(),
             ]
         );
 
-        // 3. Créer le rôle admin_ecole s'il n'existe pas
-        $adminEcoleRole = Role::firstOrCreate(['name' => 'admin_ecole']);
-
-        // 4. PERMISSIONS COMPLÈTES pour admin_ecole
-        $permissions = [
-            // Users (membres)
-            'viewAny-users', 'view-users', 'create-users', 'update-users', 'delete-users',
-            
-            // Écoles  
-            'viewAny-ecoles', 'view-ecoles', 'update-ecoles',
-            
-            // Cours
-            'viewAny-cours', 'view-cours', 'create-cours', 'update-cours', 'delete-cours',
-            
-            // Ceintures
-            'viewAny-ceintures', 'view-ceintures', 'create-ceintures', 'update-ceintures', 'delete-ceintures',
-            
-            // Présences
-            'viewAny-presences', 'view-presences', 'create-presences', 'update-presences', 'delete-presences',
-            
-            // Séminaires
-            'viewAny-seminaires', 'view-seminaires', 'create-seminaires', 'update-seminaires', 'delete-seminaires',
-            
-            // Paiements
-            'viewAny-paiements', 'view-paiements', 'create-paiements', 'update-paiements', 'delete-paiements',
-        ];
-
-        // 5. Créer les permissions et les assigner au rôle
-        foreach ($permissions as $permission) {
-            $perm = Permission::firstOrCreate(['name' => $permission]);
-            $adminEcoleRole->givePermissionTo($perm);
-        }
-
-        // 6. Assigner le rôle à Louis
+        // Assigner le rôle admin_ecole
         $user->syncRoles(['admin_ecole']);
 
-        $this->command->info("✅ Louis@4lb.ca configuré avec TOUTES les permissions admin_ecole");
-        $this->command->info("🏫 École: {$ecole->nom} (ID: {$ecole->id})");
-        $this->command->info("🔑 Permissions assignées: " . count($permissions));
+        $this->command->info("✅ Louis@4lb.ca configuré");
+        $this->command->info("🏫 École: {$ecole->nom}");
+        $this->command->info("🔑 Mot de passe: password123");
+        $this->command->info("🎯 Permissions: " . $user->getAllPermissions()->count());
     }
 }

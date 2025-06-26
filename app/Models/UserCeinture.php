@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserCeinture extends Model
 {
@@ -13,43 +14,43 @@ class UserCeinture extends Model
 
     protected $fillable = [
         'user_id',
-        'ceinture_id', 
+        'ceinture_id',
         'date_obtention',
-        'ecole_id',
+        'examinateur',
+        'commentaires',
+        'valide',
         'instructeur_id',
         'examen_id',
-        'examinateur',     // Colonne existante
-        'commentaires',    // Colonne existante  
-        'valide',
+        'ecole_id',
     ];
 
     protected $casts = [
         'date_obtention' => 'date',
-        'valide' => 'boolean'
+        'valide' => 'boolean',
     ];
 
     // Relations
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function ceinture()
+    public function ceinture(): BelongsTo
     {
         return $this->belongsTo(Ceinture::class);
     }
 
-    public function ecole()
+    public function ecole(): BelongsTo
     {
         return $this->belongsTo(Ecole::class);
     }
 
-    public function instructeur()
+    public function instructeur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instructeur_id');
     }
 
-    // Scopes
+    // SCOPES MANQUANTS - AJOUT PROFESSIONNEL
     public function scopeForEcole($query, $ecoleId)
     {
         return $query->where('ecole_id', $ecoleId);
@@ -60,19 +61,19 @@ class UserCeinture extends Model
         return $query->where('date_obtention', '>=', now()->subDays($jours));
     }
 
-    public function scopeParExamen($query, $examenId)
+    public function scopeValides($query)
     {
-        return $query->where('examen_id', $examenId);
+        return $query->where('valide', true);
     }
 
-    // Accesseur pour compatibilité
-    public function getNotesAttribute()
+    public function scopeParCeinture($query, $ceintureId)
     {
-        return $this->commentaires;
+        return $query->where('ceinture_id', $ceintureId);
     }
 
-    public function setNotesAttribute($value)
+    public function scopeParAnnee($query, $annee = null)
     {
-        $this->attributes['commentaires'] = $value;
+        $annee = $annee ?? now()->year;
+        return $query->whereYear('date_obtention', $annee);
     }
 }

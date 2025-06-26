@@ -14,9 +14,6 @@ use Illuminate\Routing\Controllers\Middleware;
 
 class DashboardController extends Controller implements HasMiddleware
 {
-    /**
-     * Middleware Laravel 12.19 avec autorisation selon les Policies
-     */
     public static function middleware(): array
     {
         return [
@@ -35,7 +32,7 @@ class DashboardController extends Controller implements HasMiddleware
                 'total_users' => User::count(),
                 'total_ecoles' => Ecole::count(),
                 'total_cours' => Cours::count(),
-                'total_seminaires' => Seminaire::count(),
+                'total_seminaires' => Seminaire::count(), // PLUS DE WHERE ecole_id
                 'revenus_mois' => Paiement::where('statut', 'valide')
                     ->whereMonth('created_at', now()->month)
                     ->sum('montant_net'),
@@ -58,14 +55,14 @@ class DashboardController extends Controller implements HasMiddleware
             $stats = [
                 'total_users' => User::where('ecole_id', $ecole_id)->count(),
                 'total_cours' => Cours::where('ecole_id', $ecole_id)->count(),
-                'total_seminaires' => Seminaire::where('ecole_id', $ecole_id)->count(),
+                'total_seminaires' => Seminaire::count(), // SÉMINAIRES INTER-ÉCOLES - PAS DE FILTRE
                 'revenus_mois' => Paiement::where('ecole_id', $ecole_id)
                     ->where('statut', 'valide')
                     ->whereMonth('created_at', now()->month)
                     ->sum('montant_net'),
                 'users_actifs' => User::where('ecole_id', $ecole_id)->where('active', true)->count(),
                 'cours_actifs' => Cours::where('ecole_id', $ecole_id)->where('active', true)->count(),
-                'seminaires_a_venir' => Seminaire::where('ecole_id', $ecole_id)->where('date_debut', '>', now())->count(),
+                'seminaires_a_venir' => Seminaire::where('date_debut', '>', now())->count(),
             ];
             
             // Graphiques pour Admin École
@@ -205,8 +202,22 @@ class DashboardController extends Controller implements HasMiddleware
                 ];
             });
         
+        // Nouveaux séminaires (inter-écoles, donc visible pour tous)
+        $seminaires = Seminaire::orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function($seminaire) {
+                return [
+                    'type' => 'seminaire',
+                    'titre' => "Nouveau séminaire: {$seminaire->titre}",
+                    'date' => $seminaire->created_at,
+                    'url' => route('admin.seminaires.show', $seminaire),
+                ];
+            });
+        
         return $activites->merge($inscriptions)
             ->merge($paiements)
+            ->merge($seminaires)
             ->sortByDesc('date')
             ->take(10);
     }

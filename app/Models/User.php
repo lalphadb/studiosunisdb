@@ -62,14 +62,14 @@ class User extends Authenticatable
         return $this->hasMany(User::class, 'famille_principale_id');
     }
 
-    // NOUVELLES RELATIONS POUR CEINTURES - CORRIGÉES
+    // RELATIONS CEINTURES CORRIGÉES
     public function userCeintures(): HasMany
     {
         return $this->hasMany(UserCeinture::class)->orderBy('date_obtention', 'desc');
     }
 
     // ALIAS pour compatibilité avec l'ancien code
-    public function membreCeintures(): HasMany
+    public function membre_ceintures(): HasMany
     {
         return $this->userCeintures();
     }
@@ -94,15 +94,21 @@ class User extends Authenticatable
         return $this->hasMany(Paiement::class);
     }
 
-    // Accesseurs
-    public function getCeintureActuelleAttribute()
+    // MÉTHODES POUR CEINTURES
+    public function ceintureActuelle()
     {
         return $this->userCeintures()
             ->where('valide', true)
             ->with('ceinture')
-            ->first()?->ceinture;
+            ->first();
     }
 
+    public function getCeintureActuelleAttribute()
+    {
+        return $this->ceintureActuelle();
+    }
+
+    // Autres accesseurs
     public function getAgeAttribute()
     {
         return $this->date_naissance?->age;
@@ -110,6 +116,6 @@ class User extends Authenticatable
 
     public function getRolePrincipalAttribute()
     {
-        return $this->roles->first()?->name ?? 'user';
+        return $this->roles->first()?->name ?? 'membre';
     }
 }
