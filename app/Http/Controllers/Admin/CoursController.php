@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CoursRequest;
 use App\Models\Cours;
 use App\Models\Ecole;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -65,14 +66,21 @@ class CoursController extends Controller implements HasMiddleware
         $cours = $query->paginate(15)->withQueryString();
         $ecoles = $this->getEcolesForUser(auth()->user());
         
-        return view('admin.cours.index', compact('cours', 'ecoles'));
+        // AJOUT DES NIVEAUX POUR LES FILTRES
+        $niveaux = $this->getNiveauxDisponibles();
+        
+        return view('admin.cours.index', compact('cours', 'ecoles', 'niveaux'));
     }
 
     public function create()
     {
         $ecoles = $this->getEcolesForUser(auth()->user());
         
-        return view('admin.cours.create', compact('ecoles'));
+        // FIX: AJOUT DES VARIABLES MANQUANTES
+        $niveaux = $this->getNiveauxDisponibles();
+        $instructeurs = $this->getInstructeursDisponibles();
+        
+        return view('admin.cours.create', compact('ecoles', 'niveaux', 'instructeurs'));
     }
 
     public function store(CoursRequest $request)
@@ -101,7 +109,11 @@ class CoursController extends Controller implements HasMiddleware
     {
         $ecoles = $this->getEcolesForUser(auth()->user());
         
-        return view('admin.cours.edit', compact('cours', 'ecoles'));
+        // FIX: AJOUT DES VARIABLES MANQUANTES
+        $niveaux = $this->getNiveauxDisponibles();
+        $instructeurs = $this->getInstructeursDisponibles();
+        
+        return view('admin.cours.edit', compact('cours', 'ecoles', 'niveaux', 'instructeurs'));
     }
 
     public function update(CoursRequest $request, Cours $cours)
@@ -139,5 +151,35 @@ class CoursController extends Controller implements HasMiddleware
         }
         
         return Ecole::orderBy('nom')->get();
+    }
+
+    /**
+     * FIX: Méthode pour obtenir les niveaux disponibles
+     */
+    private function getNiveauxDisponibles()
+    {
+        return [
+            'debutant' => 'Débutant',
+            'intermediaire' => 'Intermédiaire',
+            'avance' => 'Avancé',
+            'tous_niveaux' => 'Tous Niveaux'
+        ];
+    }
+
+    /**
+     * FIX: Méthode pour obtenir les instructeurs disponibles
+     */
+    private function getInstructeursDisponibles()
+    {
+        $query = User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['instructeur', 'admin_ecole', 'superadmin']);
+        })->where('active', true)->orderBy('name');
+        
+        // Multi-tenant: Admin d'école voit ses instructeurs
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        return $query->get();
     }
 }
