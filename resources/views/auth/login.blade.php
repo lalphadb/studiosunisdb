@@ -62,7 +62,7 @@
             </form>
 
             <div class="text-center mt-6 pt-4 border-t border-slate-600">
-                <p class="text-xs text-slate-500">StudiosUnisDB v4.0-FINAL &copy; {{ date('Y') }}</p>
+                <p class="text-xs text-slate-500">StudiosUnisDB v4.1.9-STABLE &copy; {{ date('Y') }}</p>
                 <p class="text-xs text-slate-600 mt-1">Système de gestion pour écoles de karaté</p>
             </div>
         </div>

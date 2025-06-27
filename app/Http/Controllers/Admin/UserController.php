@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Ecole;
 use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller implements HasMiddleware
 {
@@ -16,7 +18,6 @@ class UserController extends Controller implements HasMiddleware
         return [
             'auth',
             new Middleware('can:viewAny,App\Models\User', only: ['index']),
-            new Middleware('can:view,user', only: ['show']),
             new Middleware('can:create,App\Models\User', only: ['create', 'store']),
             new Middleware('can:update,user', only: ['edit', 'update']),
             new Middleware('can:delete,user', only: ['destroy']),
@@ -25,19 +26,14 @@ class UserController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $query = User::with(['ecole', 'roles']);
+        $query = User::with(['ecole', 'roles'])->orderBy('name');
         
-        // Multi-tenant: Admin d'école voit seulement ses users
+        // Multi-tenant: Admin d'école voit ses membres
         if (auth()->user()->hasRole('admin_ecole')) {
             $query->where('ecole_id', auth()->user()->ecole_id);
         }
         
-        // Filtrage par école pour SuperAdmin
-        if ($request->filled('ecole_id')) {
-            $query->where('ecole_id', $request->ecole_id);
-        }
-        
-        // Recherche
+        // Filtres
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
@@ -45,58 +41,95 @@ class UserController extends Controller implements HasMiddleware
             });
         }
         
-        $users = $query->paginate(15);
+        if ($request->filled('ecole_id')) {
+            $query->where('ecole_id', $request->ecole_id);
+        }
         
-        return view('admin.users.index', compact('users'));
+        if ($request->filled('role')) {
+            $query->whereHas('roles', function($q) use ($request) {
+                $q->where('name', $request->role);
+            });
+        }
+        
+        $users = $query->paginate(20);
+        
+        // Données pour filtres
+        $ecoles = $this->getEcolesForUser();
+        $roles = ['membre', 'instructeur', 'admin_ecole', 'superadmin'];
+        
+        return view('admin.users.index', compact('users', 'ecoles', 'roles'));
     }
 
     public function create()
     {
-        $ecoles = $this->getAvailableEcoles();
-        $chefsDesFamilles = $this->getChefsDesFamilles();
+        $ecoles = $this->getEcolesForUser();
+        $roles = $this->getAvailableRoles();
         
-        return view('admin.users.create', compact('ecoles', 'chefsDesFamilles'));
+        return view('admin.users.create', compact('ecoles', 'roles'));
     }
 
     public function store(UserRequest $request)
     {
         $validated = $request->validated();
         
-        // Hash password
+        // Hash du mot de passe
         if (isset($validated['password'])) {
-            $validated['password'] = bcrypt($validated['password']);
+            $validated['password'] = Hash::make($validated['password']);
+        }
+        
+        // Auto-assigner l'école pour admin_ecole
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $validated['ecole_id'] = auth()->user()->ecole_id;
         }
         
         $user = User::create($validated);
         
-        // AUTOMATIQUEMENT ASSIGNER LE RÔLE "MEMBRE"
-        $user->assignRole('membre');
+        // Assigner le rôle par défaut si pas spécifié
+        if (!$user->roles()->exists()) {
+            $user->assignRole('membre');
+        }
         
         return redirect()->route('admin.users.index')
-            ->with('success', 'Membre créé avec succès.');
+            ->with('success', 'Utilisateur créé avec succès : ' . $user->name);
     }
 
     public function show(User $user)
     {
+        // Vérifier autorisation multi-tenant
+        if (auth()->user()->hasRole('admin_ecole')) {
+            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        }
+
         $user->load(['ecole', 'roles', 'userCeintures.ceinture']);
+        
         return view('admin.users.show', compact('user'));
     }
 
     public function edit(User $user)
     {
-        $ecoles = $this->getAvailableEcoles();
-        $chefsDesFamilles = $this->getChefsDesFamilles();
+        // Vérifier autorisation multi-tenant
+        if (auth()->user()->hasRole('admin_ecole')) {
+            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        }
+
+        $ecoles = $this->getEcolesForUser();
+        $roles = $this->getAvailableRoles();
         
-        return view('admin.users.edit', compact('user', 'ecoles', 'chefsDesFamilles'));
+        return view('admin.users.edit', compact('user', 'ecoles', 'roles'));
     }
 
     public function update(UserRequest $request, User $user)
     {
+        // Vérifier autorisation multi-tenant
+        if (auth()->user()->hasRole('admin_ecole')) {
+            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        }
+
         $validated = $request->validated();
         
-        // Hash password si fourni
+        // Hash du mot de passe si fourni
         if (isset($validated['password']) && !empty($validated['password'])) {
-            $validated['password'] = bcrypt($validated['password']);
+            $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
         }
@@ -104,38 +137,54 @@ class UserController extends Controller implements HasMiddleware
         $user->update($validated);
         
         return redirect()->route('admin.users.index')
-            ->with('success', 'Membre modifié avec succès.');
+            ->with('success', 'Utilisateur mis à jour avec succès : ' . $user->name);
     }
 
     public function destroy(User $user)
     {
+        // Vérifier autorisation multi-tenant
+        if (auth()->user()->hasRole('admin_ecole')) {
+            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        }
+
+        // Empêcher la suppression de son propre compte
+        if ($user->id === auth()->id()) {
+            return back()->withErrors(['error' => 'Vous ne pouvez pas supprimer votre propre compte.']);
+        }
+
+        $name = $user->name;
         $user->delete();
         
         return redirect()->route('admin.users.index')
-            ->with('success', 'Membre supprimé avec succès.');
+            ->with('success', 'Utilisateur supprimé : ' . $name);
     }
 
-    private function getAvailableEcoles()
+    /**
+     * Helpers privés
+     */
+    private function getEcolesForUser()
     {
         if (auth()->user()->hasRole('superadmin')) {
-            return \App\Models\Ecole::where('active', true)->get();
-        } elseif (auth()->user()->hasRole('admin_ecole')) {
-            return \App\Models\Ecole::where('id', auth()->user()->ecole_id)->get();
+            return Ecole::orderBy('nom')->get();
+        }
+        
+        if (auth()->user()->hasRole('admin_ecole')) {
+            return Ecole::where('id', auth()->user()->ecole_id)->get();
         }
         
         return collect();
     }
 
-    private function getChefsDesFamilles()
+    private function getAvailableRoles()
     {
-        $query = User::where('famille_principale_id', null)
-                    ->whereHas('membresFamille');
-        
-        // Multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
+        if (auth()->user()->hasRole('superadmin')) {
+            return ['membre', 'instructeur', 'admin_ecole', 'superadmin'];
         }
         
-        return $query->get();
+        if (auth()->user()->hasRole('admin_ecole')) {
+            return ['membre', 'instructeur'];
+        }
+        
+        return ['membre'];
     }
 }
