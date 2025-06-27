@@ -9,9 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            PermissionsSeeder::class,
+            CeintureSeeder::class,
         ]);
     }
 }
-        // Permissions pour Louis admin Saint-Émile
-        $this->call(LouisAdminSeeder::class);

@@ -16,12 +16,11 @@ class UserCeinture extends Model
         'user_id',
         'ceinture_id',
         'date_obtention',
-        'examinateur',
-        'commentaires',
-        'valide',
+        'ecole_id',
         'instructeur_id',
         'examen_id',
-        'ecole_id',
+        'notes',
+        'valide',
     ];
 
     protected $casts = [
@@ -40,20 +39,20 @@ class UserCeinture extends Model
         return $this->belongsTo(Ceinture::class);
     }
 
-    public function ecole(): BelongsTo
-    {
-        return $this->belongsTo(Ecole::class);
-    }
-
     public function instructeur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instructeur_id');
     }
 
-    // SCOPES MANQUANTS - AJOUT PROFESSIONNEL
-    public function scopeForEcole($query, $ecoleId)
+    public function ecole(): BelongsTo
     {
-        return $query->where('ecole_id', $ecoleId);
+        return $this->belongsTo(Ecole::class);
+    }
+
+    // Scopes
+    public function scopeValides($query)
+    {
+        return $query->where('valide', true);
     }
 
     public function scopeRecentes($query, $jours = 30)
@@ -61,19 +60,10 @@ class UserCeinture extends Model
         return $query->where('date_obtention', '>=', now()->subDays($jours));
     }
 
-    public function scopeValides($query)
+    public function scopeForEcole($query, $ecoleId)
     {
-        return $query->where('valide', true);
-    }
-
-    public function scopeParCeinture($query, $ceintureId)
-    {
-        return $query->where('ceinture_id', $ceintureId);
-    }
-
-    public function scopeParAnnee($query, $annee = null)
-    {
-        $annee = $annee ?? now()->year;
-        return $query->whereYear('date_obtention', $annee);
+        return $query->whereHas('user', function($q) use ($ecoleId) {
+            $q->where('ecole_id', $ecoleId);
+        });
     }
 }

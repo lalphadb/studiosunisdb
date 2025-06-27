@@ -65,3 +65,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     })->name('logs.index');
     
 });
+
+// Gestion des rôles utilisateurs
+Route::resource('roles', RoleController::class)->only(['index', 'edit', 'update']);

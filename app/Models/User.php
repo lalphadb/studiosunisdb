@@ -3,45 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'ecole_id',
-        'famille_principale_id',
-        'telephone',
-        'date_naissance',
-        'sexe',
-        'adresse',
-        'ville',
-        'code_postal',
-        'contact_urgence_nom',
-        'contact_urgence_telephone',
-        'active',
-        'date_inscription',
-        'notes',
+        'name', 'email', 'password', 'ecole_id', 'famille_principale_id',
+        'telephone', 'date_naissance', 'sexe', 'adresse', 'ville', 
+        'code_postal', 'contact_urgence_nom', 'contact_urgence_telephone',
+        'active', 'date_inscription', 'notes', 'ceinture_actuelle_id'
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'date_naissance' => 'date',  
+        'date_naissance' => 'date',
         'date_inscription' => 'date',
         'active' => 'boolean',
     ];
@@ -52,70 +38,40 @@ class User extends Authenticatable
         return $this->belongsTo(Ecole::class);
     }
 
-    public function famillePrincipale(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'famille_principale_id');
-    }
-
-    public function membresFamille(): HasMany
-    {
-        return $this->hasMany(User::class, 'famille_principale_id');
-    }
-
-    // RELATIONS CEINTURES CORRIGÉES
     public function userCeintures(): HasMany
     {
-        return $this->hasMany(UserCeinture::class)->orderBy('date_obtention', 'desc');
+        return $this->hasMany(UserCeinture::class);
     }
 
-    // ALIAS pour compatibilité avec l'ancien code
-    public function membre_ceintures(): HasMany
+    public function ceintureActuelle(): BelongsTo
     {
-        return $this->userCeintures();
+        return $this->belongsTo(Ceinture::class, 'ceinture_actuelle_id');
     }
 
-    public function inscriptionsCours(): HasMany
+    // ÉVÉNEMENT : Assigner automatiquement le rôle "membre"
+    protected static function boot()
     {
-        return $this->hasMany(InscriptionCours::class);
+        parent::boot();
+
+        static::created(function ($user) {
+            if (!$user->roles()->exists()) {
+                $user->assignRole('membre');
+            }
+        });
     }
 
-    public function inscriptionsSeminaires(): HasMany
-    {
-        return $this->hasMany(InscriptionSeminaire::class);
-    }
-
-    public function presences(): HasMany
-    {
-        return $this->hasMany(Presence::class);
-    }
-
-    public function paiements(): HasMany
-    {
-        return $this->hasMany(Paiement::class);
-    }
-
-    // MÉTHODES POUR CEINTURES
-    public function ceintureActuelle()
-    {
-        return $this->userCeintures()
-            ->where('valide', true)
-            ->with('ceinture')
-            ->first();
-    }
-
-    public function getCeintureActuelleAttribute()
-    {
-        return $this->ceintureActuelle();
-    }
-
-    // Autres accesseurs
+    // Accesseurs
     public function getAgeAttribute()
     {
-        return $this->date_naissance?->age;
+        return $this->date_naissance ? $this->date_naissance->age : null;
     }
 
-    public function getRolePrincipalAttribute()
+    public function getDerniereCeintureAttribute()
     {
-        return $this->roles->first()?->name ?? 'membre';
+        return $this->userCeintures()
+            ->with('ceinture')
+            ->where('valide', true)
+            ->latest('date_obtention')
+            ->first();
     }
 }

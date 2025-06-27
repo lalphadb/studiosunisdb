@@ -6,27 +6,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        // Vérifier si la table user_ceintures existe
+        // Vérifier si la table n'existe pas déjà
         if (!Schema::hasTable('user_ceintures')) {
             Schema::create('user_ceintures', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-                $table->foreignId('ceinture_id')->constrained('ceintures')->onDelete('cascade');
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('ceinture_id')->constrained()->onDelete('cascade');
+                $table->foreignId('ecole_id')->constrained()->onDelete('cascade');
+                $table->foreignId('instructeur_id')->constrained('users')->onDelete('cascade');
                 $table->date('date_obtention');
-                $table->boolean('valide')->default(true);
+                $table->string('examen_id')->nullable();
                 $table->text('notes')->nullable();
-                $table->foreignId('ecole_id')->nullable()->constrained('ecoles')->onDelete('cascade');
+                $table->boolean('valide')->default(true);
                 $table->timestamps();
                 
                 $table->index(['user_id', 'date_obtention']);
                 $table->index(['ecole_id', 'date_obtention']);
+                $table->index('examen_id');
             });
         }
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('user_ceintures');
     }
