@@ -25,69 +25,68 @@ app/Http/Controllers/ProfileController.php
 
 === CONTRÔLEURS ADMIN ===
 total 96
-drwxr-xr-x 2 studiosdb studiosdb 4096 Jun 24 16:51 .
-drwxr-xr-x 4 studiosdb studiosdb 4096 Jun 16 17:41 ..
--rwxr-xr-x 1 studiosdb studiosdb 5875 Jun 25 09:17 CeintureController.php
--rwxr-xr-x 1 studiosdb studiosdb 6103 Jun 24 16:46 CeintureController.php.backup
--rwxr-xr-x 1 studiosdb studiosdb 4382 Jun 24 15:57 CoursController.php
--rwxr-xr-x 1 studiosdb studiosdb 7293 Jun 24 15:59 DashboardController.php
--rwxr-xr-x 1 studiosdb studiosdb 2942 Jun 24 15:56 EcoleController.php
--rwxr-xr-x 1 studiosdb studiosdb 2883 Jun 24 15:58 InscriptionSeminaireController.php
--rwxr-xr-x 1 studiosdb studiosdb 2334 Jun 22 19:55 InscriptionSeminaireController.php.backup
--rwxr-xr-x 1 studiosdb studiosdb 1966 Jun 22 19:55 LogController.php
--rwxr-xr-x 1 studiosdb studiosdb 5226 Jun 24 15:58 PaiementController.php
--rwxr-xr-x 1 studiosdb studiosdb 4662 Jun 24 15:58 PresenceController.php
--rwxr-xr-x 1 studiosdb studiosdb 5717 Jun 24 15:57 SeminaireController.php
--rwxr-xr-x 1 studiosdb studiosdb 4487 Jun 20 11:10 TelescopeController.php
--rwxr-xr-x 1 studiosdb studiosdb 4933 Jun 25 09:12 UserController.php
+drwxr-xr-x 2 studiosdb studiosdb  4096 Jun 26 15:53 .
+drwxr-xr-x 4 studiosdb studiosdb  4096 Jun 16 17:41 ..
+-rwxr-xr-x 1 studiosdb studiosdb  7619 Jun 25 10:06 CeintureController.php
+-rwxr-xr-x 1 studiosdb studiosdb 13863 Jun 26 15:51 CoursController.php
+-rwxr-xr-x 1 studiosdb studiosdb  4382 Jun 26 14:35 CoursController.php.backup_20250626_143532
+-rwxr-xr-x 1 studiosdb studiosdb  7784 Jun 25 11:57 DashboardController.php
+-rwxr-xr-x 1 studiosdb studiosdb  2942 Jun 24 15:56 EcoleController.php
+-rwxr-xr-x 1 studiosdb studiosdb  2883 Jun 24 15:58 InscriptionSeminaireController.php
+-rwxr-xr-x 1 studiosdb studiosdb  1966 Jun 22 19:55 LogController.php
+-rwxr-xr-x 1 studiosdb studiosdb  5226 Jun 24 15:58 PaiementController.php
+-rwxr-xr-x 1 studiosdb studiosdb  4662 Jun 24 15:58 PresenceController.php
+-rwxr-xr-x 1 studiosdb studiosdb  3678 Jun 25 11:31 SeminaireController.php
+-rwxr-xr-x 1 studiosdb studiosdb  4487 Jun 20 11:10 TelescopeController.php
+-rwxr-xr-x 1 studiosdb studiosdb  4393 Jun 25 11:54 UserController.php
 
 === ANALYSE DES CONTRÔLEURS ADMIN ===
 --- CeintureController ---
-25:    public function index()
-58:    public function create()
-63:    public function store(CeintureRequest $request)
-72:    public function show(Ceinture $ceinture)
-87:    public function edit(Ceinture $ceinture)
-92:    public function update(CeintureRequest $request, Ceinture $ceinture)
-101:    public function destroy(Ceinture $ceinture)
-114:    public function attribuer(Request $request, Ceinture $ceinture)
-156:    public function types()
-11:use Illuminate\Routing\Controllers\HasMiddleware;
-12:use Illuminate\Routing\Controllers\Middleware;
-14:class CeintureController extends Controller implements HasMiddleware
-16:    public static function middleware(): array
-19:            new Middleware('role:superadmin|admin_ecole|admin-ecole|admin|instructeur', only: ['index', 'show']),
-20:            new Middleware('role:superadmin|admin_ecole|admin-ecole', only: ['create', 'store', 'edit', 'update', 'destroy']),
-21:            new Middleware('role:superadmin|admin_ecole|admin-ecole|admin', only: ['attribuer']),
+32:    public function index(Request $request)
+82:    public function create(Request $request)
+106:    public function store(CeintureAttributionRequest $request)
+125:    public function createMasse()
+136:    public function storeMasse(CeintureAttributionMasseRequest $request)
+164:    public function edit(UserCeinture $userCeinture)
+174:    public function update(CeintureAttributionRequest $request, UserCeinture $userCeinture)
+185:    public function destroy(UserCeinture $userCeinture)
+12:use Illuminate\Routing\Controllers\HasMiddleware;
+13:use Illuminate\Routing\Controllers\Middleware;
+16:class CeintureController extends Controller implements HasMiddleware
+18:    public static function middleware(): array
+22:            new Middleware('can:viewAny,App\Models\UserCeinture', only: ['index']),
+23:            new Middleware('can:create,App\Models\UserCeinture', only: ['create', 'store', 'createMasse', 'storeMasse']),
+24:            new Middleware('can:update,userCeinture', only: ['edit', 'update']),
+25:            new Middleware('can:delete,userCeinture', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- CoursController ---
-31:    public function index(Request $request)
-71:    public function create()
-78:    public function store(CoursRequest $request)
-93:    public function show(Cours $cours)
-100:    public function edit(Cours $cours)
-107:    public function update(CoursRequest $request, Cours $cours)
-122:    public function destroy(Cours $cours)
-10:use Illuminate\Routing\Controllers\HasMiddleware;
-11:use Illuminate\Routing\Controllers\Middleware;
-13:class CoursController extends Controller implements HasMiddleware
-16:     * Middleware Laravel 12.19 avec autorisation selon les Policies
-18:    public static function middleware(): array
-23:            new Middleware('can:viewAny,App\Models\Cours', only: ['index']),
-24:            new Middleware('can:view,cours', only: ['show']),
-25:            new Middleware('can:create,App\Models\Cours', only: ['create', 'store']),
-26:            new Middleware('can:update,cours', only: ['edit', 'update']),
-27:            new Middleware('can:delete,cours', only: ['destroy']),
+34:    public function index(Request $request)
+77:    public function create()
+89:    public function store(CoursRequest $request)
+153:    public function show(Cours $cours)
+160:    public function edit(Cours $cours)
+170:    public function update(CoursRequest $request, Cours $cours)
+223:    public function destroy(Cours $cours)
+316:    public function clone(Cours $cours)
+12:use Illuminate\Routing\Controllers\HasMiddleware;
+13:use Illuminate\Routing\Controllers\Middleware;
+16:class CoursController extends Controller implements HasMiddleware
+19:     * Middleware Laravel 12.19 avec autorisation selon les Policies
+21:    public static function middleware(): array
+26:            new Middleware('can:viewAny,App\Models\Cours', only: ['index']),
+27:            new Middleware('can:view,cours', only: ['show']),
+28:            new Middleware('can:create,App\Models\Cours', only: ['create', 'store']),
+29:            new Middleware('can:update,cours', only: ['edit', 'update']),
+30:            new Middleware('can:delete,cours', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- DashboardController ---
-28:    public function index(Request $request)
+25:    public function index(Request $request)
 12:use Illuminate\Routing\Controllers\HasMiddleware;
 13:use Illuminate\Routing\Controllers\Middleware;
 15:class DashboardController extends Controller implements HasMiddleware
-18:     * Middleware Laravel 12.19 avec autorisation selon les Policies
-20:    public static function middleware(): array
+17:    public static function middleware(): array
 ✅ Aucune référence obsolète
 
 --- EcoleController ---
@@ -168,25 +167,23 @@ Pas de middleware
 ✅ Aucune référence obsolète
 
 --- SeminaireController ---
-32:    public function index(Request $request)
-67:    public function create()
-74:    public function store(SeminaireRequest $request)
-89:    public function show(Seminaire $seminaire)
-96:    public function edit(Seminaire $seminaire)
-103:    public function update(SeminaireRequest $request, Seminaire $seminaire)
-118:    public function destroy(Seminaire $seminaire)
-126:    public function inscrire(Request $request, Seminaire $seminaire)
-10:use Illuminate\Routing\Controllers\HasMiddleware;
-11:use Illuminate\Routing\Controllers\Middleware;
-13:class SeminaireController extends Controller implements HasMiddleware
-16:     * Middleware Laravel 12.19 avec autorisation selon les Policies
-18:    public static function middleware(): array
-23:            new Middleware('can:viewAny,App\Models\Seminaire', only: ['index']),
-24:            new Middleware('can:view,seminaire', only: ['show']),
-25:            new Middleware('can:create,App\Models\Seminaire', only: ['create', 'store']),
-26:            new Middleware('can:update,seminaire', only: ['edit', 'update']),
-27:            new Middleware('can:delete,seminaire', only: ['destroy']),
-28:            new Middleware('can:inscrire,seminaire', only: ['inscrire']),
+27:    public function index(Request $request)
+49:    public function create()
+54:    public function store(SeminaireRequest $request)
+70:    public function show(Seminaire $seminaire)
+76:    public function edit(Seminaire $seminaire)
+81:    public function update(SeminaireRequest $request, Seminaire $seminaire)
+97:    public function destroy(Seminaire $seminaire)
+111:    public function inscrire(Request $request, Seminaire $seminaire)
+9:use Illuminate\Routing\Controllers\HasMiddleware;
+10:use Illuminate\Routing\Controllers\Middleware;
+12:class SeminaireController extends Controller implements HasMiddleware
+14:    public static function middleware(): array
+19:            new Middleware('can:viewAny,App\Models\Seminaire', only: ['index']),
+20:            new Middleware('can:view,seminaire', only: ['show']),
+21:            new Middleware('can:create,App\Models\Seminaire', only: ['create', 'store']),
+22:            new Middleware('can:update,seminaire', only: ['edit', 'update']),
+23:            new Middleware('can:delete,seminaire', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 --- TelescopeController ---
@@ -198,25 +195,22 @@ Pas de middleware
 ✅ Aucune référence obsolète
 
 --- UserController ---
-28:    public function index()
-42:    public function create()
-50:    public function store(UserRequest $request)
-67:    public function show(User $user)
-73:    public function edit(User $user)
-82:    public function update(UserRequest $request, User $user)
-98:    public function destroy(User $user)
-105:    public function export()
-110:    public function qrcode(User $user)
-10:use Illuminate\Routing\Controllers\HasMiddleware;
-11:use Illuminate\Routing\Controllers\Middleware;
-13:class UserController extends Controller implements HasMiddleware
-15:    public static function middleware(): array
-19:            new Middleware('permission:viewAny-users', only: ['index']),
-20:            new Middleware('permission:view-users', only: ['show']),
-21:            new Middleware('permission:create-users', only: ['create', 'store']),
-22:            new Middleware('permission:update-users', only: ['edit', 'update']),
-23:            new Middleware('permission:delete-users', only: ['destroy']),
-24:            new Middleware('permission:export-users', only: ['export']),
+26:    public function index(Request $request)
+53:    public function create()
+61:    public function store(UserRequest $request)
+79:    public function show(User $user)
+85:    public function edit(User $user)
+93:    public function update(UserRequest $request, User $user)
+110:    public function destroy(User $user)
+9:use Illuminate\Routing\Controllers\HasMiddleware;
+10:use Illuminate\Routing\Controllers\Middleware;
+12:class UserController extends Controller implements HasMiddleware
+14:    public static function middleware(): array
+18:            new Middleware('can:viewAny,App\Models\User', only: ['index']),
+19:            new Middleware('can:view,user', only: ['show']),
+20:            new Middleware('can:create,App\Models\User', only: ['create', 'store']),
+21:            new Middleware('can:update,user', only: ['edit', 'update']),
+22:            new Middleware('can:delete,user', only: ['destroy']),
 ✅ Aucune référence obsolète
 
 === MIDDLEWARE GLOBAL ===

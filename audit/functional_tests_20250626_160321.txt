@@ -26,7 +26,7 @@ DB Test: 127.0.0.1 via TCP/IP
 ✅ Connexion database OK
 
 --- TEST MODÈLES ---
-Users count: 4
+Users count: 2
 ✅ Modèle User accessible
 
 --- TEST ROUTES ---
@@ -44,14 +44,14 @@ Users count: 4
 
 --- TEST PERMISSIONS ---
 Guard: web
-+---------------------+-------+-------------+-------------+-------------+--------+-------------+------------+------+
-|                     | admin | admin_ecole | admin-ecole | instructeur | membre | super-admin | superadmin | user |
-+---------------------+-------+-------------+-------------+-------------+--------+-------------+------------+------+
-| admin-access        |  ·    |  ·          |  ·          |  ·          |  ·     |  ·          |  ✔         |  ·   |
-| admin.dashboard     |  ✔    |  ·          |  ·          |  ✔          |  ✔     |  ·          |  ✔         |  ✔   |
-| assign-ceintures    |  ✔    |  ✔          |  ✔          |  ✔          |  ·     |  ✔          |  ✔         |  ·   |
-| ceintures.create    |  ·    |  ·          |  ✔          |  ·          |  ·     |  ·          |  ·         |  ·   |
-| ceintures.destroy   |  ·    |  ·          |  ✔          |  ·          |  ·     |  ·          |  ·         |  ·   |
-| ceintures.edit      |  ·    |  ·          |  ✔          |  ·          |  ·     |  ·          |  ·         |  ·   |
++--------------------+-------+-------------+-------------+--------+------------+
+|                    | admin | admin_ecole | instructeur | membre | superadmin |
++--------------------+-------+-------------+-------------+--------+------------+
+| assign-ceintures   |  ✔    |  ✔          |  ·          |  ·     |  ✔         |
+| assign-roles       |  ·    |  ✔          |  ·          |  ·     |  ✔         |
+| create-ceintures   |  ·    |  ✔          |  ·          |  ·     |  ✔         |
+| create-cours       |  ✔    |  ✔          |  ·          |  ·     |  ✔         |
+| create-ecoles      |  ·    |  ✔          |  ·          |  ·     |  ✔         |
+| create-paiements   |  ·    |  ✔          |  ·          |  ·     |  ✔         |
 ✅ Spatie Permissions fonctionnel
 

@@ -7,13 +7,13 @@ DB_CONNECTION=DB_CONNECTION=mysql
 ⚠️  DEBUG activé en production
 
 --- PERMISSIONS FICHIERS ---
--rwxr-xr-x 1 studiosdb studiosdb 1169 Jun 22 19:35 .env
+-rwxr-xr-x 1 studiosdb studiosdb 2055 Jun 26 15:13 .env
 -rwxr-xr-x 1 studiosdb studiosdb 1161 Jun 22 19:25 .env.backup
 -rwxr-xr-x 1 studiosdb studiosdb 1110 Jun 22 19:14 .env.example
 -rwxr-xr-x 1 studiosdb studiosdb  440 Jun 25 08:54 .env.testing
 
 --- PROTECTION CSRF ---
-Tokens CSRF trouvés: 60
+Tokens CSRF trouvés: 62
 
 --- MIDDLEWARE SÉCURITÉ ---
             'throttle:api',
@@ -26,22 +26,19 @@ Tokens CSRF trouvés: 60
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
 
 --- VALIDATION DANS CONTRÔLEURS ---
-Validations trouvées: 139
+Validations trouvées: 171
 
 --- SPATIE PERMISSIONS ---
 ✅ Config Spatie Permission présente
 Permissions
-116
+40
 Roles
-8
+5
 
 --- TELESCOPE ---
 ✅ Telescope configuré
     'enabled' => env('TELESCOPE_ENABLED', true),
-            'enabled' => env('TELESCOPE_CACHE_WATCHER', true),
-            'enabled' => env('TELESCOPE_COMMAND_WATCHER', true),
-            'enabled' => env('TELESCOPE_DUMP_WATCHER', true),
-            'enabled' => env('TELESCOPE_EVENT_WATCHER', true),
+            'enabled' => env('TELESCOPE_REQUEST_WATCHER', true),
 
 === PACKAGES SÉCURITÉ ===
         "laravel/sanctum": "^4.0",

@@ -54,8 +54,8 @@ Aucune relation trouvée
 
 --- Seminaire ---
 Aucune relation trouvée
-12:    protected $fillable = [
-29:    protected $casts = [
+13:    protected $fillable = [
+31:    protected $casts = [
 
 --- User ---
 Aucune relation trouvée
@@ -65,7 +65,7 @@ Aucune relation trouvée
 --- UserCeinture ---
 Aucune relation trouvée
 15:    protected $fillable = [
-24:    protected $casts = [
+27:    protected $casts = [
 
 === RECHERCHE RÉFÉRENCES OBSOLÈTES DANS MODÈLES ===
 Aucune référence obsolète trouvée
@@ -103,8 +103,8 @@ app/Models/Ecole.php:    use HasFactory;
     public function membresFamille(): HasMany
         return $this->hasMany(User::class, 'famille_principale_id');
     public function userCeintures(): HasMany
-        return $this->hasMany(UserCeinture::class);
-    public function membreCeintures(): HasMany
+        return $this->hasMany(UserCeinture::class)->orderBy('date_obtention', 'desc');
+    public function membre_ceintures(): HasMany
     public function inscriptionsCours(): HasMany
         return $this->hasMany(InscriptionCours::class);
     public function inscriptionsSeminaires(): HasMany
@@ -113,6 +113,7 @@ app/Models/Ecole.php:    use HasFactory;
         return $this->hasMany(Presence::class);
     public function paiements(): HasMany
         return $this->hasMany(Paiement::class);
+    public function ceintureActuelle()
     public function getCeintureActuelleAttribute()
     public function getAgeAttribute()
     public function getRolePrincipalAttribute()

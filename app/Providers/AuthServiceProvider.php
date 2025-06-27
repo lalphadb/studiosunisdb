@@ -2,57 +2,27 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-
-// IMPORTS MODELS
 use App\Models\User;
 use App\Models\Ecole;
 use App\Models\Cours;
-use App\Models\UserCeinture;
-use App\Models\Ceinture;
 use App\Models\Seminaire;
-use App\Models\Presence;
-use App\Models\Paiement;
-
-// IMPORTS POLICIES
 use App\Policies\UserPolicy;
 use App\Policies\EcolePolicy;
 use App\Policies\CoursPolicy;
-use App\Policies\UserCeinturePolicy;
-use App\Policies\CeinturePolicy;
 use App\Policies\SeminairePolicy;
-use App\Policies\PresencePolicy;
-use App\Policies\PaiementPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
     protected $policies = [
         User::class => UserPolicy::class,
         Ecole::class => EcolePolicy::class,
         Cours::class => CoursPolicy::class,
-        UserCeinture::class => UserCeinturePolicy::class,
-        Ceinture::class => CeinturePolicy::class,
         Seminaire::class => SeminairePolicy::class,
-        Presence::class => PresencePolicy::class,
-        Paiement::class => PaiementPolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
         $this->registerPolicies();
-
-        // Implicitly grant "Super Admin" role all permissions
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('superadmin') ? true : null;
-        });
     }
 }

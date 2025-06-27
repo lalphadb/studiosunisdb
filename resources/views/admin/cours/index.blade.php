@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header avec couleur violette -->
+    <!-- Header avec couleur violette selon charte -->
     <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
@@ -63,7 +63,7 @@
                     </svg>
                 </div>
                 <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $cours->sum('inscriptions_count') }}</div>
+                    <div class="text-2xl font-bold text-white">{{ $cours->sum('inscriptions_count') ?? 0 }}</div>
                     <div class="text-sm text-slate-400">Inscriptions</div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     </svg>
                 </div>
                 <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $cours->avg('duree_minutes') }}min</div>
+                    <div class="text-2xl font-bold text-white">{{ round($cours->avg('duree_minutes') ?? 60) }}min</div>
                     <div class="text-sm text-slate-400">Durée Moyenne</div>
                 </div>
             </div>
@@ -141,21 +141,21 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $c->ecole->nom }}</div>
-                            <div class="text-sm text-slate-400">{{ $c->ecole->ville }}</div>
+                            <div class="text-sm text-white">{{ $c->ecole->nom ?? 'Non assignée' }}</div>
+                            <div class="text-sm text-slate-400">{{ $c->ecole->ville ?? '' }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                 {{ $c->niveau === 'debutant' ? 'bg-green-900 text-green-300' : 
                                    ($c->niveau === 'intermediaire' ? 'bg-yellow-900 text-yellow-300' : 
                                    ($c->niveau === 'avance' ? 'bg-red-900 text-red-300' : 'bg-blue-900 text-blue-300')) }}">
-                                {{ ucfirst(str_replace('_', ' ', $c->niveau)) }}
+                                {{ $c->niveau_francais }}
                             </span>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $c->inscriptions_count }} / {{ $c->capacite_max }}</div>
+                            <div class="text-sm text-white">{{ $c->inscriptions_count ?? 0 }} / {{ $c->capacite_max }}</div>
                             <div class="w-full bg-slate-600 rounded-full h-2 mt-1">
-                                <div class="bg-purple-500 h-2 rounded-full" style="width: {{ $c->capacite_max > 0 ? ($c->inscriptions_count / $c->capacite_max) * 100 : 0 }}%"></div>
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: {{ $c->taux_occupation }}%"></div>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -191,7 +191,7 @@
                                 </a>
                                 
                                 <!-- Bouton Supprimer -->
-                                @if($c->inscriptions_count == 0)
+                                @if(($c->inscriptions_count ?? 0) == 0)
                                 <form method="POST" action="{{ route('admin.cours.destroy', $c) }}" class="inline">
                                     @csrf
                                     @method('DELETE')

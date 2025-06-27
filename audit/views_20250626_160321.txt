@@ -1,5 +1,6 @@
 === STRUCTURE DES VUES ===
 resources/views/admin/ceintures/attribuer.blade.php
+resources/views/admin/ceintures/create-masse.blade.php
 resources/views/admin/ceintures/create.blade.php
 resources/views/admin/ceintures/edit.blade.php
 resources/views/admin/ceintures/index.blade.php
@@ -81,6 +82,7 @@ resources/views/welcome.blade.php
 
 === VUES ADMIN ===
 resources/views/admin/ceintures/attribuer.blade.php
+resources/views/admin/ceintures/create-masse.blade.php
 resources/views/admin/ceintures/create.blade.php
 resources/views/admin/ceintures/edit.blade.php
 resources/views/admin/ceintures/index.blade.php
@@ -124,11 +126,12 @@ resources/views/admin/users/show.blade.php
 --- ceintures ---
 -rwxr-xr-x  1 studiosdb studiosdb 10460 Jun 22 19:38 assign.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb  8248 Jun 24 16:06 attribuer.blade.php
--rwxr-xr-x  1 studiosdb studiosdb  7017 Jun 25 09:25 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 11913 Jun 25 10:10 create-masse.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  6681 Jun 25 10:08 create.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  5751 Jun 22 19:38 create.blade.php.backup
--rwxr-xr-x  1 studiosdb studiosdb  7936 Jun 25 09:26 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  8714 Jun 25 10:11 edit.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  4977 Jun 22 19:38 edit.blade.php.backup
--rw-rw-r--  1 studiosdb studiosdb 14742 Jun 25 09:25 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 11019 Jun 25 10:55 index.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb 13056 Jun 25 09:26 show.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  3174 Jun 25 09:26 types.blade.php
 
@@ -140,8 +143,9 @@ resources/views/admin/users/show.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  9829 Jun 22 19:38 create.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb 25430 Jun 24 15:46 edit.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  9230 Jun 22 19:38 edit.blade.php.backup
--rwxr-xr-x  1 studiosdb studiosdb 15875 Jun 24 15:22 index.blade.php
--rwxr-xr-x  1 studiosdb studiosdb 15932 Jun 24 15:41 show.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 22727 Jun 26 15:32 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb   896 Jun 26 15:00 show.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 15932 Jun 26 15:00 show.blade.php.backup_final
 
 --- ecoles ---
 -rwxr-xr-x  1 studiosdb studiosdb 15222 Jun 23 07:53 create.blade.php
@@ -175,23 +179,23 @@ Aucune vue trouvée
 -rwxr-xr-x  1 studiosdb studiosdb 13486 Jun 22 13:24 show.blade.php
 
 --- seminaires ---
--rwxr-xr-x  1 studiosdb studiosdb 14728 Jun 22 19:38 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 13764 Jun 25 11:33 create.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb 14703 Jun 22 19:38 create.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb 20609 Jun 22 19:38 edit.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb 20584 Jun 22 19:38 edit.blade.php.backup
--rwxr-xr-x  1 studiosdb studiosdb  3239 Jun 22 14:35 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14936 Jun 25 11:44 index.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb 20342 Jun 22 19:49 inscriptions.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  3253 Jun 22 19:54 inscrire.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb 10409 Jun 22 19:38 inscrire.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb 19007 Jun 22 13:24 show.blade.php
 
 --- users ---
--rwxr-xr-x  1 studiosdb studiosdb 14966 Jun 23 17:28 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 19693 Jun 25 11:55 create.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  8876 Jun 22 19:38 create.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb 22856 Jun 24 14:30 edit.blade.php
 -rwxr-xr-x  1 studiosdb studiosdb  8754 Jun 22 19:38 edit.blade.php.backup
 -rwxr-xr-x  1 studiosdb studiosdb 15456 Jun 24 14:52 index.blade.php
--rwxr-xr-x  1 studiosdb studiosdb 15418 Jun 24 14:33 show.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 15752 Jun 25 12:07 show.blade.php
 
 === LAYOUTS ET COMPOSANTS ===
 resources/views/layouts/app.blade.php
@@ -215,4 +219,5 @@ resources/views/components/metric-cards.blade.php
 resources/views/components/auth-session-status.blade.php
 
 === RECHERCHE RÉFÉRENCES OBSOLÈTES ===
+resources/views/admin/ceintures/index.blade.php:                <p class="mt-1 text-sm text-slate-500">Commencez par attribuer des ceintures aux membres.</p>
 

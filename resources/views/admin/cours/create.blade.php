@@ -1,397 +1,324 @@
 @extends('layouts.admin')
-@section('title', 'Créer un Cours')
+@section('title', 'Créer un cours')
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header avec couleur violette -->
+    <!-- Header -->
     <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold flex items-center">
-                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Créer un Cours
-                </h1>
-                <p class="text-purple-100 text-lg">Créez votre cours personnalisé avec vos propres horaires</p>
+            <div class="flex items-center space-x-6">
+                <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+                    <span class="text-2xl font-bold text-white">📚</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold">Créer un nouveau cours</h1>
+                    <p class="text-purple-100 text-lg">Ajouter un cours à votre école</p>
+                </div>
             </div>
             <a href="{{ route('admin.cours.index') }}" 
-               class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
+               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
                 Retour à la liste
             </a>
         </div>
     </div>
 
-    <!-- Messages d'erreur -->
-    @if($errors->any())
-    <div class="bg-red-900 border border-red-700 text-red-100 px-4 py-3 rounded-lg">
-        <h4 class="font-medium mb-2">Erreurs de validation :</h4>
-        <ul class="list-disc list-inside space-y-1">
-            @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-
     <!-- Formulaire -->
-    <form method="POST" action="{{ route('admin.cours.store') }}" class="space-y-8">
-        @csrf
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div class="bg-purple-600 px-6 py-4">
+            <h3 class="text-lg font-semibold text-white">Informations du cours</h3>
+        </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Informations de base -->
-            <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-                <div class="bg-purple-600 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                        </svg>
-                        Informations de Base
-                    </h3>
-                </div>
-                <div class="p-6 space-y-6">
+        <form method="POST" action="{{ route('admin.cours.store') }}" class="p-6">
+            @csrf
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Colonne 1 - Informations de base -->
+                <div class="space-y-6">
                     <!-- Nom du cours -->
                     <div>
-                        <label for="nom" class="block text-sm font-medium text-slate-300 mb-2">
-                            Nom du Cours <span class="text-red-400">*</span>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Nom du cours *
                         </label>
-                        <input type="text" 
-                               id="nom" 
-                               name="nom" 
-                               value="{{ old('nom') }}"
-                               placeholder="Ex: Karaté Enfants 6-8 ans, Combat Avancé, Kata Débutant..."
-                               required
-                               class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <input type="text" name="nom" value="{{ old('nom') }}" required
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                               placeholder="Ex: Parents-Enfants, Karaté Débutant, etc.">
                         @error('nom')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- École -->
+                    @if(auth()->user()->hasRole('superadmin'))
                     <div>
-                        <label for="ecole_id" class="block text-sm font-medium text-slate-300 mb-2">
-                            École <span class="text-red-400">*</span>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            École *
                         </label>
-                        <select id="ecole_id" 
-                                name="ecole_id" 
-                                required
-                                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">Sélectionner une école</option>
+                        <select name="ecole_id" required
+                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="" class="bg-slate-700 text-slate-400">Sélectionner une école</option>
                             @foreach($ecoles as $ecole)
-                                <option value="{{ $ecole->id }}" {{ old('ecole_id') == $ecole->id ? 'selected' : '' }}>
+                                <option value="{{ $ecole->id }}" {{ old('ecole_id') == $ecole->id ? 'selected' : '' }} class="bg-slate-700 text-white">
                                     {{ $ecole->nom }}
                                 </option>
                             @endforeach
                         </select>
                         @error('ecole_id')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    @endif
 
                     <!-- Description -->
                     <div>
-                        <label for="description" class="block text-sm font-medium text-slate-300 mb-2">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
                             Description
                         </label>
-                        <textarea id="description" 
-                                  name="description" 
-                                  rows="4"
-                                  placeholder="Décrivez votre cours : objectifs, spécificités, matériel requis..."
-                                  class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">{{ old('description') }}</textarea>
+                        <textarea name="description" rows="3"
+                                  class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                                  placeholder="Description du cours...">{{ old('description') }}</textarea>
                         @error('description')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Niveau -->
                     <div>
-                        <label for="niveau" class="block text-sm font-medium text-slate-300 mb-2">
-                            Niveau <span class="text-red-400">*</span>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Niveau
                         </label>
-                        <select id="niveau" 
-                                name="niveau" 
-                                required
-                                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">Sélectionner un niveau</option>
-                            @foreach($niveaux as $key => $label)
-                                <option value="{{ $key }}" {{ old('niveau') == $key ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
+                        <select name="niveau"
+                                class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="" class="bg-slate-700 text-slate-400">-- Sélectionner --</option>
+                            <option value="debutant" {{ old('niveau') == 'debutant' ? 'selected' : '' }} class="bg-slate-700 text-white">Débutant</option>
+                            <option value="intermediaire" {{ old('niveau') == 'intermediaire' ? 'selected' : '' }} class="bg-slate-700 text-white">Intermédiaire</option>
+                            <option value="avance" {{ old('niveau') == 'avance' ? 'selected' : '' }} class="bg-slate-700 text-white">Avancé</option>
+                            <option value="tous_niveaux" {{ old('niveau') == 'tous_niveaux' ? 'selected' : '' }} class="bg-slate-700 text-white">Tous niveaux</option>
                         </select>
                         @error('niveau')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
 
+                <!-- Colonne 2 - Détails techniques -->
+                <div class="space-y-6">
                     <!-- Instructeur -->
                     <div>
-                        <label for="instructeur" class="block text-sm font-medium text-slate-300 mb-2">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
                             Instructeur
                         </label>
-                        <input type="text" 
-                               id="instructeur" 
-                               name="instructeur" 
-                               value="{{ old('instructeur') }}"
-                               placeholder="Nom de l'instructeur principal"
-                               class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                        <input type="text" name="instructeur" value="{{ old('instructeur') }}"
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                               placeholder="Nom de l'instructeur">
                         @error('instructeur')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <!-- Paramètres et Prix -->
-            <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-                <div class="bg-indigo-600 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                        Paramètres du Cours
-                    </h3>
-                </div>
-                <div class="p-6 space-y-6">
-                    <!-- Capacité Maximum -->
-                    <div>
-                        <label for="capacite_max" class="block text-sm font-medium text-slate-300 mb-2">
-                            Capacité Maximum <span class="text-red-400">*</span>
-                        </label>
-                        <input type="number" 
-                               id="capacite_max" 
-                               name="capacite_max" 
-                               value="{{ old('capacite_max', 20) }}"
-                               min="1" 
-                               max="100"
-                               placeholder="Nombre maximum de participants"
-                               required
-                               class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                        @error('capacite_max')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Prix -->
                     <div>
-                        <label for="prix" class="block text-sm font-medium text-slate-300 mb-2">
-                            Prix par Session (CAD)
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Prix ($)
                         </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2 text-slate-400">$</span>
-                            <input type="number" 
-                                   id="prix" 
-                                   name="prix" 
-                                   value="{{ old('prix') }}"
-                                   step="0.01"
-                                   min="0"
-                                   placeholder="0.00"
-                                   class="w-full bg-slate-700 border border-slate-600 rounded-lg pl-8 pr-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                        </div>
-                        <p class="text-xs text-slate-400 mt-1">Laissez vide si gratuit</p>
+                        <input type="number" name="prix" value="{{ old('prix') }}" step="0.01" min="0"
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                               placeholder="0.00">
                         @error('prix')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Capacité maximale -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Capacité maximale
+                        </label>
+                        <input type="number" name="capacite_max" value="{{ old('capacite_max') }}" min="1"
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                               placeholder="Nombre de participants">
+                        @error('capacite_max')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Durée -->
                     <div>
-                        <label for="duree_minutes" class="block text-sm font-medium text-slate-300 mb-2">
-                            Durée (minutes) <span class="text-red-400">*</span>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Durée (minutes)
                         </label>
-                        <select id="duree_minutes" 
-                                name="duree_minutes" 
-                                required
-                                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">Sélectionner la durée</option>
-                            <option value="30" {{ old('duree_minutes') == '30' ? 'selected' : '' }}>30 minutes</option>
-                            <option value="45" {{ old('duree_minutes') == '45' ? 'selected' : '' }}>45 minutes</option>
-                            <option value="60" {{ old('duree_minutes') == '60' ? 'selected' : '' }}>60 minutes</option>
-                            <option value="90" {{ old('duree_minutes') == '90' ? 'selected' : '' }}>90 minutes</option>
-                            <option value="120" {{ old('duree_minutes') == '120' ? 'selected' : '' }}>120 minutes</option>
-                            <option value="180" {{ old('duree_minutes') == '180' ? 'selected' : '' }}>180 minutes (3h)</option>
-                        </select>
+                        <input type="number" name="duree_minutes" value="{{ old('duree_minutes') }}" min="1"
+                               class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-slate-400"
+                               placeholder="60">
                         @error('duree_minutes')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Cours actif -->
+                    <!-- Statut -->
                     <div class="flex items-center">
-                        <input type="checkbox" 
-                               id="active" 
-                               name="active" 
-                               value="1" 
-                               {{ old('active', true) ? 'checked' : '' }}
-                               class="rounded border-slate-600 text-purple-600 focus:ring-purple-500 bg-slate-700">
-                        <label for="active" class="ml-2 text-slate-300">Cours actif (visible pour les inscriptions)</label>
+                        <input type="checkbox" name="active" value="1" {{ old('active', true) ? 'checked' : '' }}
+                               class="w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded focus:ring-purple-500 focus:ring-2">
+                        <label class="ml-3 text-slate-300">Cours actif</label>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- SECTION HORAIRES PERSONNALISABLES -->
-        <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
-                <h3 class="text-lg font-semibold text-white flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Créez Vos Horaires Personnalisés
-                </h3>
-            </div>
-            <div class="p-6">
-                <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mb-6">
-                    <h4 class="text-blue-300 font-medium mb-2">💡 Créez vos horaires selon vos besoins :</h4>
-                    <div class="text-sm text-blue-200 space-y-1">
-                        <p>• <strong>Format 24H obligatoire</strong> (ex: 18:00, 19:30)</p>
-                        <p>• <strong>Ajoutez autant d'horaires que nécessaire</strong> pour votre cours</p>
-                        <p>• <strong>Chaque école peut avoir sa propre organisation</strong></p>
-                        <p>• <strong>Les utilisateurs s'inscriront sur vos créneaux spécifiques</strong></p>
-                    </div>
+            <!-- Section Duplication -->
+            <div class="mt-8 pt-8 border-t border-slate-600">
+                <div class="flex items-center mb-6">
+                    <input type="checkbox" id="enable_duplication" name="enable_duplication" value="1" 
+                           {{ old('enable_duplication') ? 'checked' : '' }}
+                           class="w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded focus:ring-purple-500 focus:ring-2">
+                    <label for="enable_duplication" class="ml-3 text-white font-medium">
+                        🔄 Créer plusieurs cours similaires (duplication)
+                    </label>
                 </div>
-                
-                <div id="horaires-container">
-                    <!-- Premier horaire par défaut -->
-                    <div class="horaire-item bg-slate-700 rounded-lg p-4 mb-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-white font-medium">Créneau 1</h4>
-                            <button type="button" class="text-red-400 hover:text-red-300 remove-horaire" onclick="removeHoraire(this)">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
+
+                <div id="duplication-section" style="display: {{ old('enable_duplication') ? 'block' : 'none' }};" class="bg-slate-700 border border-slate-600 rounded-lg p-6">
+                    <h4 class="text-white font-medium mb-4">Configuration de la duplication</h4>
+                    
+                    <!-- Nombre de copies -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Nombre total de cours à créer
+                        </label>
+                        <select name="nombre_copies" id="nombre_copies" 
+                                class="w-full bg-slate-600 border border-slate-500 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="1" {{ old('nombre_copies', 2) == 1 ? 'selected' : '' }} class="bg-slate-600 text-white">1 cours</option>
+                            <option value="2" {{ old('nombre_copies', 2) == 2 ? 'selected' : '' }} class="bg-slate-600 text-white">2 cours</option>
+                            <option value="3" {{ old('nombre_copies', 2) == 3 ? 'selected' : '' }} class="bg-slate-600 text-white">3 cours</option>
+                            <option value="4" {{ old('nombre_copies', 2) == 4 ? 'selected' : '' }} class="bg-slate-600 text-white">4 cours</option>
+                            <option value="5" {{ old('nombre_copies', 2) == 5 ? 'selected' : '' }} class="bg-slate-600 text-white">5 cours</option>
+                            <option value="6" {{ old('nombre_copies', 2) == 6 ? 'selected' : '' }} class="bg-slate-600 text-white">6 cours</option>
+                            <option value="7" {{ old('nombre_copies', 2) == 7 ? 'selected' : '' }} class="bg-slate-600 text-white">7 cours</option>
+                        </select>
+                    </div>
+
+                    <!-- Configuration des copies -->
+                    <div id="copies-config">
+                        <!-- Sera rempli dynamiquement -->
+                    </div>
+
+                    <!-- Options avancées -->
+                    <div class="mt-6 p-4 bg-slate-600 border border-slate-500 rounded-lg">
+                        <h5 class="text-white font-medium mb-4">Options avancées</h5>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Jour -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Jour de la semaine</label>
-                                <select name="horaires[0][jour_semaine]" class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option value="lundi">Lundi</option>
-                                    <option value="mardi">Mardi</option>
-                                    <option value="mercredi">Mercredi</option>
-                                    <option value="jeudi">Jeudi</option>
-                                    <option value="vendredi">Vendredi</option>
-                                    <option value="samedi">Samedi</option>
-                                    <option value="dimanche">Dimanche</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Heure début -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Heure de début (24H)</label>
-                                <input type="time" 
-                                       name="horaires[0][heure_debut]" 
-                                       value="18:00"
-                                       class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            </div>
-                            
-                            <!-- Heure fin -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-300 mb-2">Heure de fin (24H)</label>
-                                <input type="time" 
-                                       name="horaires[0][heure_fin]" 
-                                       value="19:00"
-                                       class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="modifier_horaires" name="modifier_horaires" value="1" 
+                                   {{ old('modifier_horaires') ? 'checked' : '' }}
+                                   class="w-4 h-4 text-purple-600 bg-slate-700 border-slate-500 rounded focus:ring-purple-500 focus:ring-2">
+                            <label for="modifier_horaires" class="ml-3 text-slate-300">
+                                Permettre la modification des horaires pour chaque cours
+                            </label>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Bouton ajouter horaire -->
-                <button type="button" 
-                        onclick="addHoraire()" 
-                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Ajouter un Créneau Horaire
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-end space-x-4 mt-8">
+                <a href="{{ route('admin.cours.index') }}" 
+                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg transition duration-200">
+                    Annuler
+                </a>
+                <button type="submit" 
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition duration-200">
+                    Créer le(s) cours
                 </button>
             </div>
-        </div>
-
-        <!-- Boutons d'action -->
-        <div class="flex items-center justify-between bg-slate-800 rounded-xl border border-slate-700 px-6 py-4">
-            <a href="{{ route('admin.cours.index') }}" 
-               class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                Annuler
-            </a>
-            
-            <button type="submit" 
-                    class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                Créer Mon Cours
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <script>
-let horaireIndex = 1;
-
-function addHoraire() {
-    const container = document.getElementById('horaires-container');
-    const horaireItem = document.createElement('div');
-    horaireItem.className = 'horaire-item bg-slate-700 rounded-lg p-4 mb-4';
-    horaireItem.innerHTML = `
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-white font-medium">Créneau ${horaireIndex + 1}</h4>
-            <button type="button" class="text-red-400 hover:text-red-300 remove-horaire" onclick="removeHoraire(this)">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-            </button>
-        </div>
+document.addEventListener('DOMContentLoaded', function() {
+    const enableDuplication = document.getElementById('enable_duplication');
+    const duplicationSection = document.getElementById('duplication-section');
+    const nombreCopies = document.getElementById('nombre_copies');
+    const copiesConfig = document.getElementById('copies-config');
+    const modifierHoraires = document.getElementById('modifier_horaires');
+    
+    const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    
+    function toggleDuplicationSection() {
+        duplicationSection.style.display = enableDuplication.checked ? 'block' : 'none';
+        if (enableDuplication.checked) {
+            updateCopiesConfig();
+        }
+    }
+    
+    function updateCopiesConfig() {
+        const nombre = parseInt(nombreCopies.value);
+        copiesConfig.innerHTML = '';
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Jour de la semaine</label>
-                <select name="horaires[${horaireIndex}][jour_semaine]" class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="lundi">Lundi</option>
-                    <option value="mardi">Mardi</option>
-                    <option value="mercredi">Mercredi</option>
-                    <option value="jeudi">Jeudi</option>
-                    <option value="vendredi">Vendredi</option>
-                    <option value="samedi">Samedi</option>
-                    <option value="dimanche">Dimanche</option>
-                </select>
-            </div>
+        for (let i = 0; i < nombre; i++) {
+            const jourSuggere = jours[i] || `Cours ${i + 1}`;
             
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Heure de début (24H)</label>
-                <input type="time" name="horaires[${horaireIndex}][heure_debut]" value="18:00" class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-            </div>
+            const div = document.createElement('div');
+            div.className = 'mb-6 p-4 bg-slate-600 border border-slate-500 rounded-lg';
+            div.innerHTML = `
+                <h5 class="text-white font-medium mb-4">Cours ${i + 1}</h5>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Suffixe/Nom distinctif
+                        </label>
+                        <input type="text" name="suffixes[]" value="${jourSuggere}" 
+                               class="w-full !bg-slate-700 !border-slate-600 !text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder:text-slate-400"
+                               placeholder="Ex: ${jourSuggere}, Groupe A, 19h00, etc."
+                               style="background-color: rgb(51 65 85) !important; border-color: rgb(71 85 105) !important; color: white !important;">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">
+                            Jour de la semaine (optionnel)
+                        </label>
+                        <select name="jours_semaine[]" 
+                                class="w-full !bg-slate-700 !border-slate-600 !text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                style="background-color: rgb(51 65 85) !important; border-color: rgb(71 85 105) !important; color: white !important;">
+                            <option value="" style="background-color: rgb(51 65 85) !important; color: rgb(148 163 184) !important;">-- Aucun --</option>
+                            <option value="lundi" ${jourSuggere === 'Lundi' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Lundi</option>
+                            <option value="mardi" ${jourSuggere === 'Mardi' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Mardi</option>
+                            <option value="mercredi" ${jourSuggere === 'Mercredi' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Mercredi</option>
+                            <option value="jeudi" ${jourSuggere === 'Jeudi' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Jeudi</option>
+                            <option value="vendredi" ${jourSuggere === 'Vendredi' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Vendredi</option>
+                            <option value="samedi" ${jourSuggere === 'Samedi' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Samedi</option>
+                            <option value="dimanche" ${jourSuggere === 'Dimanche' ? 'selected' : ''} style="background-color: rgb(51 65 85) !important; color: white !important;">Dimanche</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-4 horaires-section" style="display: none;">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                        Nouveaux horaires (optionnel)
+                    </label>
+                    <input type="text" name="nouvelles_heures[]" 
+                           class="w-full !bg-slate-700 !border-slate-600 !text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder:text-slate-400"
+                           placeholder="Ex: 19:00 - 20:00, 18:30 - 19:30, etc."
+                           style="background-color: rgb(51 65 85) !important; border-color: rgb(71 85 105) !important; color: white !important;">
+                </div>
+            `;
             
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Heure de fin (24H)</label>
-                <input type="time" name="horaires[${horaireIndex}][heure_fin]" value="19:00" class="w-full bg-slate-600 border border-slate-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-            </div>
-        </div>
-    `;
+            copiesConfig.appendChild(div);
+        }
+        
+        toggleHorairesSection();
+    }
     
-    container.appendChild(horaireItem);
-    horaireIndex++;
-}
-
-function removeHoraire(button) {
-    const horaireItem = button.closest('.horaire-item');
-    horaireItem.remove();
+    function toggleHorairesSection() {
+        const horaireSections = document.querySelectorAll('.horaires-section');
+        horaireSections.forEach(section => {
+            section.style.display = modifierHoraires.checked ? 'block' : 'none';
+        });
+    }
     
-    // Renuméroter les créneaux
-    const horaires = document.querySelectorAll('.horaire-item');
-    horaires.forEach((item, index) => {
-        const title = item.querySelector('h4');
-        title.textContent = `Créneau ${index + 1}`;
-    });
-}
+    enableDuplication.addEventListener('change', toggleDuplicationSection);
+    nombreCopies.addEventListener('change', updateCopiesConfig);
+    modifierHoraires.addEventListener('change', toggleHorairesSection);
+    
+    // Initialize
+    toggleDuplicationSection();
+});
 </script>
 @endsection

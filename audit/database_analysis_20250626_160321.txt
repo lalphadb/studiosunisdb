@@ -1,6 +1,6 @@
 === INFORMATIONS BASE DE DONNÉES ===
 Database	Tables	Size_MB
-studiosdb	28	29.86
+studiosdb	28	8.89
 
 === LISTE DES TABLES ===
 Tables_in_studiosdb
@@ -35,34 +35,34 @@ users
 
 === ANALYSE DES TABLES ===
 Table	Rows	Size_MB	ENGINE	Collation
-telescope_entries	20571	25.94	InnoDB	utf8mb4_unicode_ci
-telescope_entries_tags	13710	3.03	InnoDB	utf8mb4_unicode_ci
-users	4	0.09	InnoDB	utf8mb4_unicode_ci
-paiements	0	0.06	InnoDB	utf8mb4_unicode_ci
+telescope_entries	5856	7.61	InnoDB	utf8mb4_unicode_ci
+telescope_entries_tags	1938	0.30	InnoDB	utf8mb4_unicode_ci
+paiements	0	0.11	InnoDB	utf8mb4_unicode_ci
+users	2	0.09	InnoDB	utf8mb4_unicode_ci
+user_ceintures	0	0.09	InnoDB	utf8mb4_unicode_ci
 activity_log	0	0.06	InnoDB	utf8mb4_unicode_ci
-user_ceintures	0	0.05	InnoDB	utf8mb4_unicode_ci
-sessions	14	0.05	InnoDB	utf8mb4_unicode_ci
+sessions	5	0.05	InnoDB	utf8mb4_unicode_ci
 inscriptions_cours	0	0.05	InnoDB	utf8mb4_unicode_ci
 inscriptions_seminaires	0	0.05	InnoDB	utf8mb4_unicode_ci
 presences	0	0.05	InnoDB	utf8mb4_unicode_ci
-model_has_roles	4	0.03	InnoDB	utf8mb4_unicode_ci
-seminaires	0	0.03	InnoDB	utf8mb4_unicode_ci
-roles	8	0.03	InnoDB	utf8mb4_unicode_ci
-role_has_permissions	202	0.03	InnoDB	utf8mb4_unicode_ci
-permissions	107	0.03	InnoDB	utf8mb4_unicode_ci
-model_has_permissions	32	0.03	InnoDB	utf8mb4_unicode_ci
-ecoles	44	0.03	InnoDB	utf8mb4_unicode_ci
+model_has_roles	2	0.03	InnoDB	utf8mb4_unicode_ci
+roles	5	0.03	InnoDB	utf8mb4_unicode_ci
+role_has_permissions	95	0.03	InnoDB	utf8mb4_unicode_ci
+permissions	40	0.03	InnoDB	utf8mb4_unicode_ci
+model_has_permissions	0	0.03	InnoDB	utf8mb4_unicode_ci
+jobs	0	0.03	InnoDB	utf8mb4_unicode_ci
+failed_jobs	0	0.03	InnoDB	utf8mb4_unicode_ci
+ecoles	1	0.03	InnoDB	utf8mb4_unicode_ci
 cours_horaires	0	0.03	InnoDB	utf8mb4_unicode_ci
-cours	0	0.03	InnoDB	utf8mb4_unicode_ci
-cache	1	0.03	InnoDB	utf8mb4_unicode_ci
+cours	2	0.03	InnoDB	utf8mb4_unicode_ci
+migrations	28	0.02	InnoDB	utf8mb4_unicode_ci
 password_reset_tokens	0	0.02	InnoDB	utf8mb4_unicode_ci
-migrations	24	0.02	InnoDB	utf8mb4_unicode_ci
-jobs	0	0.02	InnoDB	utf8mb4_unicode_ci
 job_batches	0	0.02	InnoDB	utf8mb4_unicode_ci
-failed_jobs	0	0.02	InnoDB	utf8mb4_unicode_ci
-ceintures	10	0.02	InnoDB	utf8mb4_unicode_ci
+seminaires	1	0.02	InnoDB	utf8mb4_unicode_ci
+ceintures	0	0.02	InnoDB	utf8mb4_unicode_ci
 telescope_monitoring	0	0.02	InnoDB	utf8mb4_unicode_ci
 cache_locks	0	0.02	InnoDB	utf8mb4_unicode_ci
+cache	0	0.02	InnoDB	utf8mb4_unicode_ci
 
 === CLÉS ÉTRANGÈRES ===
 Table	Column	Ref_Table	Ref_Column	Constraint
@@ -81,10 +81,11 @@ presences	cours_id	cours	id	presences_cours_id_foreign
 presences	user_id	users	id	presences_user_id_foreign
 role_has_permissions	permission_id	permissions	id	role_has_permissions_permission_id_foreign
 role_has_permissions	role_id	roles	id	role_has_permissions_role_id_foreign
-seminaires	ecole_id	ecoles	id	seminaires_ecole_id_foreign
 telescope_entries_tags	entry_uuid	telescope_entries	uuid	telescope_entries_tags_entry_uuid_foreign
-user_ceintures	ceinture_id	ceintures	id	membre_ceintures_ceinture_id_foreign
-user_ceintures	user_id	users	id	membre_ceintures_user_id_foreign
+user_ceintures	ceinture_id	ceintures	id	user_ceintures_ceinture_id_foreign
+user_ceintures	ecole_id	ecoles	id	user_ceintures_ecole_id_foreign
+user_ceintures	instructeur_id	users	id	user_ceintures_instructeur_id_foreign
+user_ceintures	user_id	users	id	user_ceintures_user_id_foreign
 users	ecole_id	ecoles	id	users_ecole_id_foreign
 users	famille_principale_id	users	id	users_famille_principale_id_foreign
 
@@ -138,8 +139,8 @@ paiements	paiements_reference_interne_index	reference_interne	1
 paiements	paiements_reference_interne_unique	reference_interne	0
 paiements	paiements_type_paiement_statut_index	type_paiement	1
 paiements	paiements_type_paiement_statut_index	statut	1
-paiements	paiements_user_id_created_at_index	user_id	1
 paiements	paiements_user_id_created_at_index	created_at	1
+paiements	paiements_user_id_created_at_index	user_id	1
 paiements	PRIMARY	id	0
 password_reset_tokens	PRIMARY	email	0
 permissions	permissions_name_guard_name_unique	name	0
@@ -151,14 +152,13 @@ presences	presences_user_id_cours_id_date_cours_unique	user_id	0
 presences	presences_user_id_cours_id_date_cours_unique	cours_id	0
 presences	presences_user_id_cours_id_date_cours_unique	date_cours	0
 presences	PRIMARY	id	0
-role_has_permissions	PRIMARY	permission_id	0
 role_has_permissions	PRIMARY	role_id	0
+role_has_permissions	PRIMARY	permission_id	0
 role_has_permissions	role_has_permissions_role_id_foreign	role_id	1
 roles	PRIMARY	id	0
 roles	roles_name_guard_name_unique	name	0
 roles	roles_name_guard_name_unique	guard_name	0
 seminaires	PRIMARY	id	0
-seminaires	seminaires_ecole_id_foreign	ecole_id	1
 sessions	PRIMARY	id	0
 sessions	sessions_last_activity_index	last_activity	1
 sessions	sessions_user_id_index	user_id	1
@@ -173,10 +173,14 @@ telescope_entries_tags	PRIMARY	entry_uuid	0
 telescope_entries_tags	PRIMARY	tag	0
 telescope_entries_tags	telescope_entries_tags_tag_index	tag	1
 telescope_monitoring	PRIMARY	tag	0
-user_ceintures	membre_ceintures_ceinture_id_foreign	ceinture_id	1
-user_ceintures	membre_ceintures_user_id_date_obtention_index	user_id	1
-user_ceintures	membre_ceintures_user_id_date_obtention_index	date_obtention	1
 user_ceintures	PRIMARY	id	0
+user_ceintures	user_ceintures_ceinture_id_foreign	ceinture_id	1
+user_ceintures	user_ceintures_ecole_id_date_obtention_index	date_obtention	1
+user_ceintures	user_ceintures_ecole_id_date_obtention_index	ecole_id	1
+user_ceintures	user_ceintures_examen_id_index	examen_id	1
+user_ceintures	user_ceintures_instructeur_id_foreign	instructeur_id	1
+user_ceintures	user_ceintures_user_id_date_obtention_index	user_id	1
+user_ceintures	user_ceintures_user_id_date_obtention_index	date_obtention	1
 users	PRIMARY	id	0
 users	users_created_at_index	created_at	1
 users	users_date_inscription_index	date_inscription	1

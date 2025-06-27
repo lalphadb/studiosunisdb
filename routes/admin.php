@@ -31,7 +31,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Gestion des écoles
     Route::resource('ecoles', EcoleController::class);
     
-    // Gestion des cours
+    // COURS - Routes spécialisées EN PREMIER
+    Route::get('cours/{cour}/clone', [CoursController::class, 'showCloneForm'])->name('cours.clone.form');
+    Route::post('cours/{cour}/clone', [CoursController::class, 'clone'])->name('cours.clone');
+    
+    // Gestion des cours - RESOURCE APRÈS
     Route::resource('cours', CoursController::class);
     
     // Gestion des ceintures - SUIVI PROGRESSION - ROUTES SPÉCIALES EN PREMIER

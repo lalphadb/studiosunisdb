@@ -1,18 +1,16 @@
 === FICHIERS DE ROUTES ===
-total 40
-drwxr-xr-x  2 studiosdb studiosdb 4096 Jun 24 16:47 .
-drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
--rwxr-xr-x  1 studiosdb studiosdb 2898 Jun 24 16:47 admin.php
--rwxr-xr-x  1 studiosdb studiosdb 4219 Jun 22 13:39 admin.php.backup
+total 28
+drwxr-xr-x  2 studiosdb studiosdb 4096 Jun 25 10:04 .
+drwxr-xr-x 19 studiosdb studiosdb 4096 Jun 26 15:29 ..
+-rwxr-xr-x  1 studiosdb studiosdb 3249 Jun 26 15:48 admin.php
 -rwxr-xr-x  1 studiosdb studiosdb  720 Jun 16 17:41 api.php
 -rwxr-xr-x  1 studiosdb studiosdb 2360 Jun 21 20:06 auth.php
 -rwxr-xr-x  1 studiosdb studiosdb  592 Jun 16 17:41 console.php
 -rwxr-xr-x  1 studiosdb studiosdb  938 Jun 21 21:13 web.php
--rwxr-xr-x  1 studiosdb studiosdb 1070 Jun 21 21:13 web.php.backup
 
 === LISTE COMPLÈTE DES ROUTES ===
 
-  GET|HEAD        / .............................................................................. generated::0d66ppi06Ohp1S3b
+  GET|HEAD        / .......................................................................................................... 
   GET|HEAD        _debugbar/assets/javascript .................... debugbar.assets.js › Barryvdh\Debugbar › AssetController@js
   GET|HEAD        _debugbar/assets/stylesheets ................. debugbar.assets.css › Barryvdh\Debugbar › AssetController@css
   DELETE          _debugbar/cache/{key}/{tags?} ........... debugbar.cache.delete › Barryvdh\Debugbar › CacheController@delete
@@ -23,12 +21,12 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
   GET|HEAD        admin .................................................... admin.dashboard › Admin\DashboardController@index
   GET|HEAD        admin/ceintures ..................................... admin.ceintures.index › Admin\CeintureController@index
   POST            admin/ceintures ..................................... admin.ceintures.store › Admin\CeintureController@store
+  GET|HEAD        admin/ceintures/attribution-masse ...... admin.ceintures.create-masse › Admin\CeintureController@createMasse
+  POST            admin/ceintures/attribution-masse ........ admin.ceintures.store-masse › Admin\CeintureController@storeMasse
   GET|HEAD        admin/ceintures/create ............................ admin.ceintures.create › Admin\CeintureController@create
-  GET|HEAD        admin/ceintures/types ............................... admin.ceintures.types › Admin\CeintureController@types
   GET|HEAD        admin/ceintures/{ceinture} ............................ admin.ceintures.show › Admin\CeintureController@show
   PUT|PATCH       admin/ceintures/{ceinture} ........................ admin.ceintures.update › Admin\CeintureController@update
   DELETE          admin/ceintures/{ceinture} ...................... admin.ceintures.destroy › Admin\CeintureController@destroy
-  GET|POST|HEAD   admin/ceintures/{ceinture}/attribuer ........ admin.ceintures.attribuer › Admin\CeintureController@attribuer
   GET|HEAD        admin/ceintures/{ceinture}/edit ....................... admin.ceintures.edit › Admin\CeintureController@edit
   GET|HEAD        admin/cours ................................................ admin.cours.index › Admin\CoursController@index
   POST            admin/cours ................................................ admin.cours.store › Admin\CoursController@store
@@ -48,7 +46,6 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
   GET|HEAD        admin/inscriptions-seminaires admin.inscriptions-seminaires.index › Admin\InscriptionSeminaireController@in…
   DELETE          admin/inscriptions-seminaires/{inscriptions_seminaire} admin.inscriptions-seminaires.destroy › Admin\Inscri…
   GET|HEAD        admin/logs ................................................................................ admin.logs.index
-  GET|HEAD        admin/logs/{log} ........................................................................... admin.logs.show
   GET|HEAD        admin/paiements ..................................... admin.paiements.index › Admin\PaiementController@index
   POST            admin/paiements ..................................... admin.paiements.store › Admin\PaiementController@store
   GET|HEAD        admin/paiements/create ............................ admin.paiements.create › Admin\PaiementController@create
@@ -80,75 +77,79 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
   DELETE          admin/users/{user} ...................................... admin.users.destroy › Admin\UserController@destroy
   GET|HEAD        admin/users/{user}/edit ....................................... admin.users.edit › Admin\UserController@edit
   GET|HEAD        admin/users/{user}/qrcode ................................. admin.users.qrcode › Admin\UserController@qrcode
-  GET|HEAD        api/user ....................................................................... generated::36IGJJ6ccjz4howu
+  GET|HEAD        api/user ................................................................................................... 
   GET|HEAD        confirm-password ................................ password.confirm › Auth\ConfirmablePasswordController@show
-  POST            confirm-password .................... generated::oytXiH1acY0c5qml › Auth\ConfirmablePasswordController@store
+  POST            confirm-password .................................................. Auth\ConfirmablePasswordController@store
+  GET|HEAD        cours/creation-masse ................................ cours.create-masse › Admin\CoursController@createMasse
+  POST            cours/creation-masse .................................. cours.store-masse › Admin\CoursController@storeMasse
+  GET|HEAD        cours/templates .......................................... cours.templates › Admin\CoursController@templates
+  POST            cours/{cours}/clone .............................................. cours.clone › Admin\CoursController@clone
   GET|HEAD        dashboard ........................................................................................ dashboard
   POST            email/verification-notification ..... verification.send › Auth\EmailVerificationNotificationController@store
   GET|HEAD        forgot-password ................................. password.request › Auth\PasswordResetLinkController@create
   POST            forgot-password .................................... password.email › Auth\PasswordResetLinkController@store
   GET|HEAD        login ................................................... login › Auth\AuthenticatedSessionController@create
-  POST            login .............................. generated::P6X6DZdvE6z93z36 › Auth\AuthenticatedSessionController@store
+  POST            login ............................................................ Auth\AuthenticatedSessionController@store
   POST            logout ................................................ logout › Auth\AuthenticatedSessionController@destroy
   PUT             password .................................................. password.update › Auth\PasswordController@update
   GET|HEAD        profile .............................................................. profile.edit › ProfileController@edit
   PATCH           profile .......................................................... profile.update › ProfileController@update
   DELETE          profile ........................................................ profile.destroy › ProfileController@destroy
   GET|HEAD        register ................................................... register › Auth\RegisteredUserController@create
-  POST            register ................................. generated::mDxKS05fGW0grlxq › Auth\RegisteredUserController@store
+  POST            register ............................................................... Auth\RegisteredUserController@store
   POST            reset-password ........................................... password.store › Auth\NewPasswordController@store
   GET|HEAD        reset-password/{token} .................................. password.reset › Auth\NewPasswordController@create
   GET|HEAD        sanctum/csrf-cookie ...................... sanctum.csrf-cookie › Laravel\Sanctum › CsrfCookieController@show
   GET|HEAD        storage/{path} ............................................................................... storage.local
-  POST            telescope/telescope-api/batches generated::UgBDonDiYqCiLUP7 › Laravel\Telescope › QueueBatchesController@in…
-  GET|HEAD        telescope/telescope-api/batches/{telescopeEntryId} generated::D4zvwGNfl7UgtapX › Laravel\Telescope › QueueB…
-  POST            telescope/telescope-api/cache ...... generated::7QKqfO6rZYy0kwtZ › Laravel\Telescope › CacheController@index
-  GET|HEAD        telescope/telescope-api/cache/{telescopeEntryId} generated::hpWoT88NpxdZPfks › Laravel\Telescope › CacheCon…
-  POST            telescope/telescope-api/client-requests generated::37haWfuvFJ0oypzc › Laravel\Telescope › ClientRequestCont…
-  GET|HEAD        telescope/telescope-api/client-requests/{telescopeEntryId} generated::lyHZhwLrCyWFwUJO › Laravel\Telescope …
-  POST            telescope/telescope-api/commands generated::garvAxEOJ73ahAuT › Laravel\Telescope › CommandsController@index
-  GET|HEAD        telescope/telescope-api/commands/{telescopeEntryId} generated::JBm4peqWmWqykV21 › Laravel\Telescope › Comma…
-  POST            telescope/telescope-api/dumps ....... generated::QuQqMLWJrtmKm92t › Laravel\Telescope › DumpController@index
-  DELETE          telescope/telescope-api/entries generated::hQBRKzpnZkPpn6kO › Laravel\Telescope › EntriesController@destroy
-  POST            telescope/telescope-api/events .... generated::3eDKoraIWxbrwlH6 › Laravel\Telescope › EventsController@index
-  GET|HEAD        telescope/telescope-api/events/{telescopeEntryId} generated::Xn2sVmEuO1ERWjTS › Laravel\Telescope › EventsC…
-  POST            telescope/telescope-api/exceptions generated::mdR3EXG1PvbNLIyR › Laravel\Telescope › ExceptionController@in…
-  GET|HEAD        telescope/telescope-api/exceptions/{telescopeEntryId} generated::cg65IdjKobWqkQg5 › Laravel\Telescope › Exc…
-  PUT             telescope/telescope-api/exceptions/{telescopeEntryId} generated::2RIZczZyARrkEfuE › Laravel\Telescope › Exc…
-  POST            telescope/telescope-api/gates ...... generated::kyMuUyOg9kdgdIna › Laravel\Telescope › GatesController@index
-  GET|HEAD        telescope/telescope-api/gates/{telescopeEntryId} generated::Et7EVC8POt6Q9noH › Laravel\Telescope › GatesCon…
-  POST            telescope/telescope-api/jobs ....... generated::kYUMDzElc8ogYG5G › Laravel\Telescope › QueueController@index
-  GET|HEAD        telescope/telescope-api/jobs/{telescopeEntryId} generated::o99xMSzvqEF061XQ › Laravel\Telescope › QueueCont…
-  POST            telescope/telescope-api/logs ......... generated::BEP4a0e1uKVdgfhn › Laravel\Telescope › LogController@index
-  GET|HEAD        telescope/telescope-api/logs/{telescopeEntryId} generated::oKYIIwONisrrRemc › Laravel\Telescope › LogContro…
-  POST            telescope/telescope-api/mail ........ generated::bn2Qtn0786ej0quv › Laravel\Telescope › MailController@index
-  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId} generated::vma1CvOO4Ku5Xu2g › Laravel\Telescope › MailContr…
-  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId}/download generated::OSoiItFCMFqMMeQF › Laravel\Telescope › …
-  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId}/preview generated::0YkZQbde4SUL0Zl8 › Laravel\Telescope › M…
-  POST            telescope/telescope-api/models .... generated::QYRXLASYuEvtdqkp › Laravel\Telescope › ModelsController@index
-  GET|HEAD        telescope/telescope-api/models/{telescopeEntryId} generated::nrU96XriuNNsuEqB › Laravel\Telescope › ModelsC…
-  GET|HEAD        telescope/telescope-api/monitored-tags generated::ceAqT0sscqbUGW3B › Laravel\Telescope › MonitoredTagContro…
-  POST            telescope/telescope-api/monitored-tags generated::AL3Am2ktKVjENmId › Laravel\Telescope › MonitoredTagContro…
-  POST            telescope/telescope-api/monitored-tags/delete generated::bM0hLawFV2SFHWlT › Laravel\Telescope › MonitoredTa…
-  POST            telescope/telescope-api/notifications generated::2lF2gdgTMY8YZMvX › Laravel\Telescope › NotificationsContro…
-  GET|HEAD        telescope/telescope-api/notifications/{telescopeEntryId} generated::WJp6rAbtwpIlNsqG › Laravel\Telescope › …
-  POST            telescope/telescope-api/queries .. generated::Ji6NjRCJNwIylrzA › Laravel\Telescope › QueriesController@index
-  GET|HEAD        telescope/telescope-api/queries/{telescopeEntryId} generated::nWOoE7DW8X9x5eon › Laravel\Telescope › Querie…
-  POST            telescope/telescope-api/redis ...... generated::BTCH80Ajlyf6XUoR › Laravel\Telescope › RedisController@index
-  GET|HEAD        telescope/telescope-api/redis/{telescopeEntryId} generated::wnTfngsfGrEQSRVj › Laravel\Telescope › RedisCon…
-  POST            telescope/telescope-api/requests generated::zxQDSlngzQlurgIa › Laravel\Telescope › RequestsController@index
-  GET|HEAD        telescope/telescope-api/requests/{telescopeEntryId} generated::XSxTzYZgbRe2sNA7 › Laravel\Telescope › Reque…
-  POST            telescope/telescope-api/schedule generated::L8L5EgVx9sVrX5Ae › Laravel\Telescope › ScheduleController@index
-  GET|HEAD        telescope/telescope-api/schedule/{telescopeEntryId} generated::VCM8xylu5JqbfhW2 › Laravel\Telescope › Sched…
-  POST            telescope/telescope-api/toggle-recording generated::QWu3sMqt68pSRult › Laravel\Telescope › RecordingControl…
-  POST            telescope/telescope-api/views ...... generated::Z1gJR8TEMs5xoncC › Laravel\Telescope › ViewsController@index
-  GET|HEAD        telescope/telescope-api/views/{telescopeEntryId} generated::bN8cocwtMYz94OIG › Laravel\Telescope › ViewsCon…
+  POST            telescope/telescope-api/batches ........................... Laravel\Telescope › QueueBatchesController@index
+  GET|HEAD        telescope/telescope-api/batches/{telescopeEntryId} ......... Laravel\Telescope › QueueBatchesController@show
+  POST            telescope/telescope-api/cache .................................... Laravel\Telescope › CacheController@index
+  GET|HEAD        telescope/telescope-api/cache/{telescopeEntryId} .................. Laravel\Telescope › CacheController@show
+  POST            telescope/telescope-api/client-requests .................. Laravel\Telescope › ClientRequestController@index
+  GET|HEAD        telescope/telescope-api/client-requests/{telescopeEntryId} Laravel\Telescope › ClientRequestController@show
+  POST            telescope/telescope-api/commands .............................. Laravel\Telescope › CommandsController@index
+  GET|HEAD        telescope/telescope-api/commands/{telescopeEntryId} ............ Laravel\Telescope › CommandsController@show
+  POST            telescope/telescope-api/dumps ..................................... Laravel\Telescope › DumpController@index
+  DELETE          telescope/telescope-api/entries .............................. Laravel\Telescope › EntriesController@destroy
+  POST            telescope/telescope-api/events .................................. Laravel\Telescope › EventsController@index
+  GET|HEAD        telescope/telescope-api/events/{telescopeEntryId} ................ Laravel\Telescope › EventsController@show
+  POST            telescope/telescope-api/exceptions ........................... Laravel\Telescope › ExceptionController@index
+  GET|HEAD        telescope/telescope-api/exceptions/{telescopeEntryId} ......... Laravel\Telescope › ExceptionController@show
+  PUT             telescope/telescope-api/exceptions/{telescopeEntryId} ....... Laravel\Telescope › ExceptionController@update
+  POST            telescope/telescope-api/gates .................................... Laravel\Telescope › GatesController@index
+  GET|HEAD        telescope/telescope-api/gates/{telescopeEntryId} .................. Laravel\Telescope › GatesController@show
+  POST            telescope/telescope-api/jobs ..................................... Laravel\Telescope › QueueController@index
+  GET|HEAD        telescope/telescope-api/jobs/{telescopeEntryId} ................... Laravel\Telescope › QueueController@show
+  POST            telescope/telescope-api/logs ....................................... Laravel\Telescope › LogController@index
+  GET|HEAD        telescope/telescope-api/logs/{telescopeEntryId} ..................... Laravel\Telescope › LogController@show
+  POST            telescope/telescope-api/mail ...................................... Laravel\Telescope › MailController@index
+  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId} .................... Laravel\Telescope › MailController@show
+  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId}/download ........ Laravel\Telescope › MailEmlController@show
+  GET|HEAD        telescope/telescope-api/mail/{telescopeEntryId}/preview ........ Laravel\Telescope › MailHtmlController@show
+  POST            telescope/telescope-api/models .................................. Laravel\Telescope › ModelsController@index
+  GET|HEAD        telescope/telescope-api/models/{telescopeEntryId} ................ Laravel\Telescope › ModelsController@show
+  GET|HEAD        telescope/telescope-api/monitored-tags .................... Laravel\Telescope › MonitoredTagController@index
+  POST            telescope/telescope-api/monitored-tags .................... Laravel\Telescope › MonitoredTagController@store
+  POST            telescope/telescope-api/monitored-tags/delete ........... Laravel\Telescope › MonitoredTagController@destroy
+  POST            telescope/telescope-api/notifications .................... Laravel\Telescope › NotificationsController@index
+  GET|HEAD        telescope/telescope-api/notifications/{telescopeEntryId} .. Laravel\Telescope › NotificationsController@show
+  POST            telescope/telescope-api/queries ................................ Laravel\Telescope › QueriesController@index
+  GET|HEAD        telescope/telescope-api/queries/{telescopeEntryId} .............. Laravel\Telescope › QueriesController@show
+  POST            telescope/telescope-api/redis .................................... Laravel\Telescope › RedisController@index
+  GET|HEAD        telescope/telescope-api/redis/{telescopeEntryId} .................. Laravel\Telescope › RedisController@show
+  POST            telescope/telescope-api/requests .............................. Laravel\Telescope › RequestsController@index
+  GET|HEAD        telescope/telescope-api/requests/{telescopeEntryId} ............ Laravel\Telescope › RequestsController@show
+  POST            telescope/telescope-api/schedule .............................. Laravel\Telescope › ScheduleController@index
+  GET|HEAD        telescope/telescope-api/schedule/{telescopeEntryId} ............ Laravel\Telescope › ScheduleController@show
+  POST            telescope/telescope-api/toggle-recording .................... Laravel\Telescope › RecordingController@toggle
+  POST            telescope/telescope-api/views .................................... Laravel\Telescope › ViewsController@index
+  GET|HEAD        telescope/telescope-api/views/{telescopeEntryId} .................. Laravel\Telescope › ViewsController@show
   GET|HEAD        telescope/{view?} ..................................... telescope › Laravel\Telescope › HomeController@index
-  GET|HEAD        up ............................................................................. generated::Y7WapCaPVUf4TDsW
+  GET|HEAD        up ......................................................................................................... 
   GET|HEAD        verify-email .................................. verification.notice › Auth\EmailVerificationPromptController
   GET|HEAD        verify-email/{id}/{hash} .................................. verification.verify › Auth\VerifyEmailController
 
-                                                                                                          Showing [135] routes
+                                                                                                          Showing [138] routes
 
 
 === ROUTES ADMIN ===
@@ -156,12 +157,12 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
   GET|HEAD        admin .................................................... admin.dashboard › Admin\DashboardController@index
   GET|HEAD        admin/ceintures ..................................... admin.ceintures.index › Admin\CeintureController@index
   POST            admin/ceintures ..................................... admin.ceintures.store › Admin\CeintureController@store
+  GET|HEAD        admin/ceintures/attribution-masse ...... admin.ceintures.create-masse › Admin\CeintureController@createMasse
+  POST            admin/ceintures/attribution-masse ........ admin.ceintures.store-masse › Admin\CeintureController@storeMasse
   GET|HEAD        admin/ceintures/create ............................ admin.ceintures.create › Admin\CeintureController@create
-  GET|HEAD        admin/ceintures/types ............................... admin.ceintures.types › Admin\CeintureController@types
   GET|HEAD        admin/ceintures/{ceinture} ............................ admin.ceintures.show › Admin\CeintureController@show
   PUT|PATCH       admin/ceintures/{ceinture} ........................ admin.ceintures.update › Admin\CeintureController@update
   DELETE          admin/ceintures/{ceinture} ...................... admin.ceintures.destroy › Admin\CeintureController@destroy
-  GET|POST|HEAD   admin/ceintures/{ceinture}/attribuer ........ admin.ceintures.attribuer › Admin\CeintureController@attribuer
   GET|HEAD        admin/ceintures/{ceinture}/edit ....................... admin.ceintures.edit › Admin\CeintureController@edit
   GET|HEAD        admin/cours ................................................ admin.cours.index › Admin\CoursController@index
   POST            admin/cours ................................................ admin.cours.store › Admin\CoursController@store
@@ -181,7 +182,6 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
   GET|HEAD        admin/inscriptions-seminaires admin.inscriptions-seminaires.index › Admin\InscriptionSeminaireController@in…
   DELETE          admin/inscriptions-seminaires/{inscriptions_seminaire} admin.inscriptions-seminaires.destroy › Admin\Inscri…
   GET|HEAD        admin/logs ................................................................................ admin.logs.index
-  GET|HEAD        admin/logs/{log} ........................................................................... admin.logs.show
   GET|HEAD        admin/paiements ..................................... admin.paiements.index › Admin\PaiementController@index
   POST            admin/paiements ..................................... admin.paiements.store › Admin\PaiementController@store
   GET|HEAD        admin/paiements/create ............................ admin.paiements.create › Admin\PaiementController@create
@@ -214,7 +214,7 @@ drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 25 09:03 ..
   GET|HEAD        admin/users/{user}/edit ....................................... admin.users.edit › Admin\UserController@edit
   GET|HEAD        admin/users/{user}/qrcode ................................. admin.users.qrcode › Admin\UserController@qrcode
 
-                                                                                                           Showing [60] routes
+                                                                                                           Showing [59] routes
 
 
 === ROUTES API ===
@@ -280,7 +280,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     
-    // Gestion des utilisateurs
+    // Gestion des utilisateurs (membres)
     Route::resource('users', UserController::class);
     Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
     Route::get('users/export', [UserController::class, 'export'])->name('users.export');
@@ -291,11 +291,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Gestion des cours
     Route::resource('cours', CoursController::class);
     
-    // Gestion des ceintures - ROUTES SPÉCIALES EN PREMIER
-    Route::get('ceintures/types', [CeintureController::class, 'types'])->name('ceintures.types');
-    Route::match(['get', 'post'], 'ceintures/{ceinture}/attribuer', [CeintureController::class, 'attribuer'])->name('ceintures.attribuer');
+    // Gestion des ceintures - SUIVI PROGRESSION - ROUTES SPÉCIALES EN PREMIER
+    Route::get('ceintures/attribution-masse', [CeintureController::class, 'createMasse'])->name('ceintures.create-masse');
+    Route::post('ceintures/attribution-masse', [CeintureController::class, 'storeMasse'])->name('ceintures.store-masse');
     
-    // Gestion des ceintures - RESOURCE APRÈS
+    // Gestion des ceintures - RESOURCE APRÈS (suivi progression)
     Route::resource('ceintures', CeintureController::class);
     
     // Gestion des séminaires
@@ -317,10 +317,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         return view('admin.logs.index');
     })->name('logs.index');
     
-    Route::get('logs/{log}', function($log) {
-        abort_unless(auth()->user()->hasRole('superadmin'), 403);
-        return view('admin.logs.show', compact('log'));
-    })->name('logs.show');
-    
 });
+
+    // COURS EN MASSE - Routes spécialisées
+    Route::get('cours/creation-masse', [CoursController::class, 'createMasse'])->name('cours.create-masse');
+    Route::post('cours/creation-masse', [CoursController::class, 'storeMasse'])->name('cours.store-masse');
+    Route::get('cours/templates', [CoursController::class, 'templates'])->name('cours.templates');
+
+    // Route pour cloner un cours
+    Route::post('cours/{cours}/clone', [CoursController::class, 'clone'])->name('cours.clone');
 

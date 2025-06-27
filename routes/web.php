@@ -3,19 +3,12 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::get('/', function () {
-    return redirect('/login');
+    return view('welcome');
 });
 
-// REDIRECTION: dashboard -> admin/dashboard (pour Breeze)
 Route::get('/dashboard', function () {
-    return redirect('/admin/dashboard');
+    return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -25,6 +18,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-
-// Charger les routes admin
-require __DIR__.'/admin.php';
