@@ -47,3 +47,55 @@ storage/telescope/
 # Backup
 *.sql
 *.dump
+
+# Scripts temporaires de développement
+*_temp.sh
+*_fix.sh
+*_test.sh
+*_debug.sh
+analyze_*.sh
+audit_*.sh
+diagnostic_*.sh
+fix_*.sh
+test_*.sh
+cleanup_*.sh
+
+# Dossiers temporaires
+/temp/
+/debug/
+/audit/
+/backup/
+/scripts/
+
+# Sauvegardes
+*.backup
+*.bak
+*.old
+.env.backup*
+
+
+# Scripts temporaires de développement
+*_temp.sh
+*_fix.sh
+*_test.sh
+*_debug.sh
+analyze_*.sh
+audit_*.sh
+diagnostic_*.sh
+fix_*.sh
+test_*.sh
+cleanup_*.sh
+
+# Dossiers temporaires
+/temp/
+/debug/
+/audit/
+/backup/
+/scripts/
+
+# Sauvegardes
+*.backup
+*.bak
+*.old
+.env.backup*
+
