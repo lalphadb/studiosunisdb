@@ -1,68 +1,90 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Conditions d'utilisation - StudiosUnisDB</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-slate-900 text-white">
-    <div class="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+@extends('layouts.app')
+
+@section('content')
+<div class="min-h-screen bg-slate-900 text-white py-12">
+    <div class="max-w-4xl mx-auto px-6">
         <!-- Header -->
-        <header class="bg-slate-800 border-b border-slate-700">
-            <div class="max-w-6xl mx-auto px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <a href="{{ url('/') }}" class="text-2xl font-bold">
-                        Studios<span class="text-blue-400">Unis</span>DB
-                    </a>
-                    <nav class="space-x-6">
-                        <a href="{{ url('/') }}" class="text-slate-300 hover:text-white">Accueil</a>
-                        <a href="{{ route('contact') }}" class="text-slate-300 hover:text-white">Contact</a>
-                        <a href="{{ route('login') }}" class="bg-blue-600 px-4 py-2 rounded">Connexion</a>
-                    </nav>
-                </div>
-            </div>
-        </header>
-
-        <!-- Contenu -->
-        <div class="max-w-4xl mx-auto px-6 py-12">
-            <h1 class="text-4xl font-bold mb-8">Conditions d'utilisation</h1>
-            
-            <div class="prose prose-invert max-w-none">
-                <section class="mb-8">
-                    <h2 class="text-2xl font-semibold mb-4">Acceptation des conditions</h2>
-                    <p>En utilisant StudiosUnisDB, vous acceptez les présentes conditions d'utilisation. Ce système est destiné exclusivement aux Studios Unis du Québec et leurs membres autorisés.</p>
-                </section>
-
-                <section class="mb-8">
-                    <h2 class="text-2xl font-semibold mb-4">Utilisation autorisée</h2>
-                    <ul class="list-disc ml-6 space-y-2">
-                        <li>Gestion administrative des écoles de karaté</li>
-                        <li>Suivi des membres et de leurs progressions</li>
-                        <li>Organisation des cours et présences</li>
-                        <li>Consultation des données personnelles avec autorisation</li>
-                    </ul>
-                </section>
-
-                <section class="mb-8">
-                    <h2 class="text-2xl font-semibold mb-4">Responsabilités de l'utilisateur</h2>
-                    <ul class="list-disc ml-6 space-y-2">
-                        <li>Maintenir la confidentialité de vos identifiants</li>
-                        <li>Utiliser le système de manière éthique et légale</li>
-                        <li>Respecter la vie privée des membres</li>
-                        <li>Signaler tout problème de sécurité</li>
-                    </ul>
-                </section>
-
-                <section class="mb-8">
-                    <h2 class="text-2xl font-semibold mb-4">Protection des données</h2>
-                    <p>StudiosUnisDB respecte strictement la Loi 25 du Québec. Toutes les données personnelles sont traitées conformément à notre politique de confidentialité.</p>
-                </section>
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Conditions d'Utilisation</h1>
+            <p class="text-slate-400 text-lg">StudiosDB - Système de gestion d'écoles de karaté</p>
+            <div class="mt-4 inline-flex items-center bg-green-600/20 text-green-400 px-4 py-2 rounded-lg">
+                <span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                Version en vigueur : {{ date('d/m/Y') }}
             </div>
         </div>
 
+        <!-- Contenu -->
+        <div class="bg-slate-800 rounded-xl border border-slate-700 p-8 space-y-8">
+            
+            <!-- Introduction -->
+            <section>
+                <h2 class="text-2xl font-bold text-green-400 mb-4">📋 Acceptation des Conditions</h2>
+                <p class="text-slate-300 leading-relaxed">
+                    En utilisant StudiosDB, vous acceptez ces conditions d'utilisation. Si vous n'acceptez pas ces termes, 
+                    veuillez ne pas utiliser notre plateforme.
+                </p>
+            </section>
+
+            <!-- Usage autorisé -->
+            <section>
+                <h2 class="text-2xl font-bold text-white mb-4">✅ Usage Autorisé</h2>
+                <ul class="list-disc list-inside text-slate-300 space-y-2 ml-4">
+                    <li>Gestion de votre profil de membre</li>
+                    <li>Inscription aux cours et séminaires</li>
+                    <li>Consultation de votre progression</li>
+                    <li>Communication avec votre école</li>
+                    <li>Paiement des frais de cours</li>
+                </ul>
+            </section>
+
+            <!-- Usage interdit -->
+            <section>
+                <h2 class="text-2xl font-bold text-white mb-4">❌ Usage Interdit</h2>
+                <div class="bg-red-600/10 border border-red-600/30 rounded-lg p-6">
+                    <ul class="list-disc list-inside text-slate-300 space-y-2">
+                        <li>Utilisation à des fins commerciales non autorisées</li>
+                        <li>Tentative d'accès non autorisé aux données d'autres utilisateurs</li>
+                        <li>Partage de vos identifiants de connexion</li>
+                        <li>Upload de contenu inapproprié ou illégal</li>
+                        <li>Perturbation du fonctionnement de la plateforme</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Responsabilités -->
+            <section>
+                <h2 class="text-2xl font-bold text-white mb-4">⚖️ Responsabilités</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-slate-700/30 rounded-lg p-4">
+                        <h3 class="font-semibold text-blue-400 mb-3">Votre responsabilité</h3>
+                        <ul class="text-slate-300 text-sm space-y-1">
+                            <li>• Fournir des informations exactes</li>
+                            <li>• Maintenir la confidentialité de votre compte</li>
+                            <li>• Respecter les règles de l'école</li>
+                            <li>• Effectuer les paiements en temps voulu</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-slate-700/30 rounded-lg p-4">
+                        <h3 class="font-semibold text-green-400 mb-3">Notre responsabilité</h3>
+                        <ul class="text-slate-300 text-sm space-y-1">
+                            <li>• Maintenir la sécurité de la plateforme</li>
+                            <li>• Protéger vos données personnelles</li>
+                            <li>• Fournir un service de qualité</li>
+                            <li>• Respecter la confidentialité</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <!-- Footer -->
-        @include('partials.footer')
+        <div class="text-center mt-12">
+            <a href="{{ route('welcome') }}" 
+               class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors">
+                ← Retour à l'accueil
+            </a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+@endsection

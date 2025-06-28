@@ -46,3 +46,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // OBLIGATOIRE selon prompt XML - toutes les routes admin
 // ===============================================================================
 require __DIR__.'/admin.php';
+
+// Pages légales et conformité
+Route::get('/politique-confidentialite', function () {
+    return view('legal.privacy');
+})->name('privacy');
+
+Route::get('/conditions-utilisation', function () {
+    return view('legal.terms');
+})->name('terms');
+
+Route::get('/contact', function () {
+    return view('legal.contact');
+})->name('contact');
