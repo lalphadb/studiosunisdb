@@ -157,17 +157,6 @@
                 </a>
             @endcan
 
-            <!-- Export données -->
-            <a href="{{ route('admin.users.export') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-cyan-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">📊</span>
-                    <span class="text-xs bg-cyan-600 text-white px-2 py-1 rounded">EXPORT</span>
-                </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-cyan-400">Export données</h3>
-                <p class="text-slate-400 text-sm">Rapports et statistiques</p>
-            </a>
-        </div>
     </div>
 
     <!-- Statistiques rapides -->

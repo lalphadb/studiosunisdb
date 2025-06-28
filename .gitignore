@@ -125,3 +125,19 @@ cleanup_*.sh
 *.old
 .env.backup*
 
+
+# Scripts temporaires finaux
+final_cleanup_*.sh
+commit_*.sh
+fix_*.sh
+create_*.sh
+audit_*.sh
+cleanup_*.sh
+*_temp.sh
+*_backup.sh
+
+# Audits temporaires
+audit_*.md
+!docs/audits/
+!docs/AUDIT_FINAL_v571.md
+

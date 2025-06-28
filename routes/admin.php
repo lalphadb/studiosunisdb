@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PaiementController;
 use App\Http\Controllers\Admin\PresenceController;
 use App\Http\Controllers\Admin\InscriptionSeminaireController;
 use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Admin\ExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,5 +63,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Logs et monitoring (accès restreint SuperAdmin)
     Route::get('logs', [LogController::class, 'index'])->name('logs.index');
     Route::post('logs/clear', [LogController::class, 'clear'])->name('logs.clear');
+    
+    // =====================================
+    // ROUTES EXPORTS & LOGS (LOI 25)
+    // =====================================
+    Route::prefix('exports')->name('exports.')->group(function () {
+        Route::get('/', [ExportController::class, 'index'])->name('index');
+        Route::get('/logs', [ExportController::class, 'exportLogs'])->name('logs');
+    });
     
 });
