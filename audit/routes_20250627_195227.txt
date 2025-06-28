@@ -1,0 +1,188 @@
+=== FICHIERS DE ROUTES ===
+total 28
+drwxr-xr-x  2 studiosdb studiosdb 4096 Jun 25 10:04 .
+drwxr-xr-x 18 studiosdb studiosdb 4096 Jun 27 19:48 ..
+-rwxr-xr-x  1 studiosdb studiosdb 3148 Jun 27 18:34 admin.php
+-rwxr-xr-x  1 studiosdb studiosdb  720 Jun 16 17:41 api.php
+-rwxr-xr-x  1 studiosdb studiosdb 2360 Jun 21 20:06 auth.php
+-rwxr-xr-x  1 studiosdb studiosdb  592 Jun 16 17:41 console.php
+-rwxr-xr-x  1 studiosdb studiosdb  634 Jun 27 12:02 web.php
+
+=== LISTE COMPLÈTE DES ROUTES ===
+
+   ReflectionException 
+
+  Class "RoleController" does not exist
+
+  at vendor/laravel/framework/src/Illuminate/Foundation/Console/RouteListCommand.php:235
+    231▕             if ($this->isFrameworkController($route)) {
+    232▕                 return false;
+    233▕             }
+    234▕ 
+  ➜ 235▕             $path = (new ReflectionClass($route->getControllerClass()))
+    236▕                 ->getFileName();
+    237▕         } else {
+    238▕             return false;
+    239▕         }
+
+      [2m+3 vendor frames [22m
+
+  4   [internal]:0
+      Illuminate\Foundation\Console\RouteListCommand::Illuminate\Foundation\Console\{closure}()
+      [2m+17 vendor frames [22m
+
+  22  artisan:16
+      Illuminate\Foundation\Application::handleCommand()
+
+Erreur lors de la génération de la liste des routes
+
+=== ROUTES ADMIN ===
+
+   ReflectionException 
+
+  Class "RoleController" does not exist
+
+  at vendor/laravel/framework/src/Illuminate/Foundation/Console/RouteListCommand.php:235
+    231▕             if ($this->isFrameworkController($route)) {
+    232▕                 return false;
+    233▕             }
+    234▕ 
+  ➜ 235▕             $path = (new ReflectionClass($route->getControllerClass()))
+    236▕                 ->getFileName();
+    237▕         } else {
+    238▕             return false;
+    239▕         }
+
+      [2m+3 vendor frames [22m
+
+  4   [internal]:0
+      Illuminate\Foundation\Console\RouteListCommand::Illuminate\Foundation\Console\{closure}()
+      [2m+17 vendor frames [22m
+
+  22  artisan:16
+      Illuminate\Foundation\Application::handleCommand()
+
+Aucune route admin ou erreur
+
+=== ROUTES API ===
+
+   ReflectionException 
+
+  Class "RoleController" does not exist
+
+  at vendor/laravel/framework/src/Illuminate/Foundation/Console/RouteListCommand.php:235
+    231▕             if ($this->isFrameworkController($route)) {
+    232▕                 return false;
+    233▕             }
+    234▕ 
+  ➜ 235▕             $path = (new ReflectionClass($route->getControllerClass()))
+    236▕                 ->getFileName();
+    237▕         } else {
+    238▕             return false;
+    239▕         }
+
+      [2m+3 vendor frames [22m
+
+  4   [internal]:0
+      Illuminate\Foundation\Console\RouteListCommand::Illuminate\Foundation\Console\{closure}()
+      [2m+17 vendor frames [22m
+
+  22  artisan:16
+      Illuminate\Foundation\Application::handleCommand()
+
+Aucune route API ou erreur
+
+=== ANALYSE FICHIER WEB.PHP ===
+<?php
+
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
+
+=== ANALYSE FICHIER ADMIN.PHP ===
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\EcoleController;
+use App\Http\Controllers\Admin\CoursController;
+use App\Http\Controllers\Admin\CeintureController;
+use App\Http\Controllers\Admin\SeminaireController;
+use App\Http\Controllers\Admin\PaiementController;
+use App\Http\Controllers\Admin\PresenceController;
+use App\Http\Controllers\Admin\InscriptionSeminaireController;
+
+/*
+|--------------------------------------------------------------------------
+| Routes Administrateur - Laravel 12.19
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard principal
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    
+    // Gestion des utilisateurs (membres)
+    Route::resource('users', UserController::class);
+    Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
+    Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+    
+    // Gestion des écoles
+    Route::resource('ecoles', EcoleController::class);
+    
+    // COURS - Routes spécialisées EN PREMIER
+    Route::get('cours/{cour}/clone', [CoursController::class, 'showCloneForm'])->name('cours.clone.form');
+    Route::post('cours/{cour}/clone', [CoursController::class, 'clone'])->name('cours.clone');
+    
+    // Gestion des cours - RESOURCE APRÈS
+    Route::resource('cours', CoursController::class);
+    
+    // Gestion des ceintures - SUIVI PROGRESSION - ROUTES SPÉCIALES EN PREMIER
+    Route::get('ceintures/attribution-masse', [CeintureController::class, 'createMasse'])->name('ceintures.create-masse');
+    Route::post('ceintures/attribution-masse', [CeintureController::class, 'storeMasse'])->name('ceintures.store-masse');
+    
+    // Gestion des ceintures - RESOURCE APRÈS (suivi progression)
+    Route::resource('ceintures', CeintureController::class);
+    
+    // Gestion des séminaires
+    Route::resource('seminaires', SeminaireController::class);
+    Route::match(['get', 'post'], 'seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('seminaires.inscrire');
+    
+    // Gestion des paiements
+    Route::resource('paiements', PaiementController::class);
+    
+    // Gestion des présences
+    Route::resource('presences', PresenceController::class);
+    
+    // Gestion des inscriptions aux séminaires
+    Route::resource('inscriptions-seminaires', InscriptionSeminaireController::class)->only(['index', 'destroy']);
+    
+    // Logs et monitoring (accès restreint)
+    Route::get('logs', function() {
+        abort_unless(auth()->user()->hasRole('superadmin'), 403);
+        return view('admin.logs.index');
+    })->name('logs.index');
+    
+});
+
+// Gestion des rôles utilisateurs
+Route::resource('roles', RoleController::class)->only(['index', 'edit', 'update']);
+

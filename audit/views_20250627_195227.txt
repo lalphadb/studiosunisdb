@@ -1,0 +1,230 @@
+=== STRUCTURE DES VUES ===
+resources/views/admin/ceintures/attribuer.blade.php
+resources/views/admin/ceintures/create-masse.blade.php
+resources/views/admin/ceintures/create.blade.php
+resources/views/admin/ceintures/edit.blade.php
+resources/views/admin/ceintures/index.blade.php
+resources/views/admin/ceintures/show.blade.php
+resources/views/admin/ceintures/types.blade.php
+resources/views/admin/components/metric-cards.blade.php
+resources/views/admin/cours/clone.blade.php
+resources/views/admin/cours/create.blade.php
+resources/views/admin/cours/edit.blade.php
+resources/views/admin/cours/index.blade.php
+resources/views/admin/cours/show.blade.php
+resources/views/admin/dashboard/admin-ecole.blade.php
+resources/views/admin/dashboard/index.blade.php
+resources/views/admin/ecoles/create.blade.php
+resources/views/admin/ecoles/edit.blade.php
+resources/views/admin/ecoles/index.blade.php
+resources/views/admin/ecoles/show.blade.php
+resources/views/admin/logs/index.blade.php
+resources/views/admin/paiements/create.blade.php
+resources/views/admin/paiements/edit.blade.php
+resources/views/admin/paiements/index.blade.php
+resources/views/admin/paiements/show.blade.php
+resources/views/admin/partials/telescope-widget.blade.php
+resources/views/admin/presences/create.blade.php
+resources/views/admin/presences/edit.blade.php
+resources/views/admin/presences/index.blade.php
+resources/views/admin/presences/pdf.blade.php
+resources/views/admin/presences/prise-presence.blade.php
+resources/views/admin/presences/show.blade.php
+resources/views/admin/seminaires/create.blade.php
+resources/views/admin/seminaires/edit.blade.php
+resources/views/admin/seminaires/index.blade.php
+resources/views/admin/seminaires/inscriptions.blade.php
+resources/views/admin/seminaires/inscrire.blade.php
+resources/views/admin/seminaires/show.blade.php
+resources/views/admin/test-js.blade.php
+resources/views/admin/users/create.blade.php
+resources/views/admin/users/edit.blade.php
+resources/views/admin/users/index.blade.php
+resources/views/admin/users/show.blade.php
+resources/views/auth/confirm-password.blade.php
+resources/views/auth/forgot-password.blade.php
+resources/views/auth/login.blade.php
+resources/views/auth/register.blade.php
+resources/views/auth/reset-password.blade.php
+resources/views/auth/verify-email.blade.php
+resources/views/components/application-logo.blade.php
+resources/views/components/auth-session-status.blade.php
+resources/views/components/danger-button.blade.php
+resources/views/components/dropdown-link.blade.php
+resources/views/components/dropdown.blade.php
+resources/views/components/guest-layout.blade.php
+resources/views/components/input-error.blade.php
+resources/views/components/input-label.blade.php
+resources/views/components/metric-cards.blade.php
+resources/views/components/modal.blade.php
+resources/views/components/module-header.blade.php
+resources/views/components/nav-link.blade.php
+resources/views/components/primary-button.blade.php
+resources/views/components/responsive-nav-link.blade.php
+resources/views/components/secondary-button.blade.php
+resources/views/components/text-input.blade.php
+resources/views/dashboard.blade.php
+resources/views/errors/403.blade.php
+resources/views/errors/404.blade.php
+resources/views/errors/500.blade.php
+resources/views/errors/minimal.blade.php
+resources/views/layouts/admin.blade.php
+resources/views/layouts/app.blade.php
+resources/views/layouts/guest.blade.php
+resources/views/layouts/navigation.blade.php
+resources/views/legal/contact.blade.php
+resources/views/legal/privacy.blade.php
+resources/views/legal/terms.blade.php
+resources/views/partials/footer.blade.php
+resources/views/profile/edit.blade.php
+resources/views/profile/partials/delete-user-form.blade.php
+resources/views/profile/partials/update-password-form.blade.php
+resources/views/profile/partials/update-profile-information-form.blade.php
+resources/views/welcome.blade.php
+
+=== VUES ADMIN ===
+resources/views/admin/ceintures/attribuer.blade.php
+resources/views/admin/ceintures/create-masse.blade.php
+resources/views/admin/ceintures/create.blade.php
+resources/views/admin/ceintures/edit.blade.php
+resources/views/admin/ceintures/index.blade.php
+resources/views/admin/ceintures/show.blade.php
+resources/views/admin/ceintures/types.blade.php
+resources/views/admin/components/metric-cards.blade.php
+resources/views/admin/cours/clone.blade.php
+resources/views/admin/cours/create.blade.php
+resources/views/admin/cours/edit.blade.php
+resources/views/admin/cours/index.blade.php
+resources/views/admin/cours/show.blade.php
+resources/views/admin/dashboard/admin-ecole.blade.php
+resources/views/admin/dashboard/index.blade.php
+resources/views/admin/ecoles/create.blade.php
+resources/views/admin/ecoles/edit.blade.php
+resources/views/admin/ecoles/index.blade.php
+resources/views/admin/ecoles/show.blade.php
+resources/views/admin/logs/index.blade.php
+resources/views/admin/paiements/create.blade.php
+resources/views/admin/paiements/edit.blade.php
+resources/views/admin/paiements/index.blade.php
+resources/views/admin/paiements/show.blade.php
+resources/views/admin/partials/telescope-widget.blade.php
+resources/views/admin/presences/create.blade.php
+resources/views/admin/presences/edit.blade.php
+resources/views/admin/presences/index.blade.php
+resources/views/admin/presences/pdf.blade.php
+resources/views/admin/presences/prise-presence.blade.php
+resources/views/admin/presences/show.blade.php
+resources/views/admin/seminaires/create.blade.php
+resources/views/admin/seminaires/edit.blade.php
+resources/views/admin/seminaires/index.blade.php
+resources/views/admin/seminaires/inscriptions.blade.php
+resources/views/admin/seminaires/inscrire.blade.php
+resources/views/admin/seminaires/show.blade.php
+resources/views/admin/test-js.blade.php
+resources/views/admin/users/create.blade.php
+resources/views/admin/users/edit.blade.php
+resources/views/admin/users/index.blade.php
+resources/views/admin/users/show.blade.php
+
+=== ANALYSE DES VUES ADMIN ===
+--- ceintures ---
+-rwxr-xr-x  1 studiosdb studiosdb 10460 Jun 22 19:38 assign.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  8248 Jun 24 16:06 attribuer.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 15252 Jun 27 18:26 create-masse.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  7733 Jun 27 18:25 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  5751 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  8714 Jun 25 10:11 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  4977 Jun 22 19:38 edit.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 11019 Jun 25 10:55 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 13056 Jun 25 09:26 show.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3174 Jun 25 09:26 types.blade.php
+
+--- components ---
+-rwxr-xr-x  1 studiosdb studiosdb  964 Jun 22 13:24 metric-cards.blade.php
+
+--- cours ---
+-rwxr-xr-x  1 studiosdb studiosdb  7932 Jun 27 12:16 clone.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 19488 Jun 27 12:29 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 13846 Jun 26 17:22 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 21638 Jun 27 17:51 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 10865 Jun 27 17:25 show.blade.php
+
+--- dashboard ---
+-rwxr-xr-x  1 studiosdb studiosdb 11659 Jun 27 19:42 admin-ecole.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  6588 Jun 27 19:07 index.blade.php
+
+--- ecoles ---
+-rwxr-xr-x  1 studiosdb studiosdb 15222 Jun 23 07:53 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 12610 Jun 22 19:58 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 20702 Jun 24 14:21 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14138 Jun 24 13:46 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14910 Jun 24 14:21 show.blade.php
+
+--- layouts ---
+Aucune vue trouvée
+
+--- logs ---
+-rwxr-xr-x  1 studiosdb studiosdb 8130 Jun 22 13:24 index.blade.php
+
+--- paiements ---
+-rwxr-xr-x  1 studiosdb studiosdb 19085 Jun 22 19:38 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 19061 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb  8478 Jun 22 14:38 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3345 Jun 22 14:35 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  4688 Jun 22 13:24 show.blade.php
+
+--- partials ---
+-rwxr-xr-x  1 studiosdb studiosdb 2810 Jun 22 13:24 telescope-widget.blade.php
+
+--- presences ---
+-rwxr-xr-x  1 studiosdb studiosdb 10306 Jun 22 13:24 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 12015 Jun 22 13:24 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3343 Jun 22 14:19 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  5495 Jun 22 13:24 pdf.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 16325 Jun 22 19:49 prise-presence.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 13486 Jun 22 13:24 show.blade.php
+
+--- seminaires ---
+-rwxr-xr-x  1 studiosdb studiosdb 13764 Jun 25 11:33 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 14703 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 20609 Jun 22 19:38 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 20584 Jun 22 19:38 edit.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 14936 Jun 25 11:44 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 20342 Jun 22 19:49 inscriptions.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  3253 Jun 22 19:54 inscrire.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 10409 Jun 22 19:38 inscrire.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 19007 Jun 22 13:24 show.blade.php
+
+--- users ---
+-rwxr-xr-x  1 studiosdb studiosdb 19693 Jun 25 11:55 create.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  8876 Jun 22 19:38 create.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 22856 Jun 24 14:30 edit.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb  8754 Jun 22 19:38 edit.blade.php.backup
+-rwxr-xr-x  1 studiosdb studiosdb 15456 Jun 24 14:52 index.blade.php
+-rwxr-xr-x  1 studiosdb studiosdb 15752 Jun 25 12:07 show.blade.php
+
+=== LAYOUTS ET COMPOSANTS ===
+resources/views/layouts/app.blade.php
+
+=== COMPOSANTS ===
+resources/views/components/modal.blade.php
+resources/views/components/text-input.blade.php
+resources/views/components/responsive-nav-link.blade.php
+resources/views/components/dropdown.blade.php
+resources/views/components/primary-button.blade.php
+resources/views/components/application-logo.blade.php
+resources/views/components/module-header.blade.php
+resources/views/components/guest-layout.blade.php
+resources/views/components/input-error.blade.php
+resources/views/components/input-label.blade.php
+resources/views/components/secondary-button.blade.php
+resources/views/components/dropdown-link.blade.php
+resources/views/components/danger-button.blade.php
+resources/views/components/nav-link.blade.php
+resources/views/components/metric-cards.blade.php
+resources/views/components/auth-session-status.blade.php
+
+=== RECHERCHE RÉFÉRENCES OBSOLÈTES ===
+resources/views/admin/ceintures/index.blade.php:                <p class="mt-1 text-sm text-slate-500">Commencez par attribuer des ceintures aux membres.</p>
+resources/views/admin/dashboard/admin-ecole.blade.php:                    <p class="mb-6">Commencez par ajouter vos premiers membres.</p>
+

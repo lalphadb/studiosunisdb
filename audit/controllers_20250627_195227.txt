@@ -1,0 +1,283 @@
+=== LISTE DES CONTRÔLEURS ===
+app/Http/Controllers/Admin/CeintureController.php
+app/Http/Controllers/Admin/CoursController.php
+app/Http/Controllers/Admin/DashboardController.php
+app/Http/Controllers/Admin/EcoleController.php
+app/Http/Controllers/Admin/InscriptionSeminaireController.php
+app/Http/Controllers/Admin/LogController.php
+app/Http/Controllers/Admin/PaiementController.php
+app/Http/Controllers/Admin/PresenceController.php
+app/Http/Controllers/Admin/RoleController.php
+app/Http/Controllers/Admin/SeminaireController.php
+app/Http/Controllers/Admin/TelescopeController.php
+app/Http/Controllers/Admin/UserController.php
+app/Http/Controllers/Auth/AuthenticatedSessionController.php
+app/Http/Controllers/Auth/ConfirmablePasswordController.php
+app/Http/Controllers/Auth/EmailVerificationNotificationController.php
+app/Http/Controllers/Auth/EmailVerificationPromptController.php
+app/Http/Controllers/Auth/NewPasswordController.php
+app/Http/Controllers/Auth/PasswordController.php
+app/Http/Controllers/Auth/PasswordResetLinkController.php
+app/Http/Controllers/Auth/RegisteredUserController.php
+app/Http/Controllers/Auth/VerifyEmailController.php
+app/Http/Controllers/Controller.php
+app/Http/Controllers/CoursController.php
+app/Http/Controllers/LegalController.php
+app/Http/Controllers/ProfileController.php
+
+=== CONTRÔLEURS ADMIN ===
+total 92
+drwxr-xr-x 2 studiosdb studiosdb 4096 Jun 27 18:34 .
+drwxr-xr-x 4 studiosdb studiosdb 4096 Jun 27 12:00 ..
+-rwxr-xr-x 1 studiosdb studiosdb 8885 Jun 27 18:20 CeintureController.php
+-rwxr-xr-x 1 studiosdb studiosdb 6132 Jun 27 12:15 CoursController.php
+-rwxr-xr-x 1 studiosdb studiosdb 4382 Jun 26 14:35 CoursController.php.backup_20250626_143532
+-rwxr-xr-x 1 studiosdb studiosdb 3674 Jun 27 18:59 DashboardController.php
+-rwxr-xr-x 1 studiosdb studiosdb 2942 Jun 24 15:56 EcoleController.php
+-rwxr-xr-x 1 studiosdb studiosdb 2883 Jun 24 15:58 InscriptionSeminaireController.php
+-rwxr-xr-x 1 studiosdb studiosdb 1966 Jun 22 19:55 LogController.php
+-rwxr-xr-x 1 studiosdb studiosdb 5226 Jun 24 15:58 PaiementController.php
+-rwxr-xr-x 1 studiosdb studiosdb 4662 Jun 24 15:58 PresenceController.php
+-rwxr-xr-x 1 studiosdb studiosdb 3413 Jun 27 18:34 RoleController.php
+-rwxr-xr-x 1 studiosdb studiosdb 3678 Jun 25 11:31 SeminaireController.php
+-rwxr-xr-x 1 studiosdb studiosdb 4487 Jun 20 11:10 TelescopeController.php
+-rwxr-xr-x 1 studiosdb studiosdb 5996 Jun 27 19:18 UserController.php
+
+=== ANALYSE DES CONTRÔLEURS ADMIN ===
+--- CeintureController ---
+32:    public function index(Request $request)
+79:    public function create(Request $request)
+115:    public function store(CeintureAttributionRequest $request)
+137:    public function createMasse()
+148:    public function storeMasse(CeintureAttributionMasseRequest $request)
+181:    public function edit(UserCeinture $userCeinture)
+195:    public function update(CeintureAttributionRequest $request, UserCeinture $userCeinture)
+210:    public function destroy(UserCeinture $userCeinture)
+12:use Illuminate\Routing\Controllers\HasMiddleware;
+13:use Illuminate\Routing\Controllers\Middleware;
+16:class CeintureController extends Controller implements HasMiddleware
+18:    public static function middleware(): array
+22:            new Middleware('can:viewAny,App\Models\UserCeinture', only: ['index']),
+23:            new Middleware('can:create,App\Models\UserCeinture', only: ['create', 'store', 'createMasse', 'storeMasse']),
+24:            new Middleware('can:update,userCeinture', only: ['edit', 'update']),
+25:            new Middleware('can:delete,userCeinture', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- CoursController ---
+27:    public function index(Request $request)
+64:    public function show(Cours $cour)
+70:    public function create()
+76:    public function store(CoursRequest $request)
+91:    public function edit(Cours $cour)
+97:    public function update(CoursRequest $request, Cours $cour)
+112:    public function destroy(Cours $cour)
+123:    public function showCloneForm(Cours $cour)
+131:    public function clone(Request $request, Cours $cour)
+10:use Illuminate\Routing\Controllers\HasMiddleware;
+11:use Illuminate\Routing\Controllers\Middleware;
+13:class CoursController extends Controller implements HasMiddleware
+15:    public static function middleware(): array
+19:            new Middleware('can:viewAny,App\Models\Cours', only: ['index']),
+20:            new Middleware('can:view,cour', only: ['show']),
+21:            new Middleware('can:create,App\Models\Cours', only: ['create', 'store', 'clone']),
+22:            new Middleware('can:update,cour', only: ['edit', 'update']),
+23:            new Middleware('can:delete,cour', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- DashboardController ---
+13:    public function index()
+Pas de middleware
+✅ Aucune référence obsolète
+
+--- EcoleController ---
+30:    public function index(Request $request)
+59:    public function create()
+64:    public function store(EcoleRequest $request)
+72:    public function show(Ecole $ecole)
+79:    public function edit(Ecole $ecole)
+84:    public function update(EcoleRequest $request, Ecole $ecole)
+92:    public function destroy(Ecole $ecole)
+9:use Illuminate\Routing\Controllers\HasMiddleware;
+10:use Illuminate\Routing\Controllers\Middleware;
+12:class EcoleController extends Controller implements HasMiddleware
+15:     * Middleware Laravel 12.19 avec autorisation selon les Policies
+17:    public static function middleware(): array
+22:            new Middleware('can:viewAny,App\Models\Ecole', only: ['index']),
+23:            new Middleware('can:view,ecole', only: ['show']),
+24:            new Middleware('can:create,App\Models\Ecole', only: ['create', 'store']),
+25:            new Middleware('can:update,ecole', only: ['edit', 'update']),
+26:            new Middleware('can:delete,ecole', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- InscriptionSeminaireController ---
+29:    public function index(Request $request)
+68:    public function destroy(InscriptionSeminaire $inscription)
+11:use Illuminate\Routing\Controllers\HasMiddleware;
+12:use Illuminate\Routing\Controllers\Middleware;
+14:class InscriptionSeminaireController extends Controller implements HasMiddleware
+17:     * Middleware Laravel 12.19 avec autorisation selon les Policies
+19:    public static function middleware(): array
+24:            new Middleware('can:viewAny,App\Models\InscriptionSeminaire', only: ['index']),
+25:            new Middleware('can:delete,inscription', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- LogController ---
+11:    public function index(Request $request)
+Pas de middleware
+✅ Aucune référence obsolète
+
+--- PaiementController ---
+32:    public function index(Request $request)
+74:    public function create()
+82:    public function store(PaiementRequest $request)
+100:    public function show(Paiement $paiement)
+107:    public function edit(Paiement $paiement)
+115:    public function update(PaiementRequest $request, Paiement $paiement)
+130:    public function destroy(Paiement $paiement)
+11:use Illuminate\Routing\Controllers\HasMiddleware;
+12:use Illuminate\Routing\Controllers\Middleware;
+14:class PaiementController extends Controller implements HasMiddleware
+17:     * Middleware Laravel 12.19 avec autorisation selon les Policies
+19:    public static function middleware(): array
+24:            new Middleware('can:viewAny,App\Models\Paiement', only: ['index']),
+25:            new Middleware('can:view,paiement', only: ['show']),
+26:            new Middleware('can:create,App\Models\Paiement', only: ['create', 'store']),
+27:            new Middleware('can:update,paiement', only: ['edit', 'update']),
+28:            new Middleware('can:delete,paiement', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- PresenceController ---
+32:    public function index(Request $request)
+76:    public function create()
+84:    public function store(PresenceRequest $request)
+92:    public function show(Presence $presence)
+99:    public function edit(Presence $presence)
+107:    public function update(PresenceRequest $request, Presence $presence)
+115:    public function destroy(Presence $presence)
+11:use Illuminate\Routing\Controllers\HasMiddleware;
+12:use Illuminate\Routing\Controllers\Middleware;
+14:class PresenceController extends Controller implements HasMiddleware
+17:     * Middleware Laravel 12.19 avec autorisation selon les Policies
+19:    public static function middleware(): array
+24:            new Middleware('can:viewAny,App\Models\Presence', only: ['index']),
+25:            new Middleware('can:view,presence', only: ['show']),
+26:            new Middleware('can:create,App\Models\Presence', only: ['create', 'store']),
+27:            new Middleware('can:update,presence', only: ['edit', 'update']),
+28:            new Middleware('can:delete,presence', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- RoleController ---
+26:    public function index(Request $request)
+57:    public function edit(User $user)
+72:    public function update(Request $request, User $user)
+8:use Illuminate\Routing\Controllers\HasMiddleware;
+9:use Illuminate\Routing\Controllers\Middleware;
+12:class RoleController extends Controller implements HasMiddleware
+14:    public static function middleware(): array
+18:            new Middleware('role:superadmin|admin_ecole', only: ['index', 'show']),
+19:            new Middleware('role:superadmin|admin_ecole', only: ['edit', 'update']),
+✅ Aucune référence obsolète
+
+--- SeminaireController ---
+27:    public function index(Request $request)
+49:    public function create()
+54:    public function store(SeminaireRequest $request)
+70:    public function show(Seminaire $seminaire)
+76:    public function edit(Seminaire $seminaire)
+81:    public function update(SeminaireRequest $request, Seminaire $seminaire)
+97:    public function destroy(Seminaire $seminaire)
+111:    public function inscrire(Request $request, Seminaire $seminaire)
+9:use Illuminate\Routing\Controllers\HasMiddleware;
+10:use Illuminate\Routing\Controllers\Middleware;
+12:class SeminaireController extends Controller implements HasMiddleware
+14:    public static function middleware(): array
+19:            new Middleware('can:viewAny,App\Models\Seminaire', only: ['index']),
+20:            new Middleware('can:view,seminaire', only: ['show']),
+21:            new Middleware('can:create,App\Models\Seminaire', only: ['create', 'store']),
+22:            new Middleware('can:update,seminaire', only: ['edit', 'update']),
+23:            new Middleware('can:delete,seminaire', only: ['destroy']),
+✅ Aucune référence obsolète
+
+--- TelescopeController ---
+23:    public function stats(): JsonResponse
+56:    public function clear(): JsonResponse
+77:    public function getTelescopeStats(): array
+12:    public static function middleware(): array
+16:            new \Illuminate\Routing\Middleware\ThrottleRequests('60,1'),
+✅ Aucune référence obsolète
+
+--- UserController ---
+27:    public function index(Request $request)
+63:    public function create()
+71:    public function store(UserRequest $request)
+96:    public function show(User $user)
+108:    public function edit(User $user)
+121:    public function update(UserRequest $request, User $user)
+143:    public function destroy(User $user)
+10:use Illuminate\Routing\Controllers\HasMiddleware;
+11:use Illuminate\Routing\Controllers\Middleware;
+14:class UserController extends Controller implements HasMiddleware
+16:    public static function middleware(): array
+20:            new Middleware('can:viewAny,App\Models\User', only: ['index']),
+21:            new Middleware('can:create,App\Models\User', only: ['create', 'store']),
+22:            new Middleware('can:update,user', only: ['edit', 'update']),
+23:            new Middleware('can:delete,user', only: ['destroy']),
+✅ Aucune référence obsolète
+
+=== MIDDLEWARE GLOBAL ===
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
+
+class Kernel extends HttpKernel
+{
+    /**
+     * The application's global HTTP middleware stack.
+     *
+     * @var array<int, class-string|string>
+     */
+    protected $middleware = [
+        \App\Http\Middleware\TrustProxies::class,
+        \Illuminate\Http\Middleware\HandleCors::class,
+        \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
+        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+        \App\Http\Middleware\TrimStrings::class,
+        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+    ];
+
+    /**
+     * The application's route middleware groups.
+     *
+     * @var array<string, array<int, class-string|string>>
+     */
+    protected $middlewareGroups = [
+        'web' => [
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+
+        'api' => [
+--
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+    ];
+
+    /**
+     * The application's middleware aliases.
+     *
+     * @var array<string, class-string|string>
+     */
+    protected $middlewareAliases = [
+        'auth' => \App\Http\Middleware\Authenticate::class,
+        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
+        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'can' => \Illuminate\Auth\Middleware\Authorize::class,
+        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
+        'signed' => \App\Http\Middleware\ValidateSignature::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+

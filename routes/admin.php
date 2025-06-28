@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SeminaireController;
 use App\Http\Controllers\Admin\PaiementController;
 use App\Http\Controllers\Admin\PresenceController;
 use App\Http\Controllers\Admin\InscriptionSeminaireController;
+use App\Http\Controllers\Admin\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,13 +59,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Gestion des inscriptions aux séminaires
     Route::resource('inscriptions-seminaires', InscriptionSeminaireController::class)->only(['index', 'destroy']);
     
-    // Logs et monitoring (accès restreint)
-    Route::get('logs', function() {
-        abort_unless(auth()->user()->hasRole('superadmin'), 403);
-        return view('admin.logs.index');
-    })->name('logs.index');
+    // Logs et monitoring (accès restreint SuperAdmin)
+    Route::get('logs', [LogController::class, 'index'])->name('logs.index');
+    Route::post('logs/clear', [LogController::class, 'clear'])->name('logs.clear');
     
 });
-
-// Gestion des rôles utilisateurs
-Route::resource('roles', RoleController::class)->only(['index', 'edit', 'update']);

@@ -3,55 +3,45 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class LogController extends Controller
+class LogController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:viewAny,App\Policies\LogPolicy', only: ['index']),
+            new Middleware('can:clear,App\Policies\LogPolicy', only: ['clear']),
+        ];
+    }
+
     public function index(Request $request)
     {
-        $query = Activity::with(['causer', 'subject'])
-            ->latest();
-
-        // Si admin d'école (pas superadmin), filtrer par son école
-        if (!auth()->user()->hasRole('superadmin') && auth()->user()->ecole_id) {
-            $query->where(function($q) {
-                $q->whereHasMorph('subject', ['App\Models\User'], function($query) {
-                    $query->where('ecole_id', auth()->user()->ecole_id);
-                })
-                ->orWhereHasMorph('subject', ['App\Models\Cours'], function($query) {
-                    $query->where('ecole_id', auth()->user()->ecole_id);
-                })
-                ->orWhereHasMorph('subject', ['App\Models\Paiement'], function($query) {
-                    $query->where('ecole_id', auth()->user()->ecole_id);
-                })
-                ->orWhere('causer_id', auth()->id());
-            });
+        // Logique d'affichage des logs pour SuperAdmin uniquement
+        $logs = [];
+        
+        // Ici tu peux ajouter la logique pour lire les logs Laravel
+        $logFile = storage_path('logs/laravel.log');
+        if (file_exists($logFile)) {
+            $logs = array_slice(file($logFile), -50); // 50 dernières lignes
         }
+        
+        return view('admin.logs.index', compact('logs'));
+    }
 
-        // Filtres optionnels
-        if ($request->filled('type')) {
-            $query->where('log_name', $request->type);
+    public function clear(Request $request)
+    {
+        // Logique de nettoyage des logs
+        $logFile = storage_path('logs/laravel.log');
+        if (file_exists($logFile)) {
+            file_put_contents($logFile, '');
         }
-
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
-        }
-
-        if ($request->filled('user')) {
-            $query->where('causer_id', $request->user);
-        }
-
-        $logs = $query->paginate(20);
-
-        // Types de logs pour le filtre
-        $logTypes = Activity::distinct()->pluck('log_name')->filter();
-
-        // Utilisateurs pour le filtre (selon les permissions)
-        $users = \App\Models\User::when(!auth()->user()->hasRole('superadmin'), function($q) {
-            $q->where('ecole_id', auth()->user()->ecole_id);
-        })->get();
-
-        return view('admin.logs.index', compact('logs', 'logTypes', 'users'));
+        
+        return redirect()->route('admin.logs.index')
+            ->with('success', 'Logs nettoyés avec succès.');
     }
 }

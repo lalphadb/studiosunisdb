@@ -7,9 +7,20 @@ use App\Models\User;
 use App\Models\Ecole;
 use App\Models\Cours;
 use App\Models\UserCeinture;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class DashboardController extends Controller
+class DashboardController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+            'verified',
+            new Middleware('can:viewAny,App\Policies\DashboardPolicy', only: ['index']),
+        ];
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -66,17 +77,10 @@ class DashboardController extends Controller
             'mes_instructeurs' => User::where('ecole_id', $ecoleId)
                 ->whereHas('roles', fn($q) => $q->where('name', 'instructeur'))
                 ->count(),
-            'mes_admins' => User::where('ecole_id', $ecoleId)
-                ->whereHas('roles', fn($q) => $q->where('name', 'admin_ecole'))
+            'nouveaux_mois' => User::where('ecole_id', $ecoleId)
+                ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
             'revenus_mois' => User::where('ecole_id', $ecoleId)->count() * 80, // Estimation
-            'mes_attributions' => UserCeinture::whereHas('user', fn($q) => $q->where('ecole_id', $ecoleId))->count(),
-            'attributions_mois' => UserCeinture::whereHas('user', fn($q) => $q->where('ecole_id', $ecoleId))
-                ->where('date_obtention', '>=', now()->subMonth())
-                ->count(),
-            'examens_attente' => UserCeinture::whereHas('user', fn($q) => $q->where('ecole_id', $ecoleId))
-                ->where('valide', false)
-                ->count(),
         ];
         
         // Derniers membres

@@ -1,0 +1,109 @@
+=== LISTE DES MODÈLES ===
+app/Models/Ceinture.php
+app/Models/Cours.php
+app/Models/CoursHoraire.php
+app/Models/Ecole.php
+app/Models/InscriptionCours.php
+app/Models/InscriptionSeminaire.php
+app/Models/Paiement.php
+app/Models/Presence.php
+app/Models/Seminaire.php
+app/Models/User.php
+app/Models/UserCeinture.php
+
+=== ANALYSE DES RELATIONS ===
+--- Ceinture ---
+Aucune relation trouvée
+13:    protected $fillable = [
+20:    protected $casts = [
+
+--- Cours ---
+Aucune relation trouvée
+13:    protected $fillable = [
+25:    protected $casts = [
+
+--- CoursHoraire ---
+Aucune relation trouvée
+14:    protected $fillable = [
+24:    protected $casts = [
+
+--- Ecole ---
+Aucune relation trouvée
+12:    protected $fillable = [
+27:    protected $casts = [
+
+--- InscriptionCours ---
+Aucune relation trouvée
+14:    protected $fillable = [
+22:    protected $casts = [
+
+--- InscriptionSeminaire ---
+Aucune relation trouvée
+14:    protected $fillable = [
+22:    protected $casts = [
+
+--- Paiement ---
+Aucune relation trouvée
+12:    protected $fillable = [
+39:    protected $casts = [
+
+--- Presence ---
+Aucune relation trouvée
+12:    protected $fillable = [
+20:    protected $casts = [
+
+--- Seminaire ---
+Aucune relation trouvée
+13:    protected $fillable = [
+31:    protected $casts = [
+
+--- User ---
+Aucune relation trouvée
+16:    protected $fillable = [
+27:    protected $casts = [
+
+--- UserCeinture ---
+Aucune relation trouvée
+15:    protected $fillable = [
+26:    protected $casts = [
+
+=== RECHERCHE RÉFÉRENCES OBSOLÈTES DANS MODÈLES ===
+Aucune référence obsolète trouvée
+
+=== TRAITS UTILISÉS ===
+app/Models/Ceinture.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Ceinture.php:    use HasFactory;
+app/Models/User.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/User.php:use Spatie\Permission\Traits\HasRoles;
+app/Models/User.php:    use HasFactory, Notifiable, HasRoles;
+app/Models/InscriptionCours.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/InscriptionCours.php:    use HasFactory;
+app/Models/InscriptionSeminaire.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/InscriptionSeminaire.php:    use HasFactory;
+app/Models/Seminaire.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Seminaire.php:    use HasFactory;
+app/Models/CoursHoraire.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/CoursHoraire.php:    use HasFactory;
+app/Models/Presence.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Presence.php:    use HasFactory;
+app/Models/Cours.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Cours.php:use Illuminate\Database\Eloquent\SoftDeletes;
+app/Models/Cours.php:    use HasFactory, SoftDeletes;
+app/Models/UserCeinture.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/UserCeinture.php:    use HasFactory;
+app/Models/Paiement.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Paiement.php:    use HasFactory;
+app/Models/Ecole.php:use Illuminate\Database\Eloquent\Factories\HasFactory;
+app/Models/Ecole.php:    use HasFactory;
+
+=== ANALYSE SPÉCIFIQUE USER.PHP ===
+    public function ecole(): BelongsTo
+        return $this->belongsTo(Ecole::class);
+    public function userCeintures(): HasMany
+        return $this->hasMany(UserCeinture::class);
+    public function ceintureActuelle(): BelongsTo
+        return $this->belongsTo(Ceinture::class, 'ceinture_actuelle_id');
+    protected static function boot()
+        static::created(function ($user) {
+    public function getAgeAttribute()
+    public function getDerniereCeintureAttribute()
