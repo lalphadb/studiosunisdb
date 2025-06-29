@@ -1,235 +1,186 @@
 @extends('layouts.admin')
-@section('title', 'Gestion des Séminaires')
 
 @section('content')
-<div class="space-y-6">
-    <!-- Header avec x-module-header -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header du module -->
     <x-module-header 
-        module="seminaire"
-        title="Gestion des Séminaires"
-        subtitle="Administration des Séminaires du système"
+        module="seminaires"
+        title="Gestion des Séminaires" 
+        subtitle="Organisation et suivi des séminaires inter-écoles"
         create-route="{{ route('admin.seminaires.create') }}"
-        create-text="Nouveau"
         create-permission="create,App\Models\Seminaire"
     />
 
-<div class="space-y-6">
-    <!-- Header avec gradient ROUGE (pour séminaires) -->
-    <div class="bg-gradient-to-r from-red-500 to-pink-600 rounded-xl p-6 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold flex items-center">
-                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                    Gestion des Séminaires
-                </h1>
-                <p class="text-red-100 text-lg">Gestion de vos séminaires inter-écoles</p>
-            </div>
-            <a href="{{ route('admin.seminaires.create') }}" 
-               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Nouveau Séminaire
-            </a>
-        </div>
-    </div>
+    <!-- Section principale -->
+    <div class="bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden mt-6">
+        <!-- Barre de recherche et filtres -->
+        <div class="p-6 border-b border-slate-700">
+            <form method="GET" action="{{ route('admin.seminaires.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <!-- Recherche -->
+                <div class="md:col-span-2">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ request('search') }}"
+                        placeholder="Rechercher par titre, instructeur, lieu..."
+                        aria-label="Rechercher des séminaires"
+                        class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    >
+                </div>
 
-    <!-- Métriques avec couleurs rouges/roses -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-600">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
+                <!-- Filtre type -->
+                <div>
+                    <select name="type" aria-label="Filtrer par type" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        <option value="">Tous les types</option>
+                        <option value="technique" {{ request('type') === 'technique' ? 'selected' : '' }}>Technique</option>
+                        <option value="kata" {{ request('type') === 'kata' ? 'selected' : '' }}>Kata</option>
+                        <option value="competition" {{ request('type') === 'competition' ? 'selected' : '' }}>Compétition</option>
+                        <option value="arbitrage" {{ request('type') === 'arbitrage' ? 'selected' : '' }}>Arbitrage</option>
+                    </select>
                 </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $seminaires->total() }}</div>
-                    <div class="text-sm text-slate-400">Total Séminaires</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-600">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $seminaires->where('date_debut', '>=', now())->count() }}</div>
-                    <div class="text-sm text-slate-400">À Venir</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-600">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $seminaires->where('inscription_ouverte', true)->count() }}</div>
-                    <div class="text-sm text-slate-400">Inscriptions Ouvertes</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">0</div>
-                    <div class="text-sm text-slate-400">Participants</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Section Vos Séminaires avec header rouge -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-        <div class="bg-red-600 px-6 py-4">
-            <h3 class="text-lg font-semibold text-white flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-                Vos Séminaires
-            </h3>
+                <!-- Filtre niveau -->
+                <div>
+                    <select name="niveau_requis" aria-label="Filtrer par niveau" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        <option value="">Tous niveaux</option>
+                        <option value="debutant" {{ request('niveau_requis') === 'debutant' ? 'selected' : '' }}>Débutant</option>
+                        <option value="intermediaire" {{ request('niveau_requis') === 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>
+                        <option value="avance" {{ request('niveau_requis') === 'avance' ? 'selected' : '' }}>Avancé</option>
+                        <option value="tous_niveaux" {{ request('niveau_requis') === 'tous_niveaux' ? 'selected' : '' }}>Tous niveaux</option>
+                    </select>
+                </div>
+
+                <!-- Bouton recherche -->
+                <div>
+                    <button type="submit" aria-label="Lancer la recherche" class="w-full bg-pink-600 hover:bg-pink-700 text-white rounded-lg px-4 py-2 font-medium transition-colors duration-200">
+                        🔍 Rechercher
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <!-- Barre de recherche identique aux autres modules -->
-        <div class="px-6 py-4 border-b border-slate-700">
-            <div class="flex items-center space-x-4">
-                <div class="flex-1">
-                    <input type="text" 
-                           placeholder="Rechercher un séminaire par titre, instructeur..."
-                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
-                </div>
-                <select class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <option>Tous les types</option>
-                    <option>Technique</option>
-                    <option>Kata</option>
-                    <option>Compétition</option>
-                </select>
-                <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    Rechercher
-                </button>
-            </div>
-        </div>
-        
-        <div class="overflow-x-auto">
-            <table class="min-w-full">
-                <thead class="bg-slate-900">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Séminaire</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Date & Lieu</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Type & Niveau</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Statut</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-700">
-                    @forelse($seminaires as $seminaire)
-                    <tr class="hover:bg-slate-700/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-12 w-12">
-                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center">
-                                        <span class="text-white font-bold text-sm">{{ substr($seminaire->titre, 0, 2) }}</span>
+        @if($seminaires->count() > 0)
+            <!-- Table des séminaires -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-900">
+                        <tr class="text-left">
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Séminaire</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Date & Lieu</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Type & Niveau</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Prix</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Statut</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700">
+                        @foreach($seminaires as $seminaire)
+                            <tr class="hover:bg-slate-750 transition-colors duration-150">
+                                <!-- Séminaire -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-12 w-12">
+                                            <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+                                                <span class="text-white font-bold text-lg">🎯</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-white">{{ $seminaire->titre }}</div>
+                                            <div class="text-sm text-slate-400">{{ $seminaire->instructeur }}</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-white">{{ $seminaire->titre }}</div>
-                                    <div class="text-sm text-slate-400">{{ $seminaire->instructeur }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $seminaire->date_debut_formatee }}</div>
-                            <div class="text-sm text-slate-400">{{ $seminaire->lieu }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-300 mr-1">
-                                {{ ucfirst($seminaire->type) }}
-                            </span>
-                            <div class="text-sm text-slate-400 mt-1">{{ ucfirst($seminaire->niveau_requis) }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($seminaire->inscription_ouverte)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-300">
-                                    ✓ Ouvert
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-900 text-gray-300">
-                                    ✗ Fermé
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-2">
-                                <a href="{{ route('admin.seminaires.show', $seminaire) }}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
-                                   title="Voir les détails">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                </a>
-                                <a href="{{ route('admin.seminaires.edit', $seminaire) }}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white transition-colors duration-200"
-                                   title="Modifier">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                </a>
-                                <form method="POST" action="{{ route('admin.seminaires.destroy', $seminaire) }}" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
-                                            title="Supprimer"
-                                            onclick="return confirm('Supprimer ce séminaire ?')">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <div class="text-slate-400">
-                                <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-slate-300">Aucun séminaire trouvé</h3>
-                                <p class="mt-1 text-sm text-slate-500">Commencez par créer un premier séminaire.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        
-        @if($seminaires->hasPages())
-        <div class="px-6 py-4 border-t border-slate-700">
-            {{ $seminaires->links() }}
-        </div>
+                                </td>
+                                <!-- Date & Lieu -->
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-white">{{ $seminaire->date_debut_formatee }}</div>
+                                    <div class="text-sm text-slate-400">{{ $seminaire->heure_debut_formatee }} - {{ $seminaire->heure_fin_formatee }}</div>
+                                    <div class="text-sm text-slate-400">{{ $seminaire->lieu }}</div>
+                                </td>
+                                <!-- Type & Niveau -->
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-600 text-white">
+                                        {{ $seminaire->type_text }}
+                                    </span>
+                                    <div class="text-xs text-slate-400 mt-1">{{ $seminaire->niveau_requis_text }}</div>
+                                </td>
+                                <!-- Prix -->
+                                <td class="px-6 py-4">
+                                    @if($seminaire->prix)
+                                        <div class="text-sm text-white">${{ number_format($seminaire->prix, 2) }}</div>
+                                    @else
+                                        <div class="text-sm text-slate-400">Gratuit</div>
+                                    @endif
+                                </td>
+                                <!-- Statut -->
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $seminaire->statut_badge }}">
+                                        {{ $seminaire->statut_text }}
+                                    </span>
+                                    @if($seminaire->inscription_ouverte)
+                                        <div class="text-xs text-green-400 mt-1">Inscriptions ouvertes</div>
+                                    @else
+                                        <div class="text-xs text-red-400 mt-1">Inscriptions fermées</div>
+                                    @endif
+                                </td>
+                                <!-- Actions -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        @can('view', $seminaire)
+                                            <a href="{{ route('admin.seminaires.show', $seminaire) }}" 
+                                               aria-label="Voir le détail du séminaire"
+                                               class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
+                                                👁️
+                                            </a>
+                                        @endcan
+                                        @can('update', $seminaire)
+                                            <a href="{{ route('admin.seminaires.edit', $seminaire) }}" 
+                                               aria-label="Modifier le séminaire"
+                                               class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200">
+                                                ✏️
+                                            </a>
+                                        @endcan
+                                        @can('delete', $seminaire)
+                                            <form method="POST" action="{{ route('admin.seminaires.destroy', $seminaire) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce séminaire ?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" aria-label="Supprimer le séminaire" class="text-red-400 hover:text-red-300 transition-colors duration-200">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 bg-slate-750 border-t border-slate-700">
+                {{ $seminaires->appends(request()->query())->links() }}
+            </div>
+
+        @else
+            <!-- État vide -->
+            <div class="text-center py-16">
+                <div class="text-6xl mb-4">🎯</div>
+                <h3 class="text-xl font-semibold text-white mb-2">Aucun séminaire trouvé</h3>
+                <p class="text-slate-400 mb-6">
+                    @if(request()->hasAny(['search', 'type', 'niveau_requis']))
+                        Aucun séminaire ne correspond à vos critères de recherche.
+                    @else
+                        Commencez par organiser votre premier séminaire.
+                    @endif
+                </p>
+                @can('create', App\Models\Seminaire::class)
+                    <a href="{{ route('admin.seminaires.create') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-medium rounded-lg transition-colors duration-200">
+                        <span class="mr-2">🎯</span>
+                        Nouveau séminaire
+                    </a>
+                @endcan
+            </div>
         @endif
     </div>
 </div>

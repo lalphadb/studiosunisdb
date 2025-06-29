@@ -3,54 +3,93 @@
     'title', 
     'subtitle',
     'createRoute' => null,
-    'createPermission' => null
+    'createPermission' => null,
+    'createText' => 'Nouveau'
 ])
 
 @php
-$colors = [
-    'dashboard' => ['primary' => 'blue-500', 'secondary' => 'cyan-600', 'icon' => '📊'],
-    'ecole' => ['primary' => 'green-500', 'secondary' => 'emerald-600', 'icon' => '🏫'],
-    'user' => ['primary' => 'blue-500', 'secondary' => 'cyan-600', 'icon' => '👤'],
-    'ceinture' => ['primary' => 'orange-500', 'secondary' => 'red-600', 'icon' => '🥋'],
-    'cours' => ['primary' => 'purple-500', 'secondary' => 'indigo-600', 'icon' => '📚'],
-    'seminaire' => ['primary' => 'pink-500', 'secondary' => 'purple-600', 'icon' => '🎯'],
-    'paiement' => ['primary' => 'yellow-500', 'secondary' => 'orange-600', 'icon' => '💰'],
-    'presence' => ['primary' => 'teal-500', 'secondary' => 'green-600', 'icon' => '✅']
+// Configuration des icônes par module selon StudiosDB v5.7.1
+$moduleIcons = [
+    'dashboard' => '📊',
+    'ecoles' => '🏫',
+    'ecole' => '🏫',
+    'users' => '👤',
+    'user' => '👤',
+    'ceintures' => '🥋',
+    'ceinture' => '🥋',
+    'cours' => '📚',
+    'seminaires' => '🎯',
+    'seminaire' => '🎯',
+    'paiements' => '💰',
+    'paiement' => '💰',
+    'presences' => '✅',
+    'presence' => '✅'
 ];
-$moduleConfig = $colors[$module] ?? $colors['dashboard'];
+$icon = $moduleIcons[$module] ?? '📊';
 @endphp
 
-<header class="bg-gradient-to-r from-{{ $moduleConfig['primary'] }} via-{{ $moduleConfig['secondary'] }} to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+<!-- Header avec classes CSS complètes pour chaque module -->
+@if($module === 'dashboard')
+    <header class="bg-gradient-to-r from-blue-500 via-cyan-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'ecoles' || $module === 'ecole')
+    <header class="bg-gradient-to-r from-green-500 via-emerald-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'users' || $module === 'user')
+    <header class="bg-gradient-to-r from-blue-500 via-cyan-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'ceintures' || $module === 'ceinture')
+    <header class="bg-gradient-to-r from-orange-500 via-red-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'cours')
+    <header class="bg-gradient-to-r from-purple-500 via-indigo-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'seminaires' || $module === 'seminaire')
+    <header class="bg-gradient-to-r from-pink-500 via-purple-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'paiements' || $module === 'paiement')
+    <header class="bg-gradient-to-r from-yellow-500 via-orange-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@elseif($module === 'presences' || $module === 'presence')
+    <header class="bg-gradient-to-r from-teal-500 via-green-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@else
+    <header class="bg-gradient-to-r from-blue-500 via-cyan-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+@endif
+    <!-- Overlay pour fade vers le noir/transparent -->
     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900 opacity-60"></div>
     
+    <!-- Contenu principal -->
     <div class="relative z-10 flex items-center justify-between">
         <div class="flex items-center space-x-4">
-            <span class="text-3xl">{{ $moduleConfig['icon'] }}</span>
+            <!-- Icône du module -->
+            <div class="flex-shrink-0">
+                <div class="h-16 w-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <span class="text-3xl">{{ $icon }}</span>
+                </div>
+            </div>
+            
+            <!-- Titre et sous-titre -->
             <div>
-                <h1 class="text-2xl font-bold">{{ $title }}</h1>
-                <p class="text-white/80">{{ $subtitle }}</p>
+                <h1 class="text-3xl font-bold text-white">{{ $title }}</h1>
+                @if($subtitle)
+                    <p class="text-white/80 mt-1 text-lg">{{ $subtitle }}</p>
+                @endif
             </div>
         </div>
         
+        <!-- Bouton d'action -->
         @if($createRoute)
             @if($createPermission)
                 @can($createPermission)
-                    <a href="{{ $createRoute }}" 
-                       class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>Nouveau</span>
-                    </a>
+                    <div class="flex-shrink-0">
+                        <a href="{{ $createRoute }}" 
+                           class="inline-flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40">
+                            <span class="mr-2">➕</span>
+                            <span>{{ $createText }}</span>
+                        </a>
+                    </div>
                 @endcan
             @else
-                <a href="{{ $createRoute }}" 
-                   class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    <span>Nouveau</span>
-                </a>
+                <div class="flex-shrink-0">
+                    <a href="{{ $createRoute }}" 
+                       class="inline-flex items-center px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40">
+                        <span class="mr-2">➕</span>
+                        <span>{{ $createText }}</span>
+                    </a>
+                </div>
             @endif
         @endif
     </div>

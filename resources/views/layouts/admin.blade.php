@@ -9,12 +9,12 @@
 </head>
 <body class="bg-slate-900 text-white font-sans h-full">
     <div class="h-full flex">
-        <!-- Sidebar - CORRECTION: hauteur fixe -->
+        <!-- Sidebar - COULEURS CORRIGÉES -->
         <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col flex-shrink-0">
             <!-- Logo -->
             <div class="p-4 border-b border-slate-700 flex-shrink-0">
                 <div class="flex items-center">
-                    <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
                         <span class="text-white font-bold text-sm">S</span>
                     </div>
                     <div class="ml-3">
@@ -24,66 +24,73 @@
                 </div>
             </div>
             
-            <!-- Navigation - CORRECTION: scrollable si nécessaire -->
+            <!-- Navigation - COULEURS CORRIGÉES SELON StudiosDB v5.7.1 -->
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <!-- Dashboard -->
+                <!-- Dashboard: blue-500 to cyan-600 (CORRIGÉ) -->
                 <a href="{{ route('admin.dashboard') }}" 
-                   class="flex items-center px-4 py-2 text-white hover:bg-blue-600 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600' : '' }}">
+                   class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-cyan-600/20 hover:text-white' }}">
                     <span class="mr-3 text-lg">📊</span>
                     <span>Dashboard</span>
                 </a>
 
                 @can('viewAny', App\Models\User::class)
+                    <!-- Users: blue-500 to cyan-600 -->
                     <a href="{{ route('admin.users.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-blue-600 rounded-lg transition-colors {{ request()->routeIs('admin.users.*') ? 'bg-blue-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-cyan-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">👤</span>
                         <span>Utilisateurs</span>
                     </a>
                 @endcan
                 
                 @can('viewAny', App\Models\Ecole::class)
+                    <!-- Ecoles: green-500 to emerald-600 -->
                     <a href="{{ route('admin.ecoles.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-green-600 rounded-lg transition-colors {{ request()->routeIs('admin.ecoles.*') ? 'bg-green-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.ecoles.*') ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-green-500/20 hover:to-emerald-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">🏫</span>
                         <span>Écoles</span>
                     </a>
                 @endcan
                 
                 @can('viewAny', App\Models\Cours::class)
+                    <!-- Cours: purple-500 to indigo-600 -->
                     <a href="{{ route('admin.cours.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-purple-600 rounded-lg transition-colors {{ request()->routeIs('admin.cours.*') ? 'bg-purple-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.cours.*') ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-indigo-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">📚</span>
                         <span>Cours</span>
                     </a>
                 @endcan
                 
                 @can('viewAny', App\Models\Seminaire::class)
+                    <!-- Séminaires: pink-500 to purple-600 -->
                     <a href="{{ route('admin.seminaires.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-pink-600 rounded-lg transition-colors {{ request()->routeIs('admin.seminaires.*') ? 'bg-pink-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.seminaires.*') ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-pink-500/20 hover:to-purple-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">🎯</span>
                         <span>Séminaires</span>
                     </a>
                 @endcan
                 
                 @can('viewAny', App\Models\Ceinture::class)
+                    <!-- Ceintures: orange-500 to red-600 -->
                     <a href="{{ route('admin.ceintures.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-orange-600 rounded-lg transition-colors {{ request()->routeIs('admin.ceintures.*') ? 'bg-orange-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.ceintures.*') ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-orange-500/20 hover:to-red-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">🥋</span>
                         <span>Ceintures</span>
                     </a>
                 @endcan
                 
                 @can('viewAny', App\Models\Paiement::class)
+                    <!-- Paiements: yellow-500 to orange-600 -->
                     <a href="{{ route('admin.paiements.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-yellow-600 rounded-lg transition-colors {{ request()->routeIs('admin.paiements.*') ? 'bg-yellow-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.paiements.*') ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-yellow-500/20 hover:to-orange-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">💰</span>
                         <span>Paiements</span>
                     </a>
                 @endcan
                 
                 @can('viewAny', App\Models\Presence::class)
+                    <!-- Présences: teal-500 to green-600 -->
                     <a href="{{ route('admin.presences.index') }}" 
-                       class="flex items-center px-4 py-2 text-white hover:bg-teal-600 rounded-lg transition-colors {{ request()->routeIs('admin.presences.*') ? 'bg-teal-600' : '' }}">
+                       class="flex items-center px-4 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.presences.*') ? 'bg-gradient-to-r from-teal-500 to-green-600 text-white shadow-lg' : 'text-slate-300 hover:bg-gradient-to-r hover:from-teal-500/20 hover:to-green-600/20 hover:text-white' }}">
                         <span class="mr-3 text-lg">✅</span>
                         <span>Présences</span>
                     </a>
@@ -101,9 +108,16 @@
                     </div>
                 @endif
             </nav>
+            
+            <!-- Version StudiosDB -->
+            <div class="p-4 border-t border-slate-700 flex-shrink-0">
+                <div class="text-xs text-slate-500 text-center">
+                    StudiosDB v5.7.1
+                </div>
+            </div>
         </aside>
         
-        <!-- Main Content - CORRECTION: flex-1 et min-h-0 -->
+        <!-- Main Content -->
         <div class="flex-1 flex flex-col min-h-0">
             <!-- Header -->
             <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex-shrink-0">
@@ -122,7 +136,7 @@
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" 
                                 class="flex items-center space-x-3 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors">
-                            <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center">
                                 <span class="text-white text-sm font-medium">{{ substr(auth()->user()->name, 0, 1) }}</span>
                             </div>
                             <div class="text-left">
@@ -170,7 +184,7 @@
                                     <button type="submit" 
                                             class="flex items-center w-full px-4 py-2 text-slate-300 hover:bg-red-600 hover:text-white transition-colors">
                                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1"></path>
                                         </svg>
                                         Déconnexion
                                     </button>
@@ -181,7 +195,7 @@
                 </div>
             </header>
             
-            <!-- Main Content Area - CORRECTION: overflow-y-auto pour contenu long -->
+            <!-- Main Content Area -->
             <main class="flex-1 p-6 overflow-y-auto">
                 <!-- Flash Messages -->
                 @if (session('success'))
@@ -203,5 +217,7 @@
 
     <!-- Alpine.js pour les dropdowns -->
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    @stack('scripts')
 </body>
 </html>

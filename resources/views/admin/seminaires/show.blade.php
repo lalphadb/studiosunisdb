@@ -4,7 +4,7 @@
 <div class="space-y-6">
     <!-- Header avec x-module-header -->
     <x-module-header 
-        module="seminaire"
+        module="seminaires"
         title="Détails Séminaires"
         subtitle="Informations détaillées"
         create-route="{{ route('admin.seminaires.create') }}"
@@ -45,12 +45,12 @@
                             <label class="block text-sm font-medium text-slate-300 mb-2">Type</label>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                                 @switch($seminaire->type)
-                                    @case('technique') bg-blue-100 text-blue-800 @break
-                                    @case('kata') bg-purple-100 text-purple-800 @break
-                                    @case('competition') bg-red-100 text-red-800 @break
-                                    @case('arbitrage') bg-yellow-100 text-yellow-800 @break
-                                    @case('grade') bg-green-100 text-green-800 @break
-                                    @default bg-gray-100 text-gray-800
+                                    @case('technique') bg-pink-600 text-white @break
+                                    @case('kata') bg-purple-600 text-white @break
+                                    @case('competition') bg-pink-700 text-white @break
+                                    @case('arbitrage') bg-purple-700 text-white @break
+                                    @case('grade') bg-pink-800 text-white @break
+                                    @default bg-pink-600 text-white
                                 @endswitch">
                                 @switch($seminaire->type)
                                     @case('technique') 🥋 Technique @break
@@ -67,11 +67,11 @@
                             <label class="block text-sm font-medium text-slate-300 mb-2">Statut</label>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                                 @switch($seminaire->statut)
-                                    @case('planifie') bg-gray-100 text-gray-800 @break
-                                    @case('ouvert') bg-green-100 text-green-800 @break
-                                    @case('complet') bg-yellow-100 text-yellow-800 @break
-                                    @case('termine') bg-blue-100 text-blue-800 @break
-                                    @case('annule') bg-red-100 text-red-800 @break
+                                    @case('planifie') bg-gray-600 text-white @break
+                                    @case('ouvert') bg-green-600 text-white @break
+                                    @case('complet') bg-yellow-600 text-white @break
+                                    @case('termine') bg-blue-600 text-white @break
+                                    @case('annule') bg-red-600 text-white @break
                                 @endswitch">
                                 @switch($seminaire->statut)
                                     @case('planifie') 📅 Planifié @break
@@ -171,7 +171,7 @@
                             👥 Participants ({{ $seminaire->inscriptions->count() }})
                         </h2>
                         @if($seminaire->statut == 'ouvert')
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <button class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                             + Ajouter Participant
                         </button>
                         @endif
@@ -193,11 +193,11 @@
                                 @foreach($seminaire->inscriptions as $inscription)
                                 <tr class="hover:bg-slate-700/50 transition-colors">
                                     <td class="px-4 py-3">
-                                        <div class="text-white font-medium">{{ $inscription->user->prenom }} {{ $inscription->user->nom }}</div>
+                                        <div class="text-white font-medium">{{ $inscription->user->name }}</div>
                                         <div class="text-slate-400 text-sm">{{ $inscription->user->email }}</div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
                                             🥋 {{ $inscription->user->ecole?->nom ?? 'StudiosUnisDB' }}
                                         </span>
                                     </td>
@@ -207,10 +207,10 @@
                                     <td class="px-4 py-3">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             @switch($inscription->statut)
-                                                @case('inscrit') bg-blue-100 text-blue-800 @break
-                                                @case('present') bg-green-100 text-green-800 @break
-                                                @case('absent') bg-red-100 text-red-800 @break
-                                                @default bg-gray-100 text-gray-800
+                                                @case('inscrit') bg-blue-600 text-white @break
+                                                @case('present') bg-green-600 text-white @break
+                                                @case('absent') bg-red-600 text-white @break
+                                                @default bg-gray-600 text-white
                                             @endswitch">
                                             @switch($inscription->statut)
                                                 @case('inscrit') 📝 Inscrit @break
@@ -263,7 +263,7 @@
                             <span class="text-white font-medium">{{ $seminaire->max_participants }}</span>
                         </div>
                         <div class="w-full bg-slate-700 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" 
+                            <div class="bg-pink-500 h-2 rounded-full" 
                                  style="width: {{ $seminaire->max_participants > 0 ? min(($seminaire->inscriptions->count() / $seminaire->max_participants) * 100, 100) : 0 }}%"></div>
                         </div>
                         @endif

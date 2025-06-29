@@ -8,7 +8,7 @@
         module="ceinture"
         title="Gestion des Ceintures"
         subtitle="Administration des Ceintures du système"
-        create-route="{{ route('admin.ceinture.create') }}"
+        create-route="{{ route('admin.ceintures.create') }}"
         create-text="Nouveau"
         create-permission="create,App\Models\Ceinture"
     />

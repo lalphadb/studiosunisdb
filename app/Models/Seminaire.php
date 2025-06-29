@@ -4,90 +4,138 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Seminaire extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'ecole_id',
         'titre',
         'description',
         'type',
         'date_debut',
         'date_fin',
-        'heure_debut',
-        'heure_fin',
         'lieu',
-        'adresse_lieu',
-        'ville_lieu',
         'instructeur',
-        'prix',
         'niveau_requis',
+        'max_participants',
+        'cout',
+        'statut',
         'inscription_ouverte',
-        'materiel_requis'
+        'certificat',
+        'objectifs',
+        'prerequis',
+        'duree'
     ];
 
     protected $casts = [
-        'date_debut' => 'date',
-        'date_fin' => 'date',
-        'prix' => 'decimal:2',
-        'inscription_ouverte' => 'boolean'
+        'date_debut' => 'datetime',
+        'date_fin' => 'datetime',
+        'inscription_ouverte' => 'boolean',
+        'certificat' => 'boolean',
+        'cout' => 'decimal:2'
     ];
 
-    // Relations
-    public function inscriptions()
+    /**
+     * RELATION MANQUANTE - École organisatrice
+     */
+    public function ecole(): BelongsTo
+    {
+        return $this->belongsTo(Ecole::class);
+    }
+
+    /**
+     * Inscriptions au séminaire
+     */
+    public function inscriptions(): HasMany
     {
         return $this->hasMany(InscriptionSeminaire::class);
     }
 
-    // Accesseurs pour format canadien français
-    public function getDateDebutFormateeAttribute()
+    /**
+     * Accesseurs pour affichage
+     */
+    public function getTypeTextAttribute(): string
     {
-        return $this->date_debut ? $this->date_debut->format('d/m/Y') : null;
+        return match($this->type) {
+            'technique' => 'Technique',
+            'kata' => 'Kata',
+            'competition' => 'Compétition',
+            'arbitrage' => 'Arbitrage',
+            'grade' => 'Passage de Grade',
+            'formation' => 'Formation',
+            default => ucfirst($this->type)
+        };
     }
 
-    public function getDateFinFormateeAttribute()
+    public function getNiveauRequisTextAttribute(): string
     {
-        return $this->date_fin ? $this->date_fin->format('d/m/Y') : null;
+        return match($this->niveau_requis) {
+            'debutant' => 'Débutant',
+            'intermediaire' => 'Intermédiaire',
+            'avance' => 'Avancé',
+            'tous_niveaux' => 'Tous niveaux',
+            default => ucfirst($this->niveau_requis)
+        };
     }
 
-    public function getHeureDebutFormateeAttribute()
+    public function getStatutTextAttribute(): string
     {
-        return $this->heure_debut ? Carbon::parse($this->heure_debut)->format('H:i') : null;
+        return match($this->statut) {
+            'planifie' => 'Planifié',
+            'ouvert' => 'Ouvert',
+            'complet' => 'Complet',
+            'termine' => 'Terminé',
+            'annule' => 'Annulé',
+            default => ucfirst($this->statut)
+        };
     }
 
-    public function getHeureFinFormateeAttribute()
+    public function getStatutBadgeAttribute(): string
     {
-        return $this->heure_fin ? Carbon::parse($this->heure_fin)->format('H:i') : null;
+        return match($this->statut) {
+            'planifie' => 'bg-gray-600 text-white',
+            'ouvert' => 'bg-green-600 text-white',
+            'complet' => 'bg-yellow-600 text-white',
+            'termine' => 'bg-blue-600 text-white',
+            'annule' => 'bg-red-600 text-white',
+            default => 'bg-gray-600 text-white'
+        };
     }
 
-    // Scope pour séminaires à venir
-    public function scopeAVenir($query)
+    public function getDateDebutFormateeAttribute(): string
     {
-        return $query->where('date_debut', '>=', now()->toDateString());
+        return $this->date_debut ? $this->date_debut->format('d/m/Y') : '';
     }
 
-    // Scope pour séminaires ouverts aux inscriptions
-    public function scopeInscriptionOuverte($query)
+    public function getHeureDebutFormateeAttribute(): string
     {
-        return $query->where('inscription_ouverte', true);
+        return $this->date_debut ? $this->date_debut->format('H:i') : '';
     }
 
-    // Nombre d'inscrits
-    public function getNombreInscritsAttribute()
+    public function getHeureFinFormateeAttribute(): string
     {
-        return $this->inscriptions()->count();
+        return $this->date_fin ? $this->date_fin->format('H:i') : '';
     }
 
-    // Durée en heures
-    public function getDureeHeuresAttribute()
+    /**
+     * Scopes pour filtrage
+     */
+    public function scopeForEcole($query, $ecoleId)
     {
-        if (!$this->heure_debut || !$this->heure_fin) return null;
-        
-        $debut = Carbon::parse($this->heure_debut);
-        $fin = Carbon::parse($this->heure_fin);
-        
-        return $debut->diffInHours($fin);
+        return $query->where('ecole_id', $ecoleId);
+    }
+
+    public function scopeOuvert($query)
+    {
+        return $query->where('statut', 'ouvert')->where('inscription_ouverte', true);
+    }
+
+    public function scopeAvecInscriptions($query)
+    {
+        return $query->with(['inscriptions.user', 'ecole']);
     }
 }

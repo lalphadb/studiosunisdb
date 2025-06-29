@@ -1,332 +1,327 @@
 @extends('layouts.admin')
 
-@section('title', 'Inscriptions - ' . $seminaire->nom)
-
 @section('content')
-<div class="py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- En-tête -->
-        <div class="md:flex md:items-center md:justify-between mb-8">
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center">
-                    <a href="{{ route('admin.seminaires.index') }}" 
-                       class="text-gray-400 hover:text-white transition duration-150 mr-4">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
-                        </svg>
-                    </a>
-                    <div>
-                        <h1 class="text-3xl font-bold text-white">
-                            👥 Inscriptions - {{ $seminaire->nom }}
-                        </h1>
-                        <div class="mt-1 flex items-center space-x-4 text-sm text-gray-300">
-                            <span>{{ $seminaire->intervenant }}</span>
-                            <span>•</span>
-                            <span>{{ $seminaire->date_debut->format('d/m/Y H:i') }}</span>
-                            <span>•</span>
-                            <span>{{ $inscriptions->total() }}/{{ $seminaire->capacite_max }} inscrits</span>
-                        </div>
-                    </div>
-                </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">👥 Inscriptions - {{ $seminaire->titre }}</h1>
+                <p class="text-slate-400 mt-1">
+                    {{ $seminaire->instructeur }} • {{ $seminaire->date_debut->format('d/m/Y H:i') }} • 
+                    {{ $inscriptions->total() }} participant(s)
+                </p>
             </div>
-            <div class="mt-4 flex space-x-3 md:mt-0 md:ml-4">
+            <div class="flex items-center space-x-4">
                 <a href="{{ route('admin.seminaires.inscrire', $seminaire) }}" 
-                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition duration-150">
-                    ➕ Inscrire un membre
+                   class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    ➕ Inscrire
                 </a>
                 <a href="{{ route('admin.seminaires.show', $seminaire) }}" 
-                   class="inline-flex items-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-slate-700 hover:bg-slate-600 transition duration-150">
-                    👁️ Voir le séminaire
+                   class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    ← Retour
                 </a>
             </div>
         </div>
+    </div>
 
-        <!-- Messages Flash -->
-        @if(session('success'))
-            <div class="rounded-md bg-green-50 p-4 mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
+    <!-- Section principale -->
+    <div class="bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden">
+        @if($inscriptions->count() > 0)
+            <!-- Actions de masse -->
+            <div class="p-6 border-b border-slate-700 bg-slate-750">
+                <form id="bulk-action-form" method="POST" action="{{ route('admin.seminaires.bulk-validate-inscriptions', $seminaire) }}">
+                    @csrf
+                    <div class="flex flex-wrap items-center gap-4">
+                        <!-- Sélection -->
+                        <div class="flex items-center space-x-3">
+                            <input 
+                                type="checkbox" 
+                                id="select-all" 
+                                aria-label="Sélectionner toutes les inscriptions"
+                                class="w-4 h-4 text-pink-600 bg-slate-700 border-slate-600 rounded focus:ring-pink-500"
+                            >
+                            <label for="select-all" class="text-sm text-slate-300">Tout sélectionner</label>
+                            <span id="selected-count" class="text-sm text-pink-400 font-medium" aria-live="polite">0 sélectionné(s)</span>
+                        </div>
 
-        @if(session('error'))
-            <div class="rounded-md bg-red-50 p-4 mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        <!-- Statistiques rapides -->
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-4 mb-6">
-            <div class="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm">👥</span>
+                        <!-- Actions -->
+                        <div class="flex items-center space-x-2">
+                            <select name="action" id="bulk-action" aria-label="Choisir une action de masse" class="bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500" required>
+                                <option value="">Choisir une action</option>
+                                <option value="confirmer_inscription">✅ Confirmer inscription</option>
+                                <option value="marquer_present">👋 Marquer présent</option>
+                                <option value="marquer_absent">❌ Marquer absent</option>
+                                @if($seminaire->certificat)
+                                    <option value="attribuer_certificat">🏆 Attribuer certificat</option>
+                                @endif
+                                <option value="annuler_inscription">🚫 Annuler inscription</option>
+                                @if(auth()->user()->hasAnyRole(['superadmin', 'admin_ecole']))
+                                    <option value="supprimer">🗑️ Supprimer</option>
+                                @endif
+                            </select>
+                            <button 
+                                type="submit" 
+                                id="bulk-submit"
+                                aria-label="Appliquer l'action sélectionnée"
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled
+                            >
+                                Appliquer
+                            </button>
                         </div>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-300">Total inscrits</p>
-                        <p class="text-lg font-semibold text-white">{{ $inscriptions->total() }}</p>
-                    </div>
-                </div>
+                </form>
             </div>
 
-            <div class="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm">✅</span>
-                        </div>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-300">Présents</p>
-                        <p class="text-lg font-semibold text-white">{{ $inscriptions->where('statut', 'present')->count() }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm">💰</span>
-                        </div>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-300">Total reçu</p>
-                        <p class="text-lg font-semibold text-white">{{ number_format($inscriptions->sum('montant_paye'), 2) }} $</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-800 border border-slate-700 rounded-lg p-4">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm">📜</span>
-                        </div>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-300">Certificats</p>
-                        <p class="text-lg font-semibold text-white">{{ $inscriptions->where('certificat_obtenu', true)->count() }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Liste des inscriptions -->
-        <div class="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+            <!-- Table des inscriptions -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-600">
-                    <thead class="bg-slate-700">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Membre</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">École</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Inscription</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Paiement</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Statut</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Certificat</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                <table class="w-full">
+                    <thead class="bg-slate-900">
+                        <tr class="text-left">
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider w-12"></th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Participant</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">École</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Inscription</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Statut</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Certificat</th>
+                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-slate-800 divide-y divide-slate-600">
-                        @forelse($inscriptions as $inscription)
-                        <tr class="hover:bg-slate-700 transition duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-gray-600 flex items-center justify-center">
-                                            <span class="text-sm font-medium text-white">
-                                                {{ substr($inscription->user->nom, 0, 1) }}{{ substr($inscription->user->prenom, 0, 1) }}
-                                            </span>
+                    <tbody class="divide-y divide-slate-700">
+                        @foreach($inscriptions as $inscription)
+                            <tr class="hover:bg-slate-750 transition-colors duration-150">
+                                <!-- Checkbox -->
+                                <td class="px-6 py-4">
+                                    <input 
+                                        type="checkbox" 
+                                        name="inscription_ids[]" 
+                                        value="{{ $inscription->id }}" 
+                                        aria-label="Sélectionner l'inscription de {{ $inscription->user->name }}"
+                                        class="inscription-checkbox w-4 h-4 text-pink-600 bg-slate-700 border-slate-600 rounded focus:ring-pink-500"
+                                    >
+                                </td>
+                                <!-- Participant -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+                                                <span class="text-white font-medium text-sm">
+                                                    {{ substr($inscription->user->name, 0, 2) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-white">{{ $inscription->user->name }}</div>
+                                            <div class="text-sm text-slate-400">{{ $inscription->user->email }}</div>
                                         </div>
                                     </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-white">
-                                            {{ $inscription->user->nom }} {{ $inscription->user->prenom }}
-                                        </div>
-                                        <div class="text-sm text-gray-400">
-                                            {{ $inscription->user->email }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                {{ $inscription->ecole->nom }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                {{ $inscription->date_inscription->format('d/m/Y') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-white">{{ number_format($inscription->montant_paye, 2) }} $</div>
-                                @if($inscription->date_paiement)
-                                    <div class="text-xs text-green-400">Payé le {{ $inscription->date_paiement->format('d/m/Y') }}</div>
-                                @else
-                                    <div class="text-xs text-red-400">Non payé</div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    @if($inscription->statut === 'present') bg-green-100 text-green-800
-                                    @elseif($inscription->statut === 'inscrit') bg-blue-100 text-blue-800
-                                    @elseif($inscription->statut === 'absent') bg-red-100 text-red-800
-                                    @else bg-gray-100 text-gray-800 @endif">
-                                    {{ ucfirst($inscription->statut) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                @if($inscription->certificat_obtenu)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                        📜 Obtenu
+                                </td>
+                                <!-- École -->
+                                <td class="px-6 py-4">
+                                    @if($inscription->user->ecole)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
+                                            {{ $inscription->user->ecole->nom }}
+                                        </span>
+                                    @else
+                                        <span class="text-slate-500">Non assignée</span>
+                                    @endif
+                                </td>
+                                <!-- Date inscription -->
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-slate-300">{{ $inscription->created_at->format('d/m/Y') }}</div>
+                                    @if($inscription->montant_paye)
+                                        <div class="text-xs text-green-400">${{ number_format($inscription->montant_paye, 2) }}</div>
+                                    @endif
+                                </td>
+                                <!-- Statut -->
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                        @switch($inscription->statut)
+                                            @case('present') bg-green-600 text-white @break
+                                            @case('absent') bg-red-600 text-white @break
+                                            @case('confirme') bg-blue-600 text-white @break
+                                            @case('annule') bg-gray-600 text-white @break
+                                            @default bg-yellow-600 text-white
+                                        @endswitch">
+                                        @switch($inscription->statut)
+                                            @case('present') ✅ Présent @break
+                                            @case('absent') ❌ Absent @break
+                                            @case('confirme') 🎯 Confirmé @break
+                                            @case('annule') 🚫 Annulé @break
+                                            @default 📝 En attente
+                                        @endswitch
                                     </span>
-                                @else
-                                    <span class="text-gray-500">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center justify-end space-x-2">
-                                    <!-- Bouton modifier statut -->
-                                    <button onclick="openModal('modal-{{ $inscription->id }}')" 
-                                            class="text-yellow-400 hover:text-yellow-300 transition duration-150">
-                                        ✏️
-                                    </button>
-                                    
-                                    <!-- Bouton supprimer -->
-                                    <form method="POST" action="{{ route('admin.seminaires.inscriptions.destroy', [$seminaire, $inscription]) }}" 
-                                          class="inline" onsubmit="return confirm('Supprimer cette inscription ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-400 hover:text-red-300 transition duration-150">
-                                            🗑️
+                                </td>
+                                <!-- Certificat -->
+                                <td class="px-6 py-4">
+                                    @if($seminaire->certificat)
+                                        @if($inscription->certificat_obtenu)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-600 text-white">
+                                                🏆 Obtenu
+                                            </span>
+                                        @elseif($inscription->statut === 'present')
+                                            <span class="text-yellow-400 text-xs">Éligible</span>
+                                        @else
+                                            <span class="text-slate-500 text-xs">-</span>
+                                        @endif
+                                    @else
+                                        <span class="text-slate-500 text-xs">N/A</span>
+                                    @endif
+                                </td>
+                                <!-- Actions -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="quickAction({{ $inscription->id }}, 'toggle_status')" 
+                                                class="text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                                                title="Basculer le statut">
+                                            🔄
                                         </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Modal de modification pour chaque inscription -->
-                        <div id="modal-{{ $inscription->id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-                            <div class="flex items-center justify-center min-h-screen">
-                                <div class="bg-slate-800 rounded-lg p-6 w-full max-w-md">
-                                    <h3 class="text-lg font-medium text-white mb-4">
-                                        Modifier - {{ $inscription->user->nom }}
-                                    </h3>
-                                    <form method="POST" action="{{ route('admin.seminaires.inscriptions.update', [$seminaire, $inscription]) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        
-                                        <div class="space-y-4">
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-300">Statut</label>
-                                                <select name="statut" class="mt-1 block w-full bg-slate-700 border border-slate-600 rounded-md text-white text-sm">
-                                                    <option value="inscrit" {{ $inscription->statut === 'inscrit' ? 'selected' : '' }}>Inscrit</option>
-                                                    <option value="present" {{ $inscription->statut === 'present' ? 'selected' : '' }}>Présent</option>
-                                                    <option value="absent" {{ $inscription->statut === 'absent' ? 'selected' : '' }}>Absent</option>
-                                                    <option value="annule" {{ $inscription->statut === 'annule' ? 'selected' : '' }}>Annulé</option>
-                                                </select>
-                                            </div>
-                                            
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-300">Montant payé ($)</label>
-                                                <input type="number" name="montant_paye" step="0.01" value="{{ $inscription->montant_paye }}"
-                                                       class="mt-1 block w-full bg-slate-700 border border-slate-600 rounded-md text-white text-sm">
-                                            </div>
-                                            
-                                            <div>
-                                                <label class="flex items-center">
-                                                    <input type="checkbox" name="certificat_obtenu" {{ $inscription->certificat_obtenu ? 'checked' : '' }}
-                                                           class="h-4 w-4 text-blue-600 bg-slate-700 border-slate-600 rounded">
-                                                    <span class="ml-2 text-sm text-gray-300">Certificat obtenu</span>
-                                                </label>
-                                            </div>
-                                            
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-300">Notes</label>
-                                                <textarea name="notes_participant" rows="3"
-                                                          class="mt-1 block w-full bg-slate-700 border border-slate-600 rounded-md text-white text-sm">{{ $inscription->notes_participant }}</textarea>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex justify-end space-x-3 mt-6">
-                                            <button type="button" onclick="closeModal('modal-{{ $inscription->id }}')"
-                                                    class="px-4 py-2 text-sm font-medium text-gray-300 bg-slate-600 rounded-md hover:bg-slate-500">
-                                                Annuler
+                                        @if($seminaire->certificat && $inscription->statut === 'present' && !$inscription->certificat_obtenu)
+                                            <button onclick="quickAction({{ $inscription->id }}, 'certificat')" 
+                                                    class="text-purple-400 hover:text-purple-300 transition-colors duration-200"
+                                                    title="Attribuer certificat">
+                                                🏆
                                             </button>
-                                            <button type="submit"
-                                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                                                Sauvegarder
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
-                                <div class="text-gray-400">
-                                    <div class="text-6xl mb-4">👥</div>
-                                    <p class="text-lg font-medium mb-2">Aucune inscription</p>
-                                    <p class="text-sm mb-4">Ce séminaire n'a encore aucun participant.</p>
-                                    <a href="{{ route('admin.seminaires.inscrire', $seminaire) }}" 
-                                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                        Inscrire le premier membre
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
+                                        @endif
+                                        @can('delete', $inscription)
+                                            <form method="POST" action="{{ route('admin.seminaires.inscriptions.destroy', [$seminaire, $inscription]) }}" class="inline" onsubmit="return confirm('Supprimer cette inscription ?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-400 hover:text-red-300 transition-colors duration-200">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
-            
-            @if($inscriptions->hasPages())
-                <div class="bg-slate-700 px-4 py-3 border-t border-slate-600">
-                    {{ $inscriptions->links() }}
-                </div>
-            @endif
-        </div>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 bg-slate-750 border-t border-slate-700">
+                {{ $inscriptions->links() }}
+            </div>
+
+        @else
+            <!-- État vide -->
+            <div class="text-center py-16">
+                <div class="text-6xl mb-4">👥</div>
+                <h3 class="text-xl font-semibold text-white mb-2">Aucune inscription</h3>
+                <p class="text-slate-400 mb-6">Ce séminaire n'a encore aucun participant inscrit.</p>
+                <a href="{{ route('admin.seminaires.inscrire', $seminaire) }}" 
+                   class="inline-flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <span class="mr-2">➕</span>
+                    Inscrire le premier participant
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 
+@push('scripts')
 <script>
-// Fonctions JavaScript simples pour les modales
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-    }
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const inscriptionCheckboxes = document.querySelectorAll('.inscription-checkbox');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const bulkActionSelect = document.getElementById('bulk-action');
+    const bulkSubmitButton = document.getElementById('bulk-submit');
+    const bulkForm = document.getElementById('bulk-action-form');
 
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('hidden');
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.inscription-checkbox:checked');
+        const count = checkedBoxes.length;
+        selectedCountSpan.textContent = `${count} sélectionné(s)`;
+        const hasSelection = count > 0;
+        const hasAction = bulkActionSelect.value !== '';
+        bulkSubmitButton.disabled = !hasSelection || !hasAction;
+        
+        if (count === 0) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = false;
+        } else if (count === inscriptionCheckboxes.length) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = true;
+        } else {
+            selectAllCheckbox.indeterminate = true;
+        }
     }
-}
 
-// Fermer modal en cliquant à l'extérieur
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('bg-opacity-50')) {
-        event.target.classList.add('hidden');
-    }
+    selectAllCheckbox.addEventListener('change', function() {
+        inscriptionCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateBulkActions();
+    });
+
+    inscriptionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    bulkActionSelect.addEventListener('change', updateBulkActions);
+
+    bulkForm.addEventListener('submit', function(e) {
+        const action = bulkActionSelect.value;
+        const count = document.querySelectorAll('.inscription-checkbox:checked').length;
+        let message = '';
+        
+        switch(action) {
+            case 'confirmer_inscription':
+                message = `Confirmer ${count} inscription(s) ?`;
+                break;
+            case 'marquer_present':
+                message = `Marquer ${count} participant(s) comme présent(s) ?`;
+                break;
+            case 'marquer_absent':
+                message = `Marquer ${count} participant(s) comme absent(s) ?`;
+                break;
+            case 'attribuer_certificat':
+                message = `Attribuer le certificat à ${count} participant(s) ?`;
+                break;
+            case 'annuler_inscription':
+                message = `Annuler ${count} inscription(s) ?`;
+                break;
+            case 'supprimer':
+                message = `⚠️ SUPPRIMER définitivement ${count} inscription(s) ?`;
+                break;
+        }
+        
+        if (!confirm(message)) {
+            e.preventDefault();
+        }
+    });
+
+    updateBulkActions();
 });
+
+function quickAction(inscriptionId, action) {
+    // Actions rapides individuelles
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/admin/inscriptions-seminaires/${inscriptionId}/quick-action`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': token
+        },
+        body: JSON.stringify({ action: action })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Recharger pour voir les changements
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Erreur de connexion');
+    });
+}
 </script>
+@endpush
 @endsection

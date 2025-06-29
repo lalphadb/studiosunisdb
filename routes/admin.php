@@ -66,3 +66,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
 
     // Route pour validation rapide groupée (optimisation AJAX)
     Route::post('paiements/quick-bulk-validate', [PaiementController::class, 'quickBulkValidate'])->name('paiements.quick-bulk-validate');
+
+    // Routes spéciales pour séminaires avec inscriptions
+    Route::get('seminaires/{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('seminaires.inscriptions');
+    Route::post('seminaires/{seminaire}/bulk-validate-inscriptions', [SeminaireController::class, 'bulkValidateInscriptions'])->name('seminaires.bulk-validate-inscriptions');
