@@ -3,32 +3,14 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header avec gradient QUI S'ESTOMPE vers le noir -->
-    <div class="bg-gradient-to-r from-purple-500 via-indigo-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
-        <!-- Overlay pour assurer le fondu vers le noir -->
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900 opacity-60"></div>
-        
-        <div class="relative z-10 flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold flex items-center">
-                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                    Gestion des Cours
-                </h1>
-                <p class="text-purple-100 text-lg">Gestion de vos cours du réseau</p>
-            </div>
-            @can('create', App\Models\Cours::class)
-            <a href="{{ route('admin.cours.create') }}" 
-               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Nouveau Cours
-            </a>
-            @endcan
-        </div>
-    </div>
+    <x-module-header 
+        module="cours"
+        title="Gestion des Cours"
+        subtitle="Gestion de vos cours du réseau"
+        create-route="{{ route('admin.cours.create') }}"
+        create-text="Nouveau Cours"
+        create-permission="create,App\Models\Cours"
+    />
 
     <!-- Métriques avec couleur violette -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
