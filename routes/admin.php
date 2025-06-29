@@ -51,7 +51,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     Route::resource('seminaires', SeminaireController::class);
     Route::match(['get', 'post'], 'seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('seminaires.inscrire');
     
-    // Gestion des paiements
+    // =====================================
+    // PAIEMENTS - ROUTES SPÉCIALES EN PREMIER
+    // =====================================
+    Route::get('paiements/actions-masse', [PaiementController::class, 'actionsMasse'])->name('paiements.actions-masse');
+    Route::post('paiements/actions-masse', [PaiementController::class, 'traiterActionsMasse'])->name('paiements.traiter-actions-masse');
+    Route::get('paiements/validation-rapide', [PaiementController::class, 'validationRapide'])->name('paiements.validation-rapide');
+    Route::post('paiements/{paiement}/marquer-recu', [PaiementController::class, 'marquerRecu'])->name('paiements.marquer-recu');
+    
+    // Gestion des paiements - RESOURCE APRÈS
     Route::resource('paiements', PaiementController::class);
     
     // Gestion des présences
@@ -72,12 +80,4 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
         Route::get('/logs', [ExportController::class, 'exportLogs'])->name('logs');
     });
     
-});
-
-// Routes supplémentaires pour paiements
-Route::prefix('paiements')->name('paiements.')->group(function () {
-    Route::post('{paiement}/marquer-recu', [App\Http\Controllers\Admin\PaiementController::class, 'marquerRecu'])->name('marquer-recu');
-    Route::get('actions-masse', [App\Http\Controllers\Admin\PaiementController::class, 'actionsMasse'])->name('actions-masse');
-    Route::post('actions-masse', [App\Http\Controllers\Admin\PaiementController::class, 'traiterActionsMasse'])->name('traiter-actions-masse');
-    Route::get('validation-rapide', [App\Http\Controllers\Admin\PaiementController::class, 'validationRapide'])->name('validation-rapide');
 });

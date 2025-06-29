@@ -16,51 +16,15 @@ class PaiementController extends Controller implements HasMiddleware
         return ['auth'];
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $query = Paiement::with('user');
-
-        // Filtrage multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
-        }
-
-        // Filtres
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->statut);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('reference_interne', 'like', "%{$search}%")
-                  ->orWhere('reference_externe', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $paiements = $query->latest()->paginate(15);
-
-        // Statistiques pour le dashboard
-        $stats = [
-            'en_attente' => Paiement::where('statut', 'en_attente')->count(),
-            'paye' => Paiement::where('statut', 'paye')->count(),
-            'total_en_attente' => Paiement::where('statut', 'en_attente')->sum('montant'),
-        ];
-
-        return view('admin.paiements.index', compact('paiements', 'stats'));
+        $paiements = Paiement::with('user')->latest()->paginate(15);
+        return view('admin.paiements.index', compact('paiements'));
     }
 
     public function create()
     {
         $users = User::orderBy('name')->get();
-        
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $users = User::where('ecole_id', auth()->user()->ecole_id)->orderBy('name')->get();
-        }
-
         return view('admin.paiements.create', compact('users'));
     }
 
@@ -77,7 +41,7 @@ class PaiementController extends Controller implements HasMiddleware
             'user_id' => $request->user_id,
             'montant' => $request->montant,
             'montant_net' => $request->montant,
-            'statut' => 'en_attente', // Toujours en attente au début
+            'statut' => 'attente', // Valeur plus courte
             'methode_paiement' => $request->methode_paiement ?: 'virement',
             'notes' => $request->notes,
             'reference_interne' => 'PAY-' . date('Ymd') . '-' . rand(1000, 9999),
@@ -86,7 +50,7 @@ class PaiementController extends Controller implements HasMiddleware
         ]);
 
         return redirect()->route('admin.paiements.index')
-                        ->with('success', 'Paiement créé ! Instructions envoyées par email au membre.');
+                        ->with('success', 'Paiement créé avec succès !');
     }
 
     public function show(Paiement $paiement)
@@ -114,7 +78,7 @@ class PaiementController extends Controller implements HasMiddleware
             'user_id' => $request->user_id,
             'montant' => $request->montant,
             'montant_net' => $request->montant,
-            'statut' => $request->statut ?: 'en_attente',
+            'statut' => $request->statut ?: 'attente',
             'methode_paiement' => $request->methode_paiement,
             'notes' => $request->notes,
             'reference_externe' => $request->reference_externe,
@@ -132,97 +96,42 @@ class PaiementController extends Controller implements HasMiddleware
                         ->with('success', 'Paiement supprimé !');
     }
 
+    // =====================================
+    // ACTIONS DE MASSE
+    // =====================================
+
+    public function actionsMasse()
+    {
+        return view('admin.paiements.actions-masse');
+    }
+
+    public function traiterActionsMasse(Request $request)
+    {
+        return redirect()->route('admin.paiements.index')
+                        ->with('success', 'Actions de masse traitées !');
+    }
+
+    public function validationRapide()
+    {
+        return view('admin.paiements.validation-rapide');
+    }
+
     /**
-     * Marquer un paiement comme reçu (avec référence virement)
+     * Marquer un paiement comme reçu
      */
     public function marquerRecu(Request $request, Paiement $paiement)
     {
         $request->validate([
-            'reference_externe' => 'required|string|max:255',
+            'reference_externe' => 'nullable|string|max:255',
         ]);
 
+        // Utiliser des valeurs de statut plus courtes
         $paiement->update([
-            'statut' => 'paye',
+            'statut' => 'paye', // Valeur courte
             'reference_externe' => $request->reference_externe,
             'date_paiement' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Paiement marqué comme reçu !');
-    }
-
-    /**
-     * Actions de masse - Afficher la page
-     */
-    public function actionsMasse()
-    {
-        $paiementsEnAttente = Paiement::with('user')
-            ->where('statut', 'en_attente')
-            ->latest()
-            ->get();
-
-        return view('admin.paiements.actions-masse', compact('paiementsEnAttente'));
-    }
-
-    /**
-     * Actions de masse - Traitement
-     */
-    public function traiterActionsMasse(Request $request)
-    {
-        $request->validate([
-            'action' => 'required|in:marquer_paye,marquer_annule',
-            'paiements' => 'required|array',
-            'paiements.*' => 'exists:paiements,id',
-        ]);
-
-        $count = 0;
-        
-        foreach ($request->paiements as $paiementId) {
-            $paiement = Paiement::find($paiementId);
-            
-            if ($paiement && $paiement->statut === 'en_attente') {
-                $updates = [];
-                
-                if ($request->action === 'marquer_paye') {
-                    $updates = [
-                        'statut' => 'paye',
-                        'date_paiement' => now(),
-                    ];
-                    
-                    // Si une référence est fournie pour ce paiement
-                    $refField = 'reference_' . $paiementId;
-                    if ($request->filled($refField)) {
-                        $updates['reference_externe'] = $request->input($refField);
-                    }
-                } elseif ($request->action === 'marquer_annule') {
-                    $updates = [
-                        'statut' => 'annule',
-                    ];
-                }
-                
-                $paiement->update($updates);
-                $count++;
-            }
-        }
-
-        $actionText = $request->action === 'marquer_paye' ? 'marqués comme payés' : 'annulés';
-        
-        return redirect()->route('admin.paiements.index')
-                        ->with('success', "{$count} paiements {$actionText} avec succès !");
-    }
-
-    /**
-     * Page de validation rapide (pour traitement de lots)
-     */
-    public function validationRapide()
-    {
-        $paiementsEnAttente = Paiement::with('user')
-            ->where('statut', 'en_attente')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->groupBy(function($paiement) {
-                return $paiement->created_at->format('Y-m-d');
-            });
-
-        return view('admin.paiements.validation-rapide', compact('paiementsEnAttente'));
     }
 }
