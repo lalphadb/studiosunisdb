@@ -73,3 +73,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     });
     
 });
+
+// Routes supplémentaires pour paiements
+Route::prefix('paiements')->name('paiements.')->group(function () {
+    Route::post('{paiement}/marquer-recu', [App\Http\Controllers\Admin\PaiementController::class, 'marquerRecu'])->name('marquer-recu');
+    Route::get('actions-masse', [App\Http\Controllers\Admin\PaiementController::class, 'actionsMasse'])->name('actions-masse');
+    Route::post('actions-masse', [App\Http\Controllers\Admin\PaiementController::class, 'traiterActionsMasse'])->name('traiter-actions-masse');
+    Route::get('validation-rapide', [App\Http\Controllers\Admin\PaiementController::class, 'validationRapide'])->name('validation-rapide');
+});

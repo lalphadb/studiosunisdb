@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PaiementRequest;
 use App\Models\Paiement;
-use App\Models\Ecole;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -13,153 +11,218 @@ use Illuminate\Routing\Controllers\Middleware;
 
 class PaiementController extends Controller implements HasMiddleware
 {
-    /**
-     * Middleware Laravel 12.19 avec autorisation selon les Policies
-     */
     public static function middleware(): array
     {
-        return [
-            'auth',
-            'verified',
-            new Middleware('can:viewAny,App\Models\Paiement', only: ['index']),
-            new Middleware('can:view,paiement', only: ['show']),
-            new Middleware('can:create,App\Models\Paiement', only: ['create', 'store']),
-            new Middleware('can:update,paiement', only: ['edit', 'update']),
-            new Middleware('can:delete,paiement', only: ['destroy']),
-        ];
+        return ['auth'];
     }
 
     public function index(Request $request)
     {
-        $query = Paiement::with(['user', 'ecole'])->orderBy('created_at', 'desc');
-        
-        // Filtre par école pour admin_ecole
+        $query = Paiement::with('user');
+
+        // Filtrage multi-tenant
         if (auth()->user()->hasRole('admin_ecole')) {
             $query->where('ecole_id', auth()->user()->ecole_id);
         }
-        
-        // Recherche
+
+        // Filtres
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('reference_interne', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('user', function($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%");
+                  ->orWhere('reference_externe', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%");
                   });
             });
         }
-        
-        // Filtre par statut
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->statut);
-        }
-        
-        // Filtre par motif
-        if ($request->filled('motif')) {
-            $query->where('motif', $request->motif);
-        }
-        
-        // Filtre par école
-        if ($request->filled('ecole_id')) {
-            $query->where('ecole_id', $request->ecole_id);
-        }
-        
-        $paiements = $query->paginate(15)->withQueryString();
-        $ecoles = $this->getEcolesForUser(auth()->user());
-        
-        return view('admin.paiements.index', compact('paiements', 'ecoles'));
+
+        $paiements = $query->latest()->paginate(15);
+
+        // Statistiques pour le dashboard
+        $stats = [
+            'en_attente' => Paiement::where('statut', 'en_attente')->count(),
+            'paye' => Paiement::where('statut', 'paye')->count(),
+            'total_en_attente' => Paiement::where('statut', 'en_attente')->sum('montant'),
+        ];
+
+        return view('admin.paiements.index', compact('paiements', 'stats'));
     }
 
     public function create()
     {
-        $ecoles = $this->getEcolesForUser(auth()->user());
-        $users = $this->getUsersForPaiement();
+        $users = User::orderBy('name')->get();
         
-        return view('admin.paiements.create', compact('ecoles', 'users'));
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $users = User::where('ecole_id', auth()->user()->ecole_id)->orderBy('name')->get();
+        }
+
+        return view('admin.paiements.create', compact('users'));
     }
 
-    public function store(PaiementRequest $request)
+    public function store(Request $request)
     {
-        $validated = $request->validated();
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'montant' => 'required|numeric|min:0.01',
+        ]);
+
+        $user = User::find($request->user_id);
         
-        // Assigner l'école pour admin_ecole
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $validated['ecole_id'] = auth()->user()->ecole_id;
-        }
-        
-        $validated['processed_by_user_id'] = auth()->id();
-        $validated['reference_interne'] = 'PAY-' . strtoupper(uniqid());
-        
-        $paiement = Paiement::create($validated);
-        
+        Paiement::create([
+            'user_id' => $request->user_id,
+            'montant' => $request->montant,
+            'montant_net' => $request->montant,
+            'statut' => 'en_attente', // Toujours en attente au début
+            'methode_paiement' => $request->methode_paiement ?: 'virement',
+            'notes' => $request->notes,
+            'reference_interne' => 'PAY-' . date('Ymd') . '-' . rand(1000, 9999),
+            'ecole_id' => $user->ecole_id,
+            'frais' => 0,
+        ]);
+
         return redirect()->route('admin.paiements.index')
-            ->with('success', 'Paiement créé avec succès.');
+                        ->with('success', 'Paiement créé ! Instructions envoyées par email au membre.');
     }
 
     public function show(Paiement $paiement)
     {
-        $paiement->load(['user', 'ecole', 'processedBy']);
-        
+        $paiement->load('user');
         return view('admin.paiements.show', compact('paiement'));
     }
 
     public function edit(Paiement $paiement)
     {
-        $ecoles = $this->getEcolesForUser(auth()->user());
-        $users = $this->getUsersForPaiement();
-        
-        return view('admin.paiements.edit', compact('paiement', 'ecoles', 'users'));
+        $users = User::orderBy('name')->get();
+        return view('admin.paiements.edit', compact('paiement', 'users'));
     }
 
-    public function update(PaiementRequest $request, Paiement $paiement)
+    public function update(Request $request, Paiement $paiement)
     {
-        $validated = $request->validated();
-        
-        // Assigner l'école pour admin_ecole
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $validated['ecole_id'] = auth()->user()->ecole_id;
-        }
-        
-        $paiement->update($validated);
-        
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'montant' => 'required|numeric|min:0.01',
+        ]);
+
+        $user = User::find($request->user_id);
+
+        $paiement->update([
+            'user_id' => $request->user_id,
+            'montant' => $request->montant,
+            'montant_net' => $request->montant,
+            'statut' => $request->statut ?: 'en_attente',
+            'methode_paiement' => $request->methode_paiement,
+            'notes' => $request->notes,
+            'reference_externe' => $request->reference_externe,
+            'ecole_id' => $user->ecole_id,
+        ]);
+
         return redirect()->route('admin.paiements.index')
-            ->with('success', 'Paiement mis à jour avec succès.');
+                        ->with('success', 'Paiement mis à jour !');
     }
 
     public function destroy(Paiement $paiement)
     {
         $paiement->delete();
+        return redirect()->route('admin.paiements.index')
+                        ->with('success', 'Paiement supprimé !');
+    }
+
+    /**
+     * Marquer un paiement comme reçu (avec référence virement)
+     */
+    public function marquerRecu(Request $request, Paiement $paiement)
+    {
+        $request->validate([
+            'reference_externe' => 'required|string|max:255',
+        ]);
+
+        $paiement->update([
+            'statut' => 'paye',
+            'reference_externe' => $request->reference_externe,
+            'date_paiement' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Paiement marqué comme reçu !');
+    }
+
+    /**
+     * Actions de masse - Afficher la page
+     */
+    public function actionsMasse()
+    {
+        $paiementsEnAttente = Paiement::with('user')
+            ->where('statut', 'en_attente')
+            ->latest()
+            ->get();
+
+        return view('admin.paiements.actions-masse', compact('paiementsEnAttente'));
+    }
+
+    /**
+     * Actions de masse - Traitement
+     */
+    public function traiterActionsMasse(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|in:marquer_paye,marquer_annule',
+            'paiements' => 'required|array',
+            'paiements.*' => 'exists:paiements,id',
+        ]);
+
+        $count = 0;
+        
+        foreach ($request->paiements as $paiementId) {
+            $paiement = Paiement::find($paiementId);
+            
+            if ($paiement && $paiement->statut === 'en_attente') {
+                $updates = [];
+                
+                if ($request->action === 'marquer_paye') {
+                    $updates = [
+                        'statut' => 'paye',
+                        'date_paiement' => now(),
+                    ];
+                    
+                    // Si une référence est fournie pour ce paiement
+                    $refField = 'reference_' . $paiementId;
+                    if ($request->filled($refField)) {
+                        $updates['reference_externe'] = $request->input($refField);
+                    }
+                } elseif ($request->action === 'marquer_annule') {
+                    $updates = [
+                        'statut' => 'annule',
+                    ];
+                }
+                
+                $paiement->update($updates);
+                $count++;
+            }
+        }
+
+        $actionText = $request->action === 'marquer_paye' ? 'marqués comme payés' : 'annulés';
         
         return redirect()->route('admin.paiements.index')
-            ->with('success', 'Paiement supprimé avec succès.');
+                        ->with('success', "{$count} paiements {$actionText} avec succès !");
     }
 
     /**
-     * Obtenir les écoles selon les permissions
+     * Page de validation rapide (pour traitement de lots)
      */
-    private function getEcolesForUser($user)
+    public function validationRapide()
     {
-        if ($user->hasRole('superadmin')) {
-            return Ecole::orderBy('nom')->get();
-        } elseif ($user->hasRole('admin_ecole')) {
-            return Ecole::where('id', $user->ecole_id)->get();
-        }
-        
-        return Ecole::orderBy('nom')->get();
-    }
+        $paiementsEnAttente = Paiement::with('user')
+            ->where('statut', 'en_attente')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy(function($paiement) {
+                return $paiement->created_at->format('Y-m-d');
+            });
 
-    /**
-     * Obtenir les utilisateurs selon les permissions
-     */
-    private function getUsersForPaiement()
-    {
-        $query = User::with('ecole')->orderBy('name');
-        
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
-        }
-        
-        return $query->get();
+        return view('admin.paiements.validation-rapide', compact('paiementsEnAttente'));
     }
 }
