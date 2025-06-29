@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Paiement extends Model
 {
     use HasFactory;
+
+    protected $table = 'paiements';
 
     protected $fillable = [
         'user_id',
@@ -48,18 +51,107 @@ class Paiement extends Model
         'metadonnees' => 'array'
     ];
 
-    public function user()
+    /**
+     * Relation avec l'utilisateur
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function ecole()
+    /**
+     * Relation avec l'école
+     */
+    public function ecole(): BelongsTo
     {
         return $this->belongsTo(Ecole::class);
     }
 
-    public function processedBy()
+    /**
+     * Relation avec l'utilisateur qui traite
+     */
+    public function processedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by_user_id');
+    }
+
+    /**
+     * Scope pour filtrer par école (multi-tenant)
+     */
+    public function scopeForEcole($query, $ecoleId)
+    {
+        return $query->where('ecole_id', $ecoleId);
+    }
+
+    /**
+     * Scope pour les paiements en attente
+     */
+    public function scopeEnAttente($query)
+    {
+        return $query->where('statut', 'en_attente');
+    }
+
+    /**
+     * Scope pour les paiements reçus
+     */
+    public function scopeRecu($query)
+    {
+        return $query->where('statut', 'recu');
+    }
+
+    /**
+     * Scope pour les paiements validés
+     */
+    public function scopeValide($query)
+    {
+        return $query->where('statut', 'valide');
+    }
+
+    /**
+     * Accesseur pour le statut formaté
+     */
+    public function getStatutTextAttribute(): string
+    {
+        return match($this->statut) {
+            'en_attente' => 'En attente',
+            'recu' => 'Reçu',
+            'valide' => 'Validé',
+            'rembourse' => 'Remboursé',
+            'annule' => 'Annulé',
+            default => ucfirst($this->statut),
+        };
+    }
+
+    /**
+     * Accesseur pour les classes CSS du badge de statut (couleurs module paiements)
+     */
+    public function getStatutBadgeAttribute(): string
+    {
+        return match($this->statut) {
+            'valide' => 'bg-green-600 text-white',
+            'recu' => 'bg-blue-600 text-white',
+            'en_attente' => 'bg-yellow-600 text-white',
+            'rembourse' => 'bg-purple-600 text-white',
+            'annule' => 'bg-red-600 text-white',
+            default => 'bg-gray-600 text-white',
+        };
+    }
+
+    /**
+     * Accesseur pour le motif formaté
+     */
+    public function getMotifTextAttribute(): string
+    {
+        return match($this->motif) {
+            'session_automne' => 'Session Automne',
+            'session_hiver' => 'Session Hiver',
+            'session_printemps' => 'Session Printemps',
+            'session_ete' => 'Session Été',
+            'seminaire' => 'Séminaire',
+            'examen_ceinture' => 'Examen Ceinture',
+            'equipement' => 'Équipement',
+            'autre' => 'Autre',
+            default => ucfirst($this->motif),
+        };
     }
 }

@@ -9,6 +9,7 @@ use App\Http\Requests\CoursRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\DB;
 
 class CoursController extends Controller implements HasMiddleware
 {
@@ -18,7 +19,7 @@ class CoursController extends Controller implements HasMiddleware
             'auth',
             new Middleware('can:viewAny,App\Models\Cours', only: ['index']),
             new Middleware('can:view,cour', only: ['show']),
-            new Middleware('can:create,App\Models\Cours', only: ['create', 'store', 'clone']),
+            new Middleware('can:create,App\Models\Cours', only: ['create', 'store', 'showCloneForm', 'clone']),
             new Middleware('can:update,cour', only: ['edit', 'update']),
             new Middleware('can:delete,cour', only: ['destroy']),
         ];
@@ -28,27 +29,37 @@ class CoursController extends Controller implements HasMiddleware
     {
         $query = Cours::with(['ecole']);
 
-        // Multi-tenant automatique
+        // CORRECTION: Filtrage multi-tenant strict selon les rôles
         $user = auth()->user();
         if ($user->hasRole('admin_ecole')) {
             $query->where('ecole_id', $user->ecole_id);
         } elseif ($user->hasRole('instructeur')) {
-            $query->where('ecole_id', $user->ecole_id);
+            // Instructeur ne voit QUE les cours qu'il enseigne
+            $query->where('ecole_id', $user->ecole_id)
+                  ->where('instructeur', $user->name);
         } elseif ($user->hasRole('membre')) {
-            $query->where('ecole_id', $user->ecole_id);
+            // Membre ne voit QUE les cours de son école ET actifs
+            $query->where('ecole_id', $user->ecole_id)
+                  ->where('active', true);
         }
+        // Superadmin voit tout (pas de filtre)
 
-        // Filtres
+        // Filtres de recherche
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nom', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('instructeur', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('ecole_id') && $user->hasRole('superadmin')) {
             $query->where('ecole_id', $request->ecole_id);
+        }
+
+        if ($request->filled('niveau')) {
+            $query->where('niveau', $request->niveau);
         }
 
         $cours = $query->orderBy('nom')->paginate(15);
@@ -77,7 +88,7 @@ class CoursController extends Controller implements HasMiddleware
     {
         $validated = $request->validated();
         
-        // Multi-tenant automatique
+        // Auto-assignation ecole_id pour admin_ecole
         if (auth()->user()->hasRole('admin_ecole')) {
             $validated['ecole_id'] = auth()->user()->ecole_id;
         }
@@ -126,51 +137,39 @@ class CoursController extends Controller implements HasMiddleware
     }
 
     /**
-     * Dupliquer un cours avec modifications
+     * CORRECTION: Dupliquer avec transaction DB pour éviter états incohérents
      */
     public function clone(Request $request, Cours $cour)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre_copies' => 'required|integer|min:1|max:10',
-            'suffixes' => 'required|array',
-            'suffixes.*' => 'required|string|max:100',
-            'jours_semaine' => 'nullable|array',
-            'jours_semaine.*' => 'in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'modifier_horaires' => 'boolean',
-            'nouvelles_heures' => 'nullable|array',
-            'nouvelles_heures.*' => 'nullable|string|max:50',
+            'suffixe' => 'nullable|string|max:100',
         ]);
 
-        $coursClones = [];
-        $suffixes = $request->suffixes;
-        $joursSeaine = $request->jours_semaine ?? [];
-        $nouvellesHeures = $request->nouvelles_heures ?? [];
+        try {
+            DB::beginTransaction();
 
-        for ($i = 0; $i < $request->nombre_copies; $i++) {
-            // Dupliquer le cours
-            $nouveauCours = $cour->replicate();
-            
-            // Modifier le nom avec le suffixe
-            $suffixe = $suffixes[$i] ?? "Copie " . ($i + 1);
-            $nouveauCours->nom = $cour->nom . " - " . $suffixe;
-            
-            // Ajouter jour de la semaine si spécifié
-            if (isset($joursSeaine[$i])) {
-                $nouveauCours->nom .= " (" . ucfirst($joursSeaine[$i]) . ")";
+            $coursClones = [];
+            $suffixe = $validated['suffixe'] ?: 'Copie';
+
+            for ($i = 1; $i <= $validated['nombre_copies']; $i++) {
+                $nouveauCours = $cour->replicate();
+                $nouveauCours->nom = $cour->nom . " - " . $suffixe . " " . $i;
+                $nouveauCours->save();
+                $coursClones[] = $nouveauCours;
             }
+
+            DB::commit();
+
+            return redirect()->route('admin.cours.index')
+                ->with('success', count($coursClones) . ' cours dupliqués avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
             
-            // Modifier les horaires si demandé
-            if ($request->modifier_horaires && isset($nouvellesHeures[$i])) {
-                $nouveauCours->description = ($nouveauCours->description ?? '') . 
-                    "\nHoraires: " . $nouvellesHeures[$i];
-            }
-            
-            $nouveauCours->save();
-            $coursClones[] = $nouveauCours;
+            return redirect()->route('admin.cours.index')
+                ->with('error', 'Erreur lors de la duplication : ' . $e->getMessage());
         }
-
-        return redirect()->route('admin.cours.index')
-            ->with('success', count($coursClones) . ' cours dupliqués avec succès.');
     }
 
     private function getAvailableEcoles()

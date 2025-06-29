@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') - StudiosDB</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-900 text-white font-sans">
-    <div class="min-h-screen flex">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
+<body class="bg-slate-900 text-white font-sans h-full">
+    <div class="h-full flex">
+        <!-- Sidebar - CORRECTION: hauteur fixe -->
+        <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col flex-shrink-0">
             <!-- Logo -->
-            <div class="p-4 border-b border-slate-700">
+            <div class="p-4 border-b border-slate-700 flex-shrink-0">
                 <div class="flex items-center">
                     <div class="h-8 w-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                         <span class="text-white font-bold text-sm">S</span>
@@ -23,8 +24,8 @@
                 </div>
             </div>
             
-            <!-- Navigation -->
-            <nav class="flex-1 p-4 space-y-2">
+            <!-- Navigation - CORRECTION: scrollable si nécessaire -->
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
                 <!-- Dashboard -->
                 <a href="{{ route('admin.dashboard') }}" 
                    class="flex items-center px-4 py-2 text-white hover:bg-blue-600 rounded-lg transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600' : '' }}">
@@ -102,10 +103,10 @@
             </nav>
         </aside>
         
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+        <!-- Main Content - CORRECTION: flex-1 et min-h-0 -->
+        <div class="flex-1 flex flex-col min-h-0">
             <!-- Header -->
-            <header class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+            <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-xl font-semibold text-white">@yield('title', 'Administration')</h1>
@@ -180,8 +181,8 @@
                 </div>
             </header>
             
-            <!-- Main Content Area -->
-            <main class="flex-1 p-6 overflow-auto">
+            <!-- Main Content Area - CORRECTION: overflow-y-auto pour contenu long -->
+            <main class="flex-1 p-6 overflow-y-auto">
                 <!-- Flash Messages -->
                 @if (session('success'))
                     <div class="mb-6 bg-green-900 border border-green-700 text-green-100 px-4 py-3 rounded-lg">
