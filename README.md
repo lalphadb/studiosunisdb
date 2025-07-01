@@ -185,3 +185,20 @@ Pour les versions disponibles, consultez les [tags de ce dépôt](https://github
 [⬆ Retour en haut](#studiosdb-v100)
 
 </div>
+
+## ⚠️ Problèmes Connus
+
+### Dashboard Admin École
+- **Erreur 403** sur route `/admin`
+- **Cause**: Permission `view-dashboard` manquante
+- **Solution**: En cours de correction
+- **Workaround**: Accès via routes modules spécifiques
+
+Voir [KNOWN_ISSUES.md](KNOWN_ISSUES.md) pour détails complets.
+
+## 🎯 Roadmap
+
+- [ ] Fix permissions dashboard (priorité haute)
+- [ ] Tests sécurité complets  
+- [ ] Validation multi-tenant
+- [ ] Release stable v4.1.11
