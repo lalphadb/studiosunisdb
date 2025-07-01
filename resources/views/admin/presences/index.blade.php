@@ -50,7 +50,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex-1">
                     <p class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Aujourd'hui</p>
-                    <p class="text-3xl font-bold text-emerald-400">{{ isset($presences) ? $presences->count() : 0 }}->whereDate('created_at', today())->count() : 0 }}</p>
+                    <p class="text-3xl font-bold text-emerald-400">{{ isset($presences) ? $presences->count() : 0 }}</p>
                     <p class="text-xs text-slate-500 mt-1">Présences du jour</p>
                 </div>
                 <div class="w-14 h-14 bg-emerald-500/20 border-emerald-500/30 rounded-2xl flex items-center justify-center border">

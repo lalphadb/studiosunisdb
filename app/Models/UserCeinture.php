@@ -15,17 +15,24 @@ class UserCeinture extends Model
     protected $fillable = [
         'user_id',
         'ceinture_id',
+        'date_attribution',
+        'attribue_par',
         'date_obtention',
-        'ecole_id',
+        'examinateur',
+        'commentaires',
+        'certifie',
+        'valide',
         'instructeur_id',
         'examen_id',
+        'ecole_id',
         'notes',
-        'valide',
     ];
 
     protected $casts = [
         'date_obtention' => 'date',
+        'date_attribution' => 'date',
         'valide' => 'boolean',
+        'certifie' => 'boolean',
     ];
 
     // Relations
@@ -62,8 +69,6 @@ class UserCeinture extends Model
 
     public function scopeForEcole($query, $ecoleId)
     {
-        return $query->whereHas('user', function($q) use ($ecoleId) {
-            $q->where('ecole_id', $ecoleId);
-        });
+        return $query->where('ecole_id', $ecoleId);
     }
 }

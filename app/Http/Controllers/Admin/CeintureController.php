@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class CeintureController extends Controller implements HasMiddleware
 {
@@ -27,18 +28,17 @@ class CeintureController extends Controller implements HasMiddleware
     }
 
     /**
-     * SUIVI PROGRESSION - Liste des attributions de ceintures
+     * SUIVI PROGRESSION - Liste des attributions de ceintures (CORRIGÉ)
      */
     public function index(Request $request)
     {
-        $query = UserCeinture::with(['user', 'ceinture', 'instructeur'])
+        // CORRECTION: Afficher les ATTRIBUTIONS au lieu des ceintures
+        $query = UserCeinture::with(['user', 'ceinture', 'instructeur', 'ecole'])
             ->orderBy('date_obtention', 'desc');
         
         // Multi-tenant: Admin d'école voit ses attributions
         if (auth()->user()->hasRole('admin_ecole')) {
-            $query->whereHas('user', function($q) {
-                $q->where('ecole_id', auth()->user()->ecole_id);
-            });
+            $query->where('ecole_id', auth()->user()->ecole_id);
         }
         
         // Filtres
@@ -70,11 +70,14 @@ class CeintureController extends Controller implements HasMiddleware
         // Statistiques
         $stats = $this->getStats();
         
-        return view('admin.ceintures.index', compact('attributions', 'ceintures', 'stats'));
+        // Données pour attribution masse
+        $membres = $this->getMembresForUser();
+        
+        return view('admin.ceintures.index', compact('attributions', 'ceintures', 'stats', 'membres'));
     }
 
     /**
-     * Attribution individuelle - CORRECTION: s'assurer que les données sont chargées
+     * Attribution individuelle
      */
     public function create(Request $request)
     {
@@ -91,20 +94,8 @@ class CeintureController extends Controller implements HasMiddleware
             }
         }
         
-        // CORRECTION: S'assurer que les ceintures sont chargées
         $ceintures = Ceinture::orderBy('ordre')->get();
-        
-        // Debug si pas de ceintures
-        if ($ceintures->isEmpty()) {
-            \Log::warning('Aucune ceinture trouvée dans la base de données');
-        }
-        
         $membres = $this->getMembresForUser();
-        
-        // Debug si pas de membres
-        if ($membres->isEmpty()) {
-            \Log::warning('Aucun membre trouvé pour l\'utilisateur connecté');
-        }
         
         return view('admin.ceintures.create', compact('user', 'ceintures', 'membres'));
     }
@@ -112,67 +103,139 @@ class CeintureController extends Controller implements HasMiddleware
     /**
      * Enregistrer attribution individuelle
      */
-    public function store(CeintureAttributionRequest $request)
+    public function store(Request $request)
     {
-        $validated = $request->validated();
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'ceinture_id' => 'required|exists:ceintures,id',
+            'date_obtention' => 'required|date',
+            'examinateur' => 'nullable|string|max:255',
+            'commentaires' => 'nullable|string|max:1000',
+            'valide' => 'nullable|boolean',
+        ]);
         
-        // Ajouter données auto
-        $validated['instructeur_id'] = auth()->id();
+        $user = User::findOrFail($request->user_id);
         
-        // Déterminer l'école
-        $user = User::find($validated['user_id']);
-        $validated['ecole_id'] = auth()->user()->hasRole('admin_ecole') 
-            ? auth()->user()->ecole_id 
-            : $user->ecole_id;
+        // Vérification multi-tenant
+        if (auth()->user()->hasRole('admin_ecole') && 
+            $user->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
+        }
         
-        $attribution = UserCeinture::create($validated);
+        $attribution = UserCeinture::create([
+            'user_id' => $request->user_id,
+            'ceinture_id' => $request->ceinture_id,
+            'date_attribution' => now(),
+            'date_obtention' => $request->date_obtention,
+            'attribue_par' => auth()->id(),
+            'instructeur_id' => auth()->id(),
+            'ecole_id' => $user->ecole_id,
+            'examinateur' => $request->examinateur,
+            'commentaires' => $request->commentaires,
+            'valide' => $request->boolean('valide', true),
+            'certifie' => true,
+        ]);
         
         return redirect()->route('admin.ceintures.index')
-            ->with('success', 'Ceinture attribuée avec succès à ' . $attribution->user->name);
+            ->with('success', 'Ceinture attribuée avec succès à ' . $user->name);
     }
 
     /**
-     * ATTRIBUTION EN MASSE - APRÈS EXAMEN DE GROUPE
+     * ATTRIBUTION EN MASSE - Interface
      */
     public function createMasse()
     {
-        $ceintures = Ceinture::orderBy('ordre')->get();
-        $membres = $this->getMembresForUser();
+        $ecoleId = auth()->user()->ecole_id;
         
-        return view('admin.ceintures.create-masse', compact('ceintures', 'membres'));
+        // Ceintures disponibles
+        $ceintures = Ceinture::orderBy('ordre')->get();
+        
+        // Membres de l'école avec leur ceinture actuelle
+        $users = User::where('ecole_id', $ecoleId)
+                    ->where('id', '!=', auth()->id())
+                    ->with(['ceintures' => function($query) {
+                        $query->wherePivot('valide', true)
+                              ->latest('user_ceintures.date_obtention');
+                    }])
+                    ->orderBy('name')
+                    ->get();
+        
+        return view('admin.ceintures.create-masse', compact('ceintures', 'users'));
     }
 
     /**
-     * ATTRIBUTION EN MASSE - Traitement après examen
+     * ATTRIBUTION EN MASSE - Traitement
      */
-    public function storeMasse(CeintureAttributionMasseRequest $request)
+    public function storeMasse(Request $request)
     {
-        $validated = $request->validated();
-        $examenId = 'EXAM_' . Str::uuid();
-        $count = 0;
+        $request->validate([
+            'ceinture_id' => 'required|exists:ceintures,id',
+            'date_obtention' => 'required|date',
+            'notes' => 'nullable|string|max:1000',
+            'attributions' => 'required|array|min:1',
+            'attributions.*.user_id' => 'required|exists:users,id',
+        ]);
         
-        foreach ($validated['attributions'] as $attribution) {
-            if (isset($attribution['user_id'])) {
-                $user = User::find($attribution['user_id']);
-                
-                UserCeinture::create([
-                    'user_id' => $attribution['user_id'],
-                    'ceinture_id' => $validated['ceinture_id'],
-                    'date_obtention' => $validated['date_obtention'],
-                    'ecole_id' => auth()->user()->hasRole('admin_ecole') 
-                        ? auth()->user()->ecole_id 
-                        : $user->ecole_id,
-                    'instructeur_id' => auth()->id(),
-                    'examen_id' => $examenId,
-                    'notes' => $validated['notes'] ?? null,
-                    'valide' => true,
-                ]);
-                $count++;
-            }
+        $user = auth()->user();
+        $ecoleId = $user->ecole_id;
+        
+        // Vérifier que la ceinture existe
+        $ceinture = Ceinture::findOrFail($request->ceinture_id);
+        
+        // Extraire les user_ids
+        $userIds = collect($request->attributions)->pluck('user_id')->filter();
+        
+        // Vérifier que tous les utilisateurs appartiennent à l'école
+        $users = User::whereIn('id', $userIds)
+                    ->where('ecole_id', $ecoleId)
+                    ->get();
+
+        if ($users->count() !== $userIds->count()) {
+            return back()->withErrors(['attributions' => 'Certains utilisateurs ne sont pas valides.']);
         }
+
+        DB::beginTransaction();
         
-        return redirect()->route('admin.ceintures.index')
-            ->with('success', "Ceinture {$validated['ceinture_nom']} attribuée à {$count} membres avec succès !");
+        try {
+            $count = 0;
+            $examenId = 'EXAM_' . now()->format('Ymd_His');
+            
+            foreach ($request->attributions as $attribution) {
+                if (isset($attribution['user_id']) && !empty($attribution['user_id'])) {
+                    // Éviter les doublons
+                    $exists = UserCeinture::where('user_id', $attribution['user_id'])
+                                        ->where('ceinture_id', $request->ceinture_id)
+                                        ->where('ecole_id', $ecoleId)
+                                        ->exists();
+                    
+                    if (!$exists) {
+                        UserCeinture::create([
+                            'user_id' => $attribution['user_id'],
+                            'ceinture_id' => $request->ceinture_id,
+                            'date_attribution' => now(),
+                            'date_obtention' => $request->date_obtention,
+                            'attribue_par' => $user->id,
+                            'instructeur_id' => $user->id,
+                            'ecole_id' => $ecoleId,
+                            'examen_id' => $examenId,
+                            'notes' => $request->notes,
+                            'valide' => true,
+                            'certifie' => true,
+                        ]);
+                        $count++;
+                    }
+                }
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('admin.ceintures.index')
+                           ->with('success', "✅ {$ceinture->nom} attribuée à {$count} membre(s) avec succès !");
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->withErrors(['error' => 'Erreur : ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -181,7 +244,7 @@ class CeintureController extends Controller implements HasMiddleware
     public function edit(UserCeinture $userCeinture)
     {
         if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($userCeinture->user->ecole_id === auth()->user()->ecole_id, 403);
+            abort_unless($userCeinture->ecole_id === auth()->user()->ecole_id, 403);
         }
 
         $ceintures = Ceinture::orderBy('ordre')->get();
@@ -192,13 +255,23 @@ class CeintureController extends Controller implements HasMiddleware
     /**
      * Mettre à jour attribution
      */
-    public function update(CeintureAttributionRequest $request, UserCeinture $userCeinture)
+    public function update(Request $request, UserCeinture $userCeinture)
     {
+        $request->validate([
+            'ceinture_id' => 'required|exists:ceintures,id',
+            'date_obtention' => 'required|date',
+            'examinateur' => 'nullable|string|max:255',
+            'commentaires' => 'nullable|string|max:1000',
+            'valide' => 'nullable|boolean',
+        ]);
+        
         if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($userCeinture->user->ecole_id === auth()->user()->ecole_id, 403);
+            abort_unless($userCeinture->ecole_id === auth()->user()->ecole_id, 403);
         }
 
-        $userCeinture->update($request->validated());
+        $userCeinture->update($request->only([
+            'ceinture_id', 'date_obtention', 'examinateur', 'commentaires', 'valide'
+        ]));
         
         return redirect()->route('admin.ceintures.index')
             ->with('success', 'Attribution modifiée avec succès');
@@ -210,7 +283,7 @@ class CeintureController extends Controller implements HasMiddleware
     public function destroy(UserCeinture $userCeinture)
     {
         if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($userCeinture->user->ecole_id === auth()->user()->ecole_id, 403);
+            abort_unless($userCeinture->ecole_id === auth()->user()->ecole_id, 403);
         }
 
         $userName = $userCeinture->user->name;
@@ -227,9 +300,7 @@ class CeintureController extends Controller implements HasMiddleware
      */
     private function getMembresForUser()
     {
-        $query = User::whereHas('roles', function($q) {
-            $q->where('name', 'membre');
-        })->with(['ecole', 'userCeintures.ceinture'])->orderBy('name');
+        $query = User::with(['ecole', 'userCeintures.ceinture'])->orderBy('name');
         
         // Multi-tenant filtering
         if (auth()->user()->hasRole('admin_ecole')) {
@@ -244,9 +315,7 @@ class CeintureController extends Controller implements HasMiddleware
         $baseQuery = UserCeinture::query();
         
         if (auth()->user()->hasRole('admin_ecole')) {
-            $baseQuery->whereHas('user', function($q) {
-                $q->where('ecole_id', auth()->user()->ecole_id);
-            });
+            $baseQuery->where('ecole_id', auth()->user()->ecole_id);
         }
         
         return [

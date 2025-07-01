@@ -6,10 +6,17 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
+        // 1. Données de base
         $this->call([
-            CeintureSeeder::class,
+            CompletePermissionsSeeder::class,  // Permissions et rôles
+            EcolesSeeder::class,              // Écoles de test
+            CeintureSeeder::class,            // 21 ceintures karaté
+            AdminUsersSeeder::class,          // Utilisateurs admin
         ]);
     }
 }

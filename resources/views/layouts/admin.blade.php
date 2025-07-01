@@ -10,7 +10,7 @@
 <body class="bg-slate-900 text-white font-sans antialiased">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
+        <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col fixed left-0 top-0 h-screen z-50 overflow-y-auto">
             <!-- Logo -->
             <div class="p-4 border-b border-slate-700">
                 <div class="flex items-center">
@@ -117,7 +117,7 @@
         </aside>
         
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col ml-64">
             <!-- Header -->
             <header class="bg-slate-800 border-b border-slate-700 px-6 py-4">
                 <div class="flex items-center justify-between">

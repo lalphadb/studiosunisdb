@@ -105,3 +105,8 @@ Route::get('/users/modern', function() {
         ])
     ]);
 })->name('admin.users.modern');
+
+// Attribution ceintures masse
+Route::get('/ceintures/attribution', [CeintureController::class, 'attribution'])->name('ceintures.attribution');
+Route::post('/ceintures/attribution', [CeintureController::class, 'storeAttribution'])->name('ceintures.attribution.store');
+
