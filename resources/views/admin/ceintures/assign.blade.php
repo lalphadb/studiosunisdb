@@ -5,14 +5,14 @@
 @section('content')
 <div class="space-y-6">
     {{-- Header --}}
-    <div class="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg p-6 text-white">
+    <div class="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold">🥋 Assigner Ceintures</h1>
                 <p class="text-yellow-100 text-lg">Attribuer des ceintures aux membres</p>
             </div>
             <div class="text-right">
-                <a href="{{ route('admin.ceintures.index') }}" class="bg-yellow-500 bg-opacity-50 px-4 py-2 rounded-lg text-white hover:bg-opacity-70 transition">
+                <a href="{{ route('admin.ceintures.index') }}" class="bg-yellow-500/20bg-opacity-50 px-4 py-2 rounded-xl text-white hover:bg-opacity-70 transition">
                     ← Retour aux ceintures
                 </a>
             </div>
@@ -20,7 +20,7 @@
     </div>
 
     {{-- Formulaire d'assignation --}}
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-xl shadow-md p-6">
         <h2 class="text-xl font-semibold mb-6">Nouvelle Assignation</h2>
         
         <form method="POST" action="{{ route('admin.ceintures.assign.store') }}">
@@ -133,7 +133,7 @@
     </div>
 
     {{-- Liste des assignations récentes --}}
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-xl shadow-md p-6">
         <h2 class="text-xl font-semibold mb-4">Assignations Récentes</h2>
         
         @php

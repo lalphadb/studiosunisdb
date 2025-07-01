@@ -8,12 +8,12 @@ class DashboardPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin_ecole', 'instructeur']);
+        return $user->hasAnyRole(['super_admin', 'admin_ecole', 'instructeur']);
     }
 
     public function viewSuperAdmin(User $user): bool
     {
-        return $user->hasRole('superadmin');
+        return $user->hasRole('super_admin');
     }
 
     public function viewAdminEcole(User $user): bool

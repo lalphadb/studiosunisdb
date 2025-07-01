@@ -1,187 +1,148 @@
 @extends('layouts.admin')
 
+@section('title', 'Gestion des Séminaires')
+
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Header du module -->
-    <x-module-header 
-        module="seminaires"
-        title="Gestion des Séminaires" 
-        subtitle="Organisation et suivi des séminaires inter-écoles"
-        create-route="{{ route('admin.seminaires.create') }}"
-        create-permission="create,App\Models\Seminaire"
-    />
-
-    <!-- Section principale -->
-    <div class="bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden mt-6">
-        <!-- Barre de recherche et filtres -->
-        <div class="p-6 border-b border-slate-700">
-            <form method="GET" action="{{ route('admin.seminaires.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <!-- Recherche -->
-                <div class="md:col-span-2">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        value="{{ request('search') }}"
-                        placeholder="Rechercher par titre, instructeur, lieu..."
-                        aria-label="Rechercher des séminaires"
-                        class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    >
+<div class="space-y-6">
+    <!-- Header Module Séminaires -->
+    <div class="gradient-seminaires text-white p-8 rounded-2xl border border-rose-500/20 relative overflow-hidden backdrop-blur-sm studiosdb-fade-in">
+        <div class="absolute inset-0 bg-gradient-to-br from-white/3 via-transparent to-white/2"></div>
+        
+        <div class="relative z-10 flex justify-between items-center">
+            <div class="flex items-center space-x-6">
+                <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur border border-white/20">
+                    <x-admin-icon name="seminaires" size="w-8 h-8" color="text-white" />
                 </div>
-
-                <!-- Filtre type -->
                 <div>
-                    <select name="type" aria-label="Filtrer par type" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
-                        <option value="">Tous les types</option>
-                        <option value="technique" {{ request('type') === 'technique' ? 'selected' : '' }}>Technique</option>
-                        <option value="kata" {{ request('type') === 'kata' ? 'selected' : '' }}>Kata</option>
-                        <option value="competition" {{ request('type') === 'competition' ? 'selected' : '' }}>Compétition</option>
-                        <option value="arbitrage" {{ request('type') === 'arbitrage' ? 'selected' : '' }}>Arbitrage</option>
-                    </select>
+                    <h1 class="text-3xl font-bold text-white drop-shadow-sm">Gestion des Séminaires</h1>
+                    <p class="text-lg text-white/90 font-medium">Administration des séminaires et événements spéciaux</p>
                 </div>
-
-                <!-- Filtre niveau -->
-                <div>
-                    <select name="niveau_requis" aria-label="Filtrer par niveau" class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
-                        <option value="">Tous niveaux</option>
-                        <option value="debutant" {{ request('niveau_requis') === 'debutant' ? 'selected' : '' }}>Débutant</option>
-                        <option value="intermediaire" {{ request('niveau_requis') === 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>
-                        <option value="avance" {{ request('niveau_requis') === 'avance' ? 'selected' : '' }}>Avancé</option>
-                        <option value="tous_niveaux" {{ request('niveau_requis') === 'tous_niveaux' ? 'selected' : '' }}>Tous niveaux</option>
-                    </select>
-                </div>
-
-                <!-- Bouton recherche -->
-                <div>
-                    <button type="submit" aria-label="Lancer la recherche" class="w-full bg-pink-600 hover:bg-pink-700 text-white rounded-lg px-4 py-2 font-medium transition-colors duration-200">
-                        🔍 Rechercher
-                    </button>
-                </div>
-            </form>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('admin.seminaires.create') }}" 
+                   class="bg-white/15 hover:bg-white/25 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-3 backdrop-blur border border-white/20">
+                    <x-admin-icon name="plus" size="w-5 h-5" color="text-white" />
+                    <span>Nouveau Séminaire</span>
+                </a>
+            </div>
         </div>
+    </div>
 
-        @if($seminaires->count() > 0)
-            <!-- Table des séminaires -->
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-900">
-                        <tr class="text-left">
-                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Séminaire</th>
-                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Date & Lieu</th>
-                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Type & Niveau</th>
-                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Prix</th>
-                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Statut</th>
-                            <th class="px-6 py-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
+    <!-- Stats Cards SÉCURISÉES -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="studiosdb-card hover:scale-105 cursor-pointer group">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Total Séminaires</p>
+                    <p class="text-3xl font-bold text-white group-hover:text-rose-400 transition-colors">
+                        {{ isset($seminaires) ? (method_exists($seminaires, 'total') ? $seminaires->total() : $seminaires->count()) : 0 }}
+                    </p>
+                    <p class="text-xs text-slate-500 mt-1">Tous événements</p>
+                </div>
+                <div class="w-14 h-14 bg-rose-500/20 border-rose-500/30 rounded-2xl flex items-center justify-center border">
+                    <x-admin-icon name="seminaires" size="w-7 h-7" color="text-rose-400" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="studiosdb-card">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">À Venir</p>
+                    <p class="text-3xl font-bold text-emerald-400">0</p>
+                    <p class="text-xs text-slate-500 mt-1">Prochainement</p>
+                </div>
+                <div class="w-14 h-14 bg-emerald-500/20 border-emerald-500/30 rounded-2xl flex items-center justify-center border">
+                    <x-admin-icon name="presences" size="w-7 h-7" color="text-emerald-400" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="studiosdb-card">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Participants</p>
+                    <p class="text-3xl font-bold text-blue-400">0</p>
+                    <p class="text-xs text-slate-500 mt-1">Total inscrits</p>
+                </div>
+                <div class="w-14 h-14 bg-blue-500/20 border-blue-500/30 rounded-2xl flex items-center justify-center border">
+                    <x-admin-icon name="users" size="w-7 h-7" color="text-blue-400" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="studiosdb-card">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-400 uppercase tracking-wider mb-2">Ce Mois</p>
+                    <p class="text-3xl font-bold text-violet-400">0</p>
+                    <p class="text-xs text-slate-500 mt-1">Nouveaux</p>
+                </div>
+                <div class="w-14 h-14 bg-violet-500/20 border-violet-500/30 rounded-2xl flex items-center justify-center border">
+                    <x-admin-icon name="stats" size="w-7 h-7" color="text-violet-400" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="studiosdb-card">
+        <div class="overflow-x-auto">
+            <table class="studiosdb-table">
+                <thead>
+                    <tr>
+                        <th>Séminaire</th>
+                        <th>Date</th>
+                        <th>Participants</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($seminaires ?? [] as $seminaire)
+                        <tr class="hover:bg-slate-700/20 transition-colors">
+                            <td>
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-medium">{{ substr($seminaire->nom ?? 'S', 0, 1) }}</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-white font-medium">{{ $seminaire->nom ?? 'Séminaire' }}</div>
+                                        <div class="text-slate-400 text-sm">{{ Str::limit($seminaire->description ?? 'Pas de description', 50) }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-slate-300">
+                                {{ isset($seminaire->date_debut) ? $seminaire->date_debut->format('d/m/Y') : 'Non définie' }}
+                            </td>
+                            <td>
+                                <span class="text-blue-400 font-medium">0</span>
+                            </td>
+                            <td>
+                                <span class="studiosdb-badge studiosdb-badge-pending">À venir</span>
+                            </td>
+                            <td>
+                                <x-actions-dropdown :model="$seminaire" module="seminaires" />
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-700">
-                        @foreach($seminaires as $seminaire)
-                            <tr class="hover:bg-slate-750 transition-colors duration-150">
-                                <!-- Séminaire -->
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0 h-12 w-12">
-                                            <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-                                                <span class="text-white font-bold text-lg">🎯</span>
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-white">{{ $seminaire->titre }}</div>
-                                            <div class="text-sm text-slate-400">{{ $seminaire->instructeur }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <!-- Date & Lieu -->
-                                <td class="px-6 py-4">
-                                    <div class="text-sm text-white">{{ $seminaire->date_debut_formatee }}</div>
-                                    <div class="text-sm text-slate-400">{{ $seminaire->heure_debut_formatee }} - {{ $seminaire->heure_fin_formatee }}</div>
-                                    <div class="text-sm text-slate-400">{{ $seminaire->lieu }}</div>
-                                </td>
-                                <!-- Type & Niveau -->
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-pink-600 text-white">
-                                        {{ $seminaire->type_text }}
-                                    </span>
-                                    <div class="text-xs text-slate-400 mt-1">{{ $seminaire->niveau_requis_text }}</div>
-                                </td>
-                                <!-- Prix -->
-                                <td class="px-6 py-4">
-                                    @if($seminaire->prix)
-                                        <div class="text-sm text-white">${{ number_format($seminaire->prix, 2) }}</div>
-                                    @else
-                                        <div class="text-sm text-slate-400">Gratuit</div>
-                                    @endif
-                                </td>
-                                <!-- Statut -->
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $seminaire->statut_badge }}">
-                                        {{ $seminaire->statut_text }}
-                                    </span>
-                                    @if($seminaire->inscription_ouverte)
-                                        <div class="text-xs text-green-400 mt-1">Inscriptions ouvertes</div>
-                                    @else
-                                        <div class="text-xs text-red-400 mt-1">Inscriptions fermées</div>
-                                    @endif
-                                </td>
-                                <!-- Actions -->
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        @can('view', $seminaire)
-                                            <a href="{{ route('admin.seminaires.show', $seminaire) }}" 
-                                               aria-label="Voir le détail du séminaire"
-                                               class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
-                                                👁️
-                                            </a>
-                                        @endcan
-                                        @can('update', $seminaire)
-                                            <a href="{{ route('admin.seminaires.edit', $seminaire) }}" 
-                                               aria-label="Modifier le séminaire"
-                                               class="text-yellow-400 hover:text-yellow-300 transition-colors duration-200">
-                                                ✏️
-                                            </a>
-                                        @endcan
-                                        @can('delete', $seminaire)
-                                            <form method="POST" action="{{ route('admin.seminaires.destroy', $seminaire) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce séminaire ?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" aria-label="Supprimer le séminaire" class="text-red-400 hover:text-red-300 transition-colors duration-200">
-                                                    🗑️
-                                                </button>
-                                            </form>
-                                        @endcan
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="px-6 py-4 bg-slate-750 border-t border-slate-700">
-                {{ $seminaires->appends(request()->query())->links() }}
-            </div>
-
-        @else
-            <!-- État vide -->
-            <div class="text-center py-16">
-                <div class="text-6xl mb-4">🎯</div>
-                <h3 class="text-xl font-semibold text-white mb-2">Aucun séminaire trouvé</h3>
-                <p class="text-slate-400 mb-6">
-                    @if(request()->hasAny(['search', 'type', 'niveau_requis']))
-                        Aucun séminaire ne correspond à vos critères de recherche.
-                    @else
-                        Commencez par organiser votre premier séminaire.
-                    @endif
-                </p>
-                @can('create', App\Models\Seminaire::class)
-                    <a href="{{ route('admin.seminaires.create') }}" 
-                       class="inline-flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-medium rounded-lg transition-colors duration-200">
-                        <span class="mr-2">🎯</span>
-                        Nouveau séminaire
-                    </a>
-                @endcan
-            </div>
-        @endif
+                    @empty
+                        <tr>
+                            <td colspan="5">
+                                <x-empty-state
+                                    icon="seminaires"
+                                    title="Aucun séminaire trouvé"
+                                    description="Créez votre premier séminaire pour organiser des événements spéciaux."
+                                    action-label="Créer un séminaire"
+                                    :action-route="route('admin.seminaires.create')"
+                                    action-color="rose"
+                                />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection

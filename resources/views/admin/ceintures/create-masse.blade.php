@@ -4,8 +4,8 @@
 @section('content')
 <div class="space-y-6">
     <!-- Header avec gradient orange qui fade vers transparent -->
-    <div class="bg-gradient-to-r from-orange-500 via-red-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900 opacity-60"></div>
+    <div class="bg-gradient-to-r from-orange-500/15 via-red-600/20 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
+        <div class="absolute inset-0 "></div>
         <div class="relative z-10 flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold flex items-center">
@@ -17,20 +17,20 @@
                 <p class="text-orange-100 text-lg">Attribuer la même ceinture à plusieurs membres simultanément</p>
             </div>
             <a href="{{ route('admin.ceintures.index') }}" 
-               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
+               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-xl font-medium transition duration-200">
                 Retour
             </a>
         </div>
     </div>
 
     <!-- Formulaire -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+    <div class="bg-slate-800/40 backdrop-blur-xl/40 backdrop-blur-xl rounded-xl border border-slate-700/30/30/20p-6">
         <form method="POST" action="{{ route('admin.ceintures.store-masse') }}" class="space-y-6">
             @csrf
             
             <!-- Informations de l'examen -->
-            <div class="bg-slate-900 rounded-lg p-4 border border-slate-600">
-                <h3 class="text-lg font-medium text-white mb-4">📝 Informations de l'Examen</h3>
+            <div class="bg-slate-900 rounded-xl p-4 border border-slate-600">
+                <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">📝 Informations de l'Examen</h3>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Sélection ceinture SANS codes couleur -->
                     <div>
@@ -38,7 +38,7 @@
                             Ceinture à attribuer <span class="text-red-400">*</span>
                         </label>
                         <select name="ceinture_id" id="ceinture_id" required
-                                class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('ceinture_id') border-red-500 @enderror">
+                                class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('ceinture_id') border-red-500 @enderror">
                             <option value="">Sélectionner une ceinture</option>
                             @foreach($ceintures as $ceinture)
                             <option value="{{ $ceinture->id }}" data-nom="{{ $ceinture->nom }}" {{ old('ceinture_id') == $ceinture->id ? 'selected' : '' }}>
@@ -63,7 +63,7 @@
                                value="{{ old('date_obtention', now()->format('Y-m-d')) }}"
                                max="{{ now()->format('Y-m-d') }}"
                                required
-                               class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('date_obtention') border-red-500 @enderror">
+                               class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('date_obtention') border-red-500 @enderror">
                         @error('date_obtention')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -79,7 +79,7 @@
                               id="notes" 
                               rows="2"
                               placeholder="Commentaires généraux sur cet examen de groupe..."
-                              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 @error('notes') border-red-500 @enderror">{{ old('notes') }}</textarea>
+                              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 @error('notes') border-red-500 @enderror">{{ old('notes') }}</textarea>
                     @error('notes')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
@@ -87,9 +87,9 @@
             </div>
 
             <!-- Sélection des membres -->
-            <div class="bg-slate-900 rounded-lg border border-slate-600 overflow-hidden">
+            <div class="bg-slate-900 rounded-xl border border-slate-600 overflow-hidden">
                 <div class="bg-orange-600 px-6 py-4">
-                    <h3 class="text-lg font-semibold text-white flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">
                         <span>👥 Sélection des Membres ({{ $membres->count() }} disponibles)</span>
                         <div class="flex space-x-2">
                             <button type="button" id="select-all" 
@@ -105,10 +105,10 @@
                 </div>
 
                 <!-- Barre de recherche -->
-                <div class="px-6 py-4 border-b border-slate-700">
+                <div class="px-6 py-4 border-b border-slate-700/30/30/20>
                     <input type="text" id="search-membres" 
                            placeholder="🔍 Rechercher un membre par nom..."
-                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 </div>
 
                 <!-- Liste des membres avec checkboxes -->
@@ -116,7 +116,7 @@
                     @if($membres->count() > 0)
                         <div class="p-4 space-y-3" id="membres-list">
                             @foreach($membres as $membre)
-                            <div class="membre-item flex items-center p-3 bg-slate-800 rounded-lg border border-slate-700 hover:border-orange-500 transition duration-200">
+                            <div class="membre-item flex items-center p-3 bg-slate-800/40 backdrop-blur-xl/40 backdrop-blur-xl rounded-xl border border-slate-700/30/30/20hover:border-orange-500 transition duration-200">
                                 <input type="checkbox" 
                                        name="attributions[{{ $loop->index }}][user_id]" 
                                        value="{{ $membre->id }}"
@@ -128,7 +128,7 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/15 via-blue-600/20 to-cyan-500/15 flex items-center justify-center">
                                                     <span class="text-white font-bold text-sm">{{ substr($membre->name, 0, 2) }}</span>
                                                 </div>
                                             </div>
@@ -155,7 +155,7 @@
                                 <svg class="w-12 h-12 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
-                                <h3 class="text-sm font-medium text-slate-300">Aucun membre disponible</h3>
+                                <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Aucun membre disponible</h3>
                                 <p class="text-xs text-slate-500">Assurez-vous d'avoir des membres dans votre école.</p>
                             </div>
                         </div>
@@ -163,7 +163,7 @@
                 </div>
 
                 <!-- Compteur de sélection -->
-                <div class="px-6 py-4 border-t border-slate-700 bg-slate-800">
+                <div class="px-6 py-4 border-t border-slate-700/30/30/20bg-slate-800/40 backdrop-blur-xl/40 backdrop-blur-xl">
                     <div class="text-sm text-slate-300">
                         <span id="selected-count">0</span> membre(s) sélectionné(s)
                     </div>
@@ -171,13 +171,13 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center justify-between pt-6 border-t border-slate-700">
+            <div class="flex items-center justify-between pt-6 border-t border-slate-700/30/30/20>
                 <a href="{{ route('admin.ceintures.index') }}" 
-                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
+                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-medium transition duration-200">
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-medium transition duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-xl font-medium transition duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                         id="submit-btn" disabled>
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

@@ -2,38 +2,60 @@
 
 namespace App\Providers;
 
-use App\Models\User;
-use App\Models\Ecole;
-use App\Models\Cours;
-use App\Models\Seminaire;
-use App\Policies\UserPolicy;
-use App\Policies\EcolePolicy;
-use App\Policies\CoursPolicy;
-use App\Policies\SeminairePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    protected $policies = [
-        User::class => UserPolicy::class,
-        Ecole::class => EcolePolicy::class,
-        Cours::class => CoursPolicy::class,
-        Seminaire::class => SeminairePolicy::class,
-    ];
-
-    public function boot(): void
-    {
-        $this->registerPolicies();
-    }
-}
-
     /**
      * The model to policy mappings for the application.
      *
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // Policies existantes...
-        \App\Http\Controllers\Admin\DashboardController::class => \App\Policies\DashboardPolicy::class,
-        \App\Http\Controllers\Admin\LogController::class => \App\Policies\LogPolicy::class,
+        \App\Models\Dashboard::class => \App\Policies\DashboardPolicy::class,
+        \App\Models\User::class => \App\Policies\UserPolicy::class,
+        \App\Models\Ecole::class => \App\Policies\EcolePolicy::class,
+        \App\Models\Cours::class => \App\Policies\CoursPolicy::class,
+        \App\Models\Ceinture::class => \App\Policies\CeinturePolicy::class,
+        \App\Models\Seminaire::class => \App\Policies\SeminairePolicy::class,
+        \App\Models\Paiement::class => \App\Policies\PaiementPolicy::class,
+        \App\Models\Presence::class => \App\Policies\PresencePolicy::class,
+        \App\Models\SessionCours::class => \App\Policies\SessionCoursPolicy::class,
+        \App\Models\CoursHoraire::class => \App\Policies\CoursHorairePolicy::class,
     ];
+
+    /**
+     * Register any authentication / authorization services.
+     */
+    public function boot(): void
+    {
+        $this->registerPolicies();
+
+        // Gates ou autres autorisations personnalisées
+    }
+}
+
+// Ajouter cette ligne dans le tableau $policies si pas déjà présent
+// \App\Models\SessionCours::class => \App\Policies\SessionCoursPolicy::class,
+
+    public function boot(): void
+    {
+        $this->registerPolicies();
+        
+        // Gate pour dashboard avec sécurité multi-tenant
+        Gate::define('view-dashboard', function (User $user) {
+            return $user->hasAnyRole(['super_admin', 'admin_ecole', 'instructeur']) 
+                   && $user->ecole_id !== null;
+        });
+        
+        // Gate pour super admin dashboard
+        Gate::define('view-super-admin-dashboard', function (User $user) {
+            return $user->hasRole('super_admin');
+        });
+        
+        // Gate pour admin école avec vérification école
+        Gate::define('view-admin-ecole-dashboard', function (User $user) {
+            return $user->hasRole('admin_ecole') && $user->ecole_id !== null;
+        });
+    }

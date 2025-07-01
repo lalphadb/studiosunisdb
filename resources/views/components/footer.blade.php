@@ -1,4 +1,4 @@
-<footer class="bg-slate-800 border-t border-slate-700 mt-16">
+<footer class="bg-slate-800 border-t border-slate-700/20mt-16">
     <div class="max-w-6xl mx-auto px-6 py-8">
         <div class="grid md:grid-cols-3 gap-8 text-sm text-slate-400">
             <!-- Informations légales -->
@@ -59,7 +59,7 @@
         </div>
 
         <!-- Copyright -->
-        <div class="mt-8 pt-6 border-t border-slate-700 text-center text-xs text-slate-500">
+        <div class="mt-8 pt-6 border-t border-slate-700/20text-center text-xs text-slate-500">
             <p class="mb-2">
                 &copy; 2025 StudiosDB - Système développé pour la gestion d'écoles de karaté
             </p>

@@ -13,7 +13,7 @@
                 <h1 class="text-3xl font-bold text-white">🥋 StudiosUnisDB</h1>
                 <p class="text-gray-400">Administration Studios Unis du Québec</p>
             </div>
-            <div class="w-full sm:max-w-md px-6 py-4 bg-gray-800 shadow-lg overflow-hidden sm:rounded-lg border border-gray-700">
+            <div class="w-full sm:max-w-md px-6 py-4 bg-gray-800 shadow-md overflow-hidden sm:rounded-lg border border-gray-700">
                 {{ $slot }}
             </div>
         </div>

@@ -1,189 +1,108 @@
-@extends('layouts.admin')
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-module-header 
+                title="Tableau de Bord"
+                subtitle="Vue d'ensemble de votre système StudiosDB"
+                icon="📊"
+                colors="blue-500,cyan-600"
+                :action="false"
+            />
 
-@section('content')
-<div class="container mx-auto px-4 py-6">
-    <!-- Header principal -->
-    <div class="bg-gradient-to-r from-blue-500 via-cyan-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden mb-8">
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900 opacity-60"></div>
-        
-        <div class="relative z-10">
-            <h1 class="text-3xl font-bold mb-2">Tableau de bord</h1>
-            <p class="text-white/80">
-                Bienvenue, {{ auth()->user()->name }}
-                @if(auth()->user()->roles->count() > 0)
-                    ({{ auth()->user()->roles->first()->name }})
-                @endif
-            </p>
-        </div>
-    </div>
-
-    <!-- Modules principaux -->
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold text-white mb-6">Modules de gestion</h2>
-        
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Utilisateurs -->
-            <a href="{{ route('admin.users.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-blue-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">👤</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\User::count() }}</p>
-                        <p class="text-slate-400 text-sm">Total</p>
+            <!-- Métriques principales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow-md rounded-xl">
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="text-3xl">👤</div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Utilisateurs</h3>
+                                <p class="text-2xl font-bold text-blue-600">{{ \App\Models\User::count() }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-blue-400">Utilisateurs</h3>
-                <p class="text-slate-400 text-sm">Gestion des membres</p>
-            </a>
 
-            <!-- Écoles -->
-            <a href="{{ route('admin.ecoles.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-green-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">🏫</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\Ecole::count() }}</p>
-                        <p class="text-slate-400 text-sm">Total</p>
+                <div class="bg-white overflow-hidden shadow-md rounded-xl">
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="text-3xl">🏫</div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Écoles</h3>
+                                <p class="text-2xl font-bold text-green-600">{{ \App\Models\Ecole::count() }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-green-400">Écoles</h3>
-                <p class="text-slate-400 text-sm">Réseau d'écoles</p>
-            </a>
 
-            <!-- Cours -->
-            <a href="{{ route('admin.cours.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-purple-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">📚</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\Cours::count() }}</p>
-                        <p class="text-slate-400 text-sm">Total</p>
+                <div class="bg-white overflow-hidden shadow-md rounded-xl">
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="text-3xl">📚</div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Cours</h3>
+                                <p class="text-2xl font-bold text-purple-600">{{ \App\Models\Cours::count() }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-purple-400">Cours</h3>
-                <p class="text-slate-400 text-sm">Planning et sessions</p>
-            </a>
 
-            <!-- Ceintures -->
-            <a href="{{ route('admin.ceintures.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-orange-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">🥋</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\Ceinture::count() }}</p>
-                        <p class="text-slate-400 text-sm">Types</p>
+                <div class="bg-white overflow-hidden shadow-md rounded-xl">
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="text-3xl">🎯</div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Séminaires</h3>
+                                <p class="text-2xl font-bold text-pink-600">{{ \App\Models\Seminaire::count() }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-orange-400">Ceintures</h3>
-                <p class="text-slate-400 text-sm">Système de progression</p>
-            </a>
-
-            <!-- Séminaires -->
-            <a href="{{ route('admin.seminaires.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-pink-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">🎯</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\Seminaire::count() }}</p>
-                        <p class="text-slate-400 text-sm">Total</p>
-                    </div>
-                </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-pink-400">Séminaires</h3>
-                <p class="text-slate-400 text-sm">Événements spéciaux</p>
-            </a>
-
-            <!-- Paiements -->
-            <a href="{{ route('admin.paiements.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-yellow-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">💰</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\Paiement::count() }}</p>
-                        <p class="text-slate-400 text-sm">Total</p>
-                    </div>
-                </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-yellow-400">Paiements</h3>
-                <p class="text-slate-400 text-sm">Gestion financière</p>
-            </a>
-
-            <!-- Présences -->
-            <a href="{{ route('admin.presences.index') }}" 
-               class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-teal-500 transition-colors group">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-3xl">✅</span>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-white">{{ \App\Models\Presence::count() }}</p>
-                        <p class="text-slate-400 text-sm">Total</p>
-                    </div>
-                </div>
-                <h3 class="text-lg font-semibold text-white group-hover:text-teal-400">Présences</h3>
-                <p class="text-slate-400 text-sm">Suivi assiduité</p>
-            </a>
-        </div>
-    </div>
-
-    <!-- Séparateur -->
-    <div class="border-t border-slate-700 my-8"></div>
-
-    <!-- Outils administratifs -->
-    <div>
-        <h2 class="text-2xl font-bold text-white mb-6">Outils administratifs</h2>
-        
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Telescope -->
-            @if(auth()->user()->hasRole('superadmin'))
-                <a href="{{ url('/telescope') }}" 
-                   target="_blank"
-                   class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-indigo-500 transition-colors group">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-3xl">🔭</span>
-                        <span class="text-xs bg-indigo-600 text-white px-2 py-1 rounded">ADMIN</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white group-hover:text-indigo-400">Laravel Telescope</h3>
-                    <p class="text-slate-400 text-sm">Monitoring et debugging</p>
-                </a>
-            @endif
-
-            <!-- Logs -->
-            @can('viewAny', App\Models\User::class)
-                <a href="{{ route('admin.logs.index') }}" 
-                   class="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-red-500 transition-colors group">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-3xl">📋</span>
-                        <span class="text-xs bg-red-600 text-white px-2 py-1 rounded">LOGS</span>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white group-hover:text-red-400">Logs système</h3>
-                    <p class="text-slate-400 text-sm">Journaux d'activité</p>
-                </a>
-            @endcan
-
-    </div>
-
-    <!-- Statistiques rapides -->
-    <div class="mt-8 bg-slate-800 rounded-xl border border-slate-700 p-6">
-        <h3 class="text-lg font-bold text-white mb-4">Statistiques rapides</h3>
-        
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="text-center">
-                <p class="text-2xl font-bold text-blue-400">{{ \App\Models\User::where('active', true)->count() }}</p>
-                <p class="text-slate-400 text-sm">Membres actifs</p>
             </div>
-            
-            <div class="text-center">
-                <p class="text-2xl font-bold text-green-400">{{ \App\Models\Ecole::where('active', true)->count() }}</p>
-                <p class="text-slate-400 text-sm">Écoles actives</p>
+
+            <!-- Actions rapides -->
+            <div class="bg-white overflow-hidden shadow-md rounded-xl">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Actions Rapides</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <x-primary-button href="{{ route('admin.users.create') }}" class="justify-center py-4">
+                            👤 Nouvel Utilisateur
+                        </x-primary-button>
+                        <x-primary-button href="{{ route('admin.ecoles.create') }}" variant="green" class="justify-center py-4">
+                            🏫 Nouvelle École
+                        </x-primary-button>
+                        <x-primary-button href="{{ route('admin.cours.create') }}" variant="purple" class="justify-center py-4">
+                            📚 Nouveau Cours
+                        </x-primary-button>
+                        <x-primary-button href="{{ route('admin.seminaires.create') }}" variant="indigo" class="justify-center py-4">
+                            🎯 Nouveau Séminaire
+                        </x-primary-button>
+                    </div>
+                </div>
             </div>
-            
-            <div class="text-center">
-                <p class="text-2xl font-bold text-purple-400">{{ \App\Models\Cours::where('active', true)->count() }}</p>
-                <p class="text-slate-400 text-sm">Cours actifs</p>
-            </div>
-            
-            <div class="text-center">
-                <p class="text-2xl font-bold text-orange-400">{{ \App\Models\User::whereHas('roles', function($q) { $q->where('name', 'instructeur'); })->count() }}</p>
-                <p class="text-slate-400 text-sm">Instructeurs</p>
+
+            <!-- Activité récente -->
+            <div class="mt-8 bg-white overflow-hidden shadow-md rounded-xl">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Activité Récente</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center p-4 bg-gray-50 rounded-xl">
+                            <div class="text-2xl mr-4">✅</div>
+                            <div>
+                                <p class="font-medium">Interface standardisée</p>
+                                <p class="text-sm text-gray-600">StudiosDB v4.1.10.2 - Interface complètement standardisée</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-4 bg-gray-50 rounded-xl">
+                            <div class="text-2xl mr-4">🚀</div>
+                            <div>
+                                <p class="font-medium">Système opérationnel</p>
+                                <p class="text-sm text-gray-600">Tous les modules sont fonctionnels et sécurisés</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

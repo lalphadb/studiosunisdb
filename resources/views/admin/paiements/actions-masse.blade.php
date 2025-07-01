@@ -1,43 +1,37 @@
-@extends('layouts.admin')
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-module-header 
+                title="Actions de Masse"
+                subtitle="Traitement groupé des paiements"
+                icon="⚡"
+                colors="yellow-500,orange-600"
+                :action="false"
+            />
 
-@section('title', 'Actions de Masse')
-
-@section('content')
-<div class="container mx-auto px-4 py-6">
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold text-white">⚡ Actions de Masse - Paiements</h2>
-        <p class="text-slate-400">Valider plusieurs paiements en une fois</p>
-    </div>
-
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-        <h3 class="text-lg font-semibold text-white mb-4">🚧 En construction</h3>
-        <p class="text-slate-300 mb-4">
-            Cette fonctionnalité permet de traiter plusieurs paiements simultanément.
-        </p>
-        
-        <div class="space-y-4">
-            <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
-                <h4 class="text-blue-300 font-medium mb-2">Fonctionnalités prévues :</h4>
-                <ul class="text-blue-200 text-sm space-y-1">
-                    <li>• Sélection multiple de paiements</li>
-                    <li>• Validation en lot</li>
-                    <li>• Ajout de références virements</li>
-                    <li>• Changement de statut en masse</li>
-                </ul>
-            </div>
-            
-            <div class="flex space-x-4">
-                <a href="{{ route('admin.paiements.index') }}" 
-                   class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg">
-                    ← Retour aux paiements
-                </a>
-                
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg" 
-                        onclick="alert('Fonctionnalité en développement')">
-                    🚀 Bientôt disponible
-                </button>
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-xl">
+                <div class="p-6">
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">⚡</div>
+                        <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Actions de Masse</h3>
+                        <p class="text-gray-600 mb-6">Traitement de plusieurs paiements simultanément</p>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-md mx-auto mb-6">
+                            <h4 class="font-medium text-blue-900 mb-2">Fonctionnalités disponibles</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Validation en lot</li>
+                                <li>• Changement de statut</li>
+                                <li>• Export groupé</li>
+                                <li>• Notifications automatiques</li>
+                            </ul>
+                        </div>
+                        
+                        <x-primary-button href="{{ route('admin.paiements.index') }}" class="justify-center">
+                            💰 Retour aux paiements
+                        </x-primary-button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

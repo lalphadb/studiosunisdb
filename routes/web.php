@@ -59,3 +59,4 @@ Route::get('/conditions-utilisation', function () {
 Route::get('/contact', function () {
     return view('legal.contact');
 })->name('contact');
+require __DIR__.'/admin.php';

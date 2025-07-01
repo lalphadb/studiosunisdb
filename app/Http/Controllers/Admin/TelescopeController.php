@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 
-class TelescopeController extends Controller
+class TelescopeController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {

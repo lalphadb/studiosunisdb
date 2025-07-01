@@ -1,153 +1,285 @@
 @extends('layouts.admin')
-@section('title', 'Attribution Ceinture')
+
+@section('title', 'Créer une Ceinture')
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header avec gradient qui fade vers transparent -->
-    <div class="bg-gradient-to-r from-orange-500 via-red-600 to-transparent rounded-xl p-6 text-white relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900 opacity-60"></div>
-        <div class="relative z-10 flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold flex items-center">
-                    🥋 Attribution Individuelle de Ceinture
-                </h1>
-                <p class="text-orange-100 text-lg">Attribuer une nouvelle ceinture à un membre</p>
+    <!-- Header Création -->
+    <div class="gradient-ceintures text-white p-8 rounded-2xl border border-orange-500/20 relative overflow-hidden backdrop-blur-sm studiosdb-fade-in">
+        <div class="absolute inset-0 bg-gradient-to-br from-white/3 via-transparent to-white/2"></div>
+        
+        <div class="relative z-10 flex justify-between items-center">
+            <div class="flex items-center space-x-6">
+                <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur border border-white/20">
+                    <x-admin-icon name="ceintures" size="w-8 h-8" color="text-white" />
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-white drop-shadow-sm">Créer une Ceinture</h1>
+                    <p class="text-lg text-white/90 font-medium">Création d'un nouveau niveau</p>
+                </div>
             </div>
-            <a href="{{ route('admin.ceintures.index') }}" 
-               class="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
-                Retour
-            </a>
+            
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('admin.ceintures.index') }}" 
+                   class="bg-white/10 hover:bg-white/20 text-white px-5 py-3 rounded-xl transition-all duration-300 font-medium backdrop-blur border border-white/20 flex items-center space-x-2">
+                    <x-admin-icon name="chevron-left" size="w-4 h-4" color="text-white" />
+                    <span>Retour à la liste</span>
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Formulaire -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-        <form method="POST" action="{{ route('admin.ceintures.store') }}" class="space-y-6">
+    <!-- Formulaire moderne -->
+    <div class="studiosdb-card">
+        <form method="POST" action="{{ route('admin.ceintures.store') }}" class="space-y-8">
             @csrf
             
-            <!-- Sélection membre -->
+            <!-- Informations de base -->
             <div>
-                <label for="user_id" class="block text-sm font-medium text-slate-300 mb-2">
-                    Membre <span class="text-red-400">*</span>
-                </label>
-                <select name="user_id" id="user_id" required
-                        class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('user_id') border-red-500 @enderror">
-                    <option value="">Sélectionner un membre</option>
-                    @foreach($membres as $membre)
-                    <option value="{{ $membre->id }}" 
-                            {{ old('user_id', $user?->id) == $membre->id ? 'selected' : '' }}>
-                        {{ $membre->name }} - {{ $membre->ecole->nom ?? 'École non assignée' }}
-                    </option>
-                    @endforeach
-                </select>
-                @error('user_id')
-                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                @enderror
+                <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <x-admin-icon name="ceintures" size="w-6 h-6" color="text-orange-400" />
+                    <span class="ml-3">Informations de base</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Nom -->
+                    <div>
+                        <label for="nom" class="block text-sm font-medium text-slate-300 mb-2">
+                            Nom de la ceinture *
+                        </label>
+                        <input type="text" 
+                               name="nom" 
+                               id="nom"
+                               value="{{ old('nom') }}"
+                               class="studiosdb-search w-full" 
+                               placeholder="Ex: Ceinture Blanche"
+                               required>
+                        @error('nom')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Couleur -->
+                    <div>
+                        <label for="couleur" class="block text-sm font-medium text-slate-300 mb-2">
+                            Couleur *
+                        </label>
+                        <div class="flex space-x-3">
+                            <input type="color" 
+                                   name="couleur" 
+                                   id="couleur"
+                                   value="{{ old('couleur', '#FFFFFF') }}"
+                                   class="w-16 h-12 rounded-lg border-2 border-slate-600/50 cursor-pointer">
+                            <input type="text" 
+                                   name="couleur_hex" 
+                                   id="couleur_hex"
+                                   value="{{ old('couleur', '#FFFFFF') }}"
+                                   class="studiosdb-search flex-1" 
+                                   placeholder="#FFFFFF"
+                                   pattern="^#[0-9A-Fa-f]{6}$">
+                        </div>
+                        @error('couleur')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Niveau -->
+                    <div>
+                        <label for="niveau" class="block text-sm font-medium text-slate-300 mb-2">
+                            Niveau
+                        </label>
+                        <select name="niveau" id="niveau" class="studiosdb-select w-full">
+                            <option value="debutant" {{ old('niveau') == 'debutant' ? 'selected' : '' }}>Débutant</option>
+                            <option value="intermediaire" {{ old('niveau') == 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>
+                            <option value="avance" {{ old('niveau') == 'avance' ? 'selected' : '' }}>Avancé</option>
+                            <option value="expert" {{ old('niveau') == 'expert' ? 'selected' : '' }}>Expert</option>
+                            <option value="maitre" {{ old('niveau') == 'maitre' ? 'selected' : '' }}>Maître</option>
+                        </select>
+                        @error('niveau')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Ordre -->
+                    <div>
+                        <label for="ordre" class="block text-sm font-medium text-slate-300 mb-2">
+                            Ordre de progression *
+                        </label>
+                        <input type="number" 
+                               name="ordre" 
+                               id="ordre"
+                               value="{{ old('ordre', 1) }}"
+                               min="1"
+                               max="100"
+                               class="studiosdb-search w-full" 
+                               placeholder="1">
+                        <p class="text-slate-500 text-xs mt-1">Plus le nombre est élevé, plus la ceinture est avancée</p>
+                        @error('ordre')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
-            <!-- Sélection ceinture SANS codes couleur -->
+            <!-- Description -->
             <div>
-                <label for="ceinture_id" class="block text-sm font-medium text-slate-300 mb-2">
-                    Ceinture à attribuer <span class="text-red-400">*</span>
-                </label>
-                <select name="ceinture_id" id="ceinture_id" required
-                        class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('ceinture_id') border-red-500 @enderror">
-                    <option value="">Sélectionner une ceinture</option>
-                    @foreach($ceintures as $ceinture)
-                    <option value="{{ $ceinture->id }}" {{ old('ceinture_id') == $ceinture->id ? 'selected' : '' }}>
-                        {{ $ceinture->ordre }}. {{ $ceinture->nom }}
-                    </option>
-                    @endforeach
-                </select>
-                @error('ceinture_id')
-                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                @enderror
+                <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <x-admin-icon name="edit" size="w-6 h-6" color="text-blue-400" />
+                    <span class="ml-3">Description et prérequis</span>
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Description -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-slate-300 mb-2">
+                            Description
+                        </label>
+                        <textarea name="description" 
+                                  id="description" 
+                                  rows="4"
+                                  class="studiosdb-search w-full resize-vertical" 
+                                  placeholder="Description de la ceinture, compétences requises, objectifs...">{{ old('description') }}</textarea>
+                        @error('description')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Prérequis -->
+                    <div>
+                        <label for="prerequis" class="block text-sm font-medium text-slate-300 mb-2">
+                            Prérequis
+                        </label>
+                        <textarea name="prerequis" 
+                                  id="prerequis" 
+                                  rows="3"
+                                  class="studiosdb-search w-full resize-vertical" 
+                                  placeholder="Compétences ou ceintures prérequises...">{{ old('prerequis') }}</textarea>
+                        @error('prerequis')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
-            <!-- Date d'obtention -->
+            <!-- Configuration avancée -->
             <div>
-                <label for="date_obtention" class="block text-sm font-medium text-slate-300 mb-2">
-                    Date d'obtention <span class="text-red-400">*</span>
-                </label>
-                <input type="date" 
-                       name="date_obtention" 
-                       id="date_obtention"
-                       value="{{ old('date_obtention', now()->format('Y-m-d')) }}"
-                       max="{{ now()->format('Y-m-d') }}"
-                       required
-                       class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('date_obtention') border-red-500 @enderror">
-                @error('date_obtention')
-                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                @enderror
+                <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                    <x-admin-icon name="settings" size="w-6 h-6" color="text-violet-400" />
+                    <span class="ml-3">Configuration avancée</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Durée minimum -->
+                    <div>
+                        <label for="duree_minimum_mois" class="block text-sm font-medium text-slate-300 mb-2">
+                            Durée minimum (mois)
+                        </label>
+                        <input type="number" 
+                               name="duree_minimum_mois" 
+                               id="duree_minimum_mois"
+                               value="{{ old('duree_minimum_mois', 3) }}"
+                               min="0"
+                               max="60"
+                               class="studiosdb-search w-full" 
+                               placeholder="3">
+                        <p class="text-slate-500 text-xs mt-1">Temps minimum avant passage ceinture suivante</p>
+                        @error('duree_minimum_mois')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Prix examen -->
+                    <div>
+                        <label for="prix_examen" class="block text-sm font-medium text-slate-300 mb-2">
+                            Prix examen ($)
+                        </label>
+                        <input type="number" 
+                               name="prix_examen" 
+                               id="prix_examen"
+                               value="{{ old('prix_examen', 0) }}"
+                               min="0"
+                               step="0.01"
+                               class="studiosdb-search w-full" 
+                               placeholder="0.00">
+                        @error('prix_examen')
+                            <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- École (si super admin) -->
+                    @if(auth()->user()->hasRole('super_admin'))
+                        <div>
+                            <label for="ecole_id" class="block text-sm font-medium text-slate-300 mb-2">
+                                École
+                            </label>
+                            <select name="ecole_id" id="ecole_id" class="studiosdb-select w-full">
+                                <option value="">Toutes les écoles</option>
+                                @foreach(\App\Models\Ecole::all() as $ecole)
+                                    <option value="{{ $ecole->id }}" {{ old('ecole_id') == $ecole->id ? 'selected' : '' }}>
+                                        {{ $ecole->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('ecole_id')
+                                <p class="text-red-400 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
+
+                    <!-- Active -->
+                    <div>
+                        <label class="flex items-center space-x-3">
+                            <input type="hidden" name="active" value="0">
+                            <input type="checkbox" 
+                                   name="active" 
+                                   value="1"
+                                   {{ old('active', true) ? 'checked' : '' }}
+                                   class="w-4 h-4 text-orange-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-orange-500">
+                            <span class="text-slate-300 font-medium">Ceinture active</span>
+                        </label>
+                        <p class="text-slate-500 text-xs mt-1">Les ceintures inactives ne peuvent pas être attribuées</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Notes -->
-            <div>
-                <label for="notes" class="block text-sm font-medium text-slate-300 mb-2">
-                    Notes (optionnel)
-                </label>
-                <textarea name="notes" 
-                          id="notes" 
-                          rows="3"
-                          placeholder="Commentaires sur l'examen, performances, etc."
-                          class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 @error('notes') border-red-500 @enderror">{{ old('notes') }}</textarea>
-                @error('notes')
-                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Statut validation -->
-            <div class="flex items-center">
-                <input type="checkbox" 
-                       name="valide" 
-                       id="valide" 
-                       value="1"
-                       {{ old('valide', true) ? 'checked' : '' }}
-                       class="w-4 h-4 text-orange-600 bg-slate-700 border-slate-600 rounded focus:ring-orange-500 focus:ring-2">
-                <label for="valide" class="ml-2 text-sm text-slate-300">
-                    Ceinture validée (cocher si l'attribution est confirmée)
-                </label>
-            </div>
-
-            <!-- Boutons -->
-            <div class="flex items-center justify-between pt-6 border-t border-slate-700">
+            <!-- Actions -->
+            <div class="flex justify-between items-center pt-6 border-t border-slate-700/30">
                 <a href="{{ route('admin.ceintures.index') }}" 
-                   class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
-                    Annuler
+                   class="studiosdb-btn studiosdb-btn-cancel">
+                    <x-admin-icon name="chevron-left" size="w-4 h-4" />
+                    <span class="ml-2">Annuler</span>
                 </a>
-                <button type="submit" 
-                        class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-medium transition duration-200 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Attribuer la Ceinture
-                </button>
+                
+                <div class="flex space-x-3">
+                    <button type="submit" 
+                            name="action" 
+                            value="save_and_continue"
+                            class="studiosdb-btn studiosdb-btn-ceintures">
+                        <x-admin-icon name="plus" size="w-4 h-4" />
+                        <span class="ml-2">Créer et Continuer</span>
+                    </button>
+                    
+                    <button type="submit" 
+                            class="studiosdb-btn studiosdb-btn-ceintures">
+                        <x-admin-icon name="presences" size="w-4 h-4" />
+                        <span class="ml-2">Créer la Ceinture</span>
+                    </button>
+                </div>
             </div>
         </form>
     </div>
-
-    <!-- Aperçu visuel des ceintures -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-        <h3 class="text-lg font-semibold text-white mb-4">🎨 Aperçu des Ceintures</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            @foreach($ceintures as $ceinture)
-            <div class="text-center p-3 bg-slate-700 rounded-lg">
-                <div class="w-8 h-8 rounded-full mx-auto mb-2" style="background-color: {{ $ceinture->couleur }}"></div>
-                <div class="text-xs text-slate-300">{{ $ceinture->ordre }}. {{ $ceinture->nom }}</div>
-            </div>
-            @endforeach
-        </div>
-    </div>
 </div>
 
-@if($user)
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Si on arrive depuis la fiche d'un membre, le pré-sélectionner
-    const userSelect = document.getElementById('user_id');
-    userSelect.value = '{{ $user->id }}';
-    userSelect.focus();
+// Synchronisation couleur picker et input hex
+document.getElementById('couleur').addEventListener('change', function() {
+    document.getElementById('couleur_hex').value = this.value.toUpperCase();
+});
+
+document.getElementById('couleur_hex').addEventListener('input', function() {
+    if (this.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+        document.getElementById('couleur').value = this.value;
+    }
 });
 </script>
-@endif
 @endsection

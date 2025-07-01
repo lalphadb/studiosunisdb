@@ -1,0 +1,26 @@
+<x-app-layout>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <x-module-header 
+                title="Gestion des Cours"
+                subtitle="Gestion de vos cours du réseau"
+                icon="📚"
+                colors="purple-500,indigo-600"
+                :action="true"
+                actionText="Nouveau Cours"
+                :actionRoute="route('admin.cours.create')"
+            />
+
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📚</div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Gestion des Cours</h3>
+                        <p class="text-gray-600 mb-6">Interface standardisée StudiosDB v4.1.10.2</p>
+                        <p class="text-sm text-gray-500">Module fonctionnel et sécurisé</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>

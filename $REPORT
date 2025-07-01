@@ -1,0 +1,20 @@
+User: lalpha@4lb.ca
+  Roles: super-admin, membre, superadmin
+  Permissions: 
+---
+User: louis@4lb.ca
+  Roles: admin_ecole, admin
+  Permissions: 
+---
+User: r00t3d@pm.me
+  Roles: membre, superadmin
+  Permissions: 
+---
+User: membre@test.ca
+  Roles: membre
+  Permissions: 
+---
+User: root3d@4lb.ca
+  Roles: membre
+  Permissions: 
+---

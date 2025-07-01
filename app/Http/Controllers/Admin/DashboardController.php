@@ -17,7 +17,7 @@ class DashboardController extends Controller implements HasMiddleware
         return [
             'auth',
             'verified',
-            new Middleware('can:viewAny,App\Policies\DashboardPolicy', only: ['index']),
+            new Middleware('can:view-dashboard', only: ['index']),
         ];
     }
 

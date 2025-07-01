@@ -11,7 +11,7 @@
                         <p class="text-gray-500 text-xs mt-1">{{ $metric['subtitle'] }}</p>
                     @endif
                 </div>
-                <div class="w-12 h-12 rounded-lg flex items-center justify-center" 
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center" 
                      style="background-color: {{ $metric['color'] ?? '#6366f1' }};">
                     <span class="text-2xl">{{ $metric['icon'] }}</span>
                 </div>

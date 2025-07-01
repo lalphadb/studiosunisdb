@@ -1,300 +1,183 @@
 @extends('layouts.admin')
-@section('title', 'Gestion des Cours')
+
+@section('title', 'Cours')
 
 @section('content')
 <div class="space-y-6">
+
+    <!-- Header avec votre système StudiosDB -->
     <x-module-header 
         module="cours"
-        title="Gestion des Cours"
-        subtitle="Gestion de vos cours du réseau"
-        create-route="{{ route('admin.cours.create') }}"
-        create-text="Nouveau Cours"
-        create-permission="create,App\Models\Cours"
+        title="Cours" 
+        subtitle="Gestion des cours et programmes"
+        :createRoute="route('admin.cours.create')"
+        createText="Nouveau cours"
+        createPermission="create-cours"
     />
 
-    <!-- Métriques avec couleur violette -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-600">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $cours->total() }}</div>
-                    <div class="text-sm text-slate-400">Total Cours</div>
-                </div>
+    <!-- Messages flash avec vos styles -->
+    @if(session('success'))
+        <div class="studiosdb-card border-l-4 border-green-500 bg-green-500/10">
+            <div class="flex">
+                <span class="text-green-400 text-xl mr-3">✅</span>
+                <p class="text-sm font-medium text-green-300">{{ session('success') }}</p>
             </div>
         </div>
-        
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $cours->where('active', true)->count() }}</div>
-                    <div class="text-sm text-slate-400">Actifs</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $cours->sum('inscriptions_count') ?? 0 }}</div>
-                    <div class="text-sm text-slate-400">Inscriptions</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-            <div class="flex items-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <div class="text-2xl font-bold text-white">{{ $cours->whereNotNull('instructeur')->count() }}</div>
-                    <div class="text-sm text-slate-400">Instructeurs</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @endif
 
-    <!-- Section Vos Cours avec couleur violette -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-        <div class="bg-purple-600 px-6 py-4">
-            <h3 class="text-lg font-semibold text-white flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
-                Vos Cours
-            </h3>
+    @if(session('error'))
+        <div class="studiosdb-card border-l-4 border-red-500 bg-red-500/10">
+            <div class="flex">
+                <span class="text-red-400 text-xl mr-3">❌</span>
+                <p class="text-sm font-medium text-red-300">{{ session('error') }}</p>
+            </div>
         </div>
+    @endif
 
-        <!-- Barre de recherche et filtres -->
-        <form method="GET" action="{{ route('admin.cours.index') }}">
-            <div class="px-6 py-4 border-b border-slate-700">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <!-- Recherche -->
-                    <div class="md:col-span-2">
-                        <input type="text" 
-                               name="search"
-                               value="{{ request('search') }}"
-                               placeholder="Rechercher un cours par nom, instructeur..."
-                               class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-                    
-                    <!-- École (si superadmin) -->
-                    @if(auth()->user()->hasRole('superadmin') && isset($ecoles) && count($ecoles) > 0)
-                    <div>
-                        <select name="ecole_id" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">Toutes les écoles</option>
-                            @foreach($ecoles as $ecole)
-                                <option value="{{ $ecole->id }}" {{ request('ecole_id') == $ecole->id ? 'selected' : '' }}>
-                                    {{ $ecole->nom }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @endif
-
-                    <!-- Niveau -->
-                    <div>
-                        <select name="niveau" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">Tous niveaux</option>
-                            <option value="debutant" {{ request('niveau') == 'debutant' ? 'selected' : '' }}>Débutant</option>
-                            <option value="intermediaire" {{ request('niveau') == 'intermediaire' ? 'selected' : '' }}>Intermédiaire</option>
-                            <option value="avance" {{ request('niveau') == 'avance' ? 'selected' : '' }}>Avancé</option>
-                            <option value="tous_niveaux" {{ request('niveau') == 'tous_niveaux' ? 'selected' : '' }}>Tous niveaux</option>
-                        </select>
-                    </div>
-                </div>
+    <!-- Table avec vos styles StudiosDB -->
+    @if($cours->count() > 0)
+        <x-admin-table 
+            :headers="auth()->user()->hasRole('super_admin') ? 
+                ['Cours', 'École', 'Niveau', 'Statut', 'Horaires', 'Actions'] : 
+                ['Cours', 'Niveau', 'Statut', 'Horaires', 'Actions']"
+            :searchable="true"
+            :filterable="true"
+            :exportable="true">
+            
+            @foreach($cours as $cour)
+            <tr class="hover:bg-slate-700/30 transition-colors">
+                <td class="w-4">
+                    <input type="checkbox" class="w-4 h-4 text-purple-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-purple-500">
+                </td>
                 
-                <div class="flex items-center justify-between mt-4">
-                    <div class="flex space-x-2">
-                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            Rechercher
-                        </button>
-                        <a href="{{ route('admin.cours.index') }}" class="bg-slate-600 hover:bg-slate-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200">
-                            Reset
-                        </a>
+                <!-- Cours -->
+                <td>
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <span class="text-2xl">📚</span>
+                        </div>
+                        <div>
+                            <div class="font-medium text-white">{{ $cour->nom }}</div>
+                            @if($cour->description)
+                            <div class="text-sm text-slate-400">{{ Str::limit($cour->description, 50) }}</div>
+                            @endif
+                        </div>
                     </div>
-                </div>
-            </div>
-        </form>
-        
-        <div class="overflow-x-auto">
-            <table class="min-w-full">
-                <thead class="bg-slate-900">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Cours</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">École</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Niveau</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Instructeur</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Prix</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Statut</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-700">
-                    @forelse($cours as $coursItem)
-                    <tr class="hover:bg-slate-700/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-12 w-12">
-                                    <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-white">{{ $coursItem->nom }}</div>
-                                    <div class="text-sm text-slate-400">
-                                        @if($coursItem->capacite_max)
-                                            {{ $coursItem->inscriptions_count ?? 0 }}/{{ $coursItem->capacite_max }} inscrits
-                                        @else
-                                            {{ $coursItem->inscriptions_count ?? 0 }} inscrits
-                                        @endif
-                                        @if($coursItem->duree_minutes)
-                                            • {{ $coursItem->duree_minutes }}min
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $coursItem->ecole->nom }}</div>
-                            <div class="text-sm text-slate-400">{{ $coursItem->ecole->code }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($coursItem->niveau)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-900 text-purple-300">
-                                    {{ ucfirst($coursItem->niveau) }}
-                                </span>
-                            @else
-                                <span class="text-slate-400">-</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-white">{{ $coursItem->instructeur ?? '-' }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($coursItem->prix)
-                                <div class="text-sm font-medium text-white">{{ number_format($coursItem->prix, 2) }} $</div>
-                            @else
-                                <span class="text-slate-400">Gratuit</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($coursItem->active)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-300">
-                                    ✓ Actif
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-300">
-                                    ✗ Inactif
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-2">
-                                <!-- Bouton Voir -->
-                                @can('view', $coursItem)
-                                <a href="{{ route('admin.cours.show', $coursItem) }}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-                                   title="Voir les détails">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
+                </td>
+                
+                @if(auth()->user()->hasRole('super_admin'))
+                <!-- École -->
+                <td>
+                    <div class="text-sm text-white">{{ $cour->ecole->nom }}</div>
+                    <div class="text-xs text-slate-400">{{ $cour->ecole->code_ecole }}</div>
+                </td>
+                @endif
+                
+                <!-- Niveau -->
+                <td>
+                    <div class="text-sm text-white">{{ $cour->niveau ?? 'Non défini' }}</div>
+                    @if($cour->instructeur_defaut)
+                    <div class="text-xs text-slate-400">{{ $cour->instructeur_defaut }}</div>
+                    @endif
+                </td>
+                
+                <!-- Statut avec vos badges StudiosDB -->
+                <td>
+                    @if($cour->active)
+                        <span class="studiosdb-badge studiosdb-badge-active">
+                            ✅ Actif
+                        </span>
+                    @else
+                        <span class="studiosdb-badge studiosdb-badge-inactive">
+                            ⏸️ Inactif
+                        </span>
+                    @endif
+                </td>
+                
+                <!-- Horaires -->
+                <td>
+                    <div class="text-sm text-white">{{ $cour->cours_horaires_count ?? 0 }} horaires</div>
+                    <div class="text-xs text-slate-400">
+                        @if($cour->capacite_max_defaut)
+                        Max: {{ $cour->capacite_max_defaut }} places
+                        @endif
+                    </div>
+                </td>
+                
+                <!-- Actions -->
+                <td>
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                class="studiosdb-btn studiosdb-btn-cours text-xs px-3 py-1">
+                            Actions
+                            <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                        
+                        <div x-show="open" 
+                             @click.away="open = false"
+                             x-transition
+                             class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 z-10">
+                            <div class="py-1">
+                                @can('view', $cour)
+                                <a href="{{ route('admin.cours.show', $cour) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
+                                    <span class="mr-2">👁️</span>
+                                    Voir détails
                                 </a>
                                 @endcan
                                 
-                                <!-- Bouton Modifier -->
-                                @can('update', $coursItem)
-                                <a href="{{ route('admin.cours.edit', $coursItem) }}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white transition-colors duration-200"
-                                   title="Modifier">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
-                                </a>
-                                @endcan
-
-                                <!-- Bouton Dupliquer -->
-                                @can('create', App\Models\Cours::class)
-                                <a href="{{ route('admin.cours.clone.form', $coursItem) }}" 
-                                   class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200"
-                                   title="Dupliquer">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                    </svg>
+                                @can('update', $cour)
+                                <a href="{{ route('admin.cours.edit', $cour) }}" 
+                                   class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
+                                    <span class="mr-2">✏️</span>
+                                    Modifier
                                 </a>
                                 @endcan
                                 
-                                <!-- Bouton Supprimer -->
-                                @can('delete', $coursItem)
-                                @if(($coursItem->inscriptions_count ?? 0) == 0)
-                                <form method="POST" action="{{ route('admin.cours.destroy', $coursItem) }}" class="inline">
+                                @can('delete', $cour)
+                                <div class="border-t border-slate-700 my-1"></div>
+                                <form method="POST" action="{{ route('admin.cours.destroy', $cour) }}" 
+                                      x-data="{ 
+                                          confirm() { 
+                                              return window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?') 
+                                          } 
+                                      }"
+                                      @submit.prevent="confirm() && $el.submit()">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" 
-                                            class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors duration-200"
-                                            title="Supprimer"
-                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
+                                    <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-900/20">
+                                        <span class="mr-2">🗑️</span>
+                                        Supprimer
                                     </button>
                                 </form>
-                                @endif
                                 @endcan
                             </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="text-slate-400">
-                                <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                </svg>
-                                <h3 class="mt-2 text-sm font-medium text-slate-300">Aucun cours trouvé</h3>
-                                <p class="mt-1 text-sm text-slate-500">
-                                    @if(request()->hasAny(['search', 'ecole_id', 'niveau']))
-                                        Aucun cours ne correspond à vos critères de recherche.
-                                    @else
-                                        Commencez par créer un premier cours.
-                                    @endif
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            @endforeach
+        </x-admin-table>
+    @else
+        <!-- État vide avec vos styles StudiosDB -->
+        <div class="studiosdb-card text-center py-16">
+            <div class="text-6xl mb-6">📚</div>
+            <h3 class="text-xl font-medium text-white mb-3">Aucun cours créé</h3>
+            <p class="text-slate-400 mb-8 max-w-md mx-auto">
+                Commencez par créer vos premiers cours pour organiser votre enseignement.
+            </p>
+            
+            @can('create-cours')
+            <a href="{{ route('admin.cours.create') }}" 
+               class="studiosdb-btn studiosdb-btn-cours studiosdb-btn-lg">
+                <span class="mr-2">➕</span>
+                Créer le premier cours
+            </a>
+            @endcan
         </div>
-        
-        @if($cours->hasPages())
-        <div class="px-6 py-4 border-t border-slate-700">
-            {{ $cours->appends(request()->query())->links() }}
-        </div>
-        @endif
-    </div>
+    @endif
+
 </div>
 @endsection
