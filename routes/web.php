@@ -41,8 +41,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
+// Route profil membre (interface simple sans sidebar admin)
+Route::middleware('auth')->group(function () {
+    Route::get('/profil', function () {
+        return view('membre.profil', ['user' => auth()->user()]);
+    })->name('membre.profil');
+});
+
 // ===============================================================================
-// ROUTES ADMIN (StudiosUnisDB v4.1.8.6-DEV)
+// ROUTES ADMIN (StudiosUnisDB v4.1.10.2)
 // OBLIGATOIRE selon prompt XML - toutes les routes admin
 // ===============================================================================
 require __DIR__.'/admin.php';
@@ -59,4 +66,3 @@ Route::get('/conditions-utilisation', function () {
 Route::get('/contact', function () {
     return view('legal.contact');
 })->name('contact');
-require __DIR__.'/admin.php';

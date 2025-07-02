@@ -49,6 +49,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
     // Gestion des ceintures
     Route::get('ceintures/attribution-masse', [CeintureController::class, 'createMasse'])->name('ceintures.create-masse');
     Route::post('ceintures/attribution-masse', [CeintureController::class, 'storeMasse'])->name('ceintures.store-masse');
+
     Route::resource('ceintures', CeintureController::class);
     
     // Gestion des séminaires
@@ -109,4 +110,5 @@ Route::get('/users/modern', function() {
 // Attribution ceintures masse
 Route::get('/ceintures/attribution', [CeintureController::class, 'attribution'])->name('ceintures.attribution');
 Route::post('/ceintures/attribution', [CeintureController::class, 'storeAttribution'])->name('ceintures.attribution.store');
+
 

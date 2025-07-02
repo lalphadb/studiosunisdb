@@ -78,6 +78,8 @@
                            class="flex items-center px-4 py-3 text-white hover:bg-blue-500/20 rounded-lg transition-all duration-300 {{ request()->routeIs('admin.users.*') ? 'bg-blue-500/30 border-l-4 border-blue-500' : '' }}">
                             <x-admin-icon name="users" size="w-5 h-5" color="text-blue-400" />
                             <span class="ml-3 font-medium">Utilisateurs</span>
+                    <span class="text-xl">👨‍👩‍👧‍👦</span>
+                </a>
                         </a>
                         
                         <a href="{{ route('admin.presences.index') }}" 
@@ -157,7 +159,7 @@
                              x-transition:leave-end="opacity-0 scale-95"
                              class="absolute right-0 mt-2 w-48 bg-slate-700 rounded-lg shadow-lg border border-slate-600 z-50">
                             <div class="py-2">
-                                <a href="{{ route('profile.edit') }}" 
+                                <a href="{{ route('admin.users.show', auth()->user()) }}" 
                                    class="flex items-center px-4 py-2 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors">
                                     <x-admin-icon name="settings" size="w-4 h-4" />
                                     <span class="ml-3">Profil</span>

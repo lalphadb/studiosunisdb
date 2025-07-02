@@ -10,7 +10,7 @@
         
         <div class="relative z-10 flex justify-between items-center">
             <div class="flex items-center space-x-6">
-                <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur border border-white/20">
+                <div class="w-16 h-16 bg-slate-700/10 rounded-2xl flex items-center justify-center backdrop-blur border border-white/20">
                     <x-admin-icon name="ecoles" size="w-8 h-8" color="text-white" />
                 </div>
                 <div>
@@ -22,7 +22,7 @@
             <div class="flex items-center space-x-3">
                 @can('create', App\Models\Ecole::class)
                     <a href="{{ route('admin.ecoles.create') }}" 
-                       class="bg-white/15 hover:bg-white/25 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-3 backdrop-blur border border-white/20">
+                       class="bg-slate-700/15 hover:bg-slate-700/25 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-3 backdrop-blur border border-white/20">
                         <x-admin-icon name="plus" size="w-5 h-5" color="text-white" />
                         <span>Nouvelle École</span>
                     </a>
@@ -92,7 +92,7 @@
             <div class="flex-1 max-w-lg">
                 <div class="relative">
                     <input type="text" placeholder="Rechercher une école..." 
-                           class="studiosdb-search w-full pl-12">
+                           class="w-full bg-slate-700 border border-slate-600 text-white rounded-lg px-3 py-2 pl-12 focus:ring-2 focus:ring-emerald-500">
                     <div class="absolute left-4 top-1/2 transform -translate-y-1/2 studiosdb-search-icon">
                         <x-admin-icon name="search" size="w-5 h-5" />
                     </div>
