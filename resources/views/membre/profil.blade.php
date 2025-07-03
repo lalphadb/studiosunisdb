@@ -14,17 +14,24 @@
             <div class="text-right">
                 <div class="bg-blue-500 bg-opacity-50 px-4 py-2 rounded-lg">
                     <div class="text-sm text-blue-100">{{ $user->name }}</div>
+                    <div class="text-xs text-blue-200">Membre</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- EXACTEMENT LES MÊMES INFORMATIONS QUE L'ADMIN VOIT -->
+    
     <!-- Informations personnelles -->
     <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-bold text-white flex items-center">
                 👤 <span class="ml-2">Mes Informations</span>
             </h2>
+            <a href="{{ route('membre.profil.edit') }}" 
+               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                ✏️ Modifier
+            </a>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -59,7 +66,17 @@
                 
                 <div>
                     <label class="text-sm font-medium text-slate-400">Sexe</label>
-                    <div class="text-white">{{ $user->sexe ?? 'Non renseigné' }}</div>
+                    <div class="text-white">
+                        @if($user->sexe === 'M')
+                            Masculin
+                        @elseif($user->sexe === 'F')
+                            Féminin
+                        @elseif($user->sexe === 'Autre')
+                            Autre
+                        @else
+                            Non renseigné
+                        @endif
+                    </div>
                 </div>
             </div>
             
@@ -90,19 +107,20 @@
                     </div>
                 </div>
                 
-                @if($user->adresse)
+                <!-- Adresse complète (comme l'admin voit) -->
+                @if($user->adresse || $user->ville || $user->code_postal)
                 <div>
                     <label class="text-sm font-medium text-slate-400">Adresse</label>
                     <div class="text-white">
-                        {{ $user->adresse }}<br>
-                        {{ $user->ville }} {{ $user->code_postal }}
+                        @if($user->adresse){{ $user->adresse }}<br>@endif
+                        @if($user->ville || $user->code_postal){{ $user->ville }} {{ $user->code_postal }}@endif
                     </div>
                 </div>
                 @endif
             </div>
         </div>
         
-        <!-- Contact d'urgence -->
+        <!-- Contact d'urgence (comme l'admin voit) -->
         @if($user->contact_urgence_nom || $user->contact_urgence_telephone)
         <div class="mt-6 pt-6 border-t border-slate-700">
             <h3 class="text-lg font-medium text-white mb-4">🚨 Contact d'urgence</h3>
@@ -117,6 +135,49 @@
                 <div>
                     <label class="text-sm font-medium text-slate-400">Téléphone</label>
                     <div class="text-white">{{ $user->contact_urgence_telephone }}</div>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        <!-- Informations famille (comme l'admin voit) -->
+        @if($user->nom_famille_groupe || $user->contact_principal_famille || $user->famille_principale_id)
+        <div class="mt-6 pt-6 border-t border-slate-700">
+            <h3 class="text-lg font-medium text-white mb-4">👨‍👩‍👧‍👦 Informations Famille</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @if($user->nom_famille_groupe)
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Nom de famille groupé</label>
+                    <div class="text-white">{{ $user->nom_famille_groupe }}</div>
+                </div>
+                @endif
+                
+                @if($user->contact_principal_famille)
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Contact principal famille</label>
+                    <div class="text-white">{{ $user->contact_principal_famille }}</div>
+                </div>
+                @endif
+                
+                @if($user->telephone_principal_famille)
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Téléphone principal famille</label>
+                    <div class="text-white">{{ $user->telephone_principal_famille }}</div>
+                </div>
+                @endif
+                
+                @if($user->famille_principale_id)
+                <div>
+                    <label class="text-sm font-medium text-slate-400">Chef de famille</label>
+                    <div class="text-white">{{ $user->famillePrincipale->name ?? 'Chef de famille introuvable' }}</div>
+                </div>
+                @endif
+                
+                @if($user->notes_famille)
+                <div class="md:col-span-2">
+                    <label class="text-sm font-medium text-slate-400">Notes famille</label>
+                    <div class="text-white">{{ $user->notes_famille }}</div>
                 </div>
                 @endif
             </div>
@@ -196,91 +257,49 @@
         </div>
     </div>
 
-    <!-- Modifier mes informations personnelles -->
+    <!-- Actions rapides -->
     <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
         <h2 class="text-xl font-bold text-white mb-6 flex items-center">
-            ✏️ <span class="ml-2">Modifier mes informations</span>
+            🚀 <span class="ml-2">Actions Rapides</span>
         </h2>
         
-        <form method="POST" action="{{ route('profile.update') }}" class="space-y-4">
-            @csrf
-            @method('PATCH')
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Téléphone</label>
-                    <input type="text" name="telephone" value="{{ old('telephone', $user->telephone) }}" 
-                           class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Modifier profil -->
+            <a href="{{ route('membre.profil.edit') }}" 
+               class="block p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors">
+                <div class="flex items-center">
+                    <div class="text-blue-400 mr-3 text-2xl">✏️</div>
+                    <div>
+                        <h4 class="font-medium text-white">Modifier mes informations</h4>
+                        <p class="text-sm text-gray-300">Mettre à jour mon profil</p>
+                    </div>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Adresse</label>
-                    <input type="text" name="adresse" value="{{ old('adresse', $user->adresse) }}" 
-                           class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Contact d'urgence</label>
-                    <input type="text" name="contact_urgence_nom" value="{{ old('contact_urgence_nom', $user->contact_urgence_nom) }}" 
-                           class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Téléphone d'urgence</label>
-                    <input type="text" name="contact_urgence_telephone" value="{{ old('contact_urgence_telephone', $user->contact_urgence_telephone) }}" 
-                           class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                </div>
-            </div>
-            
-            <div class="flex justify-end">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    💾 Enregistrer les modifications
-                </button>
-            </div>
-        </form>
-    </div>
+            </a>
 
-    <!-- Changer mot de passe -->
-    <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-        <h2 class="text-xl font-bold text-white mb-6 flex items-center">
-            🔐 <span class="ml-2">Changer le mot de passe</span>
-        </h2>
-        
-        <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
-            @csrf
-            @method('PUT')
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Mot de passe actuel</label>
-                <input type="password" name="current_password" 
-                       class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Nouveau mot de passe</label>
-                <input type="password" name="password" 
-                       class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">Confirmer le mot de passe</label>
-                <input type="password" name="password_confirmation" 
-                       class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-            </div>
-            
-            <div class="flex justify-end">
-                <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    🔑 Changer le mot de passe
-                </button>
-            </div>
-        </form>
-    </div>
+            <!-- Changer mot de passe -->
+            <a href="{{ route('membre.profil.password') }}" 
+               class="block p-4 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors">
+                <div class="flex items-center">
+                    <div class="text-red-400 mr-3 text-2xl">🔐</div>
+                    <div>
+                        <h4 class="font-medium text-white">Changer mot de passe</h4>
+                        <p class="text-sm text-gray-300">Sécurité de mon compte</p>
+                    </div>
+                </div>
+            </a>
 
-    <!-- Retour au dashboard -->
-    <div class="flex justify-center">
-        <a href="{{ route('dashboard') }}" class="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
-            ← Retour au dashboard
-        </a>
+            <!-- Retour dashboard -->
+            <a href="{{ route('dashboard') }}" 
+               class="block p-4 bg-green-500/10 border border-green-500/30 rounded-lg hover:bg-green-500/20 transition-colors">
+                <div class="flex items-center">
+                    <div class="text-green-400 mr-3 text-2xl">🏠</div>
+                    <div>
+                        <h4 class="font-medium text-white">Mon dashboard</h4>
+                        <p class="text-sm text-gray-300">Retour à l'accueil</p>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 </div>
 @endsection

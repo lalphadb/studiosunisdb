@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Membre\MembreController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,11 +42,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-// Route profil membre (interface simple sans sidebar admin)
+// ===============================================================================
+// ROUTES MEMBRE - Interface profil membre (NOUVELLES ROUTES)
+// ===============================================================================
 Route::middleware('auth')->group(function () {
-    Route::get('/profil', function () {
-        return view('membre.profil', ['user' => auth()->user()]);
-    })->name('membre.profil');
+    // Profil membre - MÊME DONNÉES que admin/users/{id} mais interface membre
+    Route::get('/profil', [MembreController::class, 'profil'])->name('membre.profil');
+    Route::get('/profil/modifier', [MembreController::class, 'edit'])->name('membre.profil.edit');
+    Route::put('/profil', [MembreController::class, 'update'])->name('membre.profil.update');
+    
+    // Mot de passe membre
+    Route::get('/profil/mot-de-passe', function() {
+        return view('membre.profil-password');
+    })->name('membre.profil.password');
+    Route::put('/profil/mot-de-passe', [MembreController::class, 'updatePassword'])->name('membre.profil.password.update');
 });
 
 // ===============================================================================
