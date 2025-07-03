@@ -3,64 +3,39 @@
     'module',
     'canEdit' => true,
     'canDelete' => true,
-    'canView' => true,
-    'customActions' => []
+    'canView' => true
 ])
 
-<div class="relative" x-data="{ open: false }">
-    <!-- Bouton plus gros et accessible -->
-    <button @click="open = !open" 
-            class="p-3 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700/50 transition-colors flex items-center justify-center min-w-[40px] min-h-[40px]">
-        <x-admin-icon name="menu" size="w-6 h-6" />
-    </button>
-    
-    <div x-show="open" @click.away="open = false"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="absolute right-0 mt-2 w-56 bg-slate-700 rounded-lg shadow-lg border border-slate-600 z-50">
-        
-        <div class="py-2">
-            @if($canView)
-                <a href="{{ route('admin.' . $module . '.show', $model) }}" 
-                   class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors">
-                    <x-admin-icon name="view" size="w-5 h-5" />
-                    <span class="ml-3 font-medium">Voir les détails</span>
-                </a>
-            @endif
-            
-            @if($canEdit)
-                <a href="{{ route('admin.' . $module . '.edit', $model) }}" 
-                   class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors">
-                    <x-admin-icon name="edit" size="w-5 h-5" />
-                    <span class="ml-3 font-medium">Modifier</span>
-                </a>
-            @endif
-            
-            @foreach($customActions as $action)
-                <a href="{{ $action['url'] }}" 
-                   class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors">
-                    <x-admin-icon :name="$action['icon']" size="w-5 h-5" />
-                    <span class="ml-3 font-medium">{{ $action['label'] }}</span>
-                </a>
-            @endforeach
-            
-            @if($canDelete)
-                <div class="border-t border-slate-600 my-2"></div>
-                <form method="POST" action="{{ route('admin.' . $module . '.destroy', $model) }}" 
-                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" 
-                            class="flex items-center w-full px-4 py-3 text-slate-300 hover:bg-red-600 hover:text-white transition-colors">
-                        <x-admin-icon name="delete" size="w-5 h-5" />
-                        <span class="ml-3 font-medium">Supprimer</span>
-                    </button>
-                </form>
-            @endif
-        </div>
-    </div>
+{{-- Actions visibles au lieu du dropdown caché --}}
+<div class="flex items-center justify-end space-x-2">
+    @if($canView && auth()->user()->can('view', $model))
+        <a href="{{ route("admin.{$module}.show", $model) }}" 
+           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 hover:text-blue-300 transition-colors"
+           title="Voir les détails">
+            <x-admin-icon name="eye" size="w-4 h-4" />
+            <span class="ml-1.5 hidden lg:block">Voir</span>
+        </a>
+    @endif
+
+    @if($canEdit && auth()->user()->can('update', $model))
+        <a href="{{ route("admin.{$module}.edit", $model) }}" 
+           class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 hover:text-emerald-300 transition-colors"
+           title="Modifier">
+            <x-admin-icon name="edit" size="w-4 h-4" />
+            <span class="ml-1.5 hidden lg:block">Modifier</span>
+        </a>
+    @endif
+
+    @if($canDelete && auth()->user()->can('delete', $model))
+        <form method="POST" action="{{ route("admin.{$module}.destroy", $model) }}" 
+              class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')">
+            @csrf @method('DELETE')
+            <button type="submit" 
+                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg hover:bg-red-500/20 hover:text-red-300 transition-colors"
+                    title="Supprimer">
+                <x-admin-icon name="trash" size="w-4 h-4" />
+                <span class="ml-1.5 hidden lg:block">Supprimer</span>
+            </button>
+        </form>
+    @endif
 </div>

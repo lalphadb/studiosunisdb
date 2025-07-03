@@ -1,10 +1,11 @@
 <?php
 
+use Laravel\Telescope\Watchers;
+use Laravel\Telescope\Http\Middleware\Authorize;
+
 return [
-    'enabled' => env('TELESCOPE_ENABLED', false),
-    
-    'domain' => env('TELESCOPE_DOMAIN'),
-    
+    'enabled' => env('TELESCOPE_ENABLED', true),
+    'domain' => env('TELESCOPE_DOMAIN', null),
     'path' => env('TELESCOPE_PATH', 'telescope'),
     
     'driver' => env('TELESCOPE_DRIVER', 'database'),
@@ -16,66 +17,49 @@ return [
         ],
     ],
     
-    'queue' => [
-        'connection' => env('TELESCOPE_QUEUE_CONNECTION'),
-        'queue' => env('TELESCOPE_QUEUE'),
-    ],
-    
     'middleware' => [
         'web',
-        \App\Http\Middleware\TelescopeAccess::class,
+        Authorize::class,
     ],
     
-    'only_paths' => [],
     'ignore_paths' => [
-        'telescope*',
-        'vendor/telescope*',
+        'nova-api*',
     ],
-    'ignore_commands' => [],
+    
+    'ignore_commands' => [
+        'telescope:*',
+    ],
     
     'watchers' => [
-        \Laravel\Telescope\Watchers\CacheWatcher::class => [
-            'enabled' => env('TELESCOPE_CACHE_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\CommandWatcher::class => [
-            'enabled' => env('TELESCOPE_COMMAND_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\DumpWatcher::class => [
-            'enabled' => env('TELESCOPE_DUMP_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\EventWatcher::class => [
-            'enabled' => env('TELESCOPE_EVENT_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\ExceptionWatcher::class => [
-            'enabled' => env('TELESCOPE_EXCEPTION_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\JobWatcher::class => [
-            'enabled' => env('TELESCOPE_JOB_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\LogWatcher::class => [
-            'enabled' => env('TELESCOPE_LOG_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\MailWatcher::class => [
-            'enabled' => env('TELESCOPE_MAIL_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\ModelWatcher::class => [
+        Watchers\CacheWatcher::class => env('TELESCOPE_CACHE_WATCHER', true),
+        Watchers\CommandWatcher::class => env('TELESCOPE_COMMAND_WATCHER', true),
+        Watchers\DumpWatcher::class => env('TELESCOPE_DUMP_WATCHER', true),
+        Watchers\EventWatcher::class => env('TELESCOPE_EVENT_WATCHER', true),
+        Watchers\ExceptionWatcher::class => env('TELESCOPE_EXCEPTION_WATCHER', true),
+        Watchers\JobWatcher::class => env('TELESCOPE_JOB_WATCHER', true),
+        Watchers\LogWatcher::class => env('TELESCOPE_LOG_WATCHER', true),
+        Watchers\MailWatcher::class => env('TELESCOPE_MAIL_WATCHER', true),
+        Watchers\ModelWatcher::class => [
             'enabled' => env('TELESCOPE_MODEL_WATCHER', true),
+            'hydrations' => true,
         ],
-        \Laravel\Telescope\Watchers\NotificationWatcher::class => [
-            'enabled' => env('TELESCOPE_NOTIFICATION_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\QueryWatcher::class => [
+        Watchers\NotificationWatcher::class => env('TELESCOPE_NOTIFICATION_WATCHER', true),
+        Watchers\QueryWatcher::class => [
             'enabled' => env('TELESCOPE_QUERY_WATCHER', true),
+            'ignore_packages' => true,
             'slow' => 100,
         ],
-        \Laravel\Telescope\Watchers\RedisWatcher::class => [
-            'enabled' => env('TELESCOPE_REDIS_WATCHER', true),
-        ],
-        \Laravel\Telescope\Watchers\RequestWatcher::class => [
+        Watchers\RedisWatcher::class => env('TELESCOPE_REDIS_WATCHER', true),
+        Watchers\RequestWatcher::class => [
             'enabled' => env('TELESCOPE_REQUEST_WATCHER', true),
+            'size_limit' => env('TELESCOPE_RESPONSE_SIZE_LIMIT', 64),
         ],
-        \Laravel\Telescope\Watchers\ScheduleWatcher::class => [
-            'enabled' => env('TELESCOPE_SCHEDULE_WATCHER', true),
+        Watchers\GateWatcher::class => [
+            'enabled' => env('TELESCOPE_GATE_WATCHER', true),
+            'ignore_abilities' => [],
+            'ignore_packages' => true,
         ],
+        Watchers\ScheduleWatcher::class => env('TELESCOPE_SCHEDULE_WATCHER', true),
+        Watchers\ViewWatcher::class => env('TELESCOPE_VIEW_WATCHER', true),
     ],
 ];

@@ -3,188 +3,234 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UserRequest;  // ← CORRECTION ICI
 use App\Models\User;
 use App\Models\Ecole;
-use App\Http\Requests\UserRequest;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
-class UserController extends Controller implements HasMiddleware
+class UserController extends Controller
 {
-    public static function middleware(): array
-    {
-        return [
-            'auth',
-            new Middleware('can:viewAny,App\Models\User', only: ['index']),
-            new Middleware('can:create,App\Models\User', only: ['create', 'store']),
-            new Middleware('can:update,user', only: ['edit', 'update']),
-            new Middleware('can:delete,user', only: ['destroy']),
-        ];
-    }
-
+    /**
+     * Display a listing of users
+     */
     public function index(Request $request)
     {
-        $query = User::with(['ecole', 'roles'])->orderBy('name');
+        $query = User::with(['ecole', 'roles']);
         
-        // Multi-tenant: Admin d'école voit ses membres
-        if (auth()->user()->hasRole('admin_ecole')) {
+        // SUPERADMIN voit TOUS les utilisateurs
+        if (auth()->user()->hasRole('superadmin')) {
+            // Pas de filtre - voir tous les utilisateurs de toutes les écoles
+        } else {
+            // Admin école ne voit que les utilisateurs de SON école
             $query->where('ecole_id', auth()->user()->ecole_id);
         }
         
-        // Filtres
+        // Filtres de recherche
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
             });
         }
         
         if ($request->filled('ecole_id')) {
-            $query->where('ecole_id', $request->ecole_id);
+            $query->where('ecole_id', $request->get('ecole_id'));
         }
         
         if ($request->filled('role')) {
             $query->whereHas('roles', function($q) use ($request) {
-                $q->where('name', $request->role);
+                $q->where('name', $request->get('role'));
             });
         }
         
-        $users = $query->paginate(20);
+        $users = $query->latest()->paginate(15);
         
-        // Données pour filtres
-        $ecoles = $this->getEcolesForUser();
-        $roles = ['membre', 'instructeur', 'admin_ecole', 'superadmin'];
+        // Données pour les filtres
+        $ecoles = auth()->user()->hasRole('superadmin') 
+            ? Ecole::orderBy('nom')->get() 
+            : collect([auth()->user()->ecole]);
+            
+        $roles = Role::orderBy('name')->get();
         
         return view('admin.users.index', compact('users', 'ecoles', 'roles'));
     }
 
+    /**
+     * Show the form for creating a new user
+     */
     public function create()
     {
-        $ecoles = $this->getEcolesForUser();
-        $roles = $this->getAvailableRoles();
+        $ecoles = auth()->user()->hasRole('superadmin') 
+            ? Ecole::orderBy('nom')->get() 
+            : collect([auth()->user()->ecole]);
+            
+        $roles = Role::orderBy('name')->get();
         
         return view('admin.users.create', compact('ecoles', 'roles'));
     }
 
+    /**
+     * Store a newly created user
+     */
     public function store(UserRequest $request)
     {
         $validated = $request->validated();
         
-        // Hash du mot de passe
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        }
-        
-        // Auto-assigner l'école pour admin_ecole
-        if (auth()->user()->hasRole('admin_ecole')) {
+        // Vérification des permissions pour l'école
+        if (!auth()->user()->hasRole('superadmin')) {
             $validated['ecole_id'] = auth()->user()->ecole_id;
         }
         
+        // Hash du mot de passe
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['active'] = $request->has('active');
+        
         $user = User::create($validated);
         
-        // Assigner le rôle par défaut si pas spécifié
-        if (!$user->roles()->exists()) {
-            $user->assignRole('membre');
+        // Assignation du rôle
+        if (isset($validated['role'])) {
+            $user->assignRole($validated['role']);
         }
         
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Utilisateur créé avec succès : ' . $user->name);
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Utilisateur créé avec succès.');
     }
 
+    /**
+     * Display the specified user
+     */
     public function show(User $user)
     {
-        // Vérifier autorisation multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        // Vérification des permissions
+        if (!auth()->user()->hasRole('superadmin') && $user->ecole_id !== auth()->user()->ecole_id) {
+            abort(403, 'Accès non autorisé à cet utilisateur.');
         }
-
-        $user->load(['ecole', 'roles', 'userCeintures.ceinture']);
+        
+        $user->load(['ecole', 'roles', 'userCeintures.ceinture', 'inscriptionsCours', 'inscriptionsSeminaires']);
         
         return view('admin.users.show', compact('user'));
     }
 
+    /**
+     * Show the form for editing the specified user
+     */
     public function edit(User $user)
     {
-        // Vérifier autorisation multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        // Vérification des permissions
+        if (!auth()->user()->hasRole('superadmin') && $user->ecole_id !== auth()->user()->ecole_id) {
+            abort(403, 'Accès non autorisé à cet utilisateur.');
         }
-
-        $ecoles = $this->getEcolesForUser();
-        $roles = $this->getAvailableRoles();
+        
+        $ecoles = auth()->user()->hasRole('superadmin') 
+            ? Ecole::orderBy('nom')->get() 
+            : collect([auth()->user()->ecole]);
+            
+        $roles = Role::orderBy('name')->get();
         
         return view('admin.users.edit', compact('user', 'ecoles', 'roles'));
     }
 
+    /**
+     * Update the specified user
+     */
     public function update(UserRequest $request, User $user)
     {
-        // Vérifier autorisation multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        // Vérification des permissions
+        if (!auth()->user()->hasRole('superadmin') && $user->ecole_id !== auth()->user()->ecole_id) {
+            abort(403, 'Accès non autorisé à cet utilisateur.');
         }
-
+        
         $validated = $request->validated();
         
+        // Vérification des permissions pour l'école
+        if (!auth()->user()->hasRole('superadmin')) {
+            $validated['ecole_id'] = auth()->user()->ecole_id;
+        }
+        
         // Hash du mot de passe si fourni
-        if (isset($validated['password']) && !empty($validated['password'])) {
+        if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
         }
         
+        $validated['active'] = $request->has('active');
+        
         $user->update($validated);
         
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Utilisateur mis à jour avec succès : ' . $user->name);
-    }
-
-    public function destroy(User $user)
-    {
-        // Vérifier autorisation multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            abort_unless($user->ecole_id === auth()->user()->ecole_id, 403);
+        // Mise à jour du rôle
+        if (isset($validated['role'])) {
+            $user->syncRoles([$validated['role']]);
         }
-
-        // Empêcher la suppression de son propre compte
-        if ($user->id === auth()->id()) {
-            return back()->withErrors(['error' => 'Vous ne pouvez pas supprimer votre propre compte.']);
-        }
-
-        $name = $user->name;
-        $user->delete();
         
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Utilisateur supprimé : ' . $name);
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Utilisateur modifié avec succès.');
     }
 
     /**
-     * Helpers privés
+     * Remove the specified user
      */
-    private function getEcolesForUser()
+    public function destroy(User $user)
     {
-        if (auth()->user()->hasRole('superadmin')) {
-            return Ecole::orderBy('nom')->get();
+        // Vérification des permissions
+        if (!auth()->user()->hasRole('superadmin') && $user->ecole_id !== auth()->user()->ecole_id) {
+            abort(403, 'Accès non autorisé à cet utilisateur.');
         }
         
-        if (auth()->user()->hasRole('admin_ecole')) {
-            return Ecole::where('id', auth()->user()->ecole_id)->get();
+        // Empêcher la suppression de son propre compte
+        if ($user->id === auth()->id()) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
         }
         
-        return collect();
+        $user->delete();
+        
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Utilisateur supprimé avec succès.');
+    }
+    
+    /**
+     * Export users (for GDPR compliance)
+     */
+    public function export()
+    {
+        $query = User::with(['ecole', 'roles']);
+        
+        // Filtrage selon les permissions
+        if (!auth()->user()->hasRole('superadmin')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        $users = $query->get();
+        
+        // Logique d'export (Excel, PDF, etc.)
+        return response()->json([
+            'message' => 'Export en cours de développement',
+            'users_count' => $users->count()
+        ]);
     }
 
-    private function getAvailableRoles()
+    /**
+     * Generate QR Code for user
+     */
+    public function qrcode(User $user)
     {
-        if (auth()->user()->hasRole('superadmin')) {
-            return ['membre', 'instructeur', 'admin_ecole', 'superadmin'];
+        // Vérification des permissions
+        if (!auth()->user()->hasRole('superadmin') && $user->ecole_id !== auth()->user()->ecole_id) {
+            abort(403, 'Accès non autorisé à cet utilisateur.');
         }
         
-        if (auth()->user()->hasRole('admin_ecole')) {
-            return ['membre', 'instructeur'];
-        }
-        
-        return ['membre'];
+        // Génération QR Code (à implémenter selon vos besoins)
+        return response()->json([
+            'message' => 'QR Code pour ' . $user->name,
+            'user_id' => $user->id
+        ]);
     }
 }

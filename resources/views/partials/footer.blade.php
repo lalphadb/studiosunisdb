@@ -1,71 +1,25 @@
-<footer class="bg-slate-800 border-t border-slate-700 mt-16">
-    <div class="max-w-6xl mx-auto px-6 py-8">
-        <div class="grid md:grid-cols-3 gap-8 text-sm text-slate-400">
-            <!-- Informations légales -->
-            <div>
-                <h4 class="font-semibold text-slate-300 mb-3">Conformité légale</h4>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('privacy') }}" class="hover:text-slate-300 transition duration-200">
-                            Politique de confidentialité
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('terms') }}" class="hover:text-slate-300 transition duration-200">
-                            Conditions d'utilisation
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Contact -->
-            <div>
-                <h4 class="font-semibold text-slate-300 mb-3">Contact</h4>
-                <ul class="space-y-2">
-                    <li>StudiosDB</li>
-                    <li>
-                        <a href="{{ route('contact') }}" class="hover:text-slate-300 transition duration-200">
-                            Formulaire de contact
-                        </a>
-                    </li>
-                    <li>
-                        <a href="mailto:support@studiosdb.com" class="hover:text-slate-300 transition duration-200">
-                            support@studiosdb.com
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Loi 25 -->
-            <div>
-                <h4 class="font-semibold text-slate-300 mb-3">Protection des données</h4>
-                <div class="bg-slate-700 p-4 rounded border-l-4 border-blue-400">
-                    <p class="text-xs font-medium text-blue-400 mb-2">LOI 25 - QUÉBEC</p>
-                    <p class="text-xs leading-relaxed">
-                        Système conforme à la Loi modernisant des dispositions législatives en matière de protection des renseignements personnels.
-                    </p>
-                    <div class="mt-3 space-y-1">
-                        <div class="flex items-center text-xs">
-                            <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                            Chiffrement end-to-end
-                        </div>
-                        <div class="flex items-center text-xs">
-                            <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-                            Hébergement au Québec
-                        </div>
-                    </div>
-                </div>
-            </div>
+<footer class="bg-slate-800 border-t border-slate-700 px-6 py-3" role="contentinfo">
+    <div class="flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 space-y-2 sm:space-y-0">
+        <div class="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-4">
+            <span>StudiosDB v4.1.10.2 - Système de gestion d'école de karaté</span>
+            <span class="hidden sm:inline" aria-hidden="true">•</span>
+            <span>🇨🇦 Conforme Loi 25 (Protection des renseignements personnels)</span>
         </div>
-
-        <!-- Copyright -->
-        <div class="mt-8 pt-6 border-t border-slate-700 text-center text-xs text-slate-500">
-            <p class="mb-2">
-                &copy; 2025 StudiosDB - Système développé pour la gestion d'écoles de karaté
-            </p>
-            <p>
-                Conformément à la <strong>Loi 25 du Québec</strong> sur la protection des renseignements personnels.
-            </p>
+        <div class="flex items-center space-x-4">
+            <span>{{ now()->format('d/m/Y H:i') }}</span>
+            @auth
+                <span aria-hidden="true">•</span>
+                <span>{{ auth()->user()->ecole->nom ?? 'École' }}</span>
+            @endauth
+        </div>
+    </div>
+    
+    <!-- Accessibilité et légal -->
+    <div class="mt-2 pt-2 border-t border-slate-700/50 text-center">
+        <div class="flex flex-col sm:flex-row justify-center items-center space-y-1 sm:space-y-0 sm:space-x-6 text-xs text-slate-500">
+            <a href="#" class="hover:text-slate-300 transition-colors">Politique de confidentialité</a>
+            <a href="#" class="hover:text-slate-300 transition-colors">Accessibilité</a>
+            <a href="#" class="hover:text-slate-300 transition-colors">Support technique</a>
         </div>
     </div>
 </footer>

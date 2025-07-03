@@ -1,7 +1,7 @@
 @props([
-    'icon' => 'default',
-    'title' => 'Aucun élément',
-    'description' => 'Aucun élément à afficher pour le moment.',
+    'icon',
+    'title',
+    'description',
     'actionLabel' => null,
     'actionRoute' => null,
     'actionColor' => 'blue'
@@ -18,7 +18,7 @@
     @if($actionLabel && $actionRoute)
         <div class="flex justify-center space-x-4">
             <a href="{{ $actionRoute }}" 
-               class="inline-flex items-center px-6 py-3 text-sm font-medium text-{{ $actionColor }}-400 bg-{{ $actionColor }}-500/10 border border-{{ $actionColor }}-500/20 rounded-lg hover:bg-{{ $actionColor }}-500/20 hover:text-{{ $actionColor }}-300 transition-colors">
+               class="studiosdb-btn studiosdb-btn-{{ $actionColor }} studiosdb-btn-lg">
                 <x-admin-icon name="plus" size="w-5 h-5" />
                 <span class="ml-2">{{ $actionLabel }}</span>
             </a>

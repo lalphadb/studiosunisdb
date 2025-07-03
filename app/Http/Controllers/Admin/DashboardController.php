@@ -25,11 +25,12 @@ class DashboardController extends Controller implements HasMiddleware
     {
         $user = auth()->user();
         
-        // REDIRECTION SELON LE RÔLE
+        // SUPERADMIN -> Interface système distincte
         if ($user->hasRole('superadmin')) {
             return $this->superAdminDashboard();
         }
         
+        // ADMIN ÉCOLE -> Interface école complète
         if ($user->hasRole('admin_ecole')) {
             return $this->adminEcoleDashboard();
         }
@@ -43,26 +44,36 @@ class DashboardController extends Controller implements HasMiddleware
     }
     
     /**
-     * Dashboard SuperAdmin - Vue globale
+     * Dashboard SuperAdmin - Interface système DISTINCTE
      */
     private function superAdminDashboard()
     {
         $stats = [
             'total_ecoles' => Ecole::count(),
+            'ecoles_actives' => Ecole::where('active', true)->count(),
             'total_users' => User::count(),
+            'nouvelles_ecoles_mois' => Ecole::where('created_at', '>=', now()->startOfMonth())->count(),
             'total_cours' => Cours::count(),
             'cours_actifs' => Cours::where('active', true)->count(),
         ];
         
-        return view('admin.dashboard.index', compact('stats'));
+        $ecoles_recentes = Ecole::latest()->take(5)->get();
+        $stats_ecoles = Ecole::withCount('users')->get();
+        
+        return view('admin.dashboard.superadmin', compact('stats', 'ecoles_recentes', 'stats_ecoles'));
     }
     
     /**
-     * Dashboard Admin École - Vue limitée à son école
+     * Dashboard Admin École - Interface école complète
      */
     private function adminEcoleDashboard()
     {
         $ecoleId = auth()->user()->ecole_id;
+        $ecole = auth()->user()->ecole;
+        
+        if (!$ecole) {
+            abort(403, 'Aucune école assignée à ce compte administrateur');
+        }
         
         $stats = [
             'mes_membres' => User::where('ecole_id', $ecoleId)
@@ -80,23 +91,21 @@ class DashboardController extends Controller implements HasMiddleware
             'nouveaux_mois' => User::where('ecole_id', $ecoleId)
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
-            'revenus_mois' => User::where('ecole_id', $ecoleId)->count() * 80, // Estimation
+            'revenus_mois' => User::where('ecole_id', $ecoleId)->count() * 80,
         ];
         
-        // Derniers membres
         $derniers_membres = User::where('ecole_id', $ecoleId)
             ->whereHas('roles', fn($q) => $q->where('name', 'membre'))
             ->latest()
             ->take(5)
             ->get();
             
-        // Prochains cours
         $prochains_cours = Cours::where('ecole_id', $ecoleId)
             ->where('active', true)
             ->take(5)
             ->get();
         
-        return view('admin.dashboard.admin-ecole', compact('stats', 'derniers_membres', 'prochains_cours'));
+        return view('admin.dashboard.admin-ecole', compact('stats', 'derniers_membres', 'prochains_cours', 'ecole'));
     }
     
     /**
@@ -104,7 +113,6 @@ class DashboardController extends Controller implements HasMiddleware
      */
     private function instructeurDashboard()
     {
-        // TODO: Dashboard instructeur spécifique
-        return $this->adminEcoleDashboard(); // Pour l'instant, même vue
+        return $this->adminEcoleDashboard();
     }
 }

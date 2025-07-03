@@ -14,14 +14,11 @@ class UserRequest extends FormRequest
 
     public function rules(): array
     {
-        // Récupérer les rôles disponibles directement ici
-        $availableRoles = $this->getAvailableRolesForValidation();
-        
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'ecole_id' => ['required', 'exists:ecoles,id'],
-            'role' => ['required', 'string', Rule::in(array_keys($availableRoles))],
+            'role' => ['required', 'string', 'in:membre,instructeur,admin,admin_ecole,superadmin'],
             'telephone' => ['nullable', 'string', 'max:20'],
             'date_naissance' => ['nullable', 'date', 'before:today'],
             'sexe' => ['nullable', 'in:M,F,Autre'],
@@ -33,14 +30,22 @@ class UserRequest extends FormRequest
             'active' => ['boolean'],
             'date_inscription' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            
+            // CHAMPS FAMILLE
             'famille_principale_id' => ['nullable', 'exists:users,id'],
+            'nom_famille_groupe' => ['nullable', 'string', 'max:255'],
+            'contact_principal_famille' => ['nullable', 'string', 'max:255'],
+            'telephone_principal_famille' => ['nullable', 'string', 'max:20'],
+            'notes_famille' => ['nullable', 'string', 'max:1000'],
         ];
 
         // Email unique sauf pour l'utilisateur actuel en mode édition
         if ($this->isMethod('POST')) {
+            // Création : email unique + mot de passe obligatoire
             $rules['email'][] = 'unique:users,email';
             $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
         } else {
+            // Modification : email unique sauf utilisateur actuel + mot de passe optionnel
             $rules['email'][] = 'unique:users,email,' . $this->route('user')?->id;
             $rules['password'] = ['nullable', 'string', 'min:8', 'confirmed'];
         }
@@ -57,44 +62,11 @@ class UserRequest extends FormRequest
             'ecole_id.required' => 'L\'école est obligatoire.',
             'role.required' => 'Le rôle est obligatoire.',
             'role.in' => 'Le rôle sélectionné n\'est pas autorisé.',
-            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.required' => 'Le mot de passe est obligatoire pour un nouvel utilisateur.',
             'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+            'date_naissance.before' => 'La date de naissance doit être antérieure à aujourd\'hui.',
+            'famille_principale_id.exists' => 'Le chef de famille sélectionné n\'existe pas.',
         ];
-    }
-
-    /**
-     * Version simple pour la validation
-     */
-    private function getAvailableRolesForValidation(): array
-    {
-        $user = auth()->user();
-        
-        if (!$user) {
-            return ['membre' => 'Membre'];
-        }
-        
-        if ($user->hasRole('superadmin')) {
-            return [
-                'membre' => 'Membre',
-                'instructeur' => 'Instructeur', 
-                'admin' => 'Admin',
-                'admin_ecole' => 'Admin École',
-                'superadmin' => 'Superadmin'
-            ];
-        } elseif ($user->hasRole('admin_ecole')) {
-            return [
-                'membre' => 'Membre',
-                'instructeur' => 'Instructeur',
-                'admin' => 'Admin'
-            ];
-        } elseif ($user->hasRole('admin')) {
-            return [
-                'membre' => 'Membre',
-                'instructeur' => 'Instructeur'
-            ];
-        }
-        
-        return ['membre' => 'Membre'];
     }
 }
