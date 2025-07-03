@@ -17,7 +17,7 @@
 
     <!-- Messages flash avec vos styles -->
     @if(session('success'))
-        <div class="studiosdb-card border-l-4 border-green-500 bg-green-500/10">
+        <div class="studiosdb-card border-l-4 border-green-500 bg-violet-500/10">
             <div class="flex">
                 <span class="text-green-400 text-xl mr-3">✅</span>
                 <p class="text-sm font-medium text-green-300">{{ session('success') }}</p>
