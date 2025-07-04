@@ -1,150 +1,334 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\PresenceRequest;
+use App\Http\Requests\Admin\StorePresenceRequest;
+use App\Http\Requests\Admin\UpdatePresenceRequest;
 use App\Models\Presence;
-use App\Models\Cours;
 use App\Models\User;
+use App\Models\SessionCours;
+use App\Models\CoursHoraire;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
-class PresenceController extends Controller implements HasMiddleware
+/**
+ * Contrôleur de gestion des présences
+ * 
+ * Gère l'enregistrement et le suivi des présences aux cours avec:
+ * - Multi-tenant strict par ecole_id
+ * - Statistiques de fréquentation
+ * - Export et rapports
+ */
+class PresenceController extends BaseAdminController
 {
     /**
-     * Middleware Laravel 12.19 avec autorisation selon les Policies
+     * Initialise le contrôleur avec permissions
      */
-    public static function middleware(): array
+    public function __construct()
     {
-        return [
-            'auth',
-            'verified',
-            new Middleware('can:viewAny,App\Models\Presence', only: ['index']),
-            new Middleware('can:view,presence', only: ['show']),
-            new Middleware('can:create,App\Models\Presence', only: ['create', 'store']),
-            new Middleware('can:update,presence', only: ['edit', 'update']),
-            new Middleware('can:delete,presence', only: ['destroy']),
-        ];
+        parent::__construct();
+        $this->middleware('permission:view_presences')->only(['index', 'show']);
+        $this->middleware('permission:create_presences')->only(['create', 'store']);
+        $this->middleware('permission:edit_presences')->only(['edit', 'update']);
+        $this->middleware('permission:delete_presences')->only(['destroy']);
     }
 
-    public function index(Request $request)
+    /**
+     * Liste des présences avec filtres
+     */
+    public function index(Request $request): View
     {
-        $query = Presence::with(['user', 'cours.ecole'])->orderBy('date_cours', 'desc');
-        
-        // Filtre par école pour admin_ecole
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $query->whereHas('cours', function($q) {
-                $q->where('ecole_id', auth()->user()->ecole_id);
-            });
-        }
-        
-        // Recherche
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->whereHas('user', function($uq) use ($search) {
-                    $uq->where('name', 'like', "%{$search}%");
-                })->orWhereHas('cours', function($cq) use ($search) {
-                    $cq->where('nom', 'like', "%{$search}%");
+        try {
+            $query = Presence::with(['user', 'coursHoraire.cours', 'sessionCours', 'ecole']);
+
+            // Filtrage multi-tenant strict
+            if (auth()->user()->hasRole('admin_ecole')) {
+                $query->where('ecole_id', auth()->user()->ecole_id);
+            }
+
+            // Filtres
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->whereHas('user', function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
                 });
-            });
+            }
+
+            if ($request->filled('session_id')) {
+                $query->where('session_cours_id', $request->session_id);
+            }
+
+            if ($request->filled('cours_id')) {
+                $query->whereHas('coursHoraire', function($q) use ($request) {
+                    $q->where('cours_id', $request->cours_id);
+                });
+            }
+
+            if ($request->filled('statut')) {
+                $query->where('statut', $request->statut);
+            }
+
+            if ($request->filled('date_debut')) {
+                $query->where('date_presence', '>=', $request->date_debut);
+            }
+
+            if ($request->filled('date_fin')) {
+                $query->where('date_presence', '<=', $request->date_fin);
+            }
+
+            $presences = $query->orderBy('date_presence', 'desc')
+                             ->orderBy('created_at', 'desc')
+                             ->paginate(25);
+
+            // Données pour les filtres
+            $sessions = $this->getSessionsForUser();
+            $cours = $this->getCoursForUser();
+
+            Log::info('Consultation index présences', [
+                'user_id' => auth()->id(),
+                'ecole_id' => auth()->user()->ecole_id,
+                'total_presences' => $presences->total()
+            ]);
+
+            return view('admin.presences.index', compact('presences', 'sessions', 'cours'));
+
+        } catch (\Exception $e) {
+            Log::error('Erreur index présences', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->redirectWithError('admin.dashboard', 'Erreur lors du chargement des présences');
         }
-        
-        // Filtre par cours
-        if ($request->filled('cours_id')) {
-            $query->where('cours_id', $request->cours_id);
-        }
-        
-        // Filtre par date
-        if ($request->filled('date_cours')) {
-            $query->where('date_cours', $request->date_cours);
-        }
-        
-        // Filtre par présence
-        if ($request->has('present')) {
-            $query->where('present', $request->boolean('present'));
-        }
-        
-        $presences = $query->paginate(15)->withQueryString();
-        $cours = $this->getCoursForUser(auth()->user());
-        
-        return view('admin.presences.index', compact('presences', 'cours'));
     }
 
-    public function create()
+    /**
+     * Formulaire création présence
+     */
+    public function create(): View
     {
-        $cours = $this->getCoursForUser(auth()->user());
-        $users = $this->getUsersForPresence();
-        
-        return view('admin.presences.create', compact('cours', 'users'));
+        $users = $this->getMembresForUser();
+        $sessions = $this->getSessionsForUser();
+        $coursHoraires = collect(); // Sera rempli via AJAX selon la session
+
+        return view('admin.presences.create', compact('users', 'sessions', 'coursHoraires'));
     }
 
-    public function store(PresenceRequest $request)
+    /**
+     * Enregistrer nouvelle présence
+     */
+    public function store(StorePresenceRequest $request): RedirectResponse
     {
-        $presence = Presence::create($request->validated());
-        
-        return redirect()->route('admin.presences.index')
-            ->with('success', 'Présence enregistrée avec succès.');
+        try {
+            DB::beginTransaction();
+
+            $validated = $request->validated();
+            
+            // Auto-assignation ecole_id
+            $validated['ecole_id'] = $this->getEcoleIdForUser($validated['user_id']);
+            $validated['enregistre_par'] = auth()->id();
+
+            $presence = Presence::create($validated);
+
+            Log::info('Présence créée', [
+                'user_id' => auth()->id(),
+                'presence_id' => $presence->id,
+                'membre_id' => $presence->user_id,
+                'date_presence' => $presence->date_presence
+            ]);
+
+            DB::commit();
+
+            return $this->redirectWithSuccess('admin.presences.index', 'Présence enregistrée avec succès');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Erreur création présence', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'data' => $request->validated()
+            ]);
+
+            return $this->redirectWithError('admin.presences.create', 'Erreur lors de l\'enregistrement');
+        }
     }
 
-    public function show(Presence $presence)
+    /**
+     * Afficher détails présence
+     */
+    public function show(Presence $presence): View
     {
-        $presence->load(['user', 'cours.ecole']);
-        
+        // Vérification multi-tenant
+        if (auth()->user()->hasRole('admin_ecole') && 
+            $presence->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
+        }
+
+        $presence->load(['user', 'coursHoraire.cours', 'sessionCours', 'ecole']);
         return view('admin.presences.show', compact('presence'));
     }
 
-    public function edit(Presence $presence)
-    {
-        $cours = $this->getCoursForUser(auth()->user());
-        $users = $this->getUsersForPresence();
-        
-        return view('admin.presences.edit', compact('presence', 'cours', 'users'));
-    }
-
-    public function update(PresenceRequest $request, Presence $presence)
-    {
-        $presence->update($request->validated());
-        
-        return redirect()->route('admin.presences.index')
-            ->with('success', 'Présence mise à jour avec succès.');
-    }
-
-    public function destroy(Presence $presence)
-    {
-        $presence->delete();
-        
-        return redirect()->route('admin.presences.index')
-            ->with('success', 'Présence supprimée avec succès.');
-    }
-
     /**
-     * Obtenir les cours selon les permissions
+     * Formulaire édition présence
      */
-    private function getCoursForUser($user)
+    public function edit(Presence $presence): View
     {
-        $query = Cours::with('ecole')->orderBy('nom');
-        
-        if ($user->hasRole('admin_ecole')) {
-            $query->where('ecole_id', $user->ecole_id);
+        // Vérification multi-tenant
+        if (auth()->user()->hasRole('admin_ecole') && 
+            $presence->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
         }
-        
-        return $query->get();
+
+        $users = $this->getMembresForUser();
+        $sessions = $this->getSessionsForUser();
+        $coursHoraires = $this->getCoursHorairesForSession($presence->session_cours_id);
+
+        return view('admin.presences.edit', compact('presence', 'users', 'sessions', 'coursHoraires'));
     }
 
     /**
-     * Obtenir les utilisateurs selon les permissions
+     * Mettre à jour présence
      */
-    private function getUsersForPresence()
+    public function update(UpdatePresenceRequest $request, Presence $presence): RedirectResponse
     {
-        $query = User::with('ecole')->orderBy('name');
+        // Vérification multi-tenant
+        if (auth()->user()->hasRole('admin_ecole') && 
+            $presence->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $validated = $request->validated();
+            $presence->update($validated);
+
+            Log::info('Présence mise à jour', [
+                'user_id' => auth()->id(),
+                'presence_id' => $presence->id,
+                'old_statut' => $presence->getOriginal('statut'),
+                'new_statut' => $presence->statut
+            ]);
+
+            DB::commit();
+
+            return $this->redirectWithSuccess('admin.presences.index', 'Présence mise à jour avec succès');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Erreur mise à jour présence', [
+                'user_id' => auth()->id(),
+                'presence_id' => $presence->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->redirectWithError('admin.presences.edit', 'Erreur lors de la mise à jour');
+        }
+    }
+
+    /**
+     * Supprimer présence
+     */
+    public function destroy(Presence $presence): RedirectResponse
+    {
+        // Vérification multi-tenant
+        if (auth()->user()->hasRole('admin_ecole') && 
+            $presence->ecole_id !== auth()->user()->ecole_id) {
+            abort(403);
+        }
+
+        try {
+            Log::info('Présence supprimée', [
+                'user_id' => auth()->id(),
+                'presence_id' => $presence->id,
+                'membre_name' => $presence->user->name
+            ]);
+
+            $presence->delete();
+
+            return $this->redirectWithSuccess('admin.presences.index', 'Présence supprimée avec succès');
+
+        } catch (\Exception $e) {
+            Log::error('Erreur suppression présence', [
+                'user_id' => auth()->id(),
+                'presence_id' => $presence->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->redirectWithError('admin.presences.index', 'Erreur lors de la suppression');
+        }
+    }
+
+    /**
+     * MÉTHODES PRIVÉES - HELPERS
+     */
+
+    private function getMembresForUser()
+    {
+        $query = User::select('id', 'name', 'email', 'ecole_id')->orderBy('name');
         
         if (auth()->user()->hasRole('admin_ecole')) {
             $query->where('ecole_id', auth()->user()->ecole_id);
         }
         
         return $query->get();
+    }
+
+    private function getSessionsForUser()
+    {
+        $query = SessionCours::select('id', 'nom', 'date_debut', 'date_fin', 'ecole_id')
+                            ->orderBy('date_debut', 'desc');
+        
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        return $query->get();
+    }
+
+    private function getCoursForUser()
+    {
+        $query = \App\Models\Cours::select('id', 'nom', 'ecole_id')
+                                 ->where('active', true)
+                                 ->orderBy('nom');
+        
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        return $query->get();
+    }
+
+    private function getCoursHorairesForSession(?int $sessionId)
+    {
+        if (!$sessionId) return collect();
+
+        $query = CoursHoraire::with('cours')
+                           ->where('session_id', $sessionId)
+                           ->where('actif', true)
+                           ->orderBy('jour_semaine')
+                           ->orderBy('heure_debut');
+        
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        return $query->get();
+    }
+
+    private function getEcoleIdForUser(int $userId): int
+    {
+        if (auth()->user()->hasRole('admin_ecole')) {
+            return auth()->user()->ecole_id;
+        }
+        
+        return User::findOrFail($userId)->ecole_id;
     }
 }

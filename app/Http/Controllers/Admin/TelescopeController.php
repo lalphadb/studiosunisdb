@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -8,14 +11,14 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 
-class TelescopeController extends Controller implements HasMiddleware
-{
-    public static function middleware(): array
+class TelescopeController extends BaseAdminController
+
+    public function __construct()
     {
-        return [
-            'auth',
-            new \Illuminate\Routing\Middleware\ThrottleRequests('60,1'),
-        ];
+        parent::__construct();
+        $this->middleware("can:manage-system")->only(["stats", "clear"]);
+    }
+{
     }
 
     /**

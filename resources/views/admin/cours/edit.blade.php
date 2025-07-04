@@ -3,42 +3,34 @@
 @section('title', 'Modifier le cours')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                📚 Modifier le cours : {{ $cours->nom }}
-            </h1>
-            <p class="text-gray-600 dark:text-gray-400">
-                Modifiez les informations de base. Les horaires existants conserveront leurs paramètres spécifiques.
-            </p>
+<div class="space-y-6">
+    <!-- Header avec x-module-header -->
+    <x-module-header 
+        module="cours"
+        title="Modifier le cours : {{ $cours->nom }}" 
+        subtitle="Modifiez les informations de base. Les horaires existants conserveront leurs paramètres spécifiques"
+    />
+
+        <div class="studiosdb-card border-l-4 border-red-500 bg-red-500/10">
+            <div class="flex">
+                <span class="text-red-400 text-xl mr-3">❌</span>
+                <div>
+                    <h3 class="text-sm font-medium text-red-200 mb-2">Erreurs de validation :</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-red-300">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
         </div>
+    @endif
 
-        <!-- Messages -->
-        @if (session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <strong>Erreurs de validation :</strong>
-                <ul class="mt-2 ml-4 list-disc">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <!-- Formulaire -->
-        <form method="POST" action="{{ route('admin.cours.update', $cours) }}">
-            @csrf
-            @method('PUT')
-            @include('admin.cours.form')
-        </form>
-    </div>
+    <!-- Formulaire -->
+    <form method="POST" action="{{ route('admin.cours.update', $cours) }}">
+        @csrf
+        @method('PUT')
+        @include('admin.cours.form')
+    </form>
 </div>
 @endsection

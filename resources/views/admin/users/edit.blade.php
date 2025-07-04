@@ -222,7 +222,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Nom de famille groupé</label>
                         <input type="text" name="nom_famille_groupe" value="{{ old('nom_famille_groupe', $user->nom_famille_groupe) }}"
-                               class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                               class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-violet-500"
                                placeholder="Ex: Famille Durand">
                         <p class="text-xs text-slate-400 mt-1">Optionnel: seulement si membre nom différent</p>
                         @error('nom_famille_groupe')
@@ -234,7 +234,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Contact principal famille</label>
                         <input type="text" name="contact_principal_famille" value="{{ old('contact_principal_famille', $user->contact_principal_famille) }}"
-                               class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                               class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-violet-500"
                                placeholder="Ex: Papa Jean Durand">
                         @error('contact_principal_famille')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -245,7 +245,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Téléphone principal famille</label>
                         <input type="text" name="telephone_principal_famille" value="{{ old('telephone_principal_famille', $user->telephone_principal_famille) }}"
-                               class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                               class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-violet-500"
                                placeholder="Téléphone du contact principal">
                         @error('telephone_principal_famille')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -256,7 +256,7 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-2">Notes famille</label>
                         <textarea name="notes_famille" rows="3" 
-                                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                                  class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-violet-500"
                                   placeholder="Notes partagées pour l'école de famille">{{ old('notes_famille', $user->notes_famille) }}</textarea>
                         @error('notes_famille')
                             <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -277,7 +277,7 @@
                     <label class="block text-sm font-medium text-slate-300 mb-2">
                         Famille principale (si ce membre fait partie d'une famille)
                     </label>
-                    <select name="famille_principale_id" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500">
+                    <select name="famille_principale_id" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:border-purple-500 focus:ring-1 focus:ring-violet-500">
                         <option value="">Ce membre est indépendant</option>
                         @foreach($famillesPossibles as $membreFamille)
                             <option value="{{ $membreFamille->id }}" 

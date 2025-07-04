@@ -18,7 +18,7 @@
             <h3 class="text-lg font-semibold text-slate-100 tracking-tight flex items-center gap-3">Cours source</h3>
             <div class="bg-slate-700 rounded-xl p-4">
                 <div class="flex items-center">
-                    <div class="h-12 w-12 bg-purple-600 rounded-xl flex items-center justify-center">
+                    <div class="h-12 w-12 bg-violet-600 rounded-xl flex items-center justify-center">
                         <span class="text-xl text-white">📚</span>
                     </div>
                     <div class="ml-4">
@@ -43,7 +43,7 @@
                            value="{{ old('nombre_copies', 1) }}"
                            min="1" 
                            max="10"
-                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-600"
+                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-violet-600"
                            required>
                     @error('nombre_copies')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
@@ -60,7 +60,7 @@
                            name="suffixe"
                            value="{{ old('suffixe') }}"
                            placeholder="Ex: Groupe, Session, etc."
-                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
+                           class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-violet-600">
                     @error('suffixe')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
@@ -74,7 +74,7 @@
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-xl transition duration-200">
+                        class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl transition duration-200">
                     Créer les copies
                 </button>
             </div>

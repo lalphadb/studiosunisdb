@@ -1,114 +1,92 @@
 <?php
+
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\EcoleController;
-use App\Http\Controllers\Admin\CoursController;
-use App\Http\Controllers\Admin\SessionCoursController;
-use App\Http\Controllers\Admin\CoursHoraireController;
-use App\Http\Controllers\Admin\CeintureController;
-use App\Http\Controllers\Admin\SeminaireController;
-use App\Http\Controllers\Admin\PaiementController;
-use App\Http\Controllers\Admin\PresenceController;
-use App\Http\Controllers\Admin\InscriptionSeminaireController;
-use App\Http\Controllers\Admin\LogController;
-use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\{
+    DashboardController,
+    UserController,
+    EcoleController,
+    CoursController,
+    SessionCoursController,
+    CoursHoraireController,
+    CeintureController,
+    SeminaireController,
+    PaiementController,
+    PresenceController,
+    InscriptionSeminaireController,
+    LogController,
+    ExportController,
+    RoleController
+};
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
     
-    // Dashboard principal
+    // Dashboard - ROUTE PRINCIPALE
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.alternative');
+    Route::get('/dashboard/stats', [DashboardController::class, 'refreshStats'])->name('dashboard.stats');
     
-    // Gestion des utilisateurs (membres)
+    // Users Management
     Route::resource('users', UserController::class);
     Route::get('users/{user}/qrcode', [UserController::class, 'qrcode'])->name('users.qrcode');
-    Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+    Route::get('users-export', [UserController::class, 'export'])->name('users.export');
     
-    // Gestion des écoles
+    // Écoles Management (superadmin uniquement)
     Route::resource('ecoles', EcoleController::class);
     
-    // COURS - Routes spécialisées EN PREMIER
-    Route::get('cours/{cour}/clone-form', [CoursController::class, 'showCloneForm'])->name('cours.clone.form');
-    Route::post('cours/{cour}/clone', [CoursController::class, 'clone'])->name('cours.clone');
-    Route::post('cours/{cour}/dupliquer-vers-session', [CoursController::class, 'dupliquerVersSession'])->name('cours.dupliquer-vers-session');
-    
-    // Gestion des cours - RESOURCE APRÈS
+    // COURS Management - Routes spécialisées avant resource
+    Route::get('cours/{cours}/statistiques', [CoursController::class, 'statistiques'])->name('cours.statistiques');
+    Route::get('cours/{cours}/duplicate-form', [CoursController::class, 'duplicateForm'])->name('cours.duplicate-form');
+    Route::post('cours/{cours}/duplicate', [CoursController::class, 'duplicate'])->name('cours.duplicate');
+    Route::patch('cours/{cours}/toggle-status', [CoursController::class, 'toggleStatus'])->name('cours.toggle-status');
     Route::resource('cours', CoursController::class);
     
-    // === SESSIONS ET HORAIRES DE COURS ===
-    // Sessions de cours (périodes saisonnières)
+    // Sessions Management
     Route::resource('sessions', SessionCoursController::class);
     Route::post('sessions/{session}/toggle-actif', [SessionCoursController::class, 'toggleActif'])->name('sessions.toggle-actif');
-    Route::post('sessions/{session}/dupliquer-horaires', [SessionCoursController::class, 'dupliquerHoraires'])->name('sessions.dupliquer-horaires');
-
-    // Horaires de cours spécifiques
-    Route::resource('cours-horaires', CoursHoraireController::class, ['parameters' => ['cours-horaires' => 'coursHoraire']]);
+    
+    // Horaires de cours
+    Route::resource('cours-horaires', CoursHoraireController::class);
     Route::post('cours-horaires/{coursHoraire}/dupliquer', [CoursHoraireController::class, 'dupliquer'])->name('cours-horaires.dupliquer');
     
-    // Gestion des ceintures
+    // Ceintures Management
+    Route::get('ceintures/attribution', [CeintureController::class, 'attribution'])->name('ceintures.attribution');
+    Route::post('ceintures/attribution', [CeintureController::class, 'storeAttribution'])->name('ceintures.attribution.store');
     Route::get('ceintures/attribution-masse', [CeintureController::class, 'createMasse'])->name('ceintures.create-masse');
     Route::post('ceintures/attribution-masse', [CeintureController::class, 'storeMasse'])->name('ceintures.store-masse');
-
     Route::resource('ceintures', CeintureController::class);
     
-    // Gestion des séminaires
-    Route::resource('seminaires', SeminaireController::class);
+    // Séminaires Management
+    Route::get('seminaires/{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('seminaires.inscriptions');
+    Route::post('seminaires/{seminaire}/bulk-validate-inscriptions', [SeminaireController::class, 'bulkValidateInscriptions'])->name('seminaires.bulk-validate-inscriptions');
     Route::match(['get', 'post'], 'seminaires/{seminaire}/inscrire', [SeminaireController::class, 'inscrire'])->name('seminaires.inscrire');
+    Route::resource('seminaires', SeminaireController::class);
     
-    // Gestion des paiements
-    Route::resource('paiements', PaiementController::class);
+    // Paiements Management
     Route::post('paiements/bulk-validate', [PaiementController::class, 'bulkValidate'])->name('paiements.bulk-validate');
     Route::patch('paiements/{paiement}/quick-validate', [PaiementController::class, 'quickValidate'])->name('paiements.quick-validate');
+    Route::post('paiements/quick-bulk-validate', [PaiementController::class, 'quickBulkValidate'])->name('paiements.quick-bulk-validate');
+    Route::resource('paiements', PaiementController::class);
     
-    // Gestion des présences
+    // Présences Management
     Route::resource('presences', PresenceController::class);
+    Route::post('presences/marquer', [PresenceController::class, 'marquer'])->name('presences.marquer');
     
-    // Gestion des inscriptions aux séminaires
+    // Inscriptions séminaires
     Route::resource('inscriptions-seminaires', InscriptionSeminaireController::class)->only(['index', 'destroy']);
     
-    // Logs et monitoring
+    // Roles Management (superadmin uniquement)
+    Route::resource('roles', RoleController::class)->only(['index', 'edit', 'update']);
+    
+    // Logs Management (superadmin uniquement)
     Route::get('logs', [LogController::class, 'index'])->name('logs.index');
     Route::post('logs/clear', [LogController::class, 'clear'])->name('logs.clear');
     
-    // ROUTES EXPORTS & LOGS (LOI 25)
+    // Exports
     Route::prefix('exports')->name('exports.')->group(function () {
         Route::get('/', [ExportController::class, 'index'])->name('index');
         Route::get('/logs', [ExportController::class, 'exportLogs'])->name('logs');
+        Route::get('/users', [UserController::class, 'export'])->name('users');
     });
-    
-    // Route pour validation rapide groupée (optimisation AJAX)
-    Route::post('paiements/quick-bulk-validate', [PaiementController::class, 'quickBulkValidate'])->name('paiements.quick-bulk-validate');
-
-    // Routes spéciales pour séminaires avec inscriptions
-    Route::get('seminaires/{seminaire}/inscriptions', [SeminaireController::class, 'inscriptions'])->name('seminaires.inscriptions');
-    Route::post('seminaires/{seminaire}/bulk-validate-inscriptions', [SeminaireController::class, 'bulkValidateInscriptions'])->name('seminaires.bulk-validate-inscriptions');
 });
-
-// Route de test pour la nouvelle interface moderne
-Route::get('/users/modern', function() {
-    return view('admin.users.index-modern', [
-        'users' => collect([
-            (object)[
-                'id' => 1,
-                'name' => 'Louis Alpha',
-                'email' => 'lalpha@4lb.ca',
-                'created_at' => now()->subDays(2),
-                'ecole' => (object)['nom' => 'École Test Montréal']
-            ],
-            (object)[
-                'id' => 2, 
-                'name' => 'Admin École',
-                'email' => 'admin@ecole.ca',
-                'created_at' => now()->subWeek(),
-                'ecole' => (object)['nom' => 'École Test Québec']
-            ]
-        ])
-    ]);
-})->name('admin.users.modern');
-
-// Attribution ceintures masse
-Route::get('/ceintures/attribution', [CeintureController::class, 'attribution'])->name('ceintures.attribution');
-Route::post('/ceintures/attribution', [CeintureController::class, 'storeAttribution'])->name('ceintures.attribution.store');
-
-

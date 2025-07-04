@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -11,17 +14,18 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
-class InscriptionSeminaireController extends Controller implements HasMiddleware
+class InscriptionSeminaireController extends BaseAdminController
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware("can:viewAny,App\Models\InscriptionSeminaire")->only(["index"]);
+        $this->middleware("can:delete,inscription")->only(["destroy"]);
+    }
 {
     /**
      * Middleware Laravel 12.19 avec autorisation selon les Policies
      */
-    public static function middleware(): array
-    {
-        return [
-            'auth',
-            'verified',
-            new Middleware('can:viewAny,App\Models\InscriptionSeminaire', only: ['index']),
             new Middleware('can:delete,inscription', only: ['destroy']),
         ];
     }

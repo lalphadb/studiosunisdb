@@ -11,7 +11,8 @@
 $moduleColors = [
     'users' => ['primary' => 'blue-500', 'secondary' => 'cyan-600'],
     'ecoles' => ['primary' => 'green-500', 'secondary' => 'emerald-600'],
-    'cours' => ['primary' => 'purple-500', 'secondary' => 'indigo-600'],
+    'cours' => ['primary' => 'violet-500', 'secondary' => 'violet-600'],
+    'sessions' => ['primary' => 'violet-500', 'secondary' => 'violet-600'],
     'ceintures' => ['primary' => 'orange-500', 'secondary' => 'red-600'],
     'seminaires' => ['primary' => 'pink-500', 'secondary' => 'purple-600'],
     'paiements' => ['primary' => 'yellow-500', 'secondary' => 'orange-600'],
@@ -26,6 +27,7 @@ $iconMap = [
     'users' => '👤',
     'ecoles' => '🏫',
     'cours' => '📚',
+    'sessions' => '📅',
     'ceintures' => '🥋',
     'seminaires' => '🎯',
     'paiements' => '💰',

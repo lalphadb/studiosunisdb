@@ -1,45 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\BaseAdminController;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class RoleController extends Controller implements HasMiddleware
+class RoleController extends BaseAdminController
 {
-    public static function middleware(): array
+    public function __construct()
     {
-        return [
-            'auth',
-            new Middleware('can:manage-roles', only: ['index', 'edit', 'update'])
-        ];
+        parent::__construct();
+        $this->middleware('permission:admin.dashboard')->only(['index', 'edit', 'update']);
     }
 
-    /**
-     * Display a listing of the roles.
-     */
-    public function index()
+    public function index(): View
     {
-        // Multi-tenant filtering
-        if (auth()->user()->hasRole('admin_ecole')) {
-            abort(403, 'Accès non autorisé aux rôles système');
+        try {
+            // Seuls les superadmins peuvent gérer les rôles
+            if (!auth()->user()->hasRole('superadmin')) {
+                abort(403, 'Accès non autorisé aux rôles système');
+            }
+
+            $roles = Role::with('permissions')->get();
+            
+            $this->logBusinessAction('Consultation rôles', 'info');
+            
+            return view('admin.roles.index', compact('roles'));
+            
+        } catch (\Exception $e) {
+            $this->logBusinessAction('Erreur consultation rôles', 'error', [
+                'error' => $e->getMessage()
+            ]);
+            
+            session()->flash('error', 'Erreur lors du chargement des rôles.');
+            return view('admin.roles.index', ['roles' => collect([])]);
         }
-
-        $roles = Role::with('permissions')->get();
-        
-        return view('admin.roles.index', compact('roles'));
     }
 
-    /**
-     * Show the form for editing the specified role.
-     */
-    public function edit(Role $role)
+    public function edit(Role $role): View
     {
-        if (auth()->user()->hasRole('admin_ecole')) {
+        if (!auth()->user()->hasRole('superadmin')) {
             abort(403, 'Accès non autorisé aux rôles système');
         }
 
@@ -49,24 +55,38 @@ class RoleController extends Controller implements HasMiddleware
         return view('admin.roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
-    /**
-     * Update the specified role in storage.
-     */
-    public function update(Request $request, Role $role)
+    public function update(Request $request, Role $role): RedirectResponse
     {
-        if (auth()->user()->hasRole('admin_ecole')) {
-            abort(403, 'Accès non autorisé aux rôles système');
+        try {
+            if (!auth()->user()->hasRole('superadmin')) {
+                abort(403, 'Accès non autorisé aux rôles système');
+            }
+
+            $request->validate([
+                'permissions' => 'array',
+                'permissions.*' => 'exists:permissions,name'
+            ]);
+
+            $role->syncPermissions($request->input('permissions', []));
+
+            $this->logBusinessAction('Mise à jour rôle', 'info', [
+                'role_id' => $role->id,
+                'role_name' => $role->name,
+                'permissions' => $request->input('permissions', [])
+            ]);
+
+            return $this->redirectWithSuccess(
+                'admin.roles.index',
+                'Rôle mis à jour avec succès.'
+            );
+            
+        } catch (\Exception $e) {
+            $this->logBusinessAction('Erreur mise à jour rôle', 'error', [
+                'role_id' => $role->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return $this->backWithError('Erreur lors de la mise à jour du rôle.');
         }
-
-        $request->validate([
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,name'
-        ]);
-
-        // Sync permissions
-        $role->syncPermissions($request->input('permissions', []));
-
-        return redirect()->route('admin.roles.index')
-            ->with('success', 'Rôle mis à jour avec succès.');
     }
 }

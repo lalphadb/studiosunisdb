@@ -1,21 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCoursHoraireRequest;
+use App\Http\Requests\Admin\UpdateCoursHoraireRequest;
 use App\Models\CoursHoraire;
 use App\Models\Cours;
 use App\Models\SessionCours;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 
-class CoursHoraireController extends Controller
+/**
+ * Contrôleur de gestion des horaires de cours
+ * 
+ * Migré vers BaseAdminController avec standards Laravel 12
+ */
+class CoursHoraireController extends BaseAdminController
 {
+    /**
+     * Initialise le contrôleur avec permissions
+     */
     public function __construct()
     {
-        $this->middleware(['auth', 'verified']);
+        parent::__construct();
+        
+        $this->middleware('can:viewAny,App\Models\CoursHoraire')->only(['index']);
+        $this->middleware('can:view,coursHoraire')->only(['show']);
+        $this->middleware('can:create,App\Models\CoursHoraire')->only(['create', 'store']);
+        $this->middleware('can:update,coursHoraire')->only(['edit', 'update', 'dupliquer']);
+        $this->middleware('can:delete,coursHoraire')->only(['destroy']);
     }
 
     /**
@@ -23,44 +39,53 @@ class CoursHoraireController extends Controller
      */
     public function index(Request $request): View
     {
-        $user = Auth::user();
-        $ecoleId = $user->ecole_id;
+        return $this->executeWithExceptionHandling(function() use ($request) {
+            $user = auth()->user();
+            $ecoleId = $user->ecole_id;
 
-        $query = CoursHoraire::pourEcole($ecoleId)
-            ->with(['cours', 'session', 'ecole'])
-            ->withCount(['inscriptions']);
+            $query = CoursHoraire::pourEcole($ecoleId)
+                ->with(['cours', 'session', 'ecole'])
+                ->withCount(['inscriptions']);
 
-        // Filtres
-        if ($request->filled('cours_id')) {
-            $query->where('cours_id', $request->cours_id);
-        }
+            // Filtres
+            if ($request->filled('cours_id')) {
+                $query->where('cours_id', $request->cours_id);
+            }
 
-        if ($request->filled('session_id')) {
-            $query->where('session_id', $request->session_id);
-        }
+            if ($request->filled('session_id')) {
+                $query->where('session_id', $request->session_id);
+            }
 
-        if ($request->filled('jour_semaine')) {
-            $query->where('jour_semaine', $request->jour_semaine);
-        }
+            if ($request->filled('jour_semaine')) {
+                $query->where('jour_semaine', $request->jour_semaine);
+            }
 
-        $horaires = $query->orderBy('jour_semaine')
-            ->orderBy('heure_debut')
-            ->paginate(20);
+            $horaires = $this->paginateWithParams(
+                $query->orderBy('jour_semaine')->orderBy('heure_debut'),
+                $request
+            );
 
-        // Options pour les filtres
-        $cours = Cours::pourEcole($ecoleId)->actifs()->orderBy('nom')->get();
-        $sessions = SessionCours::pourEcole($ecoleId)->orderBy('date_debut', 'desc')->get();
-        $jours = [
-            'lundi' => 'Lundi',
-            'mardi' => 'Mardi',
-            'mercredi' => 'Mercredi',
-            'jeudi' => 'Jeudi',
-            'vendredi' => 'Vendredi',
-            'samedi' => 'Samedi',
-            'dimanche' => 'Dimanche'
-        ];
+            // Options pour les filtres
+            $cours = Cours::pourEcole($ecoleId)->actifs()->orderBy('nom')->get();
+            $sessions = SessionCours::pourEcole($ecoleId)->orderBy('date_debut', 'desc')->get();
+            $jours = [
+                'lundi' => 'Lundi',
+                'mardi' => 'Mardi', 
+                'mercredi' => 'Mercredi',
+                'jeudi' => 'Jeudi',
+                'vendredi' => 'Vendredi',
+                'samedi' => 'Samedi',
+                'dimanche' => 'Dimanche'
+            ];
 
-        return view('admin.cours-horaires.index', compact('horaires', 'cours', 'sessions', 'jours'));
+            $this->logBusinessAction('Consultation index horaires', 'info', [
+                'total_horaires' => $horaires->total(),
+                'filters' => $request->only(['cours_id', 'session_id', 'jour_semaine'])
+            ]);
+
+            return view('admin.cours-horaires.index', compact('horaires', 'cours', 'sessions', 'jours'));
+            
+        }, 'consultation horaires');
     }
 
     /**
@@ -68,7 +93,7 @@ class CoursHoraireController extends Controller
      */
     public function create(Request $request): View
     {
-        $user = Auth::user();
+        $user = auth()->user();
         
         // Pré-remplir si cours_id et session_id fournis
         $coursSelectionne = null;
@@ -103,46 +128,39 @@ class CoursHoraireController extends Controller
     /**
      * Store a newly created horaire
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreCoursHoraireRequest $request): RedirectResponse
     {
-        $user = Auth::user();
-        
-        $validated = $request->validate([
-            'cours_id' => 'required|exists:cours,id',
-            'session_id' => 'nullable|exists:sessions_cours,id',
-            'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'date_debut' => 'nullable|date',
-            'date_fin' => 'nullable|date|after_or_equal:date_debut',
-            'salle' => 'nullable|string|max:255',
-            'instructeur_affecte' => 'nullable|string|max:255',
-            'capacite_max' => 'nullable|integer|min:1|max:100',
-            'prix' => 'nullable|numeric|min:0|max:999999.99',
-            'nom_affiche' => 'nullable|string|max:255',
-            'active' => 'boolean'
-        ]);
-
-        // Vérifier que le cours appartient à la même école
-        $cours = Cours::findOrFail($validated['cours_id']);
-        if ($cours->ecole_id !== $user->ecole_id) {
-            return back()->with('error', 'Cours non autorisé pour votre école.');
-        }
-
-        // Vérifier que la session appartient à la même école si fournie
-        if ($validated['session_id']) {
-            $session = SessionCours::findOrFail($validated['session_id']);
-            if ($session->ecole_id !== $user->ecole_id) {
-                return back()->with('error', 'Session non autorisée pour votre école.');
+        return $this->executeWithExceptionHandling(function() use ($request) {
+            $user = auth()->user();
+            $validated = $request->validated();
+            
+            // Vérifier que le cours appartient à la même école
+            $cours = Cours::findOrFail($validated['cours_id']);
+            if ($cours->ecole_id !== $user->ecole_id) {
+                return $this->backWithError('Cours non autorisé pour votre école.');
             }
-        }
 
-        $validated['ecole_id'] = $user->ecole_id;
-        
-        $horaire = CoursHoraire::create($validated);
+            // Vérifier que la session appartient à la même école si fournie
+            if ($validated['session_id']) {
+                $session = SessionCours::findOrFail($validated['session_id']);
+                if ($session->ecole_id !== $user->ecole_id) {
+                    return $this->backWithError('Session non autorisée pour votre école.');
+                }
+            }
 
-        return redirect()->route('admin.cours.show', $cours)
-            ->with('success', "Horaire créé avec succès pour '{$cours->nom}'.");
+            $validated['ecole_id'] = $user->ecole_id;
+            
+            $horaire = CoursHoraire::create($validated);
+
+            $this->logCreate('Horaire', $horaire->id, $validated);
+
+            return $this->redirectWithSuccess(
+                'admin.cours.show',
+                "Horaire créé avec succès pour '{$cours->nom}'.",
+                ['cours' => $cours]
+            );
+            
+        }, 'création horaire', ['form_data' => $request->validated()]);
     }
 
     /**
@@ -150,8 +168,6 @@ class CoursHoraireController extends Controller
      */
     public function show(CoursHoraire $coursHoraire): View
     {
-        $this->authorize('view', $coursHoraire);
-
         $coursHoraire->load([
             'cours.ecole',
             'session',
@@ -176,8 +192,6 @@ class CoursHoraireController extends Controller
      */
     public function edit(CoursHoraire $coursHoraire): View
     {
-        $this->authorize('update', $coursHoraire);
-
         $cours = Cours::pourEcole($coursHoraire->ecole_id)->actifs()->orderBy('nom')->get();
         $sessions = SessionCours::pourEcole($coursHoraire->ecole_id)->orderBy('date_debut', 'desc')->get();
         
@@ -197,30 +211,23 @@ class CoursHoraireController extends Controller
     /**
      * Update the specified horaire
      */
-    public function update(Request $request, CoursHoraire $coursHoraire): RedirectResponse
+    public function update(UpdateCoursHoraireRequest $request, CoursHoraire $coursHoraire): RedirectResponse
     {
-        $this->authorize('update', $coursHoraire);
+        return $this->executeWithExceptionHandling(function() use ($request, $coursHoraire) {
+            $validated = $request->validated();
+            $oldData = $coursHoraire->toArray();
 
-        $validated = $request->validate([
-            'cours_id' => 'required|exists:cours,id',
-            'session_id' => 'nullable|exists:sessions_cours,id',
-            'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'date_debut' => 'nullable|date',
-            'date_fin' => 'nullable|date|after_or_equal:date_debut',
-            'salle' => 'nullable|string|max:255',
-            'instructeur_affecte' => 'nullable|string|max:255',
-            'capacite_max' => 'nullable|integer|min:1|max:100',
-            'prix' => 'nullable|numeric|min:0|max:999999.99',
-            'nom_affiche' => 'nullable|string|max:255',
-            'active' => 'boolean'
-        ]);
+            $coursHoraire->update($validated);
 
-        $coursHoraire->update($validated);
+            $this->logUpdate('Horaire', $coursHoraire->id, $oldData, $validated);
 
-        return redirect()->route('admin.cours-horaires.show', $coursHoraire)
-            ->with('success', 'Horaire mis à jour avec succès.');
+            return $this->redirectWithSuccess(
+                'admin.cours-horaires.show',
+                'Horaire mis à jour avec succès.',
+                ['coursHoraire' => $coursHoraire]
+            );
+            
+        }, 'modification horaire', ['horaire_id' => $coursHoraire->id]);
     }
 
     /**
@@ -228,19 +235,29 @@ class CoursHoraireController extends Controller
      */
     public function destroy(CoursHoraire $coursHoraire): RedirectResponse
     {
-        $this->authorize('delete', $coursHoraire);
+        return $this->executeWithExceptionHandling(function() use ($coursHoraire) {
+            // Vérifier qu'il n'y a pas d'inscriptions actives
+            $inscriptionsActives = $coursHoraire->inscriptions()->actives()->count();
+            if ($inscriptionsActives > 0) {
+                return $this->backWithError("Impossible de supprimer cet horaire : {$inscriptionsActives} inscription(s) active(s).");
+            }
 
-        // Vérifier qu'il n'y a pas d'inscriptions actives
-        $inscriptionsActives = $coursHoraire->inscriptions()->actives()->count();
-        if ($inscriptionsActives > 0) {
-            return back()->with('error', "Impossible de supprimer cet horaire : {$inscriptionsActives} inscription(s) active(s).");
-        }
+            $cours = $coursHoraire->cours;
+            
+            $this->logDelete('Horaire', $coursHoraire->id, [
+                'cours_nom' => $cours->nom,
+                'jour_semaine' => $coursHoraire->jour_semaine
+            ]);
 
-        $cours = $coursHoraire->cours;
-        $coursHoraire->delete();
+            $coursHoraire->delete();
 
-        return redirect()->route('admin.cours.show', $cours)
-            ->with('success', 'Horaire supprimé avec succès.');
+            return $this->redirectWithSuccess(
+                'admin.cours.show',
+                'Horaire supprimé avec succès.',
+                ['cours' => $cours]
+            );
+            
+        }, 'suppression horaire', ['horaire_id' => $coursHoraire->id]);
     }
 
     /**
@@ -248,42 +265,48 @@ class CoursHoraireController extends Controller
      */
     public function dupliquer(Request $request, CoursHoraire $coursHoraire): RedirectResponse
     {
-        $this->authorize('update', $coursHoraire);
+        return $this->executeWithExceptionHandling(function() use ($request, $coursHoraire) {
+            $validated = $request->validate([
+                'jours' => 'array|min:1',
+                'jours.*' => 'in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
+                'session_ids' => 'array|min:1',
+                'session_ids.*' => 'exists:sessions_cours,id'
+            ]);
 
-        $validated = $request->validate([
-            'jours' => 'array|min:1',
-            'jours.*' => 'in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'session_ids' => 'array|min:1',
-            'session_ids.*' => 'exists:sessions_cours,id'
-        ]);
+            $compteur = 0;
+            
+            foreach ($validated['session_ids'] ?? [$coursHoraire->session_id] as $sessionId) {
+                foreach ($validated['jours'] as $jour) {
+                    // Éviter de dupliquer sur soi-même
+                    if ($jour === $coursHoraire->jour_semaine && $sessionId === $coursHoraire->session_id) {
+                        continue;
+                    }
 
-        $compteur = 0;
-        
-        foreach ($validated['session_ids'] ?? [$coursHoraire->session_id] as $sessionId) {
-            foreach ($validated['jours'] as $jour) {
-                // Éviter de dupliquer sur soi-même
-                if ($jour === $coursHoraire->jour_semaine && $sessionId === $coursHoraire->session_id) {
-                    continue;
-                }
+                    // Vérifier si un horaire similaire existe déjà
+                    $existe = CoursHoraire::where([
+                        'cours_id' => $coursHoraire->cours_id,
+                        'session_id' => $sessionId,
+                        'jour_semaine' => $jour,
+                        'heure_debut' => $coursHoraire->heure_debut
+                    ])->exists();
 
-                // Vérifier si un horaire similaire existe déjà
-                $existe = CoursHoraire::where([
-                    'cours_id' => $coursHoraire->cours_id,
-                    'session_id' => $sessionId,
-                    'jour_semaine' => $jour,
-                    'heure_debut' => $coursHoraire->heure_debut
-                ])->exists();
-
-                if (!$existe) {
-                    $nouveauHoraire = $coursHoraire->replicate();
-                    $nouveauHoraire->session_id = $sessionId;
-                    $nouveauHoraire->jour_semaine = $jour;
-                    $nouveauHoraire->save();
-                    $compteur++;
+                    if (!$existe) {
+                        $nouveauHoraire = $coursHoraire->replicate();
+                        $nouveauHoraire->session_id = $sessionId;
+                        $nouveauHoraire->jour_semaine = $jour;
+                        $nouveauHoraire->save();
+                        $compteur++;
+                    }
                 }
             }
-        }
 
-        return back()->with('success', "{$compteur} horaire(s) dupliqué(s) avec succès.");
+            $this->logBusinessAction('Duplication horaires', 'info', [
+                'horaire_original_id' => $coursHoraire->id,
+                'horaires_dupliques' => $compteur
+            ]);
+
+            return $this->backWithSuccess("{$compteur} horaire(s) dupliqué(s) avec succès.");
+            
+        }, 'duplication horaires', ['horaire_id' => $coursHoraire->id]);
     }
 }

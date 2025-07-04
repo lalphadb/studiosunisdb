@@ -7,7 +7,7 @@
 
     <!-- Header avec votre système StudiosDB -->
     <x-module-header 
-        module="cours"
+        module="sessions"
         title="Sessions de cours" 
         subtitle="Gestion des sessions saisonnières"
         :createRoute="route('admin.sessions.create')"
@@ -16,20 +16,16 @@
     />
 
     <!-- Messages flash -->
-    @if(session('success'))
         <div class="studiosdb-card border-l-4 border-green-500 bg-green-500/10">
             <div class="flex">
                 <span class="text-green-400 text-xl mr-3">✅</span>
-                <p class="text-sm font-medium text-green-300">{{ session('success') }}</p>
             </div>
         </div>
     @endif
 
-    @if(session('error'))
         <div class="studiosdb-card border-l-4 border-red-500 bg-red-500/10">
             <div class="flex">
                 <span class="text-red-400 text-xl mr-3">❌</span>
-                <p class="text-sm font-medium text-red-300">{{ session('error') }}</p>
             </div>
         </div>
     @endif
@@ -47,7 +43,7 @@
             @foreach($sessions as $session)
             <tr class="hover:bg-slate-700/30 transition-colors">
                 <td class="w-4">
-                    <input type="checkbox" class="w-4 h-4 text-purple-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-purple-500">
+                    <input type="checkbox" class="w-4 h-4 text-violet-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-violet-500">
                 </td>
                 
                 <!-- Session -->

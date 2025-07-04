@@ -7,7 +7,7 @@
 
     <!-- Header -->
     <x-module-header 
-        module="cours"
+        module="sessions"
         title="Créer une nouvelle session" 
         subtitle="Définissez les dates et paramètres de votre session saisonnière"
     />
@@ -57,7 +57,7 @@
         <div class="studiosdb-card">
             <div class="border-b border-slate-700/50 pb-4 mb-6">
                 <h3 class="text-lg font-medium text-white flex items-center">
-                    <x-admin-icon name="information-circle" size="w-5 h-5" class="mr-2 text-purple-400" />
+                    <x-admin-icon name="information-circle" size="w-5 h-5" class="mr-2 text-violet-400" />
                     Informations de la session
                 </h3>
                 <p class="mt-1 text-sm text-slate-400">
@@ -125,7 +125,6 @@
                     <textarea name="description" 
                               id="description" 
                               rows="3"
-                              placeholder="Description de la session, informations spéciales, objectifs..."
                               class="studiosdb-input w-full"
                               x-model="form.description">{{ old('description') }}</textarea>
                     <p class="mt-1 text-xs text-slate-500">
@@ -191,7 +190,7 @@
                                type="checkbox" 
                                value="1"
                                {{ old('actif', true) ? 'checked' : '' }}
-                               class="mt-1 h-4 w-4 text-purple-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-purple-500">
+                               class="mt-1 h-4 w-4 text-violet-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-violet-500">
                         <label for="actif" class="ml-3 block text-sm text-slate-300">
                             <span class="font-medium">Session active immédiatement</span>
                             <span class="block text-xs text-slate-500">La session sera visible et utilisable dès la création</span>
@@ -204,7 +203,7 @@
                                type="checkbox" 
                                value="1"
                                {{ old('inscriptions_ouvertes') ? 'checked' : '' }}
-                               class="mt-1 h-4 w-4 text-purple-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-purple-500">
+                               class="mt-1 h-4 w-4 text-violet-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-violet-500">
                         <label for="inscriptions_ouvertes" class="ml-3 block text-sm text-slate-300">
                             <span class="font-medium">Ouvrir les inscriptions immédiatement</span>
                             <span class="block text-xs text-slate-500">⚠️ Les membres recevront un email de notification</span>
@@ -261,7 +260,7 @@
                                value="1"
                                {{ old('ajuster_prix') ? 'checked' : '' }}
                                x-model="adjustPrice"
-                               class="h-4 w-4 text-purple-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-purple-500">
+                               class="h-4 w-4 text-violet-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-violet-500">
                         <label for="ajuster_prix" class="ml-2 block text-sm text-slate-300">
                             Ajuster les prix automatiquement
                         </label>

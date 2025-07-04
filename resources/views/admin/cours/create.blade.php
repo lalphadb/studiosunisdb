@@ -3,35 +3,19 @@
 @section('title', 'Créer un cours')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                📚 Créer un nouveau cours
-            </h1>
-            <p class="text-gray-600 dark:text-gray-400">
-                Définissez les informations de base qui serviront de modèle pour créer des horaires spécifiques.
-            </p>
-        </div>
+<div class="space-y-6">
+    <!-- Header avec x-module-header -->
+    <x-module-header 
+        module="cours"
+        title="Créer un nouveau cours" 
+        subtitle="Définissez les informations de base qui serviront de modèle pour créer des horaires spécifiques"
+    />
 
-        <!-- Messages d'erreur -->
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <strong>Erreurs de validation :</strong>
-                <ul class="mt-2 ml-4 list-disc">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
-        <!-- Formulaire -->
-        <form method="POST" action="{{ route('admin.cours.store') }}">
-            @csrf
-            @include('admin.cours.form')
-        </form>
-    </div>
+    <!-- Formulaire -->
+    <form method="POST" action="{{ route('admin.cours.store') }}">
+        @csrf
+        @include('admin.cours.form')
+    </form>
 </div>
 @endsection

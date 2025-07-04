@@ -1,36 +1,37 @@
 <div class="space-y-6">
     <!-- Informations de base -->
-    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            📚 Informations de base
+    <div class="studiosdb-card">
+        <h3 class="text-lg font-semibold text-white mb-6 flex items-center">
+            <span class="text-2xl mr-3">📚</span>
+            Informations de base
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Nom du cours -->
             <div>
-                <label for="nom" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <span class="text-red-500">*</span> Nom du cours
+                <label for="nom" class="block text-sm font-medium text-white mb-2">
+                    <span class="text-red-400">*</span> Nom du cours
                 </label>
                 <input type="text" 
                        id="nom" 
                        name="nom" 
                        value="{{ old('nom', $cours->nom ?? '') }}"
                        placeholder="Ex: Karaté Adultes, Enfants Débutants..."
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('nom') border-red-500 @enderror"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('nom') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
                        required>
                 @error('nom')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 
             <!-- Niveau -->
             <div>
-                <label for="niveau" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <span class="text-red-500">*</span> Niveau requis
+                <label for="niveau" class="block text-sm font-medium text-white mb-2">
+                    <span class="text-red-400">*</span> Niveau requis
                 </label>
                 <select id="niveau" 
                         name="niveau" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('niveau') border-red-500 @enderror"
+                        class="studiosdb-select @error('niveau') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
                         required>
                     <option value="">Sélectionner le niveau...</option>
                     <option value="debutant" {{ old('niveau', $cours->niveau ?? '') === 'debutant' ? 'selected' : '' }}>
@@ -47,14 +48,14 @@
                     </option>
                 </select>
                 @error('niveau')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 
             <!-- Durée -->
             <div>
-                <label for="duree_minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <span class="text-red-500">*</span> Durée (minutes)
+                <label for="duree_minutes" class="block text-sm font-medium text-white mb-2">
+                    <span class="text-red-400">*</span> Durée (minutes)
                 </label>
                 <input type="number" 
                        id="duree_minutes" 
@@ -63,16 +64,17 @@
                        min="15" 
                        max="180" 
                        step="15"
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('duree_minutes') border-red-500 @enderror"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('duree_minutes') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
                        required>
                 @error('duree_minutes')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
+                <p class="mt-1 text-sm text-slate-400">Entre 15 et 180 minutes, par pas de 15</p>
             </div>
 
             <!-- Instructeur -->
             <div>
-                <label for="instructeur" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label for="instructeur" class="block text-sm font-medium text-white mb-2">
                     👨‍🏫 Instructeur principal
                 </label>
                 <input type="text" 
@@ -80,60 +82,62 @@
                        name="instructeur" 
                        value="{{ old('instructeur', $cours->instructeur ?? '') }}"
                        placeholder="Nom de l'instructeur principal"
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('instructeur') border-red-500 @enderror">
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('instructeur') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">
                 @error('instructeur')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
             </div>
         </div>
 
         <!-- Description -->
         <div class="mt-6">
-            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label for="description" class="block text-sm font-medium text-white mb-2">
                 📝 Description du cours
             </label>
             <textarea id="description" 
                       name="description" 
                       rows="4"
                       placeholder="Décrivez le contenu, les objectifs et le public cible de ce cours..."
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('description') border-red-500 @enderror">{{ old('description', $cours->description ?? '') }}</textarea>
+                      class="studiosdb-textarea @error('description') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">{{ old('description', $cours->description ?? '') }}</textarea>
             @error('description')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
             @enderror
         </div>
     </div>
 
     <!-- Paramètres par défaut -->
-    <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            ⚙️ Paramètres par défaut
+    <div class="studiosdb-card">
+        <h3 class="text-lg font-semibold text-white mb-6 flex items-center">
+            <span class="text-2xl mr-3">⚙️</span>
+            Paramètres par défaut
         </h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p class="text-sm text-slate-400 mb-6">
             Ces valeurs seront utilisées par défaut lors de la création d'horaires pour ce cours.
         </p>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Capacité maximale -->
             <div>
-                <label for="capacite_max" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label for="capacite_max" class="block text-sm font-medium text-white mb-2">
                     👥 Capacité maximale
                 </label>
                 <input type="number" 
                        id="capacite_max" 
                        name="capacite_max" 
-                       value="{{ old('capacite_max', $cours->capacite_max ?? 20) }}"
+                       value="{{ old('capacite_max', $cours->capacite_max ?? '') }}"
                        min="1" 
                        max="50"
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('capacite_max') border-red-500 @enderror">
-                <p class="mt-1 text-sm text-gray-500">Laisser vide si la priorité varie selon l'horaire</p>
+                       placeholder="20"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('capacite_max') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">
+                <p class="mt-1 text-sm text-slate-400">Laisser vide si cela varie selon l'horaire</p>
                 @error('capacite_max')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 
             <!-- Prix par cours -->
             <div>
-                <label for="prix" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label for="prix" class="block text-sm font-medium text-white mb-2">
                     💰 Prix par cours ($)
                 </label>
                 <input type="number" 
@@ -143,13 +147,37 @@
                        min="0" 
                        step="0.01"
                        placeholder="0.00"
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 dark:bg-gray-700 dark:text-white @error('prix') border-red-500 @enderror">
-                <p class="mt-1 text-sm text-gray-500">Peut être modifié pour chaque horaire</p>
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('prix') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">
+                <p class="mt-1 text-sm text-slate-400">Peut être modifié pour chaque horaire</p>
                 @error('prix')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror
             </div>
         </div>
+
+        <!-- École (Super Admin seulement) -->
+        @if(auth()->user()->hasRole('super_admin') && isset($ecoles) && $ecoles->count() > 1)
+        <div class="mt-6">
+            <label for="ecole_id" class="block text-sm font-medium text-white mb-2">
+                <span class="text-red-400">*</span> École
+            </label>
+            <select id="ecole_id" 
+                    name="ecole_id" 
+                    class="studiosdb-select @error('ecole_id') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror"
+                    required>
+                <option value="">Sélectionner une école...</option>
+                @foreach($ecoles as $ecole)
+                <option value="{{ $ecole->id }}" 
+                        {{ old('ecole_id', $cours->ecole_id ?? auth()->user()->ecole_id) == $ecole->id ? 'selected' : '' }}>
+                    {{ $ecole->nom }} ({{ $ecole->code_ecole }})
+                </option>
+                @endforeach
+            </select>
+            @error('ecole_id')
+                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
+            @enderror
+        </div>
+        @endif
 
         <!-- Statut -->
         <div class="mt-6">
@@ -158,13 +186,13 @@
                        name="active" 
                        value="1" 
                        {{ old('active', $cours->active ?? true) ? 'checked' : '' }}
-                       class="mr-3 h-4 w-4 text-violet-600 focus:ring-violet-500 border-gray-300 rounded">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                       class="mr-3 h-4 w-4 text-violet-500 focus:ring-violet-500 border-slate-600 rounded bg-slate-700">
+                <span class="text-sm font-medium text-white">
                     ✅ Cours actif (disponible pour la création d'horaires)
                 </span>
             </label>
             @error('active')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
             @enderror
         </div>
     </div>
@@ -172,12 +200,12 @@
     <!-- Boutons -->
     <div class="flex justify-between pt-6">
         <a href="{{ route('admin.cours.index') }}" 
-           class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+           class="studiosdb-btn studiosdb-btn-cancel">
             ← Retour à la liste
         </a>
         <button type="submit" 
-                class="px-6 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors">
-            💾 {{ isset($cours) ? 'Mettre à jour' : 'Créer' }} le cours
+                class="studiosdb-btn studiosdb-btn-cours studiosdb-btn-lg">
+            💾 {{ isset($cours) && $cours->exists ? 'Mettre à jour' : 'Créer' }} le cours
         </button>
     </div>
 </div>

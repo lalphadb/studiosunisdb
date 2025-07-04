@@ -1,5 +1,8 @@
 <?php
 
+declare(strict_types=1);
+
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -8,13 +11,14 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Log;
 
-class ExportController extends Controller implements HasMiddleware
-{
-    public static function middleware(): array
+class ExportController extends BaseAdminController
+
+    public function __construct()
     {
-        return [
-            'auth',
-        ];
+        parent::__construct();
+        $this->middleware("can:manage-system")->only(["index", "exportLogs"]);
+    }
+{
     }
 
     /**

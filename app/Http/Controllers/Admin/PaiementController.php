@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StorePaiementRequest;
 use App\Http\Requests\Admin\UpdatePaiementRequest;
 use App\Http\Requests\Admin\BulkValidatePaiementRequest;
@@ -10,155 +11,367 @@ use App\Models\Paiement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
-class PaiementController extends Controller implements HasMiddleware
+/**
+ * Contrôleur de gestion des paiements
+ * 
+ * Gère le cycle complet des paiements avec:
+ * - Multi-tenant strict par ecole_id
+ * - Validation de masse optimisée
+ * - Audit trail complet
+ * - Interface AJAX pour actions rapides
+ */
+class PaiementController extends BaseAdminController
 {
-    public static function middleware(): array
+    /**
+     * Initialise le contrôleur avec permissions
+     */
+    public function __construct()
     {
-        return [
-            'auth',
-            new Middleware('can:viewAny,App\Models\Paiement', only: ['index']),
-            new Middleware('can:view,paiement', only: ['show']),
-            new Middleware('can:create,App\Models\Paiement', only: ['create', 'store']),
-            new Middleware('can:update,paiement', only: ['edit', 'update', 'quickValidate']),
-            new Middleware('can:delete,paiement', only: ['destroy']),
-            new Middleware('can:bulkUpdate,App\Models\Paiement', only: ['bulkValidate', 'quickBulkValidate']),
-        ];
+        parent::__construct();
+        $this->middleware('permission:view_paiements')->only(['index', 'show']);
+        $this->middleware('permission:create_paiements')->only(['create', 'store']);
+        $this->middleware('permission:edit_paiements')->only(['edit', 'update']);
+        $this->middleware('permission:delete_paiements')->only(['destroy']);
     }
 
+    /**
+     * Liste des paiements avec filtres avancés
+     */
     public function index(Request $request): View
     {
-        $query = Paiement::with(['user', 'ecole', 'processedBy']);
+        try {
+            $query = Paiement::with(['user', 'ecole', 'processedBy']);
 
-        // Filtrage multi-tenant
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
+            // Filtrage multi-tenant strict
+            if (auth()->user()->hasRole('admin_ecole')) {
+                $query->where('ecole_id', auth()->user()->ecole_id);
+            }
+
+            // Recherche globale
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('reference_interne', 'like', "%{$search}%")
+                      ->orWhere('reference_interac', 'like', "%{$search}%")
+                      ->orWhere('montant', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%")
+                      ->orWhere('nom_expediteur', 'like', "%{$search}%")
+                      ->orWhere('email_expediteur', 'like', "%{$search}%")
+                      ->orWhereHas('user', function ($userQuery) use ($search) {
+                          $userQuery->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            // Filtres spécialisés
+            $this->applyFilters($query, $request);
+
+            // Tri optimisé : priorité aux paiements en attente
+            $paiements = $query->orderByRaw("CASE WHEN statut = 'en_attente' THEN 0 WHEN statut = 'recu' THEN 1 ELSE 2 END")
+                              ->orderBy('created_at', 'desc')
+                              ->paginate(25);
+
+            Log::info('Consultation index paiements', [
+                'user_id' => auth()->id(),
+                'ecole_id' => auth()->user()->ecole_id,
+                'total_paiements' => $paiements->total(),
+                'filters' => $request->only(['search', 'statut', 'type_paiement', 'motif'])
+            ]);
+
+            return view('admin.paiements.index', compact('paiements'));
+
+        } catch (\Exception $e) {
+            Log::error('Erreur index paiements', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->redirectWithError('admin.dashboard', 'Erreur lors du chargement des paiements');
         }
-
-        // Recherche
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('reference_interne', 'like', "%{$search}%")
-                  ->orWhere('reference_interac', 'like', "%{$search}%")
-                  ->orWhere('montant', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('nom_expediteur', 'like', "%{$search}%")
-                  ->orWhere('email_expediteur', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        // Filtrage par statut
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->statut);
-        }
-
-        // Filtrage par type de paiement
-        if ($request->filled('type_paiement')) {
-            $query->where('type_paiement', $request->type_paiement);
-        }
-
-        // Filtrage par motif
-        if ($request->filled('motif')) {
-            $query->where('motif', $request->motif);
-        }
-
-        // Tri par défaut : les paiements en attente en premier
-        $paiements = $query->orderByRaw("CASE WHEN statut = 'en_attente' THEN 0 WHEN statut = 'recu' THEN 1 ELSE 2 END")
-                          ->orderBy('created_at', 'desc')
-                          ->paginate(25); // Réduit à 25 pour améliorer la performance
-
-        return view('admin.paiements.index', compact('paiements'));
     }
 
+    /**
+     * Formulaire création paiement
+     */
     public function create(): View
     {
-        $users = User::select('id', 'name', 'email', 'ecole_id');
-        
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $users->where('ecole_id', auth()->user()->ecole_id);
-        }
-        
-        $users = $users->orderBy('name')->get();
-
+        $users = $this->getMembresForUser();
         return view('admin.paiements.create', compact('users'));
     }
 
+    /**
+     * Enregistrer nouveau paiement
+     */
     public function store(StorePaiementRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        
-        // Auto-assignation ecole_id pour admin_ecole ou depuis le user sélectionné
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $validated['ecole_id'] = auth()->user()->ecole_id;
-        } else {
-            // Pour superadmin, récupérer l'école du user sélectionné
-            $user = User::findOrFail($validated['user_id']);
-            $validated['ecole_id'] = $user->ecole_id;
+        try {
+            DB::beginTransaction();
+
+            $validated = $request->validated();
+            
+            // Auto-assignation ecole_id selon le rôle
+            $validated['ecole_id'] = $this->getEcoleIdForUser($validated['user_id']);
+            
+            // Auto-génération référence si nécessaire
+            if (empty($validated['reference_interne'])) {
+                $validated['reference_interne'] = $this->generateReference($validated['ecole_id']);
+            }
+
+            // Calculs automatiques
+            $validated['montant_net'] = $validated['montant'] - ($validated['frais'] ?? 0);
+            $validated['processed_by_user_id'] = auth()->id();
+
+            // Gestion des dates selon statut
+            $this->setDatesForStatus($validated);
+
+            $paiement = Paiement::create($validated);
+
+            Log::info('Paiement créé', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'montant' => $paiement->montant,
+                'statut' => $paiement->statut
+            ]);
+
+            DB::commit();
+
+            return $this->redirectWithSuccess('admin.paiements.index', 'Paiement créé avec succès');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Erreur création paiement', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'data' => $request->validated()
+            ]);
+
+            return $this->redirectWithError('admin.paiements.create', 'Erreur lors de la création : ' . $e->getMessage());
         }
-
-        // Auto-génération référence interne si vide
-        if (empty($validated['reference_interne'])) {
-            $prefix = $validated['ecole_id'] ? 'PAY-ECO' . $validated['ecole_id'] : 'PAY';
-            $validated['reference_interne'] = $prefix . '-' . strtoupper(uniqid());
-        }
-
-        // Calculer montant_net
-        $validated['montant_net'] = $validated['montant'] - ($validated['frais'] ?? 0);
-
-        // Assigner l'utilisateur qui traite le paiement
-        $validated['processed_by_user_id'] = auth()->id();
-
-        // Gérer les dates selon le statut
-        if ($validated['statut'] === 'recu') {
-            $validated['date_reception'] = now();
-        } elseif ($validated['statut'] === 'valide') {
-            $validated['date_reception'] = now();
-            $validated['date_validation'] = now();
-        }
-
-        $paiement = Paiement::create($validated);
-
-        return redirect()
-            ->route('admin.paiements.index')
-            ->with('success', 'Paiement créé avec succès.');
     }
 
+    /**
+     * Afficher détails paiement
+     */
     public function show(Paiement $paiement): View
     {
+        Gate::authorize('view', $paiement);
+        
         $paiement->load(['user', 'ecole', 'processedBy']);
         return view('admin.paiements.show', compact('paiement'));
     }
 
+    /**
+     * Formulaire édition paiement
+     */
     public function edit(Paiement $paiement): View
     {
-        $users = User::select('id', 'name', 'email', 'ecole_id');
+        Gate::authorize('update', $paiement);
         
-        if (auth()->user()->hasRole('admin_ecole')) {
-            $users->where('ecole_id', auth()->user()->ecole_id);
-        }
-        
-        $users = $users->orderBy('name')->get();
-
+        $users = $this->getMembresForUser();
         return view('admin.paiements.edit', compact('paiement', 'users'));
     }
 
+    /**
+     * Mettre à jour paiement
+     */
     public function update(UpdatePaiementRequest $request, Paiement $paiement): RedirectResponse
     {
-        $validated = $request->validated();
+        Gate::authorize('update', $paiement);
 
-        // Calculer montant_net
-        $validated['montant_net'] = $validated['montant'] - ($validated['frais'] ?? 0);
+        try {
+            DB::beginTransaction();
 
-        // Gérer les transitions de statut
+            $validated = $request->validated();
+            $validated['montant_net'] = $validated['montant'] - ($validated['frais'] ?? 0);
+
+            // Gestion transitions de statut
+            $this->handleStatusTransition($paiement, $validated);
+
+            $paiement->update($validated);
+
+            Log::info('Paiement mis à jour', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'old_statut' => $paiement->getOriginal('statut'),
+                'new_statut' => $paiement->statut
+            ]);
+
+            DB::commit();
+
+            return $this->redirectWithSuccess('admin.paiements.index', 'Paiement mis à jour avec succès');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Erreur mise à jour paiement', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->redirectWithError('admin.paiements.edit', 'Erreur lors de la mise à jour');
+        }
+    }
+
+    /**
+     * Supprimer paiement
+     */
+    public function destroy(Paiement $paiement): RedirectResponse
+    {
+        Gate::authorize('delete', $paiement);
+
+        try {
+            Log::info('Paiement supprimé', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'reference' => $paiement->reference_interne
+            ]);
+
+            $paiement->delete();
+
+            return $this->redirectWithSuccess('admin.paiements.index', 'Paiement supprimé avec succès');
+
+        } catch (\Exception $e) {
+            Log::error('Erreur suppression paiement', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->redirectWithError('admin.paiements.index', 'Erreur lors de la suppression');
+        }
+    }
+
+    /**
+     * Validation de masse des paiements
+     */
+    public function bulkValidate(BulkValidatePaiementRequest $request): RedirectResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $validated = $request->validated();
+            $result = $this->processBulkAction($validated['paiement_ids'], $validated['action']);
+
+            DB::commit();
+
+            Log::info('Action masse paiements', [
+                'user_id' => auth()->id(),
+                'action' => $validated['action'],
+                'count' => $result['count']
+            ]);
+
+            return $this->redirectWithSuccess('admin.paiements.index', $result['message']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Erreur action masse paiements', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->redirectWithError('admin.paiements.index', 'Erreur lors de l\'action de masse');
+        }
+    }
+
+    /**
+     * Validation rapide AJAX
+     */
+    public function quickValidate(Request $request, Paiement $paiement): JsonResponse
+    {
+        Gate::authorize('update', $paiement);
+
+        try {
+            $result = $this->cyclePaymentStatus($paiement);
+
+            Log::info('Validation rapide paiement', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'new_statut' => $result['new_statut']
+            ]);
+
+            return $this->successResponse('Statut mis à jour avec succès', $result);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur validation rapide', [
+                'user_id' => auth()->id(),
+                'paiement_id' => $paiement->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return $this->errorResponse('Erreur lors de la mise à jour', [], 500);
+        }
+    }
+
+    /**
+     * MÉTHODES PRIVÉES - LOGIQUE MÉTIER
+     */
+
+    private function applyFilters($query, Request $request): void
+    {
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+
+        if ($request->filled('type_paiement')) {
+            $query->where('type_paiement', $request->type_paiement);
+        }
+
+        if ($request->filled('motif')) {
+            $query->where('motif', $request->motif);
+        }
+    }
+
+    private function getMembresForUser()
+    {
+        $query = User::select('id', 'name', 'email', 'ecole_id')->orderBy('name');
+        
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
+        }
+        
+        return $query->get();
+    }
+
+    private function getEcoleIdForUser(int $userId): int
+    {
+        if (auth()->user()->hasRole('admin_ecole')) {
+            return auth()->user()->ecole_id;
+        }
+        
+        return User::findOrFail($userId)->ecole_id;
+    }
+
+    private function generateReference(int $ecoleId): string
+    {
+        $prefix = $ecoleId ? 'PAY-ECO' . $ecoleId : 'PAY';
+        return $prefix . '-' . strtoupper(uniqid());
+    }
+
+    private function setDatesForStatus(array &$validated): void
+    {
+        switch ($validated['statut']) {
+            case 'recu':
+                $validated['date_reception'] = now();
+                break;
+            case 'valide':
+                $validated['date_reception'] = now();
+                $validated['date_validation'] = now();
+                break;
+        }
+    }
+
+    private function handleStatusTransition(Paiement $paiement, array &$validated): void
+    {
         $oldStatut = $paiement->statut;
         $newStatut = $validated['statut'];
 
@@ -169,7 +382,6 @@ class PaiementController extends Controller implements HasMiddleware
                         $validated['date_reception'] = now();
                     }
                     break;
-                    
                 case 'valide':
                     if (!$paiement->date_reception) {
                         $validated['date_reception'] = now();
@@ -178,244 +390,79 @@ class PaiementController extends Controller implements HasMiddleware
                         $validated['date_validation'] = now();
                     }
                     break;
-                    
-                case 'en_attente':
-                    // Retourner en attente - on garde les dates mais on peut les nettoyer si nécessaire
-                    break;
             }
-        }
-
-        $paiement->update($validated);
-
-        return redirect()
-            ->route('admin.paiements.index')
-            ->with('success', 'Paiement mis à jour avec succès.');
-    }
-
-    public function destroy(Paiement $paiement): RedirectResponse
-    {
-        $paiement->delete();
-
-        return redirect()
-            ->route('admin.paiements.index')
-            ->with('success', 'Paiement supprimé avec succès.');
-    }
-
-    /**
-     * Validation de masse des paiements
-     */
-    public function bulkValidate(BulkValidatePaiementRequest $request): RedirectResponse
-    {
-        $validated = $request->validated();
-        $paiementIds = $validated['paiement_ids'];
-        $action = $validated['action'];
-
-        try {
-            DB::beginTransaction();
-
-            $query = Paiement::whereIn('id', $paiementIds);
-            
-            // Filtrage multi-tenant strict
-            if (auth()->user()->hasRole('admin_ecole')) {
-                $query->where('ecole_id', auth()->user()->ecole_id);
-            }
-
-            $count = 0;
-
-            switch ($action) {
-                case 'valider':
-                    $count = $query->whereIn('statut', ['en_attente', 'recu'])->update([
-                        'statut' => 'valide',
-                        'date_reception' => DB::raw('COALESCE(date_reception, NOW())'),
-                        'date_validation' => now(),
-                        'updated_at' => now()
-                    ]);
-                    break;
-
-                case 'marquer_recu':
-                    $count = $query->where('statut', 'en_attente')->update([
-                        'statut' => 'recu',
-                        'date_reception' => now(),
-                        'updated_at' => now()
-                    ]);
-                    break;
-
-                case 'attente':
-                    $count = $query->whereIn('statut', ['recu', 'valide'])->update([
-                        'statut' => 'en_attente',
-                        'updated_at' => now()
-                    ]);
-                    break;
-
-                case 'supprimer':
-                    $count = $query->delete();
-                    break;
-            }
-
-            DB::commit();
-
-            $actionText = match($action) {
-                'valider' => 'validés',
-                'marquer_recu' => 'marqués comme reçus',
-                'attente' => 'remis en attente',
-                'supprimer' => 'supprimés',
-            };
-
-            return redirect()
-                ->route('admin.paiements.index')
-                ->with('success', "{$count} paiement(s) {$actionText} avec succès.");
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return redirect()
-                ->route('admin.paiements.index')
-                ->with('error', 'Erreur lors de l\'action de masse : ' . $e->getMessage());
         }
     }
 
-    /**
-     * Validation rapide individuelle via AJAX (legacy - pour compatibilité)
-     */
-    public function quickValidate(Request $request, Paiement $paiement)
+    private function processBulkAction(array $paiementIds, string $action): array
     {
-        // Vérification supplémentaire des permissions
-        if (!Gate::allows('update', $paiement)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Action non autorisée'
-            ], 403);
+        $query = Paiement::whereIn('id', $paiementIds);
+        
+        if (auth()->user()->hasRole('admin_ecole')) {
+            $query->where('ecole_id', auth()->user()->ecole_id);
         }
 
-        // Vérification multi-tenant stricte
-        if (auth()->user()->hasRole('admin_ecole') && $paiement->ecole_id !== auth()->user()->ecole_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Paiement non accessible pour cette école'
-            ], 403);
-        }
+        $count = match($action) {
+            'valider' => $query->whereIn('statut', ['en_attente', 'recu'])->update([
+                'statut' => 'valide',
+                'date_reception' => DB::raw('COALESCE(date_reception, NOW())'),
+                'date_validation' => now(),
+                'updated_at' => now()
+            ]),
+            'marquer_recu' => $query->where('statut', 'en_attente')->update([
+                'statut' => 'recu',
+                'date_reception' => now(),
+                'updated_at' => now()
+            ]),
+            'attente' => $query->whereIn('statut', ['recu', 'valide'])->update([
+                'statut' => 'en_attente',
+                'updated_at' => now()
+            ]),
+            'supprimer' => $query->delete(),
+            default => throw new \InvalidArgumentException('Action non supportée')
+        };
 
-        try {
-            // Cycle de statut : en_attente -> recu -> valide -> en_attente
-            $newStatut = match($paiement->statut) {
-                'en_attente' => 'recu',
-                'recu' => 'valide',
-                'valide' => 'en_attente',
-                default => 'en_attente'
-            };
+        $actionText = match($action) {
+            'valider' => 'validés',
+            'marquer_recu' => 'marqués comme reçus',
+            'attente' => 'remis en attente',
+            'supprimer' => 'supprimés',
+        };
 
-            $updateData = ['statut' => $newStatut];
+        return [
+            'count' => $count,
+            'message' => "{$count} paiement(s) {$actionText} avec succès"
+        ];
+    }
 
-            // Gérer les dates selon le nouveau statut
-            switch ($newStatut) {
-                case 'recu':
+    private function cyclePaymentStatus(Paiement $paiement): array
+    {
+        $newStatut = match($paiement->statut) {
+            'en_attente' => 'recu',
+            'recu' => 'valide',
+            'valide' => 'en_attente',
+            default => 'en_attente'
+        };
+
+        $updateData = ['statut' => $newStatut];
+
+        switch ($newStatut) {
+            case 'recu':
+                $updateData['date_reception'] = now();
+                break;
+            case 'valide':
+                if (!$paiement->date_reception) {
                     $updateData['date_reception'] = now();
-                    break;
-                case 'valide':
-                    if (!$paiement->date_reception) {
-                        $updateData['date_reception'] = now();
-                    }
-                    $updateData['date_validation'] = now();
-                    break;
-            }
-            
-            $paiement->update($updateData);
-
-            return response()->json([
-                'success' => true,
-                'new_statut' => $newStatut,
-                'message' => 'Statut mis à jour avec succès',
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour : ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Validation rapide groupée via AJAX (optimisation performance)
-     */
-    public function quickBulkValidate(Request $request)
-    {
-        $request->validate([
-            'paiement_ids' => ['required', 'array', 'min:1', 'max:50'],
-            'paiement_ids.*' => ['required', 'integer', 'exists:paiements,id'],
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            $paiementIds = $request->paiement_ids;
-            $query = Paiement::whereIn('id', $paiementIds);
-
-            // Filtrage multi-tenant strict
-            if (auth()->user()->hasRole('admin_ecole')) {
-                $query->where('ecole_id', auth()->user()->ecole_id);
-            }
-
-            $paiements = $query->get();
-            $results = [];
-
-            foreach ($paiements as $paiement) {
-                // Vérification des permissions individuelles
-                if (!Gate::allows('update', $paiement)) {
-                    $results[$paiement->id] = [
-                        'success' => false,
-                        'message' => 'Action non autorisée'
-                    ];
-                    continue;
                 }
-
-                // Cycle de statut : en_attente -> recu -> valide -> en_attente
-                $newStatut = match($paiement->statut) {
-                    'en_attente' => 'recu',
-                    'recu' => 'valide',
-                    'valide' => 'en_attente',
-                    default => 'en_attente'
-                };
-
-                $updateData = ['statut' => $newStatut];
-
-                // Gérer les dates selon le nouveau statut
-                switch ($newStatut) {
-                    case 'recu':
-                        $updateData['date_reception'] = now();
-                        break;
-                    case 'valide':
-                        if (!$paiement->date_reception) {
-                            $updateData['date_reception'] = now();
-                        }
-                        $updateData['date_validation'] = now();
-                        break;
-                }
-
-                $paiement->update($updateData);
-
-                $results[$paiement->id] = [
-                    'success' => true,
-                    'new_statut' => $newStatut,
-                    'message' => 'Statut mis à jour avec succès'
-                ];
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'results' => $results,
-                'message' => 'Validation groupée effectuée avec succès'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la validation groupée : ' . $e->getMessage()
-            ], 500);
+                $updateData['date_validation'] = now();
+                break;
         }
+        
+        $paiement->update($updateData);
+
+        return [
+            'new_statut' => $newStatut,
+            'message' => 'Statut mis à jour avec succès'
+        ];
     }
 }

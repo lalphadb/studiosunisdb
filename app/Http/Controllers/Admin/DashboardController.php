@@ -1,118 +1,93 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\BaseAdminController;
 use App\Models\User;
-use App\Models\Ecole;
 use App\Models\Cours;
-use App\Models\UserCeinture;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use App\Models\Ecole;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
-class DashboardController extends Controller implements HasMiddleware
+class DashboardController extends BaseAdminController
 {
-    public static function middleware(): array
+    public function __construct()
     {
-        return [
-            'auth',
-            'verified',
-            new Middleware('can:view-dashboard', only: ['index']),
-        ];
+        parent::__construct();
     }
 
-    public function index()
+    public function index(Request $request): View
     {
-        $user = auth()->user();
-        
-        // SUPERADMIN -> Interface système distincte
-        if ($user->hasRole('superadmin')) {
-            return $this->superAdminDashboard();
+        try {
+            $user = auth()->user();
+            
+            if ($user->hasRole('superadmin')) {
+                return $this->getSuperadminDashboard();
+            } else {
+                return $this->getAdminEcoleDashboard();
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur dashboard', ['error' => $e->getMessage()]);
+            return $this->getFallbackDashboard();
         }
-        
-        // ADMIN ÉCOLE -> Interface école complète
-        if ($user->hasRole('admin_ecole')) {
-            return $this->adminEcoleDashboard();
-        }
-        
-        if ($user->hasRole('instructeur')) {
-            return $this->instructeurDashboard();
-        }
-        
-        // Par défaut, dashboard membre
-        return redirect()->route('dashboard');
     }
-    
-    /**
-     * Dashboard SuperAdmin - Interface système DISTINCTE
-     */
-    private function superAdminDashboard()
+
+    private function getSuperadminDashboard(): View
     {
         $stats = [
             'total_ecoles' => Ecole::count(),
-            'ecoles_actives' => Ecole::where('active', true)->count(),
             'total_users' => User::count(),
-            'nouvelles_ecoles_mois' => Ecole::where('created_at', '>=', now()->startOfMonth())->count(),
             'total_cours' => Cours::count(),
-            'cours_actifs' => Cours::where('active', true)->count(),
+            'cours_actifs' => Cours::where('statut', 'actif')->count(),
+            'nouvelles_ecoles_mois' => Ecole::whereMonth('created_at', now()->month)->count(),
         ];
-        
-        $ecoles_recentes = Ecole::latest()->take(5)->get();
-        $stats_ecoles = Ecole::withCount('users')->get();
-        
-        return view('admin.dashboard.superadmin', compact('stats', 'ecoles_recentes', 'stats_ecoles'));
+
+        $stats_ecoles = Ecole::withCount('users')->orderBy('nom')->get();
+
+        return view('admin.dashboard.superadmin', compact('stats', 'stats_ecoles'));
     }
-    
-    /**
-     * Dashboard Admin École - Interface école complète
-     */
-    private function adminEcoleDashboard()
+
+    private function getAdminEcoleDashboard(): View
     {
-        $ecoleId = auth()->user()->ecole_id;
-        $ecole = auth()->user()->ecole;
-        
-        if (!$ecole) {
-            abort(403, 'Aucune école assignée à ce compte administrateur');
-        }
+        $user = auth()->user();
+        $ecoleId = $user->ecole_id;
+
+        $ecole = $ecoleId ? Ecole::find($ecoleId) : null;
         
         $stats = [
-            'mes_membres' => User::where('ecole_id', $ecoleId)
-                ->whereHas('roles', fn($q) => $q->where('name', 'membre'))
-                ->count(),
-            'membres_actifs' => User::where('ecole_id', $ecoleId)
-                ->where('active', true)
-                ->whereHas('roles', fn($q) => $q->where('name', 'membre'))
-                ->count(),
-            'mes_cours' => Cours::where('ecole_id', $ecoleId)->count(),
-            'cours_actifs' => Cours::where('ecole_id', $ecoleId)->where('active', true)->count(),
-            'mes_instructeurs' => User::where('ecole_id', $ecoleId)
-                ->whereHas('roles', fn($q) => $q->where('name', 'instructeur'))
-                ->count(),
-            'nouveaux_mois' => User::where('ecole_id', $ecoleId)
-                ->where('created_at', '>=', now()->startOfMonth())
-                ->count(),
-            'revenus_mois' => User::where('ecole_id', $ecoleId)->count() * 80,
+            'mes_membres' => $ecoleId ? User::where('ecole_id', $ecoleId)->count() : 0,
+            'membres_actifs' => $ecoleId ? User::where('ecole_id', $ecoleId)->where('active', true)->count() : 0,
+            'nouveaux_mois' => $ecoleId ? User::where('ecole_id', $ecoleId)->whereMonth('created_at', now()->month)->count() : 0,
+            'mes_cours' => $ecoleId ? Cours::where('ecole_id', $ecoleId)->count() : 0,
+            'cours_actifs' => $ecoleId ? Cours::where('ecole_id', $ecoleId)->where('statut', 'actif')->count() : 0,
+            'revenus_mois' => 0,
         ];
-        
-        $derniers_membres = User::where('ecole_id', $ecoleId)
-            ->whereHas('roles', fn($q) => $q->where('name', 'membre'))
-            ->latest()
-            ->take(5)
-            ->get();
-            
-        $prochains_cours = Cours::where('ecole_id', $ecoleId)
-            ->where('active', true)
-            ->take(5)
-            ->get();
-        
-        return view('admin.dashboard.admin-ecole', compact('stats', 'derniers_membres', 'prochains_cours', 'ecole'));
+
+        $derniers_membres = $ecoleId ? User::where('ecole_id', $ecoleId)->latest()->limit(5)->get() : collect([]);
+        $prochains_cours = $ecoleId ? Cours::where('ecole_id', $ecoleId)->where('statut', 'actif')->latest()->limit(6)->get() : collect([]);
+
+        return view('admin.dashboard.admin-ecole', compact('stats', 'ecole', 'derniers_membres', 'prochains_cours'));
     }
-    
-    /**
-     * Dashboard Instructeur - Vue limitée
-     */
-    private function instructeurDashboard()
+
+    private function getFallbackDashboard(): View
     {
-        return $this->adminEcoleDashboard();
+        $stats = [
+            'mes_membres' => 0,
+            'membres_actifs' => 0,
+            'nouveaux_mois' => 0,
+            'mes_cours' => 0,
+            'cours_actifs' => 0,
+            'revenus_mois' => 0,
+        ];
+
+        return view('admin.dashboard.admin-ecole', [
+            'stats' => $stats,
+            'ecole' => null,
+            'derniers_membres' => collect([]),
+            'prochains_cours' => collect([])
+        ]);
     }
 }

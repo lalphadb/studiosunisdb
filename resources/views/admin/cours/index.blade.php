@@ -1,183 +1,202 @@
 @extends('layouts.admin')
 
-@section('title', 'Cours')
+@section('title', 'Gestion des Cours')
 
 @section('content')
-<div class="space-y-6">
+<x-module-header 
+    title="Cours" 
+    :breadcrumbs="[
+        ['name' => 'Admin', 'url' => route('admin.dashboard')],
+        ['name' => 'Cours', 'url' => null]
+    ]"
+    color="emerald-600" />
 
-    <!-- Header avec votre système StudiosDB -->
-    <x-module-header 
-        module="cours"
-        title="Cours" 
-        subtitle="Gestion des cours et programmes"
-        :createRoute="route('admin.cours.create')"
-        createText="Nouveau cours"
-        createPermission="create-cours"
-    />
+<div class="studiosdb-content">
+    <x-admin.flash-messages />
 
-    <!-- Messages flash avec vos styles -->
-    @if(session('success'))
-        <div class="studiosdb-card border-l-4 border-green-500 bg-violet-500/10">
-            <div class="flex">
-                <span class="text-green-400 text-xl mr-3">✅</span>
-                <p class="text-sm font-medium text-green-300">{{ session('success') }}</p>
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="studiosdb-card border-l-4 border-emerald-500 bg-green-500/10">
+            <div class="studiosdb-card-body">
+                <div class="flex items-center">
+                    <i class="fas fa-graduation-cap text-emerald-500 text-2xl mr-3"></i>
+                    <div>
+                        <span class="text-green-400 text-xl mr-3">✓</span>
+                        <span class="text-green-400 text-xl font-bold">{{ $stats['cours_actifs'] ?? 0 }}</span>
+                        <p class="text-sm text-gray-400">Cours Actifs</p>
+                    </div>
+                </div>
             </div>
         </div>
-    @endif
 
-    @if(session('error'))
         <div class="studiosdb-card border-l-4 border-red-500 bg-red-500/10">
-            <div class="flex">
-                <span class="text-red-400 text-xl mr-3">❌</span>
-                <p class="text-sm font-medium text-red-300">{{ session('error') }}</p>
+            <div class="studiosdb-card-body">
+                <div class="flex items-center">
+                    <i class="fas fa-pause-circle text-red-500 text-2xl mr-3"></i>
+                    <div>
+                        <span class="text-red-400 text-xl mr-3">✗</span>
+                        <span class="text-red-400 text-xl font-bold">{{ $stats['cours_inactifs'] ?? 0 }}</span>
+                        <p class="text-sm text-gray-400">Cours Inactifs</p>
+                    </div>
+                </div>
             </div>
         </div>
-    @endif
 
-    <!-- Table avec vos styles StudiosDB -->
+        <div class="studiosdb-card border-l-4 border-blue-500 bg-blue-500/10">
+            <div class="studiosdb-card-body">
+                <div class="flex items-center">
+                    <i class="fas fa-users text-blue-500 text-2xl mr-3"></i>
+                    <div>
+                        <span class="text-blue-400 text-xl font-bold">{{ $stats['total_inscrits'] ?? 0 }}</span>
+                        <p class="text-sm text-gray-400">Total Inscrits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="studiosdb-card border-l-4 border-purple-500 bg-purple-500/10">
+            <div class="studiosdb-card-body">
+                <div class="flex items-center">
+                    <i class="fas fa-calendar text-purple-500 text-2xl mr-3"></i>
+                    <div>
+                        <span class="text-purple-400 text-xl font-bold">{{ $stats['sessions_semaine'] ?? 0 }}</span>
+                        <p class="text-sm text-gray-400">Sessions cette semaine</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="studiosdb-card mb-6">
+        <div class="studiosdb-card-body">
+            <form method="GET" class="flex flex-wrap gap-4">
+                <div class="flex-1 min-w-64">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Rechercher un cours..."
+                           class="studiosdb-input">
+                </div>
+                
+                <div>
+                    <select name="statut" class="studiosdb-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="actif" {{ request('statut') === 'actif' ? 'selected' : '' }}>Actif</option>
+                        <option value="inactif" {{ request('statut') === 'inactif' ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="studiosdb-btn-primary">
+                    <i class="fas fa-search mr-2"></i>
+                    Rechercher
+                </button>
+                
+                @can('cours.create')
+                <a href="{{ route('admin.cours.create') }}" class="studiosdb-btn-success">
+                    <i class="fas fa-plus mr-2"></i>
+                    Nouveau Cours
+                </a>
+                @endcan
+            </form>
+        </div>
+    </div>
+
+    <!-- Table des cours -->
     @if($cours->count() > 0)
-        <x-admin-table 
-            :headers="auth()->user()->hasRole('super_admin') ? 
-                ['Cours', 'École', 'Niveau', 'Statut', 'Horaires', 'Actions'] : 
-                ['Cours', 'Niveau', 'Statut', 'Horaires', 'Actions']"
-            :searchable="true"
-            :filterable="true"
-            :exportable="true">
-            
-            @foreach($cours as $cour)
-            <tr class="hover:bg-slate-700/30 transition-colors">
-                <td class="w-4">
-                    <input type="checkbox" class="w-4 h-4 text-purple-500 bg-slate-700/50 border-slate-600/50 rounded focus:ring-purple-500">
-                </td>
-                
-                <!-- Cours -->
-                <td>
-                    <div class="flex items-center space-x-3">
-                        <div class="flex-shrink-0">
-                            <span class="text-2xl">📚</span>
-                        </div>
-                        <div>
+        <div class="studiosdb-table-container">
+            <table class="studiosdb-table">
+                <thead>
+                    <tr>
+                        <th>Nom du Cours</th>
+                        <th>Description</th>
+                        <th>Statut</th>
+                        <th>Inscrits</th>
+                        <th>Créé le</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($cours as $cour)
+                    <tr>
+                        <td>
                             <div class="font-medium text-white">{{ $cour->nom }}</div>
-                            @if($cour->description)
-                            <div class="text-sm text-slate-400">{{ Str::limit($cour->description, 50) }}</div>
+                            @if($cour->code)
+                                <div class="text-sm text-gray-400">Code: {{ $cour->code }}</div>
                             @endif
-                        </div>
-                    </div>
-                </td>
-                
-                @if(auth()->user()->hasRole('super_admin'))
-                <!-- École -->
-                <td>
-                    <div class="text-sm text-white">{{ $cour->ecole->nom }}</div>
-                    <div class="text-xs text-slate-400">{{ $cour->ecole->code_ecole }}</div>
-                </td>
-                @endif
-                
-                <!-- Niveau -->
-                <td>
-                    <div class="text-sm text-white">{{ $cour->niveau ?? 'Non défini' }}</div>
-                    @if($cour->instructeur_defaut)
-                    <div class="text-xs text-slate-400">{{ $cour->instructeur_defaut }}</div>
-                    @endif
-                </td>
-                
-                <!-- Statut avec vos badges StudiosDB -->
-                <td>
-                    @if($cour->active)
-                        <span class="studiosdb-badge studiosdb-badge-active">
-                            ✅ Actif
-                        </span>
-                    @else
-                        <span class="studiosdb-badge studiosdb-badge-inactive">
-                            ⏸️ Inactif
-                        </span>
-                    @endif
-                </td>
-                
-                <!-- Horaires -->
-                <td>
-                    <div class="text-sm text-white">{{ $cour->cours_horaires_count ?? 0 }} horaires</div>
-                    <div class="text-xs text-slate-400">
-                        @if($cour->capacite_max_defaut)
-                        Max: {{ $cour->capacite_max_defaut }} places
-                        @endif
-                    </div>
-                </td>
-                
-                <!-- Actions -->
-                <td>
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" 
-                                class="studiosdb-btn studiosdb-btn-cours text-xs px-3 py-1">
-                            Actions
-                            <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                        
-                        <div x-show="open" 
-                             @click.away="open = false"
-                             x-transition
-                             class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-800 ring-1 ring-black ring-opacity-5 z-10">
-                            <div class="py-1">
-                                @can('view', $cour)
+                        </td>
+                        <td>
+                            <div class="text-sm text-gray-300 max-w-md truncate">
+                                {{ $cour->description ?? 'Aucune description' }}
+                            </div>
+                        </td>
+                        <td>
+                            @if($cour->statut === 'actif')
+                                <span class="studiosdb-badge-success">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Actif
+                                </span>
+                            @else
+                                <span class="studiosdb-badge-danger">
+                                    <i class="fas fa-pause-circle mr-1"></i>
+                                    Inactif
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="text-blue-400 font-medium">
+                                {{ $cour->inscriptions_count ?? 0 }}
+                            </span>
+                        </td>
+                        <td class="text-gray-400 text-sm">
+                            {{ $cour->created_at->format('d/m/Y') }}
+                        </td>
+                        <td class="text-center">
+                            <div class="flex justify-center space-x-2">
+                                @can('cours.view')
                                 <a href="{{ route('admin.cours.show', $cour) }}" 
-                                   class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
-                                    <span class="mr-2">👁️</span>
-                                    Voir détails
+                                   class="text-blue-400 hover:text-blue-300">
+                                    <i class="fas fa-eye"></i>
                                 </a>
                                 @endcan
                                 
-                                @can('update', $cour)
+                                @can('cours.edit')
                                 <a href="{{ route('admin.cours.edit', $cour) }}" 
-                                   class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">
-                                    <span class="mr-2">✏️</span>
-                                    Modifier
+                                   class="text-yellow-400 hover:text-yellow-300">
+                                    <i class="fas fa-edit"></i>
                                 </a>
                                 @endcan
                                 
-                                @can('delete', $cour)
-                                <div class="border-t border-slate-700 my-1"></div>
+                                @can('cours.delete')
                                 <form method="POST" action="{{ route('admin.cours.destroy', $cour) }}" 
-                                      x-data="{ 
-                                          confirm() { 
-                                              return window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?') 
-                                          } 
-                                      }"
-                                      @submit.prevent="confirm() && $el.submit()">
+                                      class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-900/20">
-                                        <span class="mr-2">🗑️</span>
-                                        Supprimer
+                                    <button type="submit" 
+                                            class="text-red-400 hover:text-red-300"
+                                            onclick="return confirm('Confirmer la suppression ?')">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
                                 @endcan
                             </div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            @endforeach
-        </x-admin-table>
-    @else
-        <!-- État vide avec vos styles StudiosDB -->
-        <div class="studiosdb-card text-center py-16">
-            <div class="text-6xl mb-6">📚</div>
-            <h3 class="text-xl font-medium text-white mb-3">Aucun cours créé</h3>
-            <p class="text-slate-400 mb-8 max-w-md mx-auto">
-                Commencez par créer vos premiers cours pour organiser votre enseignement.
-            </p>
-            
-            @can('create-cours')
-            <a href="{{ route('admin.cours.create') }}" 
-               class="studiosdb-btn studiosdb-btn-cours studiosdb-btn-lg">
-                <span class="mr-2">➕</span>
-                Créer le premier cours
-            </a>
-            @endcan
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-    @endif
 
+        <!-- Pagination -->
+        <div class="mt-6">
+            {{ $cours->links() }}
+        </div>
+    @else
+        <x-empty-state 
+            icon="fas fa-graduation-cap"
+            title="Aucun cours trouvé"
+            description="Commencez par créer votre premier cours."
+            :action="auth()->user()->can('cours.create') ? ['text' => 'Créer un cours', 'url' => route('admin.cours.create')] : null" />
+    @endif
 </div>
 @endsection

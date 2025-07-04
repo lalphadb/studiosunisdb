@@ -37,7 +37,7 @@
                             Ceinture à attribuer <span class="text-red-400">*</span>
                         </label>
                         <select name="ceinture_id" id="ceinture_id" required
-                                class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('ceinture_id') border-red-500 @enderror">
+                                class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('ceinture_id') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">
                             <option value="">Sélectionner une ceinture</option>
                             @if(isset($ceintures))
                                 @foreach($ceintures as $ceinture)
@@ -63,7 +63,7 @@
                                value="{{ old('date_obtention', now()->format('Y-m-d')) }}"
                                max="{{ now()->format('Y-m-d') }}"
                                required
-                               class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('date_obtention') border-red-500 @enderror">
+                               class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 @error('date_obtention') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">
                         @error('date_obtention')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                         @enderror
@@ -79,7 +79,7 @@
                               id="notes" 
                               rows="2"
                               placeholder="Commentaires généraux sur cet examen de groupe..."
-                              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 @error('notes') border-red-500 @enderror">{{ old('notes') }}</textarea>
+                              class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 @error('notes') border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500 @enderror">{{ old('notes') }}</textarea>
                     @error('notes')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                     @enderror
