@@ -74,7 +74,7 @@ class EcoleController extends BaseAdminController
                 'filters' => $request->only(['search', 'actif', 'province'])
             ]);
 
-            return view('admin.ecoles.index', compact('ecoles'));
+            return view('pages.admin.ecoles.index', compact('ecoles'));
 
         } catch (\Exception $e) {
             Log::error('Erreur index écoles', [
@@ -82,7 +82,7 @@ class EcoleController extends BaseAdminController
                 'error' => $e->getMessage()
             ]);
 
-            return $this->redirectWithError('admin.dashboard', 'Erreur lors du chargement des écoles');
+            return $this->redirectWithError('pages.admin.dashboard', 'Erreur lors du chargement des écoles');
         }
     }
 
@@ -91,7 +91,7 @@ class EcoleController extends BaseAdminController
      */
     public function create(): View
     {
-        return view('admin.ecoles.create');
+        return view('pages.admin.ecoles.create');
     }
 
     /**
@@ -146,7 +146,7 @@ class EcoleController extends BaseAdminController
             'cours_actifs' => $ecole->cours()->where('active', true)->count(),
         ];
 
-        return view('admin.ecoles.show', compact('ecole', 'stats'));
+        return view('pages.admin.ecoles.show', compact('ecole', 'stats'));
     }
 
     /**
@@ -154,7 +154,7 @@ class EcoleController extends BaseAdminController
      */
     public function edit(Ecole $ecole): View
     {
-        return view('admin.ecoles.edit', compact('ecole'));
+        return view('pages.admin.ecoles.edit', compact('ecole'));
     }
 
     /**

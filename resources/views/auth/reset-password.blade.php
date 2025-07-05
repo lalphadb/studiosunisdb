@@ -33,9 +33,9 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
+            <button class="btn-primary">
                 {{ __('Reset Password') }}
-            </x-primary-button>
+            </button>
         </div>
     </form>
 </x-guest-layout>
