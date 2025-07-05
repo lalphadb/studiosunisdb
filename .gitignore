@@ -8,6 +8,7 @@
 .env.backup
 .env.production
 .phpunit.result.cache
+docker-compose.override.yml
 Homestead.json
 Homestead.yaml
 auth.json
@@ -15,129 +16,24 @@ npm-debug.log
 yarn-error.log
 
 # IDE
+/.fleet
 /.idea
 /.vscode
-*.swp
-*.swo
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Logs
-storage/logs/*.log
-storage/debugbar/
-
-# Cache
-bootstrap/cache/*
-storage/framework/cache/data/*
-storage/framework/sessions/*
-storage/framework/testing/*
-storage/framework/views/*
-
-# Keep directories
-!storage/app/.gitkeep
-!storage/framework/.gitkeep
-!storage/logs/.gitkeep
-!bootstrap/cache/.gitkeep
-
-# Telescope
-storage/telescope/
-
-# Backup
-*.sql
-*.dump
-
-# Scripts temporaires de développement
-*_temp.sh
-*_fix.sh
-*_test.sh
-*_debug.sh
-analyze_*.sh
-audit_*.sh
-diagnostic_*.sh
-fix_*.sh
-test_*.sh
-cleanup_*.sh
-
-# Dossiers temporaires
-/temp/
-/debug/
-/audit/
-/backup/
-/scripts/
-
-# Sauvegardes
-*.backup
-*.bak
+# StudiosDB - Fichiers temporaires
+*.backup*
+BACKUP_*
+backup_*
+analysis_reports/
+storage/audits/
 *.old
-.env.backup*
+*.broken
+*.save
+*.log
+unused_*
 
-
-# Scripts temporaires de développement
-*_temp.sh
-*_fix.sh
-*_test.sh
-*_debug.sh
-analyze_*.sh
-audit_*.sh
-diagnostic_*.sh
-fix_*.sh
-test_*.sh
-cleanup_*.sh
-
-# Dossiers temporaires
-/temp/
-/debug/
-/audit/
-/backup/
-/scripts/
-
-# Sauvegardes
-*.backup
-*.bak
-*.old
-.env.backup*
-
-
-# Scripts temporaires de développement
-*_temp.sh
-*_fix.sh
-*_test.sh
-*_debug.sh
-analyze_*.sh
-audit_*.sh
-diagnostic_*.sh
-fix_*.sh
-test_*.sh
-cleanup_*.sh
-
-# Dossiers temporaires
-/temp/
-/debug/
-/audit/
-/backup/
-/scripts/
-
-# Sauvegardes
-*.backup
-*.bak
-*.old
-.env.backup*
-
-
-# Scripts temporaires finaux
-final_cleanup_*.sh
-commit_*.sh
-fix_*.sh
-create_*.sh
-audit_*.sh
-cleanup_*.sh
-*_temp.sh
-*_backup.sh
-
-# Audits temporaires
-audit_*.md
-!docs/audits/
-!docs/AUDIT_FINAL_v571.md
-
+# Scripts de développement (garder seulement validate-studiosdb.sh)
+*.sh
+!validate-studiosdb.sh
