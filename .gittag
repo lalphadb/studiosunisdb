@@ -1,0 +1,18 @@
+#!/bin/bash
+# Configuration des tags pour StudiosDB
+
+# Format des tags
+TAG_PREFIX="v"
+TAG_FORMAT="${TAG_PREFIX}${VERSION}"
+
+# Messages de tag standardisés
+TAG_MESSAGE_TEMPLATE="Release ${VERSION}
+
+Type: ${RELEASE_TYPE}
+Date: $(date +%Y-%m-%d)
+Author: ${GIT_AUTHOR_NAME}
+
+Changes:
+${CHANGES}
+
+Signed-off-by: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>"

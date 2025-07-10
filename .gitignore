@@ -1,21 +1,68 @@
-/node_modules
-/public/build
+# Laravel
+/vendor/
+/node_modules/
 /public/hot
 /public/storage
 /storage/*.key
-/vendor
-.env
-.env.backup
-.env.production
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-/.fleet
 /.idea
 /.vscode
-*.log
+/.vagrant
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.env
+.env.backup
+.phpunit.result.cache
+docker-compose.override.yml
+
+# IDE
+*.swp
+*.swo
+*~
+.project
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Logs
+/storage/logs/*
+!/storage/logs/.gitkeep
+*.log
+
+# Cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+
+# Testing
+.phpunit.result.cache
+/coverage
+/phpunit.xml
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Compiled assets
+/public/css/
+/public/js/
+/public/mix-manifest.json
+/public/build/
+
+# StudiosDB specific
+/storage/app/exports/*
+!/storage/app/exports/.gitkeep
+/storage/app/imports/*
+!/storage/app/imports/.gitkeep
