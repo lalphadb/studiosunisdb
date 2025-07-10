@@ -1,0 +1,393 @@
+bash: ./analyze-studiosdb-complete.sh: No such file or directory
+<?xml version="1.0" encoding="UTF-8"?>
+<studiosdb_diagnostic_complet>
+  <timestamp>2025-07-10T05:10:53Z</timestamp>
+  <project_root>/home/studiosdb/studiosunisdb/studiosdb-v2</project_root>
+  <fichiers_critiques>
+    <BaseAdminController exists="true">
+      <path>app/Http/Controllers/Admin/BaseAdminController.php</path>
+      <size>8473 bytes</size>
+      <lines>277</lines>
+      <namespace>namespace App\Http\Controllers;</namespace>
+      <class_definition>class BaseAdminController extends Controller</class_definition>
+    </BaseAdminController>
+    <controllers_admin>
+      <controller name="AdminEcoleController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="AdminUserController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="BaseAdminController.php">
+        <extends_base>false</extends_base>
+      </controller>
+      <controller name="CeintureController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="CoursController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="CoursHoraireController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="DashboardController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="EcoleController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="ExportController.php">
+        <extends_base>false</extends_base>
+      </controller>
+      <controller name="FamilleController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="InscriptionSeminaireController.php">
+        <extends_base>false</extends_base>
+      </controller>
+      <controller name="LogController.php">
+        <extends_base>false</extends_base>
+      </controller>
+      <controller name="PaiementController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="PresenceController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="RoleController.php">
+        <extends_base>false</extends_base>
+      </controller>
+      <controller name="SeminaireController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="SessionCoursController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="TelescopeController.php">
+        <extends_base>true</extends_base>
+      </controller>
+      <controller name="UserController.php">
+        <extends_base>true</extends_base>
+      </controller>
+    </controllers_admin>
+    <components_blade>
+      <component name="components/admin/navigation.blade.php" exists="false" />
+      <component name="components/admin/sidebar.blade.php" exists="true" />
+      <component name="components/admin/flash-messages.blade.php" exists="true" />
+      <component name="components/module-header.blade.php" exists="true" />
+      <component name="components/admin-table.blade.php" exists="true" />
+      <component name="components/admin-icon.blade.php" exists="true" />
+      <component name="components/primary-button.blade.php" exists="true" />
+      <component name="components/secondary-button.blade.php" exists="true" />
+      <component name="components/danger-button.blade.php" exists="true" />
+    </components_blade>
+  </fichiers_critiques>
+  <configuration>
+    <php>
+      <version>PHP 8.3.6 (cli) (built: Mar 19 2025 10:08:38) (NTS)</version>
+      <memory_limit>-1</memory_limit>
+      <max_execution_time>0</max_execution_time>
+    </php>
+    <laravel>
+      <version>
+Laravel Framework 12.20.0</version>
+    </laravel>
+    <composer>
+      <package name="laravel/framework" version="*" />
+      <package name="spatie/laravel-permission" version="*" />
+      <package name="laravel/fortify" version="*" />
+      <package name="laravel/telescope" version="*" />
+      <package name="maatwebsite/excel" version="*" />
+      <package name="barryvdh/laravel-dompdf" version="*" />
+    </composer>
+    <env_variables>
+      <APP_ENV>local</APP_ENV>
+      <APP_DEBUG>true</APP_DEBUG>
+      <APP_URL>http://localhost:8001</APP_URL>
+      <DB_CONNECTION>mysql</DB_CONNECTION>
+      <QUEUE_CONNECTION>sync</QUEUE_CONNECTION>
+    </env_variables>
+  </configuration>
+  <database>
+    <migrations>
+      <total>27</total>
+      <doublons>
+        <migration>2025_07_09_114922_add_proprietaire_to_ecoles_table.php</migration>
+        <migration>2025_07_09_154922_add_proprietaire_to_ecoles_table.php</migration>
+      </doublons>
+      <status>
+        <migration>0001_01_01_000000_create_users_table ............................................................................... [1] Ran</migration>
+        <migration>0001_01_01_000001_create_cache_table ............................................................................... [1] Ran</migration>
+        <migration>0001_01_01_000002_create_jobs_table ................................................................................ [1] Ran</migration>
+        <migration>2025_07_06_100001_create_ecoles_table .............................................................................. [1] Ran</migration>
+        <migration>2025_07_06_100002_create_ceintures_table ........................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100003_create_cours_table ............................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100004_create_seminaires_table .......................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100005_create_paiements_table ........................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100006_create_cours_horaires_table ...................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100007_create_sessions_cours_table ...................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100008_create_presences_table ........................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100009_create_inscriptions_cours_table .................................................................. [1] Ran</migration>
+        <migration>2025_07_06_100010_create_inscriptions_seminaires_table ............................................................. [1] Ran</migration>
+        <migration>2025_07_06_100011_create_user_ceintures_table ...................................................................... [1] Ran</migration>
+        <migration>2025_07_06_100012_create_inscriptions_historique_table ............................................................. [1] Ran</migration>
+        <migration>2025_07_06_100013_create_session_notifications_table ............................................................... [1] Ran</migration>
+        <migration>2025_07_06_203351_create_permission_tables ......................................................................... [1] Ran</migration>
+        <migration>2025_07_06_203354_update_users_table_add_ecole ..................................................................... [1] Ran</migration>
+        <migration>2025_07_06_212242_create_activity_log_table ........................................................................ [1] Ran</migration>
+        <migration>2025_07_06_212243_add_event_column_to_activity_log_table ........................................................... [1] Ran</migration>
+        <migration>2025_07_06_212244_add_batch_uuid_column_to_activity_log_table ...................................................... [1] Ran</migration>
+        <migration>2025_07_06_999999_add_all_foreign_keys ............................................................................. [1] Ran</migration>
+        <migration>2025_07_07_135323_add_ecole_id_to_cours_table ...................................................................... [1] Ran</migration>
+        <migration>2025_07_09_114922_add_proprietaire_to_ecoles_table ................................................................. [1] Ran</migration>
+        <migration>2025_07_09_133033_create_telescope_entries_table ................................................................... [1] Ran</migration>
+        <migration>2025_07_09_154922_add_proprietaire_to_ecoles_table ................................................................. [1] Ran</migration>
+        <migration>2025_07_09_231334_add_missing_columns_to_users_table ............................................................... [2] Ran</migration>
+      </status>
+    </migrations>
+    <tables>
+        <table name="activity_log" />
+        <table name="cache" />
+        <table name="cache_locks" />
+        <table name="ceintures" />
+        <table name="cours" />
+        <table name="cours_horaires" />
+        <table name="ecoles" />
+        <table name="failed_jobs" />
+        <table name="inscriptions_cours" />
+        <table name="inscriptions_historique" />
+        <table name="inscriptions_seminaires" />
+        <table name="job_batches" />
+        <table name="jobs" />
+        <table name="migrations" />
+        <table name="model_has_permissions" />
+        <table name="model_has_roles" />
+        <table name="paiements" />
+        <table name="password_reset_tokens" />
+        <table name="permissions" />
+        <table name="presences" />
+        <table name="role_has_permissions" />
+        <table name="roles" />
+        <table name="seminaires" />
+        <table name="session_notifications" />
+        <table name="sessions" />
+        <table name="sessions_cours" />
+        <table name="telescope_entries" />
+        <table name="telescope_entries_tags" />
+        <table name="telescope_monitoring" />
+        <table name="user_ceintures" />
+        <table name="users" />
+    </tables>
+  </database>
+  <modules_views>
+    <module name="dashboard">
+      <view name="index" exists="true" />
+      <view name="admin-ecole" exists="true" />
+      <view name="superadmin" exists="true" />
+    </module>
+    <module name="users">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+    </module>
+    <module name="ecoles">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+    </module>
+    <module name="cours">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+      <view name="clone" exists="true" />
+    </module>
+    <module name="ceintures">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+      <view name="create-masse" exists="true" />
+    </module>
+    <module name="presences">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+      <view name="prise-presence" exists="true" />
+    </module>
+    <module name="paiements">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+      <view name="validation-rapide" exists="true" />
+    </module>
+    <module name="seminaires">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+      <view name="inscriptions" exists="true" />
+    </module>
+    <module name="sessions">
+      <view name="index" exists="true" />
+      <view name="create" exists="true" />
+      <view name="edit" exists="true" />
+      <view name="show" exists="true" />
+    </module>
+  </modules_views>
+  <routes>
+    <route_file name="web.php" exists="true">
+      <route_count>8</route_count>
+    </route_file>
+    <route_file name="admin.php" exists="true">
+      <route_count>99</route_count>
+      <admin_routes>
+        <route>Route::get('/'</route>
+        <route>Route::get('/dashboard'</route>
+        <route>Route::get('/stats'</route>
+        <route>Route::get('/health'</route>
+        <route>Route::prefix('users'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{user}'</route>
+        <route>Route::get('/{user}/edit'</route>
+        <route>Route::put('/{user}'</route>
+        <route>Route::delete('/{user}'</route>
+        <route>Route::post('/{user}/toggle-status'</route>
+        <route>Route::post('/{user}/reset-password'</route>
+        <route>Route::get('/export/all'</route>
+        <route>Route::prefix('ecoles'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{ecole}'</route>
+        <route>Route::get('/{ecole}/edit'</route>
+        <route>Route::put('/{ecole}'</route>
+        <route>Route::delete('/{ecole}'</route>
+        <route>Route::prefix('cours'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{cours}'</route>
+        <route>Route::get('/{cours}/edit'</route>
+        <route>Route::put('/{cours}'</route>
+        <route>Route::delete('/{cours}'</route>
+        <route>Route::prefix('sessions'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{session}'</route>
+        <route>Route::get('/{session}/edit'</route>
+        <route>Route::put('/{session}'</route>
+        <route>Route::delete('/{session}'</route>
+        <route>Route::prefix('cours-horaires'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{coursHoraire}'</route>
+        <route>Route::get('/{coursHoraire}/edit'</route>
+        <route>Route::put('/{coursHoraire}'</route>
+        <route>Route::delete('/{coursHoraire}'</route>
+        <route>Route::post('/{coursHoraire}/dupliquer'</route>
+        <route>Route::prefix('ceintures'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/create-masse'</route>
+        <route>Route::post('/store-masse'</route>
+        <route>Route::prefix('presences'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::delete('/{presence}'</route>
+        <route>Route::prefix('paiements'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{paiement}'</route>
+        <route>Route::delete('/{paiement}'</route>
+        <route>Route::prefix('seminaires'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/create'</route>
+        <route>Route::post('/'</route>
+        <route>Route::get('/{seminaire}'</route>
+        <route>Route::get('/{seminaire}/edit'</route>
+        <route>Route::put('/{seminaire}'</route>
+        <route>Route::delete('/{seminaire}'</route>
+        <route>Route::get('/{seminaire}/inscriptions'</route>
+        <route>Route::prefix('inscriptions-seminaires'</route>
+        <route>Route::get('/'</route>
+        <route>Route::delete('/{inscription}'</route>
+        <route>Route::prefix('roles'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/{role}/edit'</route>
+        <route>Route::put('/{role}'</route>
+        <route>Route::prefix('exports'</route>
+        <route>Route::get('/'</route>
+        <route>Route::get('/logs'</route>
+        <route>Route::prefix('logs'</route>
+        <route>Route::get('/'</route>
+        <route>Route::delete('/clear'</route>
+        <route>Route::get('/telescope'</route>
+        <route>Route::prefix('familles'</route>
+        <route>Route::get('/'</route>
+        <route>Route::prefix('api'</route>
+        <route>Route::get('/users/search'</route>
+        <route>Route::get('/ecoles/list'</route>
+        <route>Route::get('/cours/list'</route>
+        <route>Route::get('/dashboard/quick-stats'</route>
+        <route>Route::prefix('test'</route>
+        <route>Route::get('/permissions'</route>
+        <route>Route::get('/routes'</route>
+      </admin_routes>
+    </route_file>
+    <route_file name="api.php" exists="true">
+      <route_count>7</route_count>
+    </route_file>
+    <route_file name="auth.php" exists="true">
+      <route_count>5</route_count>
+    </route_file>
+  </routes>
+  <permissions_roles>
+    <spatie_configured>false</spatie_configured>
+  </permissions_roles>
+  <assets>
+    <config name="vite.config.js" exists="true" />
+    <config name="tailwind.config.js" exists="true" />
+    <config name="postcss.config.js" exists="true" />
+    <compiled>true</compiled>
+    <build_files>2</build_files>
+  </assets>
+  <logs>
+    <recent_errors>
+    </recent_errors>
+  </logs>
+  <functional_tests>
+    <database_connection>
+
+SUCCESS
+    </database_connection>
+    <auth_test>
+
+USER_EXISTS
+    </auth_test>
+  </functional_tests>
+  <recommandations>
+    <warning>Migrations en double détectées - Nettoyer</warning>
+  </recommandations>
+</studiosdb_diagnostic_complet>
+
+# RÉSUMÉ DU DIAGNOSTIC
+=====================
+
+✅ BaseAdminController: PRÉSENT
+📁 Controllers Admin: 19 fichiers
+📄 Vues Admin: 50 fichiers
+🧩 Components: 23 fichiers
+
+Diagnostic complet généré dans: diagnostic-complet.xml

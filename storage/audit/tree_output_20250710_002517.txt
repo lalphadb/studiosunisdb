@@ -1,0 +1,442 @@
+/home/studiosdb/studiosunisdb/studiosdb-v2
+├── analyze-studiosdb.sh
+├── app
+│   ├── Actions
+│   ├── Console
+│   │   └── Commands
+│   │       ├── SecurityAuditCommand.php
+│   │       ├── TestLoginCommand.php
+│   │       ├── TestStudiosDBAuth.php
+│   │       └── TestUserLogin.php
+│   ├── Exports
+│   │   └── UsersExport.php
+│   ├── Http
+│   │   ├── Controllers
+│   │   │   ├── Admin
+│   │   │   │   ├── AdminEcoleController.php
+│   │   │   │   ├── AdminUserController.php
+│   │   │   │   ├── BaseAdminController.php
+│   │   │   │   ├── CeintureController.php
+│   │   │   │   ├── CoursController.php
+│   │   │   │   ├── CoursHoraireController.php
+│   │   │   │   ├── DashboardController.php
+│   │   │   │   ├── EcoleController.php
+│   │   │   │   ├── ExportController.php
+│   │   │   │   ├── FamilleController.php
+│   │   │   │   ├── InscriptionSeminaireController.php
+│   │   │   │   ├── LogController.php
+│   │   │   │   ├── PaiementController.php
+│   │   │   │   ├── PresenceController.php
+│   │   │   │   ├── RoleController.php
+│   │   │   │   ├── SeminaireController.php
+│   │   │   │   ├── SessionCoursController.php
+│   │   │   │   ├── TelescopeController.php
+│   │   │   │   └── UserController.php
+│   │   │   ├── Auth
+│   │   │   │   ├── AuthenticatedSessionController.php
+│   │   │   │   ├── ConfirmablePasswordController.php
+│   │   │   │   ├── CustomLoginController.php
+│   │   │   │   ├── EmailVerificationNotificationController.php
+│   │   │   │   ├── EmailVerificationPromptController.php
+│   │   │   │   ├── LoginController.php
+│   │   │   │   ├── NewPasswordController.php
+│   │   │   │   ├── PasswordController.php
+│   │   │   │   ├── PasswordResetLinkController.php
+│   │   │   │   ├── RegisteredUserController.php
+│   │   │   │   ├── StudiosDBAuthController.php
+│   │   │   │   └── VerifyEmailController.php
+│   │   │   ├── Controller.php
+│   │   │   ├── LegalController.php
+│   │   │   └── ProfileController.php
+│   │   ├── Kernel.php
+│   │   ├── Middleware
+│   │   │   ├── AdminDataMiddleware.php
+│   │   │   ├── AdminMiddleware.php
+│   │   │   ├── DebugAuthMiddleware.php
+│   │   │   ├── EcoleRestrictionMiddleware.php
+│   │   │   ├── Enforce2FA.php
+│   │   │   ├── LogSuperAdminActions.php
+│   │   │   ├── RedirectIfAuthenticated.php
+│   │   │   ├── SecurityHeaders.php
+│   │   │   └── TelescopeAccess.php
+│   │   └── Requests
+│   │       ├── Admin
+│   │       │   ├── BulkValidatePaiementRequest.php
+│   │       │   ├── BulkValidateSeminaireRequest.php
+│   │       │   ├── CeintureRequest.php
+│   │       │   ├── CoursRequest.php
+│   │       │   ├── EcoleRequest.php
+│   │       │   ├── InscriptionSeminaireRequest.php
+│   │       │   ├── MembreRequest.php
+│   │       │   ├── PaiementRequest.php
+│   │       │   ├── PresenceRequest.php
+│   │       │   ├── QuickBulkValidatePaiementRequest.php
+│   │       │   ├── SeminaireRequest.php
+│   │       │   ├── SessionCoursRequest.php
+│   │       │   ├── SessionRequest.php
+│   │       │   ├── StorePaiementRequest.php
+│   │       │   ├── StoreSeminaireRequest.php
+│   │       │   ├── UpdatePaiementRequest.php
+│   │       │   ├── UpdateSeminaireRequest.php
+│   │       │   └── UserRequest.php
+│   │       ├── Auth
+│   │       │   └── LoginRequest.php
+│   │       └── ProfileUpdateRequest.php
+│   ├── Livewire
+│   │   ├── Actions
+│   │   │   └── Logout.php
+│   │   └── Forms
+│   │       └── LoginForm.php
+│   ├── Models
+│   │   ├── Ceinture.php
+│   │   ├── CoursHoraire.php
+│   │   ├── Cours.php
+│   │   ├── Ecole.php
+│   │   ├── InscriptionCours.php
+│   │   ├── InscriptionHistorique.php
+│   │   ├── InscriptionSeminaire.php
+│   │   ├── Paiement.php
+│   │   ├── Presence.php
+│   │   ├── Seminaire.php
+│   │   ├── SessionCours.php
+│   │   ├── UserCeinture.php
+│   │   ├── User.php
+│   │   └── User.php.backup-20250708
+│   ├── Notifications
+│   ├── Observers
+│   ├── Policies
+│   │   ├── CeinturePolicy.php
+│   │   ├── CoursHorairePolicy.php
+│   │   ├── CoursPolicy.php
+│   │   ├── DashboardPolicy.php
+│   │   ├── EcolePolicy.php
+│   │   ├── InscriptionSeminairePolicy.php
+│   │   ├── LogPolicy.php
+│   │   ├── MembrePolicy.php
+│   │   ├── PaiementPolicy.php
+│   │   ├── PresencePolicy.php
+│   │   ├── SeminairePolicy.php
+│   │   ├── SessionCoursPolicy.php
+│   │   ├── UserCeinturePolicy.php
+│   │   └── UserPolicy.php
+│   ├── Providers
+│   │   ├── AppServiceProvider.php
+│   │   ├── AuthServiceProvider.php
+│   │   ├── EventServiceProvider.php
+│   │   ├── RouteServiceProvider.php
+│   │   ├── StudiosDBAdminServiceProvider.php
+│   │   ├── TelescopeServiceProvider.php
+│   │   ├── ViewServiceProvider.php
+│   │   └── VoltServiceProvider.php
+│   ├── Repositories
+│   │   ├── BaseRepository.php
+│   │   └── UserRepository.php
+│   ├── Rules
+│   ├── Services
+│   │   ├── Cours
+│   │   ├── Monitoring
+│   │   │   └── SuperAdminMonitor.php
+│   │   ├── Payment
+│   │   ├── Presence
+│   │   ├── Report
+│   │   └── User
+│   │       └── UserService.php
+│   ├── Traits
+│   │   ├── HasEcoleScope.php
+│   │   └── MultiTenant.php
+│   ├── version.php
+│   └── View
+│       └── Components
+│           ├── AppLayout.php
+│           └── GuestLayout.php
+├── artisan
+├── audit-studiosdb.sh
+├── bootstrap
+│   ├── app.php
+│   ├── auth_kernel_update.php
+│   ├── cache
+│   │   ├── config.php
+│   │   ├── packages.php
+│   │   ├── routes-v7.php
+│   │   └── services.php
+│   └── providers.php
+├── check_migrations_order.php
+├── cleanup-project.sh
+├── cleanup-report.md
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   ├── session.php
+│   ├── studiosdb_auth.php
+│   ├── studiosdb.php
+│   └── telescope.php
+├── database
+│   ├── database.sqlite
+│   ├── factories
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2025_07_06_100001_create_ecoles_table.php
+│   │   ├── 2025_07_06_100002_create_ceintures_table.php
+│   │   ├── 2025_07_06_100003_create_cours_table.php
+│   │   ├── 2025_07_06_100004_create_seminaires_table.php
+│   │   ├── 2025_07_06_100005_create_paiements_table.php
+│   │   ├── 2025_07_06_100006_create_cours_horaires_table.php
+│   │   ├── 2025_07_06_100007_create_sessions_cours_table.php
+│   │   ├── 2025_07_06_100008_create_presences_table.php
+│   │   ├── 2025_07_06_100009_create_inscriptions_cours_table.php
+│   │   ├── 2025_07_06_100010_create_inscriptions_seminaires_table.php
+│   │   ├── 2025_07_06_100011_create_user_ceintures_table.php
+│   │   ├── 2025_07_06_100012_create_inscriptions_historique_table.php
+│   │   ├── 2025_07_06_100013_create_session_notifications_table.php
+│   │   ├── 2025_07_06_203351_create_permission_tables.php
+│   │   ├── 2025_07_06_203354_update_users_table_add_ecole.php
+│   │   ├── 2025_07_06_212242_create_activity_log_table.php
+│   │   ├── 2025_07_06_212243_add_event_column_to_activity_log_table.php
+│   │   ├── 2025_07_06_212244_add_batch_uuid_column_to_activity_log_table.php
+│   │   ├── 2025_07_06_999999_add_all_foreign_keys.php
+│   │   ├── 2025_07_07_135323_add_ecole_id_to_cours_table.php
+│   │   ├── 2025_07_09_114922_add_proprietaire_to_ecoles_table.php
+│   │   ├── 2025_07_09_133033_create_telescope_entries_table.php
+│   │   ├── 2025_07_09_154922_add_proprietaire_to_ecoles_table.php
+│   │   ├── 2025_07_09_231334_add_missing_columns_to_users_table.php
+│   │   └── validate_order.sh
+│   └── seeders
+│       ├── AdminUsersSeeder.php
+│       ├── AuthUsersSeeder.php
+│       ├── CeintureSeeder.php
+│       ├── CeinturesSeeder.php
+│       ├── CompletePermissionsSeeder.php
+│       ├── CreateLoginUsersSeeder.php
+│       ├── CreateLouisUserSeeder.php
+│       ├── data
+│       │   ├── ceintures.json
+│       │   └── ecoles.json
+│       ├── DatabaseSeeder.php
+│       ├── EcolesSeeder.php
+│       ├── FixLouisUserSeeder.php
+│       ├── PermissionsSeeder.php
+│       ├── TestDataSeeder.php
+│       ├── TestUsersSeeder.php
+│       └── UsersTestSeeder.php
+├── fix-users-structure.sh
+├── full_database_analysis.sh
+├── Makefile
+├── package.json
+├── package-lock.json
+├── phpunit.xml
+├── postcss.config.js
+├── project-analysis-report.xml
+├── PROJECT_STATUS.md
+├── README.md
+├── resources
+│   ├── css
+│   │   └── app.css
+│   ├── js
+│   │   ├── admin.js
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   └── views
+│       ├── admin
+│       │   ├── ceintures
+│       │   │   ├── create.blade.php
+│       │   │   ├── create-masse.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   └── show.blade.php
+│       │   ├── components
+│       │   │   └── metric-cards.blade.php
+│       │   ├── cours
+│       │   │   ├── clone.blade.php
+│       │   │   ├── create.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   └── show.blade.php
+│       │   ├── dashboard
+│       │   │   ├── admin-ecole.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   └── superadmin.blade.php
+│       │   ├── dashboard.blade.php
+│       │   ├── ecoles
+│       │   │   ├── create.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   └── show.blade.php
+│       │   ├── exports
+│       │   │   ├── index.blade.php
+│       │   │   └── users-pdf.blade.php
+│       │   ├── logs
+│       │   │   └── index.blade.php
+│       │   ├── paiements
+│       │   │   ├── actions-masse.blade.php
+│       │   │   ├── create.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   ├── show.blade.php
+│       │   │   └── validation-rapide.blade.php
+│       │   ├── partials
+│       │   │   └── telescope-widget.blade.php
+│       │   ├── presences
+│       │   │   ├── create.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   ├── pdf.blade.php
+│       │   │   ├── prise-presence.blade.php
+│       │   │   └── show.blade.php
+│       │   ├── seminaires
+│       │   │   ├── create.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   ├── inscriptions.blade.php
+│       │   │   ├── inscrire.blade.php
+│       │   │   └── show.blade.php
+│       │   ├── sessions
+│       │   │   ├── create.blade.php
+│       │   │   ├── edit.blade.php
+│       │   │   ├── index.blade.php
+│       │   │   └── show.blade.php
+│       │   └── users
+│       │       ├── _actions.blade.php
+│       │       ├── create.blade.php
+│       │       ├── edit.blade.php
+│       │       ├── index.blade.php
+│       │       └── show.blade.php
+│       ├── auth
+│       │   ├── confirm-password.blade.php
+│       │   ├── forgot-password.blade.php
+│       │   ├── login.blade.php
+│       │   ├── register.blade.php
+│       │   ├── reset-password.blade.php
+│       │   ├── studiosdb-login.blade.php
+│       │   └── verify-email.blade.php
+│       ├── components
+│       │   ├── action-message.blade.php
+│       │   ├── actions-dropdown.blade.php
+│       │   ├── admin
+│       │   │   ├── flash-messages.blade.php
+│       │   │   ├── icon.blade.php
+│       │   │   └── sidebar.blade.php
+│       │   ├── admin-icon.blade.php
+│       │   ├── admin-table.blade.php
+│       │   ├── application-logo.blade.php
+│       │   ├── auth-session-status.blade.php
+│       │   ├── danger-button.blade.php
+│       │   ├── dark-mode-toggle.blade.php
+│       │   ├── dropdown.blade.php
+│       │   ├── dropdown-link.blade.php
+│       │   ├── empty-state.blade.php
+│       │   ├── input-error.blade.php
+│       │   ├── input-label.blade.php
+│       │   ├── modal.blade.php
+│       │   ├── module-header.blade.php
+│       │   ├── nav-link.blade.php
+│       │   ├── primary-button.blade.php
+│       │   ├── responsive-nav-link.blade.php
+│       │   ├── secondary-button.blade.php
+│       │   └── text-input.blade.php
+│       ├── dashboard.blade.php
+│       ├── errors
+│       │   ├── 403.blade.php
+│       │   ├── 404.blade.php
+│       │   ├── 500.blade.php
+│       │   └── minimal.blade.php
+│       ├── layouts
+│       │   ├── admin.blade.php
+│       │   ├── app.blade.php
+│       │   ├── guest.blade.php
+│       │   ├── membre.blade.php
+│       │   └── navigation.blade.php
+│       ├── legal
+│       │   ├── contact.blade.php
+│       │   ├── privacy.blade.php
+│       │   └── terms.blade.php
+│       ├── livewire
+│       │   ├── layout
+│       │   │   └── navigation.blade.php
+│       │   ├── pages
+│       │   │   └── auth
+│       │   │       ├── confirm-password.blade.php
+│       │   │       ├── forgot-password.blade.php
+│       │   │       ├── login.blade.php
+│       │   │       ├── register.blade.php
+│       │   │       ├── reset-password.blade.php
+│       │   │       └── verify-email.blade.php
+│       │   ├── profile
+│       │   │   ├── delete-user-form.blade.php
+│       │   │   ├── update-password-form.blade.php
+│       │   │   └── update-profile-information-form.blade.php
+│       │   └── welcome
+│       │       └── navigation.blade.php
+│       ├── membre
+│       │   └── profil.blade.php
+│       ├── partials
+│       │   ├── admin-footer.blade.php
+│       │   ├── admin-header.blade.php
+│       │   ├── admin-navigation.blade.php
+│       │   └── footer.blade.php
+│       ├── profile
+│       │   ├── edit.blade.php
+│       │   └── partials
+│       │       ├── delete-user-form.blade.php
+│       │       ├── update-password-form.blade.php
+│       │       └── update-profile-information-form.blade.php
+│       ├── profile.blade.php
+│       └── welcome.blade.php
+├── routes
+│   ├── admin.php
+│   ├── api.php
+│   ├── auth.php
+│   ├── console.php
+│   └── web.php
+├── storage
+│   ├── app
+│   │   └── private
+│   ├── audit
+│   │   ├── tree_output_20250709_100228.txt
+│   │   ├── tree_output_20250709_173708.txt
+│   │   ├── tree_output_20250710_002517.txt
+│   │   └── tree_output.txt
+│   ├── framework
+│   │   ├── cache
+│   │   │   └── data
+│   │   ├── sessions
+│   │   ├── testing
+│   │   └── views
+│   └── logs
+├── tailwind.config.js
+├── TECHNICAL_REFERENCE.md
+├── temp_create_users.php
+├── test-connexion-simple.sh
+├── test-login.sh
+├── tests
+│   ├── Feature
+│   │   ├── Auth
+│   │   │   ├── AuthenticationTest.php
+│   │   │   ├── EmailVerificationTest.php
+│   │   │   ├── PasswordConfirmationTest.php
+│   │   │   ├── PasswordResetTest.php
+│   │   │   ├── PasswordUpdateTest.php
+│   │   │   └── RegistrationTest.php
+│   │   ├── ExampleTest.php
+│   │   └── ProfileTest.php
+│   ├── TestCase.php
+│   ├── Traits
+│   │   └── MultiTenantTest.php
+│   └── Unit
+│       └── ExampleTest.php
+├── tree_output.sh
+├── verify_database.php
+└── vite.config.js
+
+93 directories, 347 files
