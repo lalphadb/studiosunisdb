@@ -1,0 +1,11 @@
+..
+├── composer_packages.txt
+├── git_branches.txt
+├── git_history.txt
+├── laravel_about.txt
+├── migration_status.txt
+├── routes_list.txt
+├── run_audit.sh
+└── tree_structure.txt
+
+1 directory, 8 files
