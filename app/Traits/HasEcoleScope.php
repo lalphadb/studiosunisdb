@@ -12,17 +12,37 @@ trait HasEcoleScope
      */
     protected static function bootHasEcoleScope()
     {
-        // Ajouter automatiquement ecole_id lors de la création
-        static::creating(function ($model) {
-            if (Auth::check() && Auth::user()->ecole_id && !$model->ecole_id) {
-                $model->ecole_id = Auth::user()->ecole_id;
-            }
-        });
-
-        // Appliquer automatiquement le scope pour les non-superadmins
+        // Appliquer le scope global seulement dans certaines conditions
         static::addGlobalScope('ecole', function (Builder $builder) {
-            if (Auth::check() && !Auth::user()->hasRole('superadmin')) {
-                $builder->where('ecole_id', Auth::user()->ecole_id);
+            // Ne pas appliquer le scope en console ou pendant le boot
+            if (app()->runningInConsole()) {
+                return;
+            }
+
+            // Ne pas appliquer le scope si on est en train de charger l'utilisateur lui-même
+            if ($builder->getModel() instanceof \App\Models\User) {
+                return;
+            }
+
+            // Vérifier si nous avons un utilisateur en session (pas via auth() pour éviter la récursion)
+            $user = null;
+            if (session()->has('ecole_id')) {
+                // Utiliser l'école de la session si disponible
+                $builder->where($builder->getModel()->getTable() . '.ecole_id', session('ecole_id'));
+                return;
+            }
+
+            // Si nous avons un utilisateur authentifié
+            if (Auth::check()) {
+                $user = Auth::user();
+                
+                // Si l'utilisateur n'est pas super-admin, filtrer par école
+                if ($user && method_exists($user, 'hasRole') && !$user->hasRole('super-admin')) {
+                    $builder->where($builder->getModel()->getTable() . '.ecole_id', $user->ecole_id);
+                    
+                    // Stocker en session pour éviter les requêtes répétées
+                    session(['ecole_id' => $user->ecole_id]);
+                }
             }
         });
     }
@@ -30,44 +50,16 @@ trait HasEcoleScope
     /**
      * Scope pour filtrer par école
      */
-    public function scopeForEcole(Builder $query, $ecoleId): Builder
+    public function scopeForEcole(Builder $query, $ecoleId)
     {
-        return $query->where('ecole_id', $ecoleId);
+        return $query->where($this->getTable() . '.ecole_id', $ecoleId);
     }
 
     /**
-     * Relation avec l'école
+     * Désactiver temporairement le scope école
      */
-    public function ecole()
+    public function scopeWithoutEcoleScope(Builder $query)
     {
-        return $this->belongsTo(\App\Models\Ecole::class);
-    }
-
-    /**
-     * Vérifier si l'enregistrement appartient à une école spécifique
-     */
-    public function belongsToEcole($ecoleId): bool
-    {
-        return $this->ecole_id == $ecoleId;
-    }
-
-    /**
-     * Vérifier si l'utilisateur actuel peut accéder à cet enregistrement
-     */
-    public function canBeAccessedByCurrentUser(): bool
-    {
-        if (!Auth::check()) {
-            return false;
-        }
-
-        $user = Auth::user();
-
-        // Les superadmins peuvent tout voir
-        if ($user->hasRole('superadmin')) {
-            return true;
-        }
-
-        // Les autres utilisateurs ne peuvent voir que leur école
-        return $this->ecole_id === $user->ecole_id;
+        return $query->withoutGlobalScope('ecole');
     }
 }

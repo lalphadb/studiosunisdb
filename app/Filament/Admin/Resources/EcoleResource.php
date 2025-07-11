@@ -17,7 +17,11 @@ class EcoleResource extends Resource
 {
     protected static ?string $model = Ecole::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Configuration';
+
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -129,5 +133,10 @@ class EcoleResource extends Resource
             'create' => Pages\CreateEcole::route('/create'),
             'edit' => Pages\EditEcole::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super-admin');
     }
 }

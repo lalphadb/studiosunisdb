@@ -2,9 +2,9 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\CoursResource\Pages;
-use App\Filament\Admin\Resources\CoursResource\RelationManagers;
-use App\Models\Cours;
+use App\Filament\Admin\Resources\CeintureResource\Pages;
+use App\Filament\Admin\Resources\CeintureResource\RelationManagers;
+use App\Models\Ceinture;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,15 +13,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CoursResource extends Resource
+class CeintureResource extends Resource
 {
-    protected static ?string $model = Cours::class;
+    protected static ?string $model = Ceinture::class;
 
     protected static ?string $navigationGroup = 'Gestion École';
 
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $navigationIcon = 'heroicon-o-star';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -32,26 +32,27 @@ class CoursResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('nom')
                     ->required()
-                    ->maxLength(200),
-                Forms\Components\TextInput::make('code')
+                    ->maxLength(100),
+                Forms\Components\TextInput::make('nom_anglais')
+                    ->maxLength(100),
+                Forms\Components\TextInput::make('couleur_principale')
                     ->required()
-                    ->maxLength(20),
+                    ->maxLength(50),
+                Forms\Components\TextInput::make('couleur_secondaire')
+                    ->maxLength(50),
+                Forms\Components\TextInput::make('ordre')
+                    ->required()
+                    ->numeric(),
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('type')
-                    ->required(),
-                Forms\Components\TextInput::make('niveau')
-                    ->maxLength(50),
-                Forms\Components\TextInput::make('duree_minutes')
+                Forms\Components\TextInput::make('mois_minimum')
                     ->required()
                     ->numeric()
-                    ->default(60),
-                Forms\Components\TextInput::make('capacite_max')
-                    ->numeric(),
-                Forms\Components\TextInput::make('prix_mensuel')
-                    ->numeric(),
-                Forms\Components\TextInput::make('prix_seance')
-                    ->numeric(),
+                    ->default(0),
+                Forms\Components\TextInput::make('cours_minimum')
+                    ->required()
+                    ->numeric()
+                    ->default(0),
                 Forms\Components\Toggle::make('actif')
                     ->required(),
             ]);
@@ -66,21 +67,19 @@ class CoursResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nom')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('code')
+                Tables\Columns\TextColumn::make('nom_anglais')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('type'),
-                Tables\Columns\TextColumn::make('niveau')
+                Tables\Columns\TextColumn::make('couleur_principale')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('duree_minutes')
+                Tables\Columns\TextColumn::make('couleur_secondaire')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('ordre')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('capacite_max')
+                Tables\Columns\TextColumn::make('mois_minimum')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prix_mensuel')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('prix_seance')
+                Tables\Columns\TextColumn::make('cours_minimum')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('actif')
@@ -90,10 +89,6 @@ class CoursResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -121,9 +116,9 @@ class CoursResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCours::route('/'),
-            'create' => Pages\CreateCours::route('/create'),
-            'edit' => Pages\EditCours::route('/{record}/edit'),
+            'index' => Pages\ListCeintures::route('/'),
+            'create' => Pages\CreateCeinture::route('/create'),
+            'edit' => Pages\EditCeinture::route('/{record}/edit'),
         ];
     }
 

@@ -1,0 +1,321 @@
+
+DATABASE ANALYSIS REPORT
+
+Database: studiosdb - 2025-07-11 11:25:32
+
+===============================================
+
+TABLES:
+Tables_in_studiosdb
+cache
+cache_locks
+ceintures
+cours
+cours_horaires
+ecoles
+failed_jobs
+famille_membres
+inscriptions_cours
+inscriptions_seminaires
+job_batches
+jobs
+migrations
+model_has_permissions
+model_has_roles
+paiements
+password_reset_tokens
+permissions
+personal_access_tokens
+presences
+role_has_permissions
+roles
+seminaires
+session_cours
+sessions
+user_ceintures
+users
+
+COLUMNS DETAILS:
+TABLE_NAME	COLUMN_NAME	DATA_TYPE	IS_NULLABLE	COLUMN_KEY	EXTRA
+cache	key	varchar	NO	PRI	
+cache	value	mediumtext	NO		
+cache	expiration	int	NO		
+cache_locks	key	varchar	NO	PRI	
+cache_locks	owner	varchar	NO		
+cache_locks	expiration	int	NO		
+ceintures	id	bigint	NO	PRI	auto_increment
+ceintures	ecole_id	bigint	NO	MUL	
+ceintures	nom	varchar	NO		
+ceintures	nom_anglais	varchar	YES		
+ceintures	couleur_principale	varchar	NO	MUL	
+ceintures	couleur_secondaire	varchar	YES		
+ceintures	ordre	int	NO		
+ceintures	description	text	YES		
+ceintures	mois_minimum	int	NO		
+ceintures	cours_minimum	int	NO		
+ceintures	actif	tinyint	NO	MUL	
+ceintures	created_at	timestamp	YES		
+ceintures	updated_at	timestamp	YES		
+cours	id	bigint	NO	PRI	auto_increment
+cours	ecole_id	bigint	NO	MUL	
+cours	nom	varchar	NO		
+cours	code	varchar	NO		
+cours	description	text	YES		
+cours	type	enum	NO	MUL	
+cours	niveau	varchar	YES	MUL	
+cours	duree_minutes	int	NO		
+cours	capacite_max	int	YES		
+cours	prix_mensuel	decimal	YES		
+cours	prix_seance	decimal	YES		
+cours	actif	tinyint	NO	MUL	
+cours	created_at	timestamp	YES		
+cours	updated_at	timestamp	YES		
+cours	deleted_at	timestamp	YES		
+cours_horaires	id	bigint	NO	PRI	auto_increment
+cours_horaires	cours_id	bigint	NO	MUL	
+cours_horaires	ecole_id	bigint	NO	MUL	
+cours_horaires	jour	tinyint	NO		
+cours_horaires	heure_debut	time	NO		
+cours_horaires	heure_fin	time	NO		
+cours_horaires	salle	varchar	YES		
+cours_horaires	instructeur_id	bigint	YES	MUL	
+cours_horaires	actif	tinyint	NO	MUL	
+cours_horaires	created_at	timestamp	YES		
+cours_horaires	updated_at	timestamp	YES		
+ecoles	id	bigint	NO	PRI	auto_increment
+ecoles	nom	varchar	NO		
+ecoles	code	varchar	NO	UNI	
+ecoles	adresse	varchar	YES		
+ecoles	ville	varchar	YES	MUL	
+ecoles	province	varchar	NO		
+ecoles	code_postal	varchar	YES		
+ecoles	pays	varchar	NO		
+ecoles	telephone	varchar	YES		
+ecoles	email	varchar	YES		
+ecoles	site_web	varchar	YES		
+ecoles	description	text	YES		
+ecoles	logo	varchar	YES		
+ecoles	config	json	YES		
+ecoles	actif	tinyint	NO	MUL	
+ecoles	date_ouverture	date	YES		
+ecoles	created_at	timestamp	YES		
+ecoles	updated_at	timestamp	YES		
+failed_jobs	id	bigint	NO	PRI	auto_increment
+failed_jobs	uuid	varchar	NO	UNI	
+failed_jobs	connection	text	NO		
+failed_jobs	queue	text	NO		
+failed_jobs	payload	longtext	NO		
+failed_jobs	exception	longtext	NO		
+failed_jobs	failed_at	timestamp	NO		DEFAULT_GENERATED
+famille_membres	id	bigint	NO	PRI	auto_increment
+famille_membres	code_famille	varchar	NO	MUL	
+famille_membres	user_id	bigint	NO	MUL	
+famille_membres	ecole_id	bigint	NO	MUL	
+famille_membres	role_famille	enum	NO		
+famille_membres	responsable_id	bigint	YES	MUL	
+famille_membres	actif	tinyint	NO		
+famille_membres	created_at	timestamp	YES		
+famille_membres	updated_at	timestamp	YES		
+inscriptions_cours	id	bigint	NO	PRI	auto_increment
+inscriptions_cours	user_id	bigint	NO	MUL	
+inscriptions_cours	cours_id	bigint	NO	MUL	
+inscriptions_cours	ecole_id	bigint	NO	MUL	
+inscriptions_cours	date_inscription	date	NO	MUL	
+inscriptions_cours	date_fin	date	YES		
+inscriptions_cours	statut	enum	NO	MUL	
+inscriptions_cours	notes	text	YES		
+inscriptions_cours	created_at	timestamp	YES		
+inscriptions_cours	updated_at	timestamp	YES		
+inscriptions_cours	deleted_at	timestamp	YES		
+inscriptions_seminaires	id	bigint	NO	PRI	auto_increment
+inscriptions_seminaires	seminaire_id	bigint	NO	MUL	
+inscriptions_seminaires	user_id	bigint	NO	MUL	
+inscriptions_seminaires	ecole_id	bigint	NO	MUL	
+inscriptions_seminaires	date_inscription	date	NO	MUL	
+inscriptions_seminaires	statut	enum	NO	MUL	
+inscriptions_seminaires	paiement_id	bigint	YES	MUL	
+inscriptions_seminaires	notes	text	YES		
+inscriptions_seminaires	created_at	timestamp	YES		
+inscriptions_seminaires	updated_at	timestamp	YES		
+inscriptions_seminaires	deleted_at	timestamp	YES		
+job_batches	id	varchar	NO	PRI	
+job_batches	name	varchar	NO		
+job_batches	total_jobs	int	NO		
+job_batches	pending_jobs	int	NO		
+job_batches	failed_jobs	int	NO		
+job_batches	failed_job_ids	longtext	NO		
+job_batches	options	mediumtext	YES		
+job_batches	cancelled_at	int	YES		
+job_batches	created_at	int	NO		
+job_batches	finished_at	int	YES		
+jobs	id	bigint	NO	PRI	auto_increment
+jobs	queue	varchar	NO	MUL	
+jobs	payload	longtext	NO		
+jobs	attempts	tinyint	NO		
+jobs	reserved_at	int	YES		
+jobs	available_at	int	NO		
+jobs	created_at	int	NO		
+migrations	id	int	NO	PRI	auto_increment
+migrations	migration	varchar	NO		
+migrations	batch	int	NO		
+model_has_permissions	permission_id	bigint	NO	PRI	
+model_has_permissions	model_type	varchar	NO	PRI	
+model_has_permissions	model_id	bigint	NO	PRI	
+model_has_roles	role_id	bigint	NO	PRI	
+model_has_roles	model_type	varchar	NO	PRI	
+model_has_roles	model_id	bigint	NO	PRI	
+paiements	id	bigint	NO	PRI	auto_increment
+paiements	user_id	bigint	NO	MUL	
+paiements	ecole_id	bigint	NO	MUL	
+paiements	montant	decimal	NO		
+paiements	date_paiement	date	NO	MUL	
+paiements	type_paiement	enum	NO	MUL	
+paiements	methode_paiement	enum	NO		
+paiements	reference_paiement	varchar	YES		
+paiements	statut	enum	NO	MUL	
+paiements	description	text	YES		
+paiements	created_at	timestamp	YES		
+paiements	updated_at	timestamp	YES		
+paiements	deleted_at	timestamp	YES		
+password_reset_tokens	email	varchar	NO	PRI	
+password_reset_tokens	token	varchar	NO		
+password_reset_tokens	created_at	timestamp	YES		
+permissions	id	bigint	NO	PRI	auto_increment
+permissions	name	varchar	NO	MUL	
+permissions	guard_name	varchar	NO		
+permissions	created_at	timestamp	YES		
+permissions	updated_at	timestamp	YES		
+personal_access_tokens	id	bigint	NO	PRI	auto_increment
+personal_access_tokens	tokenable_type	varchar	NO	MUL	
+personal_access_tokens	tokenable_id	bigint	NO		
+personal_access_tokens	name	text	NO		
+personal_access_tokens	token	varchar	NO	UNI	
+personal_access_tokens	abilities	text	YES		
+personal_access_tokens	last_used_at	timestamp	YES		
+personal_access_tokens	expires_at	timestamp	YES		
+personal_access_tokens	created_at	timestamp	YES		
+personal_access_tokens	updated_at	timestamp	YES		
+presences	id	bigint	NO	PRI	auto_increment
+presences	session_cours_id	bigint	NO	MUL	
+presences	user_id	bigint	NO	MUL	
+presences	ecole_id	bigint	NO	MUL	
+presences	status	enum	NO	MUL	
+presences	heure_arrivee	datetime	YES		
+presences	notes	text	YES		
+presences	created_at	timestamp	YES	MUL	
+presences	updated_at	timestamp	YES		
+presences	deleted_at	timestamp	YES		
+role_has_permissions	permission_id	bigint	NO	PRI	
+role_has_permissions	role_id	bigint	NO	PRI	
+roles	id	bigint	NO	PRI	auto_increment
+roles	name	varchar	NO	MUL	
+roles	guard_name	varchar	NO		
+roles	created_at	timestamp	YES		
+roles	updated_at	timestamp	YES		
+seminaires	id	bigint	NO	PRI	auto_increment
+seminaires	ecole_id	bigint	NO	MUL	
+seminaires	nom	varchar	NO		
+seminaires	description	text	YES		
+seminaires	date_debut	datetime	NO		
+seminaires	date_fin	datetime	NO		
+seminaires	lieu	varchar	YES		
+seminaires	instructeur_principal_id	bigint	YES	MUL	
+seminaires	prix	decimal	YES		
+seminaires	capacite_max	int	YES		
+seminaires	statut	enum	NO	MUL	
+seminaires	ouvert_externe	tinyint	NO		
+seminaires	created_at	timestamp	YES		
+seminaires	updated_at	timestamp	YES		
+seminaires	deleted_at	timestamp	YES		
+session_cours	id	bigint	NO	PRI	auto_increment
+session_cours	cours_id	bigint	NO	MUL	
+session_cours	ecole_id	bigint	NO	MUL	
+session_cours	date_debut	datetime	NO		
+session_cours	date_fin	datetime	NO		
+session_cours	instructeur_id	bigint	YES	MUL	
+session_cours	salle	varchar	YES		
+session_cours	capacite_max	int	YES		
+session_cours	statut	enum	NO	MUL	
+session_cours	notes	text	YES		
+session_cours	created_at	timestamp	YES		
+session_cours	updated_at	timestamp	YES		
+session_cours	deleted_at	timestamp	YES		
+sessions	id	varchar	NO	PRI	
+sessions	user_id	bigint	YES	MUL	
+sessions	ip_address	varchar	YES		
+sessions	user_agent	text	YES		
+sessions	payload	longtext	NO		
+sessions	last_activity	int	NO	MUL	
+user_ceintures	id	bigint	NO	PRI	auto_increment
+user_ceintures	user_id	bigint	NO	MUL	
+user_ceintures	ceinture_id	bigint	NO	MUL	
+user_ceintures	ecole_id	bigint	NO	MUL	
+user_ceintures	date_obtention	date	NO	MUL	
+user_ceintures	numero_certificat	varchar	YES	UNI	
+user_ceintures	evaluateur_id	bigint	YES	MUL	
+user_ceintures	notes	text	YES		
+user_ceintures	created_at	timestamp	YES		
+user_ceintures	updated_at	timestamp	YES		
+users	id	bigint	NO	PRI	auto_increment
+users	nom	varchar	NO	MUL	
+users	prenom	varchar	NO		
+users	email	varchar	NO	UNI	
+users	ecole_id	bigint	YES	MUL	
+users	code_utilisateur	varchar	YES	UNI	
+users	email_verified_at	timestamp	YES		
+users	password	varchar	NO		
+users	remember_token	varchar	YES		
+users	created_at	timestamp	YES		
+users	updated_at	timestamp	YES		
+users	telephone	varchar	YES		
+users	date_naissance	date	YES		
+users	sexe	enum	YES		
+users	adresse	varchar	YES		
+users	ville	varchar	YES		
+users	province	varchar	YES		
+users	code_postal	varchar	YES		
+users	pays	varchar	NO		
+users	photo	varchar	YES		
+users	contact_urgence_nom	varchar	YES		
+users	contact_urgence_telephone	varchar	YES		
+users	notes	text	YES		
+users	actif	tinyint	NO	MUL	
+users	derniere_connexion	datetime	YES		
+users	deleted_at	timestamp	YES		
+
+FOREIGN KEYS:
+TABLE_NAME	COLUMN_NAME	REFERENCED_TABLE_NAME	REFERENCED_COLUMN_NAME
+model_has_permissions	permission_id	permissions	id
+model_has_roles	role_id	roles	id
+role_has_permissions	permission_id	permissions	id
+role_has_permissions	role_id	roles	id
+users	ecole_id	ecoles	id
+ceintures	ecole_id	ecoles	id
+user_ceintures	ceinture_id	ceintures	id
+user_ceintures	ecole_id	ecoles	id
+user_ceintures	evaluateur_id	users	id
+user_ceintures	user_id	users	id
+cours_horaires	cours_id	cours	id
+cours_horaires	ecole_id	ecoles	id
+cours_horaires	instructeur_id	users	id
+famille_membres	ecole_id	ecoles	id
+famille_membres	responsable_id	users	id
+famille_membres	user_id	users	id
+cours	ecole_id	ecoles	id
+session_cours	cours_id	cours	id
+session_cours	ecole_id	ecoles	id
+session_cours	instructeur_id	users	id
+presences	ecole_id	ecoles	id
+presences	session_cours_id	session_cours	id
+presences	user_id	users	id
+inscriptions_cours	cours_id	cours	id
+inscriptions_cours	ecole_id	ecoles	id
+inscriptions_cours	user_id	users	id
+paiements	ecole_id	ecoles	id
+paiements	user_id	users	id
+seminaires	ecole_id	ecoles	id
+seminaires	instructeur_principal_id	users	id
+inscriptions_seminaires	ecole_id	ecoles	id
+inscriptions_seminaires	paiement_id	paiements	id
+inscriptions_seminaires	seminaire_id	seminaires	id
+inscriptions_seminaires	user_id	users	id

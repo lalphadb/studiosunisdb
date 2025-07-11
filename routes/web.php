@@ -7,5 +7,14 @@ Route::get('/', function () {
     return redirect('/admin');
 });
 
-// Toutes les routes admin sont gérées par Filament
-// Les routes d'authentification sont gérées par Filament
+// Route de fallback pour 'login' - redirige vers Filament
+Route::get('/login', function () {
+    return redirect('/admin/login');
+})->name('login');
+
+// Filament gère toutes les routes /admin/*
+
+// Redirection après déconnexion
+Route::get('/logout', function () {
+    return redirect('/admin/login');
+})->name('logout');

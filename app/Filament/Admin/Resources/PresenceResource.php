@@ -2,9 +2,9 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Filament\Admin\Resources\CoursResource\Pages;
-use App\Filament\Admin\Resources\CoursResource\RelationManagers;
-use App\Models\Cours;
+use App\Filament\Admin\Resources\PresenceResource\Pages;
+use App\Filament\Admin\Resources\PresenceResource\RelationManagers;
+use App\Models\Presence;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,47 +13,34 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CoursResource extends Resource
+class PresenceResource extends Resource
 {
-    protected static ?string $model = Cours::class;
+    protected static ?string $model = Presence::class;
 
     protected static ?string $navigationGroup = 'Gestion École';
 
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $navigationIcon = 'heroicon-o-check-circle';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('session_cours_id')
+                    ->required()
+                    ->numeric(),
+                Forms\Components\TextInput::make('user_id')
+                    ->required()
+                    ->numeric(),
                 Forms\Components\TextInput::make('ecole_id')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('nom')
-                    ->required()
-                    ->maxLength(200),
-                Forms\Components\TextInput::make('code')
-                    ->required()
-                    ->maxLength(20),
-                Forms\Components\Textarea::make('description')
+                Forms\Components\TextInput::make('status')
+                    ->required(),
+                Forms\Components\DateTimePicker::make('heure_arrivee'),
+                Forms\Components\Textarea::make('notes')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('type')
-                    ->required(),
-                Forms\Components\TextInput::make('niveau')
-                    ->maxLength(50),
-                Forms\Components\TextInput::make('duree_minutes')
-                    ->required()
-                    ->numeric()
-                    ->default(60),
-                Forms\Components\TextInput::make('capacite_max')
-                    ->numeric(),
-                Forms\Components\TextInput::make('prix_mensuel')
-                    ->numeric(),
-                Forms\Components\TextInput::make('prix_seance')
-                    ->numeric(),
-                Forms\Components\Toggle::make('actif')
-                    ->required(),
             ]);
     }
 
@@ -61,30 +48,19 @@ class CoursResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('session_cours_id')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('user_id')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('ecole_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nom')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('code')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('type'),
-                Tables\Columns\TextColumn::make('niveau')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('duree_minutes')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('heure_arrivee')
+                    ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('capacite_max')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('prix_mensuel')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('prix_seance')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\IconColumn::make('actif')
-                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -121,9 +97,9 @@ class CoursResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCours::route('/'),
-            'create' => Pages\CreateCours::route('/create'),
-            'edit' => Pages\EditCours::route('/{record}/edit'),
+            'index' => Pages\ListPresences::route('/'),
+            'create' => Pages\CreatePresence::route('/create'),
+            'edit' => Pages\EditPresence::route('/{record}/edit'),
         ];
     }
 
