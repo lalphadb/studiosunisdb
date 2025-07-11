@@ -1,0 +1,19 @@
+[
+    {
+        "id": 1,
+        "nom": "École Test StudiosDB",
+        "code": "TEST01",
+        "adresse": "123 Rue du Karaté",
+        "ville": "Québec",
+        "province": "QC",
+        "code_postal": "G1A 1A1",
+        "telephone": "418-123-4567",
+        "email": "info@studiosdb-test.ca",
+        "site_web": "https:\/\/studiosdb-test.ca",
+        "description": "École de test pour StudiosDB",
+        "proprietaire": "Studios Unis",
+        "active": true,
+        "created_at": "2025-07-07T21:53:57.000000Z",
+        "updated_at": "2025-07-07T21:53:57.000000Z"
+    }
+]
