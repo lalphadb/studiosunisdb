@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, Notifiable, HasRoles;
 
@@ -34,9 +36,19 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire']);
+    }
+
     public function getNomCompletAttribute()
     {
         return $this->prenom . ' ' . $this->nom;
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->nom_complet;
     }
 
     public function ecole()
