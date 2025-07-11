@@ -21,8 +21,19 @@ class SuperAdminSeeder extends Seeder
         $ecole = Ecole::where('code', 'STU-001')->first();
         
         if (!$ecole) {
-            $this->command->error('   ❌ École STU-001 non trouvée!');
-            return;
+            $this->command->warn('   ⚠️  École STU-001 non trouvée, création d\'une école par défaut...');
+            $ecole = Ecole::create([
+                'nom' => 'StudiosUnis Siège Social',
+                'code' => 'STU-001',
+                'adresse' => '123 Rue Principale',
+                'ville' => 'Montréal',
+                'province' => 'QC',
+                'code_postal' => 'H1A 1A1',
+                'pays' => 'Canada',
+                'telephone' => '514-555-0001',
+                'email' => 'info@studiosdb.ca',
+                'actif' => true,
+            ]);
         }
         
         // Créer le SuperAdmin
@@ -45,5 +56,6 @@ class SuperAdminSeeder extends Seeder
         $superadmin->assignRole('superadmin');
         
         $this->command->info('   ✓ SuperAdmin créé: superadmin@studiosdb.ca');
+        $this->command->info('   ✓ Mot de passe: StudiosDB2024!');
     }
 }
