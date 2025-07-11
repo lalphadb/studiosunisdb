@@ -10,6 +10,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
 
 class EcoleResource extends Resource
 {
@@ -17,87 +24,95 @@ class EcoleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
     
-    protected static ?string $navigationGroup = 'Configuration';
-    
-    protected static ?int $navigationSort = 10;
+    protected static ?string $navigationLabel = 'Écoles';
     
     protected static ?string $modelLabel = 'École';
     
     protected static ?string $pluralModelLabel = 'Écoles';
+    
+    protected static ?string $navigationGroup = 'Configuration';
+    
+    protected static ?int $navigationSort = 10;
+
+    /**
+     * Restriction : Seuls les super-admin peuvent accéder aux écoles
+     */
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informations générales')
+                Forms\Components\Section::make('Informations de base')
                     ->schema([
-                        Forms\Components\Grid::make(2)
-                            ->schema([
-                                Forms\Components\TextInput::make('nom')
-                                    ->label('Nom de l\'école')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('code')
-                                    ->label('Code école')
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->maxLength(10)
-                                    ->disabled(fn () => !auth()->user()->hasRole('super-admin'))
-                                    ->helperText('Code unique de 3-4 caractères'),
-                            ]),
-                        Forms\Components\Grid::make(2)
-                            ->schema([
-                                Forms\Components\TextInput::make('email')
-                                    ->label('Courriel')
-                                    ->email()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('telephone')
-                                    ->label('Téléphone')
-                                    ->tel()
-                                    ->maxLength(20),
-                            ]),
-                    ]),
-                
+                        TextInput::make('nom')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Ex: École St-Émile')
+                            ->helperText('Nom complet de l\'école'),
+
+                        TextInput::make('code')
+                            ->required()
+                            ->maxLength(4)
+                            ->unique(Ecole::class, 'code', ignoreRecord: true)
+                            ->placeholder('Ex: SEM')
+                            ->helperText('Code unique 3-4 caractères')
+                            ->uppercase(),
+                    ])
+                    ->columns(2),
+
                 Forms\Components\Section::make('Adresse')
                     ->schema([
-                        Forms\Components\TextInput::make('adresse')
-                            ->label('Adresse')
+                        TextInput::make('adresse')
                             ->maxLength(255)
-                            ->columnSpanFull(),
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\TextInput::make('ville')
-                                    ->label('Ville')
-                                    ->maxLength(100),
-                                Forms\Components\TextInput::make('code_postal')
-                                    ->label('Code postal')
-                                    ->maxLength(10),
-                                Forms\Components\Select::make('province')
-                                    ->label('Province')
-                                    ->options([
-                                        'QC' => 'Québec',
-                                        'ON' => 'Ontario',
-                                        'NB' => 'Nouveau-Brunswick',
-                                        'AB' => 'Alberta',
-                                        'BC' => 'Colombie-Britannique',
-                                        'MB' => 'Manitoba',
-                                        'NS' => 'Nouvelle-Écosse',
-                                        'PE' => 'Île-du-Prince-Édouard',
-                                        'SK' => 'Saskatchewan',
-                                        'NL' => 'Terre-Neuve-et-Labrador',
-                                    ])
-                                    ->default('QC'),
-                            ]),
-                    ]),
-                
-                Forms\Components\Section::make('Configuration')
+                            ->placeholder('Ex: 2200 Rue de la Faune'),
+
+                        TextInput::make('ville')
+                            ->maxLength(255)
+                            ->placeholder('Ex: St-Émile'),
+
+                        TextInput::make('code_postal')
+                            ->maxLength(7)
+                            ->placeholder('Ex: G3E 1K6')
+                            ->mask('A9A 9A9'),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Contact')
                     ->schema([
-                        Forms\Components\Toggle::make('actif')
-                            ->label('École active')
+                        TextInput::make('telephone')
+                            ->tel()
+                            ->maxLength(20)
+                            ->placeholder('Ex: (418) 555-1234'),
+
+                        TextInput::make('email')
+                            ->email()
+                            ->maxLength(255)
+                            ->placeholder('Ex: ecole@studiosunis.com'),
+
+                        Toggle::make('actif')
                             ->default(true)
-                            ->helperText('Une école désactivée empêche la connexion de tous ses utilisateurs')
-                            ->disabled(fn ($record) => !auth()->user()->hasRole('super-admin') && $record?->id === auth()->user()->ecole_id),
-                    ]),
+                            ->helperText('École active dans le système'),
+                    ])
+                    ->columns(3),
             ]);
     }
 
@@ -105,68 +120,70 @@ class EcoleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('code')
-                    ->label('Code')
-                    ->badge()
+                TextColumn::make('nom')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('nom')
-                    ->label('Nom')
+                    ->sortable()
+                    ->weight(FontWeight::SemiBold),
+
+                TextColumn::make('code')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('ville')
-                    ->label('Ville')
-                    ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Courriel')
-                    ->icon('heroicon-m-envelope')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('telephone')
-                    ->label('Téléphone')
-                    ->icon('heroicon-m-phone')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('users_count')
-                    ->label('Utilisateurs')
-                    ->counts('users')
+                    ->sortable()
                     ->badge()
                     ->color('primary'),
-                Tables\Columns\TextColumn::make('cours_count')
-                    ->label('Cours')
-                    ->counts('cours')
+
+                TextColumn::make('ville')
+                    ->searchable()
+                    ->sortable()
+                    ->description(fn (Ecole $record): string => $record->code_postal ?? ''),
+
+                TextColumn::make('users_count')
+                    ->counts('users')
+                    ->label('Utilisateurs')
+                    ->sortable()
+                    ->alignCenter()
                     ->badge()
                     ->color('success'),
-                Tables\Columns\IconColumn::make('actif')
-                    ->label('Active')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créée le')
-                    ->dateTime('d/m/Y')
+
+                TextColumn::make('cours_count')
+                    ->counts('cours')
+                    ->label('Cours')
+                    ->sortable()
+                    ->alignCenter()
+                    ->badge()
+                    ->color('info'),
+
+                IconColumn::make('actif')
+                    ->boolean()
+                    ->sortable()
+                    ->alignCenter(),
+
+                TextColumn::make('created_at')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('actif')
-                    ->label('Statut')
-                    ->boolean()
-                    ->trueLabel('Actives seulement')
-                    ->falseLabel('Inactives seulement')
-                    ->native(false),
+                SelectFilter::make('actif')
+                    ->options([
+                        '1' => 'Actives',
+                        '0' => 'Inactives',
+                    ])
+                    ->default('1'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => 
-                        auth()->user()->hasRole('super-admin') || 
-                        $record->id === auth()->user()->ecole_id
-                    ),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn () => auth()->user()->hasRole('super-admin')),
+                        ->requiresConfirmation(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('nom')
+            ->emptyStateHeading('Aucune école')
+            ->emptyStateDescription('Commencez par ajouter votre première école StudiosUnisDB.')
+            ->emptyStateIcon('heroicon-o-building-office');
     }
 
     public static function getRelations(): array
@@ -184,49 +201,5 @@ class EcoleResource extends Resource
             'view' => Pages\ViewEcole::route('/{record}'),
             'edit' => Pages\EditEcole::route('/{record}/edit'),
         ];
-    }
-
-    // Filtre multi-tenant : admin voit seulement son école
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-        
-        // Si l'utilisateur n'est pas super-admin, montrer seulement son école
-        if (!auth()->user()->hasRole('super-admin')) {
-            $query->where('id', auth()->user()->ecole_id);
-        }
-        
-        return $query;
-    }
-
-    // Permissions
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasAnyRole(['super-admin', 'admin']);
-    }
-
-    public static function canCreate(): bool
-    {
-        // Seul le super-admin peut créer de nouvelles écoles
-        return auth()->user()->hasRole('super-admin');
-    }
-
-    public static function canEdit($record): bool
-    {
-        // Super-admin peut tout éditer
-        // Admin peut éditer seulement son école
-        return auth()->user()->hasRole('super-admin') || 
-               (auth()->user()->hasRole('admin') && $record->id === auth()->user()->ecole_id);
-    }
-
-    public static function canDelete($record): bool
-    {
-        // Seul le super-admin peut supprimer des écoles
-        return auth()->user()->hasRole('super-admin');
-    }
-
-    public static function canDeleteAny(): bool
-    {
-        return auth()->user()->hasRole('super-admin');
     }
 }

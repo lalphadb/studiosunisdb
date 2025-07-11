@@ -11,6 +11,17 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TimePicker;
+use Filament\Tables\Filters\SelectFilter;
 
 class CoursResource extends Resource
 {
@@ -18,122 +29,200 @@ class CoursResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     
-    protected static ?string $navigationGroup = 'Gestion École';
-    
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationLabel = 'Cours';
     
     protected static ?string $modelLabel = 'Cours';
     
     protected static ?string $pluralModelLabel = 'Cours';
+    
+    protected static ?string $navigationGroup = 'Gestion École';
+    
+    protected static ?int $navigationSort = 2;
+
+    /**
+     * Scope multi-tenant : filtrer selon l'école de l'utilisateur connecté
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        // Super-admin peut voir tous les cours
+        if (auth()->user()?->hasRole('super-admin')) {
+            return $query;
+        }
+
+        // Autres utilisateurs voient seulement les cours de leur école
+        return $query->where('ecole_id', auth()->user()?->ecole_id);
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informations du cours')
+                Forms\Components\Section::make('Informations de base')
                     ->schema([
-                        Forms\Components\TextInput::make('nom')
-                            ->label('Nom du cours')
+                        TextInput::make('nom')
                             ->required()
-                            ->maxLength(255),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
+                            ->maxLength(255)
+                            ->placeholder('Ex: Karaté Enfants 6-8 ans'),
+
+                        Textarea::make('description')
+                            ->maxLength(1000)
                             ->rows(3)
-                            ->columnSpanFull(),
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\Select::make('type')
-                                    ->label('Type de cours')
-                                    ->options([
-                                        'regulier' => 'Régulier',
-                                        'special' => 'Spécial',
-                                        'seminaire' => 'Séminaire',
-                                    ])
-                                    ->default('regulier')
-                                    ->required(),
-                                Forms\Components\TextInput::make('niveau_requis')
-                                    ->label('Niveau requis')
-                                    ->placeholder('Ex: Ceinture jaune')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('duree_minutes')
-                                    ->label('Durée (minutes)')
-                                    ->numeric()
-                                    ->default(60)
-                                    ->required()
-                                    ->minValue(15)
-                                    ->maxValue(240),
-                            ]),
-                    ]),
-                
-                Forms\Components\Section::make('Capacité et restrictions')
+                            ->placeholder('Description du cours...'),
+
+                        Select::make('ecole_id')
+                            ->label('École')
+                            ->relationship('ecole', 'nom')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn () => auth()->user()?->hasRole('super-admin'))
+                            ->default(fn () => auth()->user()?->ecole_id),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Type et niveau')
                     ->schema([
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\TextInput::make('capacite_max')
-                                    ->label('Capacité maximale')
-                                    ->numeric()
-                                    ->default(20)
-                                    ->minValue(1)
-                                    ->maxValue(100),
-                                Forms\Components\TextInput::make('age_minimum')
-                                    ->label('Âge minimum')
-                                    ->numeric()
-                                    ->minValue(3)
-                                    ->maxValue(99),
-                                Forms\Components\TextInput::make('age_maximum')
-                                    ->label('Âge maximum')
-                                    ->numeric()
-                                    ->minValue(3)
-                                    ->maxValue(99),
-                            ]),
-                    ]),
-                
+                        Select::make('type')
+                            ->options([
+                                'regulier' => 'Régulier',
+                                'special' => 'Spécial',
+                                'seminaire' => 'Séminaire',
+                            ])
+                            ->default('regulier')
+                            ->required(),
+
+                        TextInput::make('niveau_requis')
+                            ->label('Niveau requis')
+                            ->maxLength(255)
+                            ->placeholder('Ex: Ceinture jaune minimum'),
+
+                        TextInput::make('age_minimum')
+                            ->label('Âge minimum')
+                            ->numeric()
+                            ->minValue(3)
+                            ->maxValue(99),
+
+                        TextInput::make('age_maximum')
+                            ->label('Âge maximum')
+                            ->numeric()
+                            ->minValue(3)
+                            ->maxValue(99),
+                    ])
+                    ->columns(4),
+
+                Forms\Components\Section::make('Capacité et durée')
+                    ->schema([
+                        TextInput::make('capacite_max')
+                            ->label('Capacité maximale')
+                            ->numeric()
+                            ->default(20)
+                            ->minValue(1)
+                            ->maxValue(100)
+                            ->required(),
+
+                        TextInput::make('duree_minutes')
+                            ->label('Durée (minutes)')
+                            ->numeric()
+                            ->default(60)
+                            ->minValue(15)
+                            ->maxValue(240)
+                            ->required(),
+
+                        ColorPicker::make('couleur_calendrier')
+                            ->label('Couleur calendrier')
+                            ->default('#3B82F6'),
+                    ])
+                    ->columns(3),
+
                 Forms\Components\Section::make('Tarification')
                     ->schema([
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\TextInput::make('prix_mensuel')
-                                    ->label('Prix mensuel ($)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01),
-                                Forms\Components\TextInput::make('prix_seance')
-                                    ->label('Prix par séance ($)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01),
-                                Forms\Components\TextInput::make('prix_carte_10')
-                                    ->label('Prix carte 10 séances ($)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01),
-                            ]),
-                    ]),
-                
-                Forms\Components\Section::make('Configuration')
+                        TextInput::make('prix_mensuel')
+                            ->label('Prix mensuel')
+                            ->numeric()
+                            ->prefix('$')
+                            ->step(0.01)
+                            ->minValue(0),
+
+                        TextInput::make('prix_seance')
+                            ->label('Prix par séance')
+                            ->numeric()
+                            ->prefix('$')
+                            ->step(0.01)
+                            ->minValue(0),
+
+                        TextInput::make('prix_carte_10')
+                            ->label('Prix carte 10 séances')
+                            ->numeric()
+                            ->prefix('$')
+                            ->step(0.01)
+                            ->minValue(0),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Horaires')
                     ->schema([
-                        Forms\Components\Grid::make(2)
+                        Repeater::make('horaires')
+                            ->relationship()
                             ->schema([
-                                Forms\Components\ColorPicker::make('couleur_calendrier')
-                                    ->label('Couleur dans le calendrier')
-                                    ->default('#3B82F6'),
-                                Forms\Components\Toggle::make('inscription_requise')
-                                    ->label('Inscription requise')
-                                    ->default(true)
-                                    ->helperText('Les étudiants doivent-ils s\'inscrire à ce cours?'),
-                            ]),
-                        Forms\Components\Toggle::make('actif')
-                            ->label('Cours actif')
-                            ->default(true)
-                            ->columnSpanFull(),
+                                Select::make('jour_semaine')
+                                    ->label('Jour')
+                                    ->options([
+                                        1 => 'Lundi',
+                                        2 => 'Mardi',
+                                        3 => 'Mercredi',
+                                        4 => 'Jeudi',
+                                        5 => 'Vendredi',
+                                        6 => 'Samedi',
+                                        7 => 'Dimanche',
+                                    ])
+                                    ->required(),
+
+                                TimePicker::make('heure_debut')
+                                    ->label('Heure de début')
+                                    ->required()
+                                    ->seconds(false),
+
+                                TimePicker::make('heure_fin')
+                                    ->label('Heure de fin')
+                                    ->required()
+                                    ->seconds(false),
+
+                                TextInput::make('salle')
+                                    ->maxLength(255)
+                                    ->placeholder('Ex: Dojo 1'),
+
+                                Select::make('instructeur_id')
+                                    ->label('Instructeur')
+                                    ->relationship('instructeur', 'nom')
+                                    ->searchable()
+                                    ->preload(),
+
+                                Toggle::make('actif')
+                                    ->default(true),
+                            ])
+                            ->columns(3)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => 
+                                isset($state['jour_semaine']) && isset($state['heure_debut']) 
+                                    ? ['', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][$state['jour_semaine']] . ' ' . $state['heure_debut']
+                                    : null
+                            ),
                     ]),
-                
-                // École automatiquement assignée pour les admins
-                Forms\Components\Hidden::make('ecole_id')
-                    ->default(fn () => auth()->user()->ecole_id),
+
+                Forms\Components\Section::make('Options')
+                    ->schema([
+                        Toggle::make('inscription_requise')
+                            ->label('Inscription requise')
+                            ->default(true)
+                            ->helperText('Les membres doivent s\'inscrire avant de participer'),
+
+                        Toggle::make('actif')
+                            ->default(true)
+                            ->helperText('Cours visible et disponible pour inscription'),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -141,85 +230,87 @@ class CoursResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nom')
-                    ->label('Nom du cours')
+                TextColumn::make('nom')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Type')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'regulier' => 'primary',
-                        'special' => 'warning',
-                        'seminaire' => 'success',
-                    }),
-                Tables\Columns\TextColumn::make('ecole.nom')
+                    ->sortable()
+                    ->weight(FontWeight::SemiBold)
+                    ->description(fn (Cours $record): ?string => $record->description),
+
+                TextColumn::make('ecole.nom')
                     ->label('École')
                     ->sortable()
-                    ->visible(fn () => auth()->user()->hasRole('super-admin')),
-                Tables\Columns\TextColumn::make('niveau_requis')
-                    ->label('Niveau')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('capacite_max')
-                    ->label('Capacité')
-                    ->suffix(' places'),
-                Tables\Columns\TextColumn::make('inscriptions_count')
-                    ->label('Inscrits')
-                    ->counts('inscriptions')
                     ->badge()
-                    ->color(fn ($record) => 
-                        $record->inscriptions_count >= $record->capacite_max ? 'danger' : 'success'
-                    ),
-                Tables\Columns\TextColumn::make('duree_minutes')
+                    ->color('primary')
+                    ->visible(fn () => auth()->user()?->hasRole('super-admin')),
+
+                TextColumn::make('type')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'regulier' => 'success',
+                        'special' => 'warning',
+                        'seminaire' => 'info',
+                        default => 'gray',
+                    }),
+
+                TextColumn::make('capacite_max')
+                    ->label('Capacité')
+                    ->alignCenter()
+                    ->suffix(' pers.')
+                    ->sortable(),
+
+                TextColumn::make('duree_minutes')
                     ->label('Durée')
+                    ->alignCenter()
                     ->suffix(' min')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('prix_mensuel')
+                    ->sortable(),
+
+                TextColumn::make('prix_mensuel')
                     ->label('Prix/mois')
                     ->money('CAD')
                     ->sortable(),
-                Tables\Columns\ColorColumn::make('couleur_calendrier')
-                    ->label('Couleur')
+
+                TextColumn::make('inscriptions_count')
+                    ->counts('inscriptions')
+                    ->label('Inscrits')
+                    ->badge()
+                    ->color('success')
+                    ->sortable(),
+
+                IconColumn::make('actif')
+                    ->boolean()
+                    ->sortable()
+                    ->alignCenter(),
+
+                TextColumn::make('created_at')
+                    ->label('Créé le')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('actif')
-                    ->label('Actif')
-                    ->boolean(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Type de cours')
+                SelectFilter::make('ecole_id')
+                    ->label('École')
+                    ->relationship('ecole', 'nom')
+                    ->visible(fn () => auth()->user()?->hasRole('super-admin')),
+
+                SelectFilter::make('type')
                     ->options([
                         'regulier' => 'Régulier',
                         'special' => 'Spécial',
                         'seminaire' => 'Séminaire',
                     ]),
-                Tables\Filters\TernaryFilter::make('actif')
+
+                SelectFilter::make('actif')
                     ->label('Statut')
-                    ->boolean()
-                    ->trueLabel('Actifs seulement')
-                    ->falseLabel('Inactifs seulement')
-                    ->native(false),
-                Tables\Filters\Filter::make('complet')
-                    ->label('Cours complets')
-                    ->query(fn (Builder $query): Builder => 
-                        $query->whereColumn('inscriptions_count', '>=', 'capacite_max')
-                    ),
+                    ->options([
+                        '1' => 'Actifs',
+                        '0' => 'Inactifs',
+                    ])
+                    ->default('1'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('duplicate')
-                    ->label('Dupliquer')
-                    ->icon('heroicon-o-document-duplicate')
-                    ->action(function (Cours $record): void {
-                        $newCours = $record->replicate();
-                        $newCours->nom = $record->nom . ' (Copie)';
-                        $newCours->save();
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Dupliquer le cours')
-                    ->modalDescription('Voulez-vous créer une copie de ce cours?')
-                    ->modalSubmitActionLabel('Oui, dupliquer'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -227,7 +318,10 @@ class CoursResource extends Resource
                         ->requiresConfirmation(),
                 ]),
             ])
-            ->defaultSort('nom');
+            ->defaultSort('nom')
+            ->emptyStateHeading('Aucun cours')
+            ->emptyStateDescription('Commencez par créer votre premier cours.')
+            ->emptyStateIcon('heroicon-o-academic-cap');
     }
 
     public static function getRelations(): array
@@ -247,43 +341,17 @@ class CoursResource extends Resource
         ];
     }
 
-    // Filtre multi-tenant
-    public static function getEloquentQuery(): Builder
+    public static function getNavigationBadge(): ?string
     {
-        $query = parent::getEloquentQuery()
-            ->withCount('inscriptions');
-        
-        // Admin voit seulement les cours de son école
-        if (!auth()->user()->hasRole('super-admin')) {
-            $query->where('ecole_id', auth()->user()->ecole_id);
+        if (auth()->user()?->hasRole('super-admin')) {
+            return (string) Cours::count();
         }
-        
-        return $query;
+
+        return (string) Cours::where('ecole_id', auth()->user()?->ecole_id)->count();
     }
 
-    // Permissions - Les admins peuvent tout faire pour leur école
-    public static function canViewAny(): bool
+    public static function getNavigationBadgeColor(): string|array|null
     {
-        return auth()->user()->hasAnyRole(['super-admin', 'admin', 'gestionnaire']);
-    }
-
-    public static function canCreate(): bool
-    {
-        return auth()->user()->hasAnyRole(['super-admin', 'admin']);
-    }
-
-    public static function canEdit($record): bool
-    {
-        return auth()->user()->hasAnyRole(['super-admin', 'admin']);
-    }
-
-    public static function canDelete($record): bool
-    {
-        // Empêcher la suppression si des inscriptions existent
-        if ($record->inscriptions()->exists()) {
-            return false;
-        }
-        
-        return auth()->user()->hasAnyRole(['super-admin', 'admin']);
+        return 'info';
     }
 }
