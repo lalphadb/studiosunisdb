@@ -1,0 +1,102 @@
+/* StudiosDB Custom Styles */
+
+/* Amélioration des couleurs générales */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    --warning-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Widgets colorés */
+.fi-wi-stats-overview-stat {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Navigation colorée */
+.fi-sidebar-nav-item-active {
+    background: var(--primary-gradient) !important;
+    border-radius: 8px !important;
+    color: white !important;
+}
+
+.fi-sidebar-nav-item:hover {
+    background: rgba(103, 126, 234, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+/* Headers avec gradients */
+.fi-header {
+    background: var(--primary-gradient) !important;
+}
+
+/* Tables améliorées */
+.fi-ta-table {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Boutons colorés */
+.fi-btn-primary {
+    background: var(--primary-gradient) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(103, 126, 234, 0.3) !important;
+}
+
+.fi-btn-success {
+    background: var(--success-gradient) !important;
+    border: none !important;
+}
+
+.fi-btn-warning {
+    background: var(--warning-gradient) !important;
+    border: none !important;
+}
+
+.fi-btn-danger {
+    background: var(--danger-gradient) !important;
+    border: none !important;
+}
+
+/* Badges colorés */
+.fi-badge-primary {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+}
+
+.fi-badge-success {
+    background: var(--success-gradient) !important;
+    color: white !important;
+}
+
+/* Charts améliorés */
+.fi-wi-chart {
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Animations fluides */
+* {
+    transition: all 0.3s ease !important;
+}
+
+/* Émojis plus grands dans la navigation */
+.fi-sidebar-nav-item-label {
+    font-size: 0.95rem !important;
+}
+
+/* Focus states améliorés */
+.fi-input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1) !important;
+}
