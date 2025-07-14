@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Admin\Resources\CoursResource\Pages;
 
 use App\Filament\Admin\Resources\CoursResource;
@@ -15,5 +17,10 @@ class EditCours extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

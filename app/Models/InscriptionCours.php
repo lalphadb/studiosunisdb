@@ -4,46 +4,69 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasEcoleScope;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InscriptionCours extends Model
 {
-    use HasFactory, HasEcoleScope;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'inscriptions_cours';
 
     protected $fillable = [
         'user_id',
         'cours_id',
-        'ecole_id',
         'date_inscription',
+        'date_debut',
         'date_fin',
         'statut',
+        'type_paiement',
+        'tarif_applique',
         'notes',
     ];
 
     protected $casts = [
         'date_inscription' => 'date',
+        'date_debut' => 'date',
         'date_fin' => 'date',
+        'tarif_applique' => 'decimal:2',
     ];
 
-    public function user()
+    // Relations
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function cours()
+    public function cours(): BelongsTo
     {
         return $this->belongsTo(Cours::class);
     }
 
-    public function ecole()
+    // Accessors
+    public function getStatutColorAttribute(): string
     {
-        return $this->belongsTo(Ecole::class);
+        return match($this->statut) {
+            'active' => 'success',
+            'suspendue' => 'warning',
+            'terminee' => 'gray',
+            default => 'gray'
+        };
     }
 
-    public function scopeActifs($query)
+    public function getTypePaiementLabelAttribute(): string
     {
-        return $query->where('statut', 'actif');
+        return match($this->type_paiement) {
+            'mensuel' => '💳 Mensuel',
+            'seance' => '💰 Par séance',
+            'carte' => '🎫 Carte 10 cours',
+            default => '❓ Non défini'
+        };
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('statut', 'active');
     }
 }
