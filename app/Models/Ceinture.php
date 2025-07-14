@@ -1,65 +1,65 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasEcoleScope;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ceinture extends Model
 {
-    use HasFactory, HasEcoleScope;
+    use HasFactory;
 
     protected $fillable = [
-        'ecole_id',
         'nom',
-        'nom_anglais',
-        'couleur_principale',
-        'couleur_secondaire',
+        'nom_court',
+        'couleur',
         'ordre',
-        'description',
         'mois_minimum',
-        'cours_minimum',
+        'description',
+        'competences_requises',
         'actif',
     ];
 
     protected $casts = [
-        'actif' => 'boolean',
         'ordre' => 'integer',
         'mois_minimum' => 'integer',
-        'cours_minimum' => 'integer',
+        'competences_requises' => 'array',
+        'actif' => 'boolean',
     ];
 
-    /**
-     * École relationship
-     */
-    public function ecole()
-    {
-        return $this->belongsTo(Ecole::class);
-    }
-
-    /**
-     * Users qui ont cette ceinture
-     */
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'user_ceintures')
-            ->withPivot('date_obtention', 'numero_certificat', 'evaluateur_id', 'notes')
-            ->withTimestamps();
-    }
-
-    /**
-     * User ceintures
-     */
-    public function userCeintures()
+    // Relations
+    public function userCeintures(): HasMany
     {
         return $this->hasMany(UserCeinture::class);
     }
 
-    /**
-     * Scope pour ordre
-     */
-    public function scopeOrdered($query)
+    // Accessors
+    public function getCouleurStyleAttribute(): string
+    {
+        return "background-color: {$this->couleur}; color: " . 
+               ($this->couleur === '#FFFFFF' ? '#000000' : '#FFFFFF');
+    }
+
+    public function getNiveauLabelAttribute(): string
+    {
+        return match(true) {
+            $this->ordre <= 2 => '🥋 Débutant',
+            $this->ordre <= 4 => '📈 Intermédiaire', 
+            $this->ordre <= 6 => '💪 Avancé',
+            default => '🥇 Expert'
+        };
+    }
+
+    // Scopes
+    public function scopeActives($query)
+    {
+        return $query->where('actif', true);
+    }
+
+    public function scopeOrdreCroissant($query)
     {
         return $query->orderBy('ordre');
     }
