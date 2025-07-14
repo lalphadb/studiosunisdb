@@ -5,7 +5,6 @@ namespace App\Providers\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -23,36 +22,30 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->default()
             ->id('admin')
-            ->path('admin')
+            ->path('/admin')
             ->login()
+            ->brandName('🥋 StudiosDB')
             ->colors([
-                'primary' => Color::Blue,
-                'gray' => Color::Gray,
-                'success' => Color::Green,
-                'warning' => Color::Amber,
                 'danger' => Color::Red,
+                'gray' => Color::Slate,
+                'info' => Color::Blue,
+                'primary' => Color::Indigo,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
             ->font('Inter')
-            ->brandName('StudiosDB')
-            ->brandLogo(asset('images/logo.png'))
-            ->favicon(asset('favicon.ico'))
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                // Pages vides pour l'instant
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
-                \App\Filament\Admin\Widgets\StatsOverview::class,
-                \App\Filament\Admin\Widgets\PresencesChart::class,
-                \App\Filament\Admin\Widgets\RecentActivity::class,
-            ])
-            ->navigationGroups([
-                'Gestion École',
-                'Finances',
-                'Événements',
-                'Configuration',
+                // Widgets par défaut uniquement
+                Widgets\AccountWidget::class,
+                // Les widgets personnalisés seront découverts automatiquement
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -68,8 +61,11 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->sidebarCollapsibleOnDesktop()
-            ->maxContentWidth('full')
-            ->spa();
+            ->navigationGroups([
+                '🏫 Gestion École',
+                '💰 Finances', 
+                '🎯 Événements',
+                '⚙️ Configuration',
+            ]);
     }
 }

