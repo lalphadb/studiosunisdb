@@ -1,61 +1,185 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🥋 StudiosDB V5 Pro
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Système de gestion ultra-professionnel pour écoles d'arts martiaux**
 
-## About Laravel
+## 🎯 Description
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+StudiosDB V5 est une solution complète de gestion pour l'école de karaté **Studiosunis St-Émile**. 
+Cette application Laravel 11 moderne offre une interface intuitive pour gérer membres, cours, présences, paiements et progressions de ceintures.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ Stack Technique
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 11.x + PHP 8.3
+- **Frontend:** Vue 3 + TypeScript + Inertia.js
+- **CSS:** Tailwind CSS + Headless UI
+- **Base de données:** MySQL 8.0+
+- **Cache:** Redis
+- **Build:** Vite avec hot reload
 
-## Learning Laravel
+## ⚡ Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+# 1. Cloner le projet
+git clone <repository-url>
+cd studiosdb_v5_pro
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+# 2. Installer dépendances
+composer install
+npm install
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# 3. Configuration
+cp .env.example .env
+php artisan key:generate
 
-## Laravel Sponsors
+# 4. Base de données
+php artisan migrate --seed
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# 5. Compiler assets
+npm run build
 
-### Premium Partners
+# 6. Démarrer serveur
+php artisan serve
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🎨 Fonctionnalités
 
-## Contributing
+### ✅ Modules Opérationnels
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- **👥 Gestion Membres:** CRUD complet, profils détaillés, conformité Loi 25
+- **🥋 Système Ceintures:** 7 grades avec progression automatique
+- **📊 Dashboard:** Interface adaptative par rôle
+- **🔐 Authentification:** Laravel Breeze + rôles Spatie
+- **📱 Responsive:** Interface moderne pour tous écrans
 
-## Code of Conduct
+### 🔄 Modules À Développer
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **📅 Gestion Cours:** Planning, inscriptions, capacités
+- **✅ Présences:** Interface tablette, statistiques
+- **💰 Paiements:** Facturation, rappels, exports
+- **🏢 Multi-tenant:** Gestion multi-écoles
 
-## Security Vulnerabilities
+## 🗃️ Base de Données
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Tables Principales
 
-## License
+```
+users            → Authentification
+membres          → Profils élèves  
+ceintures        → Système grades
+cours            → Planning cours
+presences        → Suivi assiduité
+paiements        → Gestion financière
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Seeding
+
+```bash
+# Installer données de test
+php artisan db:seed --class=CeintureSeeder
+```
+
+## 🎯 Utilisateurs
+
+### Accès Admin
+
+- **Email:** louis@4lb.ca
+- **Password:** password123
+- **Rôle:** Administrateur complet
+
+### Hiérarchie des Rôles
+
+1. **super-admin** → Multi-écoles
+2. **admin** → Propriétaire école
+3. **gestionnaire** → Administration
+4. **instructeur** → Enseignement
+5. **membre** → Élève/Parent
+
+## 🌐 URLs Principales
+
+- `/dashboard` → Tableau de bord
+- `/membres` → Gestion membres
+- `/debug` → Diagnostic système
+- `/test` → API de test
+
+## 🔧 Développement
+
+### Scripts Utiles
+
+```bash
+# Tests
+php artisan test
+
+# Cache
+php artisan optimize
+php artisan optimize:clear
+
+# Debug
+tail -f storage/logs/laravel.log
+```
+
+### Structure Vue.js
+
+```
+resources/js/Pages/
+├── Dashboard.vue        → Accueil
+├── Membres/
+│   ├── Index.vue       → Liste
+│   ├── Create.vue      → Création
+│   ├── Show.vue        → Détails
+│   └── Edit.vue        → Modification
+└── Auth/               → Authentification
+```
+
+## 📊 Statistiques Projet
+
+- **Migrations:** 15+ tables
+- **Vues Vue.js:** 20+ composants
+- **Routes:** 50+ endpoints
+- **Modèles:** Architecture enterprise
+- **Tests:** Suite complète PHPUnit
+
+## 🎖️ Conformité
+
+- **Loi 25 (Québec):** Gestion consentements
+- **PSR-12:** Standards PHP
+- **Laravel Best Practices:** Architecture MVC
+- **Security:** CSRF, Auth, Validation
+
+## 🚀 Déploiement
+
+### Production
+
+```bash
+# Build optimisé
+composer install --optimize-autoloader --no-dev
+npm run build
+
+# Cache production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Permissions
+chmod -R 755 storage bootstrap/cache
+```
+
+### Serveur Web
+
+- **Nginx:** Configuration fournie
+- **PHP-FPM:** 8.3+
+- **MySQL:** 8.0+
+- **Redis:** Cache & sessions
+
+## 📞 Support
+
+- **École:** Studiosunis St-Émile
+- **Admin:** Louis (louis@4lb.ca)
+- **Tech:** StudiosDB Team
+
+## 📄 Licence
+
+Propriétaire - École Studiosunis St-Émile
+
+---
+
+**🏆 StudiosDB V5 - LA solution pour écoles d'arts martiaux au Québec!**

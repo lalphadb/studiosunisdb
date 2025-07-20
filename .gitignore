@@ -1,9 +1,10 @@
 # Laravel
-/vendor
 /node_modules
+/public/build
 /public/hot
 /public/storage
 /storage/*.key
+/vendor
 .env
 .env.backup
 .env.production
@@ -11,26 +12,35 @@
 Homestead.json
 Homestead.yaml
 auth.json
-npm-debug.log*
+npm-debug.log
 yarn-error.log
+/.fleet
+/.idea
+/.vscode
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
+# Logs
+storage/logs/*.log
+storage/logs/*.log.*
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# StudiosDB spécifique
-/bootstrap/cache/*.php
-/storage/logs/*.log
-/public/build
-/public/mix-manifest.json
+# Backup files
+*.backup
+*.backup.*
+diagnostic_*.log
 
-# Développement
-.env.local
-.env.development
+# Scripts temporaires
+fix_*.sh
+quick_*.sh
+execute_*.sh
+EXECUTE_*.sh
+verify_*.sh
+diagnostic_*.sh
+*.tmp
