@@ -1,32 +1,45 @@
 <?php
 
-namespace App\\Http\\Controllers;
+namespace App\Http\Controllers;
 
-use Illuminate\\Http\\Request;
-use Inertia\\Inertia;
-use Inertia\\Response;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request): Response
+    public function index()
     {
+        $stats = [
+            'total_membres' => 250,
+            'membres_actifs' => 235,
+            'total_cours' => 18,
+            'presences_aujourd_hui' => 43,
+            'revenus_mois' => 5750,
+            'evolution_revenus' => 12.5,
+            'paiements_en_retard' => 3
+        ];
+
         return Inertia::render('Dashboard', [
-            'user' => $request->user(),
-            'stats' => [
-                'total_membres' => 0,
-                'nouveaux_mois' => 0,
-                'cours_actifs' => 0,
-                'presences_semaine' => 0
-            ]
+            'user' => auth()->user(),
+            'stats' => $stats
         ]);
     }
 
-    public function metriquesTempsReel(Request $request)
+    public function nouveau()
     {
-        return response()->json([
-            'membres_actifs' => 0,
-            'cours_aujourdhui' => 0,
-            'revenus_mois' => 0
+        $stats = [
+            'total_membres' => 250,
+            'membres_actifs' => 235,
+            'total_cours' => 18,
+            'presences_aujourd_hui' => 43,
+            'revenus_mois' => 5750,
+            'evolution_revenus' => 12.5,
+            'paiements_en_retard' => 3
+        ];
+
+        return Inertia::render('Dashboard/Index', [
+            'user' => auth()->user(),
+            'stats' => $stats
         ]);
     }
 }

@@ -115,9 +115,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dashboard
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profil utilisateur
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -141,3 +139,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Auth routes
 require __DIR__.'/auth.php';
+
+// Nouveau dashboard moderne
+Route::get('/dashboard-nouveau', [DashboardController::class, 'nouveau'])->name('dashboard.nouveau');
+
+// Route test dashboard simple
+Route::get('/dashboard-test', [App\Http\Controllers\TestDashboardController::class, 'index'])->name('dashboard.test');
+
+// Route test dashboard simple (sans Inertia)
+Route::get('/dashboard-simple', [App\Http\Controllers\SimpleDashboardController::class, 'index'])->name('dashboard.simple');
