@@ -1,6 +1,11 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MembreController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 // Route de test API simple
@@ -15,7 +20,7 @@ Route::get('/test', function () {
     ]);
 });
 
-// Route debug HTML simple (SANS erreur de syntaxe)
+// Route debug HTML
 Route::get('/debug', function () {
     $html = '<!DOCTYPE html>
     <html>
@@ -36,7 +41,6 @@ Route::get('/debug', function () {
             .btn-warning { background: #ffc107; color: #000; }
             h1 { color: #343a40; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
             h2 { color: #495057; }
-            pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
         </style>
     </head>
     <body>
@@ -60,7 +64,6 @@ Route::get('/debug', function () {
         $html .= '<p class="success">✅ Connexion DB réussie</p>';
         $html .= '<p class="info">📊 Base: ' . $dbName . '</p>';
         
-        // Test tables
         try {
             $tables = DB::select('SHOW TABLES');
             $html .= '<p class="info">📋 Tables: ' . count($tables) . ' trouvées</p>';
@@ -70,7 +73,6 @@ Route::get('/debug', function () {
         
     } catch (Exception $e) {
         $html .= '<p class="error">❌ Erreur DB: ' . htmlspecialchars($e->getMessage()) . '</p>';
-        $html .= '<p class="warning">💡 Solution: Vérifiez la configuration dans .env</p>';
     }
     
     $html .= '</div>';
@@ -94,7 +96,7 @@ Route::get('/debug', function () {
                 <a href="/test" class="btn">🔍 Test API JSON</a>
                 <a href="/dashboard" class="btn btn-success">🏠 Dashboard</a>
                 <a href="/membres" class="btn btn-warning">👥 Membres</a>
-                <a href="/phptest.php" class="btn">🐘 Test PHP Pur</a>
+                <a href="/login" class="btn">🔐 Login</a>
             </div>';
 
     $html .= '</div>
@@ -109,19 +111,33 @@ Route::get('/', function () {
     return redirect('/debug');
 });
 
-// Routes authentifiées (si auth fonctionne)
+// Routes authentifiées
 Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Dashboard
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
-    
-    // Routes membres (à développer)
-    Route::get('/membres', function () {
-        return response()->json(['message' => 'Module membres à développer']);
-    })->name('membres.index');
+
+    // Profil utilisateur
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Gestion des membres
+    Route::resource('membres', MembreController::class);
+    Route::post('membres/{membre}/changer-ceinture', [MembreController::class, 'changerCeinture'])->name('membres.changer-ceinture');
+    Route::get('export/membres', [MembreController::class, 'export'])->name('membres.export');
+
+    // Routes admin
+    Route::get('/admin', function () {
+        return Inertia::render('Admin/Index');
+    })->name('admin.index');
+
+    Route::get('/statistiques', function () {
+        return Inertia::render('Statistiques/Index');
+    })->name('statistiques.index');
 });
 
-// Auth routes si elles existent
-if (file_exists(__DIR__ . '/auth.php')) {
-    require __DIR__ . '/auth.php';
-}
+// Auth routes
+require __DIR__.'/auth.php';

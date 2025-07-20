@@ -1,0 +1,116 @@
+
+   INFO  Server running on [http://0.0.0.0:8000].  
+
+  Press Ctrl+C to stop the server
+
+  2025-07-20 15:43:04 /test ...................................... ~ 500.26ms
+  2025-07-20 15:43:04 /debug ....................................... ~ 0.04ms
+  2025-07-20 15:43:04 /login ....................................... ~ 0.06ms
+  2025-07-20 15:43:13 /login ....................................... ~ 0.18ms
+  2025-07-20 15:43:13 /build/assets/app-D8faeDWX.css ............... ~ 0.09ms
+  2025-07-20 15:43:13 /build/assets/app-DfzcRe4s.js ................ ~ 0.04ms
+  2025-07-20 15:43:13 /build/assets/Login-3StqRzir.js .............. ~ 0.05ms
+  2025-07-20 15:43:13 /build/assets/app-D8faeDWX.css ............... ~ 0.09ms
+  2025-07-20 15:43:13 /build/assets/GuestLayout.vue_vue_type_script_setup_true_lang-CLoR3VLF.js  ~ 0.26ms
+  2025-07-20 15:43:13 /build/assets/TextInput.vue_vue_type_script_setup_true_lang-BpsIRJ-K.js  ~ 0.32ms
+  2025-07-20 15:43:13 /build/assets/PrimaryButton-CFohOPv5.js ...... ~ 0.38ms
+  2025-07-20 15:43:13 /build/assets/_plugin-vue_export-helper-DlAUqK2U.js  ~ 0.49ms
+  2025-07-20 15:43:13 /favicon.ico ................................. ~ 0.12ms
+  2025-07-20 15:43:13 /build/assets/ConfirmPassword-Dy_nsOLb.js .... ~ 0.03ms
+  2025-07-20 15:43:13 /build/assets/ForgotPassword-B9lm5mrN.js ..... ~ 0.03ms
+  2025-07-20 15:43:13 /build/assets/Login-3StqRzir.js .............. ~ 0.09ms
+  2025-07-20 15:43:13 /build/assets/Register-p54Byb4B.js ........... ~ 0.02ms
+  2025-07-20 15:43:13 /build/assets/ResetPassword-DPZ5VCUV.js ...... ~ 0.04ms
+  2025-07-20 15:43:13 /build/assets/VerifyEmail-DL05C8p_.js ........ ~ 0.10ms
+  2025-07-20 15:43:13 /build/assets/Dashboard-CcD72l-p.js .......... ~ 0.04ms
+  2025-07-20 15:43:13 /build/assets/AuthenticatedLayout-BmPWHrG2.js  ~ 0.03ms
+  2025-07-20 15:43:13 /build/assets/AuthenticatedLayout-aCd-vD8a.css  ~ 0.02ms
+  2025-07-20 15:43:13 /build/assets/Create-ZgG8bjSR.js ............. ~ 0.02ms
+  2025-07-20 15:43:13 /build/assets/Dashboard-CmPgtKN2.css ......... ~ 0.02ms
+  2025-07-20 15:43:13 /build/assets/Edit-BR_Mswc9.js ............... ~ 0.03ms
+  2025-07-20 15:43:13 /build/assets/Index-B8DTRbKq.js .............. ~ 0.12ms
+  2025-07-20 15:43:13 /build/assets/Show-BLdYWXsH.js ............... ~ 0.02ms
+  2025-07-20 15:43:13 /build/assets/Edit-W_mLCMsC.js ............... ~ 0.03ms
+  2025-07-20 15:43:13 /build/assets/DeleteUserForm.vue_vue_type_script_setup_true_lang-DT2RY7vE.js  ~ 0.13ms
+  2025-07-20 15:43:13 /build/assets/UpdatePasswordForm.vue_vue_type_script_setup_true_lang-DGFoIIB9.js  ~ 0.17ms
+  2025-07-20 15:43:13 /build/assets/UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-DzfgbN5r.js  ~ 0.04ms
+  2025-07-20 15:43:13 /build/assets/DeleteUserForm-CErvU5iq.js ..... ~ 0.07ms
+  2025-07-20 15:43:13 /build/assets/UpdatePasswordForm-De-9hWz0.js . ~ 0.13ms
+  2025-07-20 15:43:13 /build/assets/UpdateProfileInformationForm-BgC2pqQj.js  ~ 0.03ms
+  2025-07-20 15:43:13 /build/assets/Welcome-ByAnjLY6.js ............ ~ 0.07ms
+  2025-07-20 15:43:13 /build/assets/GuestLayout.vue_vue_type_script_setup_true_lang-CLoR3VLF.js  ~ 0.15ms
+  2025-07-20 15:43:13 /build/assets/TextInput.vue_vue_type_script_setup_true_lang-BpsIRJ-K.js  ~ 0.04ms
+  2025-07-20 15:43:13 /build/assets/PrimaryButton-CFohOPv5.js ...... ~ 0.07ms
+  2025-07-20 15:43:13 /build/assets/_plugin-vue_export-helper-DlAUqK2U.js  ~ 0.13ms
+  2025-07-20 15:43:19 /login ....................................... ~ 0.09ms
+  2025-07-20 15:43:19 /build/assets/app-D8faeDWX.css ............... ~ 0.04ms
+  2025-07-20 15:43:19 /build/assets/app-DfzcRe4s.js ................ ~ 0.13ms
+  2025-07-20 15:43:19 /build/assets/Login-3StqRzir.js .............. ~ 0.03ms
+  2025-07-20 15:43:19 /build/assets/GuestLayout.vue_vue_type_script_setup_true_lang-CLoR3VLF.js  ~ 0.12ms
+  2025-07-20 15:43:19 /build/assets/app-D8faeDWX.css ............... ~ 0.04ms
+  2025-07-20 15:43:19 /build/assets/_plugin-vue_export-helper-DlAUqK2U.js  ~ 0.14ms
+  2025-07-20 15:43:19 /build/assets/TextInput.vue_vue_type_script_setup_true_lang-BpsIRJ-K.js  ~ 0.17ms
+  2025-07-20 15:43:19 /build/assets/PrimaryButton-CFohOPv5.js ...... ~ 0.21ms
+  2025-07-20 15:43:19 /favicon.ico ................................. ~ 0.03ms
+  2025-07-20 15:43:19 /build/assets/Login-3StqRzir.js .............. ~ 0.03ms
+  2025-07-20 15:43:19 /build/assets/ConfirmPassword-Dy_nsOLb.js .... ~ 0.12ms
+  2025-07-20 15:43:19 /build/assets/ForgotPassword-B9lm5mrN.js ..... ~ 0.17ms
+  2025-07-20 15:43:19 /build/assets/Register-p54Byb4B.js ........... ~ 0.02ms
+  2025-07-20 15:43:19 /build/assets/ResetPassword-DPZ5VCUV.js ...... ~ 0.03ms
+  2025-07-20 15:43:19 /build/assets/VerifyEmail-DL05C8p_.js ........ ~ 0.08ms
+  2025-07-20 15:43:19 /build/assets/Dashboard-CcD72l-p.js .......... ~ 0.02ms
+  2025-07-20 15:43:19 /build/assets/AuthenticatedLayout-BmPWHrG2.js  ~ 0.03ms
+  2025-07-20 15:43:19 /build/assets/AuthenticatedLayout-aCd-vD8a.css  ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/Dashboard-CmPgtKN2.css ......... ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/Create-ZgG8bjSR.js ............. ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/Edit-BR_Mswc9.js ............... ~ 0.12ms
+  2025-07-20 15:43:20 /build/assets/Index-B8DTRbKq.js .............. ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/Show-BLdYWXsH.js ............... ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/Edit-W_mLCMsC.js ............... ~ 0.14ms
+  2025-07-20 15:43:20 /build/assets/DeleteUserForm.vue_vue_type_script_setup_true_lang-DT2RY7vE.js  ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/UpdatePasswordForm.vue_vue_type_script_setup_true_lang-DGFoIIB9.js  ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-DzfgbN5r.js  ~ 0.11ms
+  2025-07-20 15:43:20 /build/assets/DeleteUserForm-CErvU5iq.js ..... ~ 0.09ms
+  2025-07-20 15:43:20 /build/assets/UpdatePasswordForm-De-9hWz0.js . ~ 0.04ms
+  2025-07-20 15:43:20 /build/assets/UpdateProfileInformationForm-BgC2pqQj.js  ~ 0.09ms
+  2025-07-20 15:43:20 /build/assets/Welcome-ByAnjLY6.js ............ ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/GuestLayout.vue_vue_type_script_setup_true_lang-CLoR3VLF.js  ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/TextInput.vue_vue_type_script_setup_true_lang-BpsIRJ-K.js  ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/PrimaryButton-CFohOPv5.js ...... ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/_plugin-vue_export-helper-DlAUqK2U.js  ~ 0.03ms
+  2025-07-20 15:43:20 /login ....................................... ~ 0.07ms
+  2025-07-20 15:43:20 /build/assets/app-D8faeDWX.css ............... ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/app-DfzcRe4s.js ................ ~ 0.14ms
+  2025-07-20 15:43:20 /build/assets/app-D8faeDWX.css ............... ~ 0.09ms
+  2025-07-20 15:43:20 /build/assets/Login-3StqRzir.js .............. ~ 0.23ms
+  2025-07-20 15:43:20 /build/assets/TextInput.vue_vue_type_script_setup_true_lang-BpsIRJ-K.js  ~ 0.14ms
+  2025-07-20 15:43:20 /build/assets/GuestLayout.vue_vue_type_script_setup_true_lang-CLoR3VLF.js  ~ 0.38ms
+  2025-07-20 15:43:20 /build/assets/_plugin-vue_export-helper-DlAUqK2U.js  ~ 0.41ms
+  2025-07-20 15:43:20 /build/assets/PrimaryButton-CFohOPv5.js ...... ~ 0.14ms
+  2025-07-20 15:43:20 /favicon.ico ................................. ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/Login-3StqRzir.js .............. ~ 0.22ms
+  2025-07-20 15:43:20 /build/assets/ConfirmPassword-Dy_nsOLb.js .... ~ 0.31ms
+  2025-07-20 15:43:20 /build/assets/ForgotPassword-B9lm5mrN.js ..... ~ 0.35ms
+  2025-07-20 15:43:20 /build/assets/Register-p54Byb4B.js ........... ~ 0.04ms
+  2025-07-20 15:43:20 /build/assets/ResetPassword-DPZ5VCUV.js ...... ~ 0.11ms
+  2025-07-20 15:43:20 /build/assets/VerifyEmail-DL05C8p_.js ........ ~ 0.16ms
+  2025-07-20 15:43:20 /build/assets/Dashboard-CcD72l-p.js .......... ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/AuthenticatedLayout-BmPWHrG2.js  ~ 0.11ms
+  2025-07-20 15:43:20 /build/assets/AuthenticatedLayout-aCd-vD8a.css  ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/Dashboard-CmPgtKN2.css ......... ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/Create-ZgG8bjSR.js ............. ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/Edit-BR_Mswc9.js ............... ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/Index-B8DTRbKq.js .............. ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/Show-BLdYWXsH.js ............... ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/Edit-W_mLCMsC.js ............... ~ 0.13ms
+  2025-07-20 15:43:20 /build/assets/DeleteUserForm.vue_vue_type_script_setup_true_lang-DT2RY7vE.js  ~ 0.22ms
+  2025-07-20 15:43:20 /build/assets/UpdatePasswordForm.vue_vue_type_script_setup_true_lang-DGFoIIB9.js  ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-DzfgbN5r.js  ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/DeleteUserForm-CErvU5iq.js ..... ~ 0.09ms
+  2025-07-20 15:43:20 /build/assets/UpdatePasswordForm-De-9hWz0.js . ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/UpdateProfileInformationForm-BgC2pqQj.js  ~ 0.07ms
+  2025-07-20 15:43:20 /build/assets/Welcome-ByAnjLY6.js ............ ~ 0.10ms
+  2025-07-20 15:43:20 /build/assets/GuestLayout.vue_vue_type_script_setup_true_lang-CLoR3VLF.js  ~ 0.02ms
+  2025-07-20 15:43:20 /build/assets/TextInput.vue_vue_type_script_setup_true_lang-BpsIRJ-K.js  ~ 0.03ms
+  2025-07-20 15:43:20 /build/assets/PrimaryButton-CFohOPv5.js ...... ~ 0.06ms
+  2025-07-20 15:43:20 /build/assets/_plugin-vue_export-helper-DlAUqK2U.js  ~ 0.02ms

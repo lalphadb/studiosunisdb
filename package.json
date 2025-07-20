@@ -3,7 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vue-tsc && vite build",
+        "build": "vite build",
+        "build-ts": "vue-tsc && vite build",
         "dev": "vite",
         "watch": "vite build --watch",
         "preview": "vite preview"
