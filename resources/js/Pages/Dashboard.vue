@@ -1,30 +1,51 @@
 <script setup lang="ts">
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+defineProps<{
+  stats: {
+    total_membres: number
+    total_cours: number
+    total_presences: number
+    total_paiements: number
+    progression_ceintures: { ceinture: string, count: number }[]
+  }
+}>()
 </script>
 
 <template>
-    <Head title="Dashboard" />
+  <div class="p-6 space-y-10 bg-gray-900 text-white min-h-screen">
+    
+    <!-- Titre -->
+    <div class="text-3xl font-semibold">Tableau de bord - St-Émile</div>
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Dashboard
-            </h2>
-        </template>
+    <!-- Widgets statistiques -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <DashboardWidget title="Membres actifs" :value="stats.total_membres" icon="👥" />
+      <DashboardWidget title="Cours actifs" :value="stats.total_cours" icon="📆" />
+      <DashboardWidget title="Présences (ce mois)" :value="stats.total_presences" icon="✅" />
+      <DashboardWidget title="Paiements reçus" :value="`${stats.total_paiements.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' })}`" icon="💰" />
+    </div>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-                >
-                    <div class="p-6 text-gray-900">
-                        You're logged in!
-                    </div>
-                </div>
-            </div>
-        </div>
-    </AuthenticatedLayout>
+    <!-- Actions rapides -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <QuickAction title="Ajouter un membre" route="/membres/create" icon="➕" />
+      <QuickAction title="Feuilles de présence" route="/presences" icon="📝" />
+      <QuickAction title="Gérer les cours" route="/cours" icon="📚" />
+      <QuickAction title="Paiements à valider" route="/paiements" icon="💳" />
+      <QuickAction title="Réinscription session" route="/sessions" icon="🔁" />
+      <QuickAction title="Exporter rapports" route="/exports" icon="📤" />
+    </div>
+
+    <!-- Progression par ceinture -->
+    <div>
+      <h2 class="text-xl font-semibold mb-4">Progression des ceintures</h2>
+      <div class="space-y-3">
+        <ProgressBar
+          v-for="item in stats.progression_ceintures"
+          :key="item.ceinture"
+          :label="item.ceinture"
+          :value="item.count"
+        />
+      </div>
+    </div>
+
+  </div>
 </template>
