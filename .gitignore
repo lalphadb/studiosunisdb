@@ -44,3 +44,54 @@ EXECUTE_*.sh
 verify_*.sh
 diagnostic_*.sh
 *.tmp
+
+# ===== STUDIOSDB V5 SPECIFIQUE =====
+# Scripts temporaires
+*.sh
+!artisan
+
+# Backups et dumps
+*.sql
+backup_*
+dump_*
+
+# Logs étendus
+storage/logs/*.log
+storage/debugbar/
+
+# Cache spécifique
+bootstrap/cache/*.php
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Uploads utilisateurs
+storage/app/public/uploads/
+storage/app/public/photos/
+storage/app/public/documents/
+
+# Configuration locale
+.env.local
+.env.production
+.env.backup
+
+# IDE & OS
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Node modules et cache
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+
+# Build artifacts
+public/hot
+public/storage
+storage/app/public
