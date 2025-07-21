@@ -27,6 +27,10 @@
         "vue-tsc": "^2.0.24"
     },
     "dependencies": {
+        "@benborla29/mcp-server-mysql": "^2.0.5",
+        "@modelcontextprotocol/server-brave-search": "^0.6.2",
+        "@modelcontextprotocol/server-filesystem": "^2025.7.1",
+        "@modelcontextprotocol/server-memory": "^2025.4.25",
         "@types/lodash": "^4.17.20",
         "@vueuse/core": "^13.5.0",
         "date-fns": "^3.6.0",
