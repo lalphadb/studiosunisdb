@@ -495,7 +495,7 @@ const revenusLinePath = computed(() => {
 
 const revenusAreaPath = computed(() => {
   const linePath = revenusLinePath.value
-  const lastX = ((revenusData.length - 1) / (revenusData.length - 1)) * 600
+  const lastX = revenusData.length > 1 ? 600 : 0
   
   return `${linePath} L ${lastX} 300 L 0 300 Z`
 })

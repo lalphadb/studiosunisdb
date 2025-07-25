@@ -11,9 +11,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Appels de seeders spécifiques
+        // Seeders dans l'ordre de dépendance
         $this->call([
-            SuperAdminSeeder::class,
+            CeintureSeeder::class,      // D'abord les ceintures
+            SuperAdminSeeder::class,    // Ensuite l'admin
+            MembreSeeder::class,        // Puis les membres (dépendent des ceintures)
+            CoursSeeder::class,         // Les cours
+            PaiementSeeder::class,      // Enfin les paiements (dépendent des membres)
         ]);
+        
+        $this->command->info('✅ Tous les seeders ont été exécutés avec succès !');
     }
 }

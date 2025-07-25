@@ -25,7 +25,7 @@ class DashboardController extends Controller
             'satisfaction_moyenne' => 94.5
         ];
 
-        return Inertia::render('DashboardPro', [
+        return Inertia::render('DashboardModerne', [
             'user' => auth()->user(),
             'stats' => $stats
         ]);

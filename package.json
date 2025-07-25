@@ -3,11 +3,10 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "build-ts": "vue-tsc && vite build",
+        "build": "vue-tsc && vite build",
         "dev": "vite",
         "watch": "vite build --watch",
-        "preview": "vite preview"
+        "test": "vitest"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
@@ -16,7 +15,7 @@
         "@vitejs/plugin-vue": "^5.0.0",
         "autoprefixer": "^10.4.12",
         "axios": "^1.8.2",
-        "chart.js": "^4.5.0",
+        "chart.js": "^4.4.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.2.0",
         "postcss": "^8.4.31",
@@ -24,16 +23,13 @@
         "typescript": "^5.6.3",
         "vite": "^6.2.4",
         "vue": "^3.4.0",
-        "vue-tsc": "^2.0.24"
+        "vue-tsc": "^2.0.24",
+        "vitest": "^1.0.0"
     },
     "dependencies": {
-        "@benborla29/mcp-server-mysql": "^2.0.5",
-        "@modelcontextprotocol/server-brave-search": "^0.6.2",
-        "@modelcontextprotocol/server-filesystem": "^2025.7.1",
-        "@modelcontextprotocol/server-memory": "^2025.4.25",
         "@types/lodash": "^4.17.20",
         "@vueuse/core": "^13.5.0",
-        "date-fns": "^3.6.0",
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "date-fns": "^3.6.0"
     }
 }

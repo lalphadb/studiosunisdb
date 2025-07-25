@@ -3,6 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MembreController;
+use App\Http\Controllers\CoursController;
+use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\PaiementController;
+use App\Http\Controllers\ExamenController;
+use App\Http\Controllers\RapportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -126,6 +131,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('membres', MembreController::class);
     Route::post('membres/{membre}/changer-ceinture', [MembreController::class, 'changerCeinture'])->name('membres.changer-ceinture');
     Route::get('export/membres', [MembreController::class, 'export'])->name('membres.export');
+
+    // Gestion des cours
+    Route::resource('cours', CoursController::class);
+    
+    // Gestion des présences
+    Route::resource('presences', PresenceController::class);
+    Route::get('presences/tablette', [PresenceController::class, 'tablette'])->name('presences.tablette');
+    
+    // Gestion des paiements
+    Route::resource('paiements', PaiementController::class);
+    Route::get('paiements/en-retard', [PaiementController::class, 'enRetard'])->name('paiements.en-retard');
+    
+    // Gestion des examens
+    Route::resource('examens', ExamenController::class);
+    
+    // Rapports
+    Route::get('rapports', [RapportController::class, 'index'])->name('rapports.index');
+    Route::get('rapports/membres', [RapportController::class, 'membres'])->name('rapports.membres');
+    Route::get('rapports/revenus', [RapportController::class, 'revenus'])->name('rapports.revenus');
 
     // Routes admin
     Route::get('/admin', function () {
