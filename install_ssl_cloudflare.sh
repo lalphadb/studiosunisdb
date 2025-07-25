@@ -1,0 +1,79 @@
+#!/bin/bash
+
+echo "🔐 INSTALLATION SSL CLOUDFLARE ULTRA-PRO"
+echo "========================================"
+
+# Création dossiers SSL
+sudo mkdir -p /etc/ssl/certs/
+sudo mkdir -p /etc/ssl/private/
+
+# Installation certificat Cloudflare
+sudo tee /etc/ssl/certs/studiosdb_4lb_ca.crt << 'CERT_EOF'
+-----BEGIN CERTIFICATE-----
+MIIEmDCCA4CgAwIBAgIUdl6mQ9Hvfpf9yneMuP+OhQ39ufQwDQYJKoZIhvcNAQEL
+BQAwgYsxCzAJBgNVBAYTAlVTMRkwFwYDVQQKExBDbG91ZEZsYXJlLCBJbmMuMTQw
+MgYDVQQLEytDbG91ZEZsYXJlIE9yaWdpbiBTU0wgQ2VydGlmaWNhdGUgQXV0aG9y
+aXR5MRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMRMwEQYDVQQIEwpDYWxpZm9ybmlh
+MB4XDTI1MDcyNTE5MTkwMFoXDTQwMDcyMTE5MTkwMFowYjEZMBcGA1UEChMQQ2xv
+dWRGbGFyZSwgSW5jLjEdMBsGA1UECxMUQ2xvdWRGbGFyZSBPcmlnaW4gQ0ExJjAk
+BgNVBAMTHUNsb3VkRmxhcmUgT3JpZ2luIENlcnRpZmljYXRlMIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEAofrHcGsbamm7Cx3TFDrRA5AI7/1XHzxKAkJB
+zQPFZ29B+uQVLBHhQz1Zvm1xpcfI6WqTEymgMWJFn6AFQBjvY/RkxvobvZXoCnqi
+sERINv6NRdmi/cFHNxHVUMDOBcID+yXApGfvEAd6G17YsASmMxcamBxXamxJ4j1P
+pYzuexcig0Yon0INOQoKhjEhCyrQ1TwySwu3CeUmJfnoCaFUyRMsBSzJEIgdw4/M
+zscOlSFcjNNpZCAzgc5tfh/yR/EMbx0a7ldGtZ9orydgvHr2pJa5fwCA//NC92KM
+H2atHuv3QMkzrR18nadY8MHJKBcouILAm5waKD1YdqjqyPki0wIDAQABo4IBGjCC
+ARYwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcD
+ATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBSLDtFyd2pyPbzfYPBWoZhPG1qcjzAf
+BgNVHSMEGDAWgBQk6FNXXXw0QIep65TbuuEWePwppDBABggrBgEFBQcBAQQ0MDIw
+MAYIKwYBBQUHMAGGJGh0dHA6Ly9vY3NwLmNsb3VkZmxhcmUuY29tL29yaWdpbl9j
+YTAbBgNVHREEFDASgggqLjRsYi5jYYIGNGxiLmNhMDgGA1UdHwQxMC8wLaAroCmG
+J2h0dHA6Ly9jcmwuY2xvdWRmbGFyZS5jb20vb3JpZ2luX2NhLmNybDANBgkqhkiG
+9w0BAQsFAAOCAQEAf3Bwge7+66MhoG2Vi7/lLrCHuAi9R7wFyls6QNOeugi/5I6G
+DT/1DVaUYcwaNThUYlBRZSZR50vCzelep7goNa3GIj7MdZmGi5xajJbBdx51m7fx
+CHt9PxWcxUoE2iHGnzd2tGuXyHQs+gLnuHafp+fmFAyIMYuR51mK1Wj14i9qKbka
+9RjTj1w/Ne2Wv568VrnAOHbZ5kDC6XYKOygBGcJFL3bBPe/6kvh1ds5wPF/TUBQp
+x0jqPRN4ZoMbciu8a4Hzfh6dwzHKeNRBASm1bvIJg44Xjkw2t2aPwwO1AERBG1wP
+shTQPn75nDO+7Ic4O6DXNvpUxwMJH/J3gCIzkA==
+-----END CERTIFICATE-----
+CERT_EOF
+
+# Installation clé privée Cloudflare
+sudo tee /etc/ssl/private/studiosdb_4lb_ca.key << 'KEY_EOF'
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCh+sdwaxtqabsL
+HdMUOtEDkAjv/VcfPEoCQkHNA8Vnb0H65BUsEeFDPVm+bXGlx8jpapMTKaAxYkWf
+oAVAGO9j9GTG+hu9legKeqKwREg2/o1F2aL9wUc3EdVQwM4FwgP7JcCkZ+8QB3ob
+XtiwBKYzFxqYHFdqbEniPU+ljO57FyKDRiifQg05CgqGMSELKtDVPDJLC7cJ5SYl
++egJoVTJEywFLMkQiB3Dj8zOxw6VIVyM02lkIDOBzm1+H/JH8QxvHRruV0a1n2iv
+J2C8evaklrl/AID/80L3YowfZq0e6/dAyTOtHXydp1jwwckoFyi4gsCbnBooPVh2
+qOrI+SLTAgMBAAECggEAGsBigeQz7JjhBaP7rBf5VHT2/5O/+MOp7BeUlc8X93jo
+1Q59mgAAoRdCeXB1LY5XqzJ+bygXxzAraYKHJh/izDJHwT5QqI4CewCSr+PcaAtr
+D5czE7pWZaJHWwU3bBIFOvbwNaGIr7AHGvrIyhaVJajyK8m6fN685mV+gEv3SFK1
+f4sxbjpyWz+F3Rc+yBovxvJRB5jLC8DROzgygIby7Th7DiX4gk+NnTWnin38byac
+kXUCvCctiPTm+7mpTzR+3eB8qotDmXkl9LGINpVOEjMN/TxuMZhSCMrG/enIS/ci
+EVEkSrTW2i9JZlU/BTjebIAUg2q7BZ/avchrhy9B6QKBgQDUBG/GaGQvqUPim79d
+LX1xkmLUUpNnpkCHhbBu+zZ4RKzR6ZXtdbMhgau5OdVK8W3Fk0RFtri5EFtxpYCC
+XxkS431hXpuxhLF589f/dTta8ptBV4KNC1am8MLk4fcxRxX78vtybfiHlCFyosL0
+P+/bwEV++Ev5eVIrYDFB7zSVHQKBgQDDlP+oIpOFjWVcpyDrCn2LAY1Lml8I4sZt
+KUrLzA4su4HGFFfjjZXgRmLlVsRUqWB71CjjRPmxlJPegsppapQryfhDvivAmTlx
+XV563/LPk1WaKKYek1nZWDog970euUiC2ZzmO+CXDU3WuB0vNuKlzCHkDzL+c1u4
+BwbdQ8HErwKBgBOU+VHk8GPqiUeTxP/xJKXptFER82VeWJVrxpjpgOVoymF05pER
+DuNoW5j2+3k5hT77VBHwR21oUlnTxGPGLsWs1za4Cz9BFzdBS1Df3gSPZcGKOJeY
+VX+DuyxypmcZvrEPhyPRfmPfTZuN5t2yThAI2SJaAoJfLzSsZMBHPJ8NAoGAHqMG
+cTYJWdBOYncjpu3bwJybn44s+N1dK9heCRKL3eH5cCfbpJ+XLKyZ7UbsNj7aCEux
+o/g4DOMzTpW6U00IrNtUcnglrmPSJbn0hNbz2CRCMoXPj9aRKoSxhlyIWXm4rBae
+h0o14jOJT+tDVxQH6OTTIkBnQoibg3ZGUv68Ka0CgYEAmyz3he1izL/YqnqsXHh4
+5qAreqobWsqyU7nUr6uaj26KX9RUoBXnaysOS9QMZfSE+SbRZ33m2sCh043OzkGE
+1JaX5KqcKP/TQrvPkMd2lGBJSw2fT5u1sW7lHiwJwAMmQDuRFH9zhKNeEmrt65o6
+PeaZRHMaEOUl6z2I5P/jdCg=
+-----END PRIVATE KEY-----
+KEY_EOF
+
+# Permissions sécurisées ultra-pro
+sudo chmod 644 /etc/ssl/certs/studiosdb_4lb_ca.crt
+sudo chmod 600 /etc/ssl/private/studiosdb_4lb_ca.key
+sudo chown root:root /etc/ssl/certs/studiosdb_4lb_ca.crt
+sudo chown root:ssl-cert /etc/ssl/private/studiosdb_4lb_ca.key
+
+echo "✅ Certificat SSL Cloudflare installé avec sécurité maximale"

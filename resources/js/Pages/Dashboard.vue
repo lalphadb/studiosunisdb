@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <template>
   <div class="min-h-screen bg-gray-900">
     <!-- Header simple -->
@@ -178,16 +179,101 @@
         </div>
       </div>
 
+=======
+><template>
+  <div class="min-h-screen bg-gray-900 text-white">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <div class="text-2xl font-bold text-blue-400">StudiosDB Pro</div>
+        <span class="text-sm text-gray-400">Gestion de dojo — v5.1</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span class="text-sm text-gray-400 hidden md:inline">Bienvenue {{ $page.props.auth.user.name }}</span>
+        <button @click="logout" class="text-red-400 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700 px-6 py-2 flex space-x-4 text-sm">
+      <NavLink :href="route('dashboard')" icon="🏠" :active="true">Dashboard</NavLink>
+      <NavLink @click="navigate('membres.index')" icon="👥">Membres</NavLink>
+      <NavLink @click="navigate('cours.index')" icon="📚">Cours</NavLink>
+      <NavLink @click="navigate('presences.index')" icon="✅">Présences</NavLink>
+      <NavLink @click="navigate('paiements.index')" icon="💳">Paiements</NavLink>
+    </nav>
+
+    <!-- Main -->
+    <main class="px-6 py-8 max-w-7xl mx-auto space-y-12">
+      <!-- Statistiques principales -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <StatsCard title="Membres" :value="stats.total_membres" icon="👥" :change="8" changeType="positive" color="from-indigo-500 to-indigo-700" />
+        <StatsCard title="Cours" :value="stats.total_cours" icon="📚" :change="4" changeType="positive" color="from-emerald-500 to-emerald-700" />
+        <StatsCard title="Présences" :value="stats.total_presences" icon="✅" :change="6" changeType="positive" color="from-yellow-400 to-yellow-600" />
+        <StatsCard title="Paiements" :value="formatMoney(stats.total_paiements)" icon="💳" :change="15" changeType="positive" color="from-pink-500 to-pink-700" />
+      </div>
+
+      <!-- Graphiques et Progression -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Graphique -->
+        <ChartCard title="Évolution des Présences" subtitle="7 derniers jours">
+          <canvas ref="chartRef" class="w-full h-64"></canvas>
+        </ChartCard>
+
+        <!-- Répartition ceintures -->
+        <ChartCard title="Répartition Ceintures" subtitle="Par grade">
+          <div v-if="stats.progression_ceintures.length" class="space-y-4">
+            <div v-for="item in stats.progression_ceintures" :key="item.ceinture" class="text-sm">
+              <div class="flex justify-between mb-1">
+                <span class="font-medium">{{ item.ceinture }}</span>
+                <span>{{ item.count }}</span>
+              </div>
+              <ProgressBar :value="item.count" />
+            </div>
+          </div>
+          <div v-else class="text-gray-400 italic">Aucune donnée de progression disponible.</div>
+        </ChartCard>
+      </div>
+
+      <!-- Actions rapides -->
+      <ActionCard title="Actions Rapides" subtitle="Gagnez du temps">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <ActionButton title="Nouveau Membre" subtitle="Ajoutez un élève" icon="👤" color="bg-indigo-600" @click="navigate('membres.create')" />
+          <ActionButton title="Présences" subtitle="Mode tablette" icon="📋" color="bg-emerald-600" @click="navigate('presences.tablette')" />
+          <ActionButton title="Paiement" subtitle="Enregistrer un paiement" icon="💰" color="bg-yellow-500" @click="navigate('paiements.create')" />
+          <ActionButton title="Cours" subtitle="Nouveau cours" icon="📆" color="bg-pink-500" @click="navigate('cours.create')" />
+        </div>
+      </ActionCard>
+>>>>>>> Stashed changes
     </main>
   </div>
 </template>
 
+<<<<<<< Updated upstream
 <script setup>
 import { computed } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
+=======
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { router } from '@inertiajs/vue3'
+import Chart from 'chart.js/auto'
+import StatsCard from '@/Components/Dashboard/StatsCard.vue'
+import ChartCard from '@/Components/Dashboard/ChartCard.vue'
+import ProgressBar from '@/Components/Dashboard/ProgressBar.vue'
+import ActionCard from '@/Components/Dashboard/ActionCard.vue'
+import ActionButton from '@/Components/Dashboard/ActionButton.vue'
+import NavLink from '@/Components/Dashboard/NavLink.vue'
+>>>>>>> Stashed changes
 
-const props = defineProps({
+const props = defineProps<{
   stats: {
+<<<<<<< Updated upstream
     type: Object,
     default: () => ({
       total_membres: 250,
@@ -198,9 +284,47 @@ const props = defineProps({
       evolution_revenus: 12.5,
       paiements_en_retard: 3
     })
+=======
+    total_membres: number
+    total_cours: number
+    total_presences: number
+    total_paiements: number
+    progression_ceintures: { ceinture: string; count: number }[]
+>>>>>>> Stashed changes
   }
+}>()
+
+const chartRef = ref()
+
+onMounted(() => {
+  const ctx = chartRef.value.getContext('2d')
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+      datasets: [
+        {
+          label: 'Présences',
+          data: [32, 38, 41, 43, 48, 35, 29],
+          fill: true,
+          tension: 0.4,
+          borderColor: '#60a5fa',
+          backgroundColor: 'rgba(96, 165, 250, 0.1)',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { beginAtZero: true, ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  })
 })
 
+<<<<<<< Updated upstream
 const ceinturesData = computed(() => [
   { nom: 'Blanc', count: 85, couleur: '#F8FAFC' },
   { nom: 'Jaune', count: 72, couleur: '#FEF08A' },
@@ -227,7 +351,17 @@ const navigateTo = (routeName, params = {}) => {
   router.visit(route(routeName, params))
 }
 
+=======
+const formatMoney = (amount: number) =>
+  new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', minimumFractionDigits: 0 }).format(amount)
+
+const navigate = (routeName: string) => {
+  router.visit(route(routeName))
+}
+
+>>>>>>> Stashed changes
 const logout = () => {
   router.post(route('logout'))
 }
 </script>
+
