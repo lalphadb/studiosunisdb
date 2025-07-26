@@ -3,9 +3,13 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MembreController;
+use App\Http\Controllers\CoursController;
+use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\PaiementController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 // Route de test API simple
@@ -57,37 +61,37 @@ Route::get('/debug', function () {
     // Test base de données
     $html .= '<div class="box">
                 <h2>🗃️ Statut Base de Données</h2>';
-    
+
     try {
         $dbConnection = DB::connection()->getPdo();
         $dbName = DB::connection()->getDatabaseName();
         $html .= '<p class="success">✅ Connexion DB réussie</p>';
         $html .= '<p class="info">📊 Base: ' . $dbName . '</p>';
-        
+
         try {
             $tables = DB::select('SHOW TABLES');
             $html .= '<p class="info">📋 Tables: ' . count($tables) . ' trouvées</p>';
         } catch (Exception $e) {
             $html .= '<p class="warning">⚠️ Tables non listables</p>';
         }
-        
+
     } catch (Exception $e) {
         $html .= '<p class="error">❌ Erreur DB: ' . htmlspecialchars($e->getMessage()) . '</p>';
     }
-    
+
     $html .= '</div>';
 
     // Extensions PHP
     $html .= '<div class="box">
                 <h2>🔧 Extensions PHP</h2>';
-    
+
     $extensions = ['pdo', 'pdo_mysql', 'mbstring', 'openssl', 'curl', 'json', 'xml', 'fileinfo'];
     foreach ($extensions as $ext) {
         $status = extension_loaded($ext) ? '✅' : '❌';
         $class = extension_loaded($ext) ? 'success' : 'error';
         $html .= '<p class="' . $class . '">' . $status . ' ' . $ext . '</p>';
     }
-    
+
     $html .= '</div>';
 
     // Navigation
@@ -108,16 +112,14 @@ Route::get('/debug', function () {
 
 // Route racine - redirection vers debug
 Route::get('/', function () {
-    return redirect('/debug');
+    return redirect('/dashboard');
 });
 
 // Routes authentifiées
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     // Dashboard
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profil utilisateur
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -128,6 +130,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('membres', MembreController::class);
     Route::post('membres/{membre}/changer-ceinture', [MembreController::class, 'changerCeinture'])->name('membres.changer-ceinture');
     Route::get('export/membres', [MembreController::class, 'export'])->name('membres.export');
+
+    // Gestion des cours
+    Route::resource('cours', CoursController::class);
+    Route::patch('cours/{cours}/toggle-statut', [CoursController::class, 'toggleStatut'])->name('cours.toggle-statut');
+    
+    // Gestion des présences
+    Route::get('presences', [PresenceController::class, 'index'])->name('presences.index');
+    Route::get('presences/tablette', [PresenceController::class, 'tablette'])->name('presences.tablette');
+    Route::post('presences/sauvegarder', [PresenceController::class, 'sauvegarder'])->name('presences.sauvegarder');
+    Route::get('presences/rapport', [PresenceController::class, 'rapport'])->name('presences.rapport');
+    
+    // Gestion des paiements
+    Route::resource('paiements', PaiementController::class);
+    Route::patch('paiements/{paiement}/marquer-paye', [PaiementController::class, 'marquerPaye'])->name('paiements.marquer-paye');
+    Route::post('paiements/{paiement}/rappel', [PaiementController::class, 'envoyerRappel'])->name('paiements.rappel');
+    Route::post('paiements/rappels-globaux', [PaiementController::class, 'rappelsGlobaux'])->name('paiements.rappels-globaux');
+    Route::get('paiements/export', [PaiementController::class, 'export'])->name('paiements.export');
 
     // Routes admin
     Route::get('/admin', function () {
@@ -141,3 +160,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Auth routes
 require __DIR__.'/auth.php';
+
+// API Dashboard
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/api/dashboard/metriques', [DashboardController::class, 'metriquesTempsReel'])->name('dashboard.metriques');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Routes Blade Fonctionnelles (Bypass Inertia)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('blade')->group(function () {
+    Route::get('/debug', [App\Http\Controllers\BladeController::class, 'debug']);
+    Route::get('/login', [App\Http\Controllers\BladeController::class, 'login'])->name('blade.login');
+    Route::post('/login', [App\Http\Controllers\BladeController::class, 'loginPost']);
+    Route::get('/dashboard', [App\Http\Controllers\BladeController::class, 'dashboard'])->name('blade.dashboard');
+    Route::get('/membres', [App\Http\Controllers\BladeController::class, 'membres'])->name('blade.membres');
+    Route::post('/logout', [App\Http\Controllers\BladeController::class, 'logout'])->name('blade.logout');
+});
+
+// Route redirect temporaire
+Route::get('/working', function() {
+    return redirect('/blade/debug');
+});

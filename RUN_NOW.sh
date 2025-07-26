@@ -1,1 +1,0 @@
-cd /home/studiosdb/studiosunisdb/studiosdb_v5_pro && chmod +x deploy_to_main.sh && ./deploy_to_main.sh
