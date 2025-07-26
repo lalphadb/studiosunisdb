@@ -1,8 +1,0 @@
-nohup: ignoring input
-
-   INFO  Server running on [http://0.0.0.0:8000].  
-
-  Press Ctrl+C to stop the server
-
-  2025-07-20 15:20:02 /login ....................................... ~ 0.56ms
-  2025-07-20 15:20:02 /favicon.ico .................................... ~ 1 s

@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 /**
@@ -17,7 +16,7 @@ use Carbon\Carbon;
  */
 class Membre extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'user_id', 'prenom', 'nom', 'date_naissance', 'sexe',
@@ -31,7 +30,7 @@ class Membre extends Model
 
     protected $casts = [
         'date_naissance' => 'date',
-        'date_inscription' => 'date', 
+        'date_inscription' => 'date',
         'date_derniere_presence' => 'datetime',
         'allergies' => 'array',
         'consentement_photos' => 'boolean',
