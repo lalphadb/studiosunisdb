@@ -135,6 +135,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('cours', CoursController::class);
     Route::patch('cours/{cours}/toggle-statut', [CoursController::class, 'toggleStatut'])->name('cours.toggle-statut');
     
+    // Gestion des horaires de cours
+    Route::get('cours/{cours}/horaires', [CoursController::class, 'horaires'])->name('cours.horaires');
+    Route::post('cours/{cours}/horaires', [CoursController::class, 'storeHoraire'])->name('cours.horaires.store');
+    Route::put('cours/{cours}/horaires/{horaire}', [CoursController::class, 'updateHoraire'])->name('cours.horaires.update');
+    Route::delete('cours/{cours}/horaires/{horaire}', [CoursController::class, 'destroyHoraire'])->name('cours.horaires.destroy');
+    
+    // Génération de sessions de cours
+    Route::post('cours/{cours}/generer-sessions', [CoursController::class, 'genererSessionsSaison'])->name('cours.generer-sessions');
+    
     // Gestion des présences
     Route::get('presences', [PresenceController::class, 'index'])->name('presences.index');
     Route::get('presences/tablette', [PresenceController::class, 'tablette'])->name('presences.tablette');
