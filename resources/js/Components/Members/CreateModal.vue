@@ -185,7 +185,7 @@
                 >
                   <option value="">Sélectionner la ceinture...</option>
                   <option v-for="ceinture in ceintures" :key="ceinture.id" :value="ceinture.id">
-                    {{ ceinture.emoji }} {{ ceinture.nom }}
+                    🥋 {{ ceinture.nom }} ({{ ceinture.ordre }})
                   </option>
                 </select>
                 <div v-if="errors.ceinture_actuelle_id" class="text-red-400 text-sm mt-1">{{ errors.ceinture_actuelle_id }}</div>

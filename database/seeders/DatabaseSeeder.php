@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         // Appels de seeders spécifiques
         $this->call([
+            CeinturesSeeder::class,
             SuperAdminSeeder::class,
         ]);
     }
