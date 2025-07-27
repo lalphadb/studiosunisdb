@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Membre;
 use App\Models\Ceinture;
+use App\Models\LienFamilial;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
@@ -17,6 +18,7 @@ use Inertia\Response;
  * - Validation stricte Laravel 11
  * - Pagination optimisée
  * - Recherche et filtres avancés
+ * - Gestion des liens familiaux
  * - Conformité Loi 25 Québec
  * - Architecture repository pattern ready
  * - Tests unitaires ready
@@ -32,21 +34,69 @@ class MembreController extends Controller
             'search' => 'nullable|string|max:255',
             'statut' => 'nullable|string|in:actif,inactif,suspendu,diplome',
             'ceinture' => 'nullable|exists:ceintures,id',
-            'sort' => 'nullable|string|in:nom,prenom,date_inscription,date_derniere_presence',
+            'vue' => 'nullable|string|in:tous,familles,adultes,enfants',
+            'sort' => 'nullable|string|in:nom,prenom,date_inscription,date_derniere_presence,ceinture',
             'per_page' => 'nullable|integer|min:10|max:100'
         ]);
 
-        $membres = Membre::with(['user', 'ceintureActuelle'])
-            ->when($validated['search'] ?? null, fn($q, $search) => $q->recherche($search))
+        $query = Membre::with(['ceintureActuelle', 'liensFamiliaux.membreLie'])
+            ->when($validated['search'] ?? null, function($q, $search) {
+                $q->where(function($subQuery) use ($search) {
+                    $subQuery->where('nom', 'like', "%{$search}%")
+                             ->orWhere('prenom', 'like', "%{$search}%")
+                             ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
             ->when($validated['statut'] ?? null, fn($q, $statut) => $q->where('statut', $statut))
             ->when($validated['ceinture'] ?? null, fn($q, $ceinture) => $q->where('ceinture_actuelle_id', $ceinture))
-            ->orderBy($validated['sort'] ?? 'nom')
-            ->paginate($validated['per_page'] ?? 20)
-            ->withQueryString();
+            ->when($validated['vue'] ?? null, function($q, $vue) {
+                switch($vue) {
+                    case 'adultes':
+                        $q->whereRaw('DATEDIFF(CURDATE(), date_naissance) >= 6570'); // 18 ans
+                        break;
+                    case 'enfants':
+                        $q->whereRaw('DATEDIFF(CURDATE(), date_naissance) < 6570'); // moins de 18 ans
+                        break;
+                }
+            });
+
+        // Tri
+        $sortBy = $validated['sort'] ?? 'nom';
+        if ($sortBy === 'ceinture') {
+            $query->join('ceintures', 'membres.ceinture_actuelle_id', '=', 'ceintures.id')
+                  ->orderBy('ceintures.ordre');
+        } else {
+            $query->orderBy($sortBy);
+        }
+
+        $membres = $query->paginate($validated['per_page'] ?? 25)
+                        ->withQueryString();
 
         $ceintures = Ceinture::orderBy('ordre')->get();
         
-        return Inertia::render('Membres/Index', compact('membres', 'ceintures'));
+        // Statistiques
+        $stats = [
+            'total_membres' => Membre::count(),
+            'membres_actifs' => Membre::where('statut', 'actif')->count(),
+            'nouvelles_inscriptions' => Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count(),
+            'total_familles' => LienFamilial::distinct('famille_id')->count(),
+            'evolution_membres' => $this->calculateMemberGrowth(),
+        ];
+        
+        return Inertia::render('Membres/IndexNew', compact('membres', 'ceintures', 'stats'));
+    }
+
+    /**
+     * Calcul de la croissance des membres
+     */
+    private function calculateMemberGrowth(): float
+    {
+        $currentMonth = Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count();
+        $lastMonth = Membre::whereDate('date_inscription', '>=', now()->subMonth()->startOfMonth())
+                          ->whereDate('date_inscription', '<', now()->startOfMonth())->count();
+        
+        if ($lastMonth === 0) return 100;
+        return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
     }
 
     /**

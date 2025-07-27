@@ -90,43 +90,43 @@
       <!-- Action Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <ModernActionCard
-          title="Nouveau Membre"
-          description="Inscription rapide et gestion des nouveaux membres"
-          href="/membres/create"
-          icon-name="user-plus"
+          title="Gestion Membres"
+          description="Voir, créer et gérer tous les membres"
+          @click="navigateToMembres"
+          icon-name="user-group"
           color="blue"
-          badge="Rapide"
+          :badge="`${stats.total_membres} membres`"
+          badge-type="info"
+        />
+        
+        <ModernActionCard
+          title="Gestion Cours"
+          description="Créer, planifier et organiser les cours"
+          @click="navigateToCours"
+          icon-name="academic-cap"
+          color="purple"
+          :badge="`${stats.cours_actifs || 0} cours actifs`"
           badge-type="info"
         />
         
         <ModernActionCard
           title="Gestion Présences"
           description="Mode tablette pour enregistrer les présences"
-          href="/presences"
-          icon-name="clipboard"
+          @click="navigateToPresences"
+          icon-name="clipboard-document-check"
           color="green"
           badge="Mode Tablette"
           badge-type="success"
         />
         
         <ModernActionCard
-          title="Paiements"
+          title="Gestion Paiements"
           description="Suivi des paiements et facturations"
-          href="/paiements"
+          @click="navigateToPaiements"
           icon-name="credit-card"
           color="orange"
           :badge="stats.paiements_en_retard > 0 ? `${stats.paiements_en_retard} en retard` : 'À jour'"
           :badge-type="stats.paiements_en_retard > 0 ? 'warning' : 'success'"
-        />
-        
-        <ModernActionCard
-          title="Planning Cours"
-          description="Organisation et planification des cours"
-          href="/cours"
-          icon-name="calendar"
-          color="purple"
-          :badge="`${stats.cours_actifs || 0} cours actifs`"
-          badge-type="info"
         />
       </div>
 
@@ -300,7 +300,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import ModernStatsCard from '@/Components/ModernStatsCard.vue'
 import ModernProgressBar from '@/Components/ModernProgressBar.vue'
 import ModernActionCard from '@/Components/ModernActionCard.vue'
@@ -405,6 +405,23 @@ const refreshData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Navigation methods
+const navigateToMembres = () => {
+  router.visit('/membres')
+}
+
+const navigateToCours = () => {
+  router.visit('/cours')
+}
+
+const navigateToPresences = () => {
+  router.visit('/presences')
+}
+
+const navigateToPaiements = () => {
+  router.visit('/paiements')
 }
 
 onMounted(() => {

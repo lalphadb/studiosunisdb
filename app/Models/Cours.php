@@ -15,8 +15,17 @@ class Cours extends Model
     protected $fillable = [
         'nom',
         'description',
-        'instructeur_id',
         'niveau',
+        'saison',
+        'age_minimum',
+        'capacite_max',
+        'tarif_mensuel',
+        'tarif_seance',
+        'tarif_carte',
+        'statut',
+        'visible_inscription',
+        // Anciens champs pour compatibilité
+        'instructeur_id',
         'age_min',
         'age_max',
         'places_max',
@@ -25,7 +34,6 @@ class Cours extends Model
         'heure_fin',
         'date_debut',
         'date_fin',
-        'tarif_mensuel',
         'actif',
     ];
 
@@ -35,10 +43,15 @@ class Cours extends Model
         'date_debut' => 'date',
         'date_fin' => 'date',
         'tarif_mensuel' => 'decimal:2',
+        'tarif_seance' => 'decimal:2',
+        'tarif_carte' => 'decimal:2',
         'actif' => 'boolean',
+        'visible_inscription' => 'boolean',
         'age_min' => 'integer',
         'age_max' => 'integer',
+        'age_minimum' => 'integer',
         'places_max' => 'integer',
+        'capacite_max' => 'integer',
     ];
 
     // Relations

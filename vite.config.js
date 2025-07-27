@@ -7,6 +7,7 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
+            buildDirectory: 'build',
         }),
         vue({
             template: {
@@ -23,9 +24,14 @@ export default defineConfig({
         },
     },
     build: {
-        manifest: true,
+        manifest: 'manifest.json',
         outDir: 'public/build',
         emptyOutDir: true,
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            },
+        },
     },
     server: {
         hmr: {
