@@ -346,6 +346,7 @@
     <!-- Modals -->
     <MemberCreateModal
       v-if="showCreateModal"
+      :ceintures="ceintures"
       @close="showCreateModal = false"
       @created="onMemberCreated"
     />
@@ -353,6 +354,7 @@
     <MemberEditModal
       v-if="showEditModal && selectedMember"
       :member="selectedMember"
+      :ceintures="ceintures"
       @close="showEditModal = false"
       @updated="onMemberUpdated"
     />
