@@ -26,7 +26,7 @@ class LienFamilial extends Model
     const TYPES_RELATIONS = [
         'parent' => 'Parent',
         'enfant' => 'Enfant',
-        'conjoint' => 'Conjoint/Conjointe', 
+        'conjoint' => 'Conjoint/Conjointe',
         'frere_soeur' => 'Frère/Sœur',
         'grand_parent' => 'Grand-parent',
         'petit_enfant' => 'Petit-enfant',
@@ -109,7 +109,7 @@ class LienFamilial extends Model
         // Créer le lien inverse si différent
         if ($membrePrincipalId !== $membreLieId) {
             $typeRelationInverse = $relationsInverses[$typeRelation] ?? $typeRelation;
-            
+
             self::create([
                 'membre_principal_id' => $membreLieId,
                 'membre_lie_id' => $membrePrincipalId,

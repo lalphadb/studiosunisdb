@@ -26,7 +26,7 @@ return new class extends Migration
             // Index pour les performances
             $table->index(['cours_id', 'jour']);
             $table->index(['instructeur_id']);
-            
+
             // Contrainte pour éviter les chevauchements
             $table->unique(['cours_id', 'jour', 'heure_debut'], 'unique_cours_jour_heure');
         });

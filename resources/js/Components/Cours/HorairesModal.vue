@@ -7,7 +7,7 @@
             <CalendarIcon class="w-8 h-8 mr-3" />
             Gestion des Horaires - {{ cours.nom }}
           </h3>
-          <button @click="$emit('close')" 
+          <button @click="$emit('close')"
                   class="text-white hover:text-gray-200 transition-colors">
             <XMarkIcon class="w-6 h-6" />
           </button>
@@ -21,7 +21,7 @@
             <ClockIcon class="w-5 h-5 mr-2 text-purple-600" />
             Horaires Actuels
           </h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div v-for="horaire in horaires" :key="horaire.id"
                  class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
@@ -45,11 +45,11 @@
                   </button>
                 </div>
               </div>
-              
+
               <div v-if="horaire.instructeur" class="text-sm text-gray-600 mb-2">
                 👨‍🏫 {{ horaire.instructeur.nom }} {{ horaire.instructeur.prenom }}
               </div>
-              
+
               <div class="text-xs text-purple-500">
                 📍 {{ horaire.salle || 'Salle non définie' }}
               </div>
@@ -63,35 +63,35 @@
             <CalendarDaysIcon class="w-5 h-5 mr-2 text-yellow-600" />
             Planificateur de Saison {{ getSaisonEmoji(cours.saison) }}
           </h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 📅 Date de début de saison
               </label>
-              <input v-model="saisonPlanning.date_debut" 
-                     type="date" 
+              <input v-model="saisonPlanning.date_debut"
+                     type="date"
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 🏁 Date de fin de saison
               </label>
-              <input v-model="saisonPlanning.date_fin" 
-                     type="date" 
+              <input v-model="saisonPlanning.date_fin"
+                     type="date"
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
             </div>
           </div>
-          
+
           <div class="mt-4 flex items-center space-x-4">
             <label class="flex items-center">
-              <input v-model="saisonPlanning.exclure_conges" 
-                     type="checkbox" 
+              <input v-model="saisonPlanning.exclure_conges"
+                     type="checkbox"
                      class="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500">
               <span class="ml-2 text-sm text-gray-700">🏖️ Exclure les congés scolaires</span>
             </label>
-            
+
             <button @click="genererSessionsSaison"
                     class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
               ⚡ Générer les Sessions
@@ -105,14 +105,14 @@
             <PlusIcon class="w-5 h-5 mr-2 text-green-600" />
             {{ editingHoraire ? 'Modifier l\'horaire' : 'Ajouter un horaire' }}
           </h4>
-          
+
           <form @submit.prevent="saveHoraire" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   📅 Jour de la semaine
                 </label>
-                <select v-model="horaireForm.jour" 
+                <select v-model="horaireForm.jour"
                         required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                   <option value="">Choisir un jour</option>
@@ -130,8 +130,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   ⏰ Heure de début
                 </label>
-                <input v-model="horaireForm.heure_debut" 
-                       type="time" 
+                <input v-model="horaireForm.heure_debut"
+                       type="time"
                        required
                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
               </div>
@@ -140,8 +140,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   ⏰ Heure de fin
                 </label>
-                <input v-model="horaireForm.heure_fin" 
-                       type="time" 
+                <input v-model="horaireForm.heure_fin"
+                       type="time"
                        required
                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
               </div>
@@ -150,8 +150,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   📍 Salle
                 </label>
-                <input v-model="horaireForm.salle" 
-                       type="text" 
+                <input v-model="horaireForm.salle"
+                       type="text"
                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                        placeholder="Ex: Dojo A">
               </div>
@@ -161,11 +161,11 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 👨‍🏫 Instructeur (optionnel)
               </label>
-              <select v-model="horaireForm.instructeur_id" 
+              <select v-model="horaireForm.instructeur_id"
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                 <option value="">Aucun instructeur assigné</option>
-                <option v-for="instructeur in instructeurs" 
-                        :key="instructeur.id" 
+                <option v-for="instructeur in instructeurs"
+                        :key="instructeur.id"
                         :value="instructeur.id">
                   {{ instructeur.nom }} {{ instructeur.prenom }}
                 </option>
@@ -173,13 +173,13 @@
             </div>
 
             <div class="flex justify-end space-x-4">
-              <button v-if="editingHoraire" 
-                      type="button" 
+              <button v-if="editingHoraire"
+                      type="button"
                       @click="cancelEdit"
                       class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Annuler
               </button>
-              <button type="submit" 
+              <button type="submit"
                       class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all">
                 {{ editingHoraire ? '💾 Modifier' : '➕ Ajouter' }}
               </button>
@@ -193,14 +193,14 @@
             <CalendarIcon class="w-5 h-5 mr-2 text-blue-600" />
             Vue d'ensemble de la semaine
           </h4>
-          
+
           <div class="grid grid-cols-7 gap-2 text-center">
-            <div v-for="jour in joursWeek" :key="jour.key" 
+            <div v-for="jour in joursWeek" :key="jour.key"
                  class="bg-white rounded-lg p-4 border">
               <div class="font-bold text-sm text-gray-800 mb-2">
                 {{ jour.emoji }} {{ jour.nom }}
               </div>
-              <div v-for="horaire in getHorairesJour(jour.key)" 
+              <div v-for="horaire in getHorairesJour(jour.key)"
                    :key="horaire.id"
                    class="text-xs bg-purple-100 text-purple-800 rounded p-1 mb-1">
                 {{ formatHeure(horaire.heure_debut) }}-{{ formatHeure(horaire.heure_fin) }}
@@ -212,7 +212,7 @@
 
       <!-- Actions finales -->
       <div class="flex justify-end space-x-4 p-6 border-t bg-gray-50 rounded-b-2xl">
-        <button @click="$emit('close')" 
+        <button @click="$emit('close')"
                 class="px-6 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
           Fermer
         </button>
@@ -297,7 +297,7 @@ const loadInstructeurs = async () => {
 
 const saveHoraire = () => {
   const data = { ...horaireForm, cours_id: props.cours.id }
-  
+
   if (editingHoraire.value) {
     router.put(`/cours/${props.cours.id}/horaires/${editingHoraire.value.id}`, data, {
       onSuccess: () => {
@@ -362,7 +362,7 @@ const genererSessionsSaison = () => {
 const getJourEmoji = (jour) => {
   const emojis = {
     'lundi': '🌅',
-    'mardi': '🌞', 
+    'mardi': '🌞',
     'mercredi': '⭐',
     'jeudi': '🌙',
     'vendredi': '✨',

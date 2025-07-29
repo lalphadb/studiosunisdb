@@ -31,7 +31,7 @@ return new class extends Migration
         Schema::table('cours', function (Blueprint $table) {
             $table->dropColumn([
                 'saison',
-                'age_minimum', 
+                'age_minimum',
                 'capacite_max',
                 'tarif_seance',
                 'tarif_carte',

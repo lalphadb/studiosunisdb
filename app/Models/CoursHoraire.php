@@ -33,7 +33,7 @@ class CoursHoraire extends Model
      */
     const JOURS_SEMAINE = [
         'lundi' => 'Lundi',
-        'mardi' => 'Mardi', 
+        'mardi' => 'Mardi',
         'mercredi' => 'Mercredi',
         'jeudi' => 'Jeudi',
         'vendredi' => 'Vendredi',
@@ -106,14 +106,14 @@ class CoursHoraire extends Model
      */
     public function getHoraireFormateAttribute(): string
     {
-        $debut = $this->heure_debut instanceof \DateTime 
+        $debut = $this->heure_debut instanceof \DateTime
             ? $this->heure_debut->format('H:i')
             : $this->heure_debut;
-            
-        $fin = $this->heure_fin instanceof \DateTime 
+
+        $fin = $this->heure_fin instanceof \DateTime
             ? $this->heure_fin->format('H:i')
             : $this->heure_fin;
-            
+
         return "{$this->jour_emoji} {$this->jour_libelle} {$debut}-{$fin}";
     }
 
@@ -147,7 +147,7 @@ class CoursHoraire extends Model
     {
         $debut = \Carbon\Carbon::createFromFormat('H:i', $this->heure_debut);
         $fin = \Carbon\Carbon::createFromFormat('H:i', $this->heure_fin);
-        
+
         return $fin->diffInMinutes($debut);
     }
 

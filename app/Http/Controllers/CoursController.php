@@ -168,7 +168,7 @@ class CoursController extends Controller
     public function destroy(Cours $cours): RedirectResponse
     {
         $nom = $cours->nom;
-        
+
         // Supprimer en cascade (soft delete)
         $cours->delete();
 
@@ -183,13 +183,13 @@ class CoursController extends Controller
     {
         $horaires = [];
         $instructeurs = [];
-        
+
         if (class_exists('App\Models\CoursHoraire')) {
             $horaires = CoursHoraire::where('cours_id', $cours->id)->get();
         }
-        
+
         $instructeurs = Membre::where('role', 'instructeur')->get(['id', 'nom', 'prenom']);
-        
+
         return response()->json([
             'horaires' => $horaires,
             'instructeurs' => $instructeurs

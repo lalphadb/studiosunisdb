@@ -7,7 +7,7 @@
             <PencilIcon class="w-8 h-8 mr-3" />
             Modifier le Cours
           </h3>
-          <button @click="$emit('close')" 
+          <button @click="$emit('close')"
                   class="text-white hover:text-gray-200 transition-colors">
             <XMarkIcon class="w-6 h-6" />
           </button>
@@ -21,14 +21,14 @@
             <BookOpenIcon class="w-5 h-5 mr-2 text-blue-600" />
             Informations Générales
           </h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 📚 Nom du cours *
               </label>
-              <input v-model="form.nom" 
-                     type="text" 
+              <input v-model="form.nom"
+                     type="text"
                      required
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <span v-if="errors.nom" class="text-red-500 text-sm">{{ errors.nom }}</span>
@@ -38,7 +38,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 🌟 Niveau *
               </label>
-              <select v-model="form.niveau" 
+              <select v-model="form.niveau"
                       required
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 <option value="">Choisir le niveau</option>
@@ -55,7 +55,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 📝 Description
               </label>
-              <textarea v-model="form.description" 
+              <textarea v-model="form.description"
                         rows="3"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Description détaillée du cours..."></textarea>
@@ -70,13 +70,13 @@
             <CalendarIcon class="w-5 h-5 mr-2 text-purple-600" />
             Saison et Contraintes
           </h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 🌍 Saison *
               </label>
-              <select v-model="form.saison" 
+              <select v-model="form.saison"
                       required
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 <option value="">Choisir la saison</option>
@@ -92,9 +92,9 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 👶 Âge minimum
               </label>
-              <input v-model.number="form.age_minimum" 
-                     type="number" 
-                     min="3" 
+              <input v-model.number="form.age_minimum"
+                     type="number"
+                     min="3"
                      max="100"
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
               <span v-if="errors.age_minimum" class="text-red-500 text-sm">{{ errors.age_minimum }}</span>
@@ -104,10 +104,10 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 👥 Capacité maximale *
               </label>
-              <input v-model.number="form.capacite_max" 
-                     type="number" 
-                     min="1" 
-                     max="50" 
+              <input v-model.number="form.capacite_max"
+                     type="number"
+                     min="1"
+                     max="50"
                      required
                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
               <span v-if="errors.capacite_max" class="text-red-500 text-sm">{{ errors.capacite_max }}</span>
@@ -121,17 +121,17 @@
             <CurrencyDollarIcon class="w-5 h-5 mr-2 text-green-600" />
             Tarification (CAD)
           </h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 💰 Tarif mensuel *
               </label>
               <div class="relative">
-                <input v-model.number="form.tarif_mensuel" 
-                       type="number" 
-                       step="0.01" 
-                       min="0" 
+                <input v-model.number="form.tarif_mensuel"
+                       type="number"
+                       step="0.01"
+                       min="0"
                        required
                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                 <span class="absolute right-3 top-3 text-gray-500">$</span>
@@ -144,9 +144,9 @@
                 🎫 Tarif par séance
               </label>
               <div class="relative">
-                <input v-model.number="form.tarif_seance" 
-                       type="number" 
-                       step="0.01" 
+                <input v-model.number="form.tarif_seance"
+                       type="number"
+                       step="0.01"
                        min="0"
                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                 <span class="absolute right-3 top-3 text-gray-500">$</span>
@@ -159,9 +159,9 @@
                 🎟️ Carte 10 cours
               </label>
               <div class="relative">
-                <input v-model.number="form.tarif_carte" 
-                       type="number" 
-                       step="0.01" 
+                <input v-model.number="form.tarif_carte"
+                       type="number"
+                       step="0.01"
                        min="0"
                        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                 <span class="absolute right-3 top-3 text-gray-500">$</span>
@@ -177,13 +177,13 @@
             <EyeIcon class="w-5 h-5 mr-2 text-yellow-600" />
             Statut et Visibilité
           </h4>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 📊 Statut du cours
               </label>
-              <select v-model="form.statut" 
+              <select v-model="form.statut"
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
                 <option value="actif">✅ Actif</option>
                 <option value="inactif">⏸️ Inactif</option>
@@ -194,8 +194,8 @@
 
             <div class="flex items-center mt-8">
               <label class="flex items-center">
-                <input v-model="form.visible_inscription" 
-                       type="checkbox" 
+                <input v-model="form.visible_inscription"
+                       type="checkbox"
                        class="rounded border-gray-300 text-yellow-600 focus:ring-yellow-500">
                 <span class="ml-2 text-sm text-gray-700">👁️ Visible pour les inscriptions</span>
               </label>
@@ -205,20 +205,20 @@
 
         <!-- Actions -->
         <div class="flex justify-between pt-6 border-t">
-          <button type="button" 
-                  @click="deleteCours" 
+          <button type="button"
+                  @click="deleteCours"
                   class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
             <TrashIcon class="w-5 h-5 mr-2" />
             Supprimer le cours
           </button>
-          
+
           <div class="space-x-4">
-            <button type="button" 
-                    @click="$emit('close')" 
+            <button type="button"
+                    @click="$emit('close')"
                     class="px-6 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               Annuler
             </button>
-            <button type="submit" 
+            <button type="submit"
                     :disabled="isSubmitting"
                     class="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50">
               <span v-if="isSubmitting">⏳ Modification...</span>

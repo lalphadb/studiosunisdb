@@ -1,10 +1,10 @@
 <template>
   <Head title="Présences - Mode Tablette" />
-  
+
   <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white">
     <!-- Mode tablette full screen -->
     <div class="relative z-10 max-w-full mx-auto px-6 py-8">
-      
+
       <!-- Header avec sélection du cours -->
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
         <div class="mb-4 lg:mb-0">
@@ -20,9 +20,9 @@
             </div>
           </div>
         </div>
-        
+
         <div class="flex items-center space-x-3">
-          <button 
+          <button
             @click="synchroniser"
             :disabled="syncing"
             class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2"
@@ -30,8 +30,8 @@
             <ArrowPathIcon class="h-5 w-5" :class="{ 'animate-spin': syncing }" />
             <span>{{ syncing ? 'Synchro...' : 'Synchroniser' }}</span>
           </button>
-          
-          <Link 
+
+          <Link
             :href="route('presences.index')"
             class="bg-gray-600 hover:bg-gray-700 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2"
           >
@@ -44,7 +44,7 @@
       <!-- Sélection du cours si aucun sélectionné -->
       <div v-if="!coursSelectionne" class="bg-gray-800/30 backdrop-blur-xl border border-gray-700/50 rounded-xl p-8 mb-8">
         <h2 class="text-2xl font-bold text-white mb-6 text-center">Sélectionnez un cours</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             v-for="cours in coursDisponibles"
@@ -64,7 +64,7 @@
 
       <!-- Interface de présences -->
       <div v-if="coursSelectionne" class="space-y-6">
-        
+
         <!-- Info du cours sélectionné -->
         <div class="bg-gray-800/30 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6">
           <div class="flex items-center justify-between">
@@ -72,13 +72,13 @@
               <h2 class="text-2xl font-bold text-white mb-1">{{ coursSelectionne.nom }}</h2>
               <p class="text-gray-400">{{ coursSelectionne.horaire_complet }} - {{ coursSelectionne.instructeur?.name }}</p>
             </div>
-            
+
             <div class="text-right">
               <div class="text-3xl font-bold text-white">{{ new Date().toLocaleDateString('fr-CA') }}</div>
               <div class="text-lg text-gray-400">{{ currentTime }}</div>
             </div>
           </div>
-          
+
           <!-- Statistiques rapides -->
           <div class="grid grid-cols-4 gap-4 mt-6">
             <div class="text-center">
@@ -133,7 +133,7 @@
                 <CheckIcon class="h-4 w-4" />
                 <span>Présent</span>
               </button>
-              
+
               <button
                 @click="marquerPresence(membre, 'retard')"
                 :class="{
@@ -145,7 +145,7 @@
                 <ClockIcon class="h-4 w-4" />
                 <span>Retard</span>
               </button>
-              
+
               <button
                 @click="marquerPresence(membre, 'excuse')"
                 :class="{
@@ -157,7 +157,7 @@
                 <DocumentTextIcon class="h-4 w-4" />
                 <span>Excusé</span>
               </button>
-              
+
               <button
                 @click="marquerPresence(membre, 'absent')"
                 :class="{
@@ -185,7 +185,7 @@
               <p class="text-lg font-semibold text-white">Cours terminé ?</p>
               <p class="text-sm text-gray-400">Sauvegardez les présences avant de quitter</p>
             </div>
-            
+
             <div class="flex space-x-3">
               <button
                 @click="sauvegarderPresences"
@@ -195,7 +195,7 @@
                 <CheckIcon class="h-5 w-5" />
                 <span>{{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}</span>
               </button>
-              
+
               <button
                 @click="reinitialiserCours"
                 class="bg-gray-600 hover:bg-gray-700 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2"
@@ -246,7 +246,7 @@ const currentTime = ref('')
 // Cours disponibles pour aujourd'hui
 const coursDisponibles = computed(() => {
   const aujourdhui = new Date().toLocaleDateString('fr-CA', { weekday: 'long' })
-  return props.cours.filter(cours => 
+  return props.cours.filter(cours =>
     cours.jour_semaine.toLowerCase() === aujourdhui.toLowerCase() && cours.actif
   )
 })
@@ -287,7 +287,7 @@ const selectionnerCours = (cours) => {
   // Initialiser les présences avec les données existantes
   presencesLocales.value.clear()
   cours.membres?.forEach(membre => {
-    const presenceExistante = props.presences.find(p => 
+    const presenceExistante = props.presences.find(p =>
       p.membre_id === membre.id && p.cours_id === cours.id
     )
     if (presenceExistante) {
@@ -304,7 +304,7 @@ const marquerPresence = (membre, statut) => {
     heure_arrivee: statut === 'present' || statut === 'retard' ? new Date().toLocaleTimeString() : null,
     date_cours: new Date().toISOString().split('T')[0]
   }
-  
+
   presencesLocales.value.set(membre.id, presence)
 }
 
@@ -320,16 +320,16 @@ const getHeureArrivee = (membre) => {
 
 const sauvegarderPresences = async () => {
   if (!coursSelectionne.value) return
-  
+
   saving.value = true
   try {
     const presencesArray = Array.from(presencesLocales.value.values())
-    
+
     await router.post('/presences/sauvegarder', {
       cours_id: coursSelectionne.value.id,
       presences: presencesArray
     })
-    
+
     // Afficher un message de succès
     console.log('Présences sauvegardées avec succès')
   } catch (error) {

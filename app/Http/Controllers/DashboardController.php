@@ -10,7 +10,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         if (!$user) return redirect()->route('login');
-        
+
         $stats = [
             'total_membres' => Membre::count(),
             'membres_actifs' => Membre::where('statut', 'actif')->count(),
@@ -26,13 +26,13 @@ class DashboardController extends Controller
             'objectif_revenus' => 7000,
             'satisfaction_moyenne' => 92
         ];
-        
+
         return Inertia::render('DashboardUltraPro', [
             'stats' => $stats,
             'user' => $user
         ]);
     }
-    
+
     public function metriquesTempsReel(Request $request)
     {
         return response()->json(['success' => true, 'data' => []]);

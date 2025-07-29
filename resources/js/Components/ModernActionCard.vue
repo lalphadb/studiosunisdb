@@ -1,5 +1,5 @@
 <template>
-  <component 
+  <component
     :is="linkComponent"
     :href="href"
     :class="cardClasses"
@@ -7,7 +7,7 @@
   >
     <!-- Background gradient -->
     <div class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300" :style="{ background: hoverGradient }"></div>
-    
+
     <!-- Content -->
     <div class="relative z-10 flex flex-col items-center justify-center h-full p-6">
       <!-- Icon -->
@@ -18,10 +18,10 @@
 
       <!-- Title -->
       <h3 class="text-lg font-bold text-white mb-2 text-center">{{ title }}</h3>
-      
+
       <!-- Description -->
       <p class="text-sm text-gray-300 text-center mb-4">{{ description }}</p>
-      
+
       <!-- Badge/Status -->
       <div v-if="badge" class="px-3 py-1 rounded-full text-xs font-medium" :class="badgeClasses">
         {{ badge }}
@@ -43,7 +43,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
-import { 
+import {
   UserPlusIcon,
   ClipboardDocumentCheckIcon,
   CreditCardIcon,
@@ -205,7 +205,7 @@ const handleClick = (event) => {
 
 /* Glow effect on hover */
 .group:hover {
-  box-shadow: 
+  box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04),
     0 0 20px rgba(59, 130, 246, 0.4);
