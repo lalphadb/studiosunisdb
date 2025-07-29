@@ -489,7 +489,7 @@ const exportMembers = () => {
 }
 
 // Event handlers
-const onMemberCreated = (member) => {
+const onMemberCreated = () => {
   showCreateModal.value = false
   router.reload({ only: ['membres', 'stats'] })
 }
