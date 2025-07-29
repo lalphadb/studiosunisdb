@@ -2,7 +2,7 @@
   <div class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
       <!-- Background overlay -->
-      <div 
+      <div
         class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75 backdrop-blur-sm"
         @click="$emit('close')"
       ></div>
@@ -29,15 +29,15 @@
             <UsersIcon class="h-5 w-5 text-blue-400 mr-2" />
             Liens Familiaux Existants
           </h4>
-          
+
           <div v-if="existingLinks.length === 0" class="text-gray-400 text-center py-8 bg-gray-700/30 rounded-xl">
             <HomeIcon class="h-12 w-12 mx-auto mb-4 text-gray-500" />
             <p>Aucun lien familial défini pour ce membre</p>
           </div>
-          
+
           <div v-else class="space-y-3">
-            <div 
-              v-for="link in existingLinks" 
+            <div
+              v-for="link in existingLinks"
               :key="link.id"
               class="flex items-center justify-between p-4 bg-gray-700/30 rounded-xl hover:bg-gray-700/50 transition-colors"
             >
@@ -45,7 +45,7 @@
                 <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <span class="text-lg">{{ getRelationIcon(link.type_relation) }}</span>
                 </div>
-                
+
                 <div>
                   <div class="text-white font-medium">
                     {{ link.membre_lie.prenom }} {{ link.membre_lie.nom }}
@@ -58,7 +58,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="flex items-center space-x-2">
                 <button
                   @click="viewLinkedMember(link.membre_lie)"
@@ -67,7 +67,7 @@
                 >
                   <EyeIcon class="h-4 w-4" />
                 </button>
-                
+
                 <button
                   @click="editLink(link)"
                   class="text-yellow-400 hover:text-yellow-300 p-2 rounded-lg hover:bg-yellow-500/10 transition-colors"
@@ -75,7 +75,7 @@
                 >
                   <PencilIcon class="h-4 w-4" />
                 </button>
-                
+
                 <button
                   @click="deleteLink(link)"
                   class="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition-colors"
@@ -94,7 +94,7 @@
             <PlusIcon class="h-5 w-5 text-green-400 mr-2" />
             Ajouter un Nouveau Lien
           </h4>
-          
+
           <form @submit.prevent="addNewLink" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Type de relation -->
@@ -134,9 +134,9 @@
                     class="w-full px-4 py-3 bg-gray-600/50 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Sélectionner un membre...</option>
-                    <option 
-                      v-for="membre in availableMembers" 
-                      :key="membre.id" 
+                    <option
+                      v-for="membre in availableMembers"
+                      :key="membre.id"
                       :value="membre.id"
                     >
                       {{ membre.prenom }} {{ membre.nom }} - {{ membre.email }}
@@ -185,7 +185,7 @@
               >
                 Annuler
               </button>
-              
+
               <button
                 type="submit"
                 :disabled="submitting"
@@ -205,10 +205,10 @@
             <LightBulbIcon class="h-4 w-4 mr-2" />
             Suggestions basées sur les liens existants
           </h5>
-          
+
           <div class="space-y-2">
-            <div 
-              v-for="suggestion in suggestions" 
+            <div
+              v-for="suggestion in suggestions"
               :key="suggestion.id"
               class="flex items-center justify-between text-sm"
             >
@@ -233,7 +233,7 @@
           >
             Fermer
           </button>
-          
+
           <button
             @click="exportFamilyTree"
             class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center space-x-2"
@@ -280,8 +280,8 @@ const newLink = ref({
 
 // Computed
 const filteredAvailableMembers = computed(() => {
-  return props.availableMembers?.filter(m => 
-    m.id !== props.member.id && 
+  return props.availableMembers?.filter(m =>
+    m.id !== props.member.id &&
     !existingLinks.value.some(link => link.membre_lie_id === m.id)
   ) || []
 })

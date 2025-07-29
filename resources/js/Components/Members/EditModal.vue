@@ -2,7 +2,7 @@
   <div class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
       <!-- Background overlay -->
-      <div 
+      <div
         class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75 backdrop-blur-sm"
         @click="$emit('close')"
       ></div>
@@ -31,7 +31,7 @@
               <UserIcon class="h-5 w-5 text-blue-400 mr-2" />
               Informations Personnelles
             </h4>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Prénom -->
               <div>
@@ -105,7 +105,7 @@
               <PhoneIcon class="h-5 w-5 text-green-400 mr-2" />
               Informations de Contact
             </h4>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Email -->
               <div class="md:col-span-2">
@@ -173,7 +173,7 @@
               <AcademicCapIcon class="h-5 w-5 text-yellow-400 mr-2" />
               Informations Karaté
             </h4>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Ceinture actuelle -->
               <div>
@@ -235,7 +235,7 @@
             >
               Annuler
             </button>
-            
+
             <button
               type="submit"
               :disabled="submitting"

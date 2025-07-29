@@ -1,10 +1,10 @@
 <template>
   <Head title="Gestion des Cours" />
-  
+
   <AuthenticatedLayout>
     <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white">
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         <!-- Header avec actions -->
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div class="mb-4 lg:mb-0">
@@ -20,9 +20,9 @@
               </div>
             </div>
           </div>
-          
+
           <div class="flex items-center space-x-3">
-            <Link 
+            <Link
               :href="route('cours.create')"
               class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2"
             >
@@ -42,7 +42,7 @@
             format="number"
             description="Cours en cours d'activité"
           />
-          
+
           <ModernStatsCard
             title="Total Inscrits"
             :value="stats.total_inscrits"
@@ -51,7 +51,7 @@
             format="number"
             description="Élèves inscrits aux cours"
           />
-          
+
           <ModernStatsCard
             title="Taux d'Occupation"
             :value="stats.taux_occupation"
@@ -60,7 +60,7 @@
             format="percentage"
             description="Occupation moyenne des cours"
           />
-          
+
           <ModernStatsCard
             title="Revenus Cours"
             :value="stats.revenus_cours"
@@ -76,8 +76,8 @@
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Jour de la semaine</label>
-              <select 
-                v-model="filters.jour" 
+              <select
+                v-model="filters.jour"
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white"
               >
                 <option value="">Tous les jours</option>
@@ -90,11 +90,11 @@
                 <option value="dimanche">Dimanche</option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Instructeur</label>
-              <select 
-                v-model="filters.instructeur" 
+              <select
+                v-model="filters.instructeur"
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white"
               >
                 <option value="">Tous les instructeurs</option>
@@ -103,11 +103,11 @@
                 </option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Statut</label>
-              <select 
-                v-model="filters.statut" 
+              <select
+                v-model="filters.statut"
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white"
               >
                 <option value="">Tous</option>
@@ -116,9 +116,9 @@
                 <option value="complet">Complet</option>
               </select>
             </div>
-            
+
             <div class="flex items-end">
-              <button 
+              <button
                 @click="resetFilters"
                 class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-all duration-200"
               >
@@ -130,8 +130,8 @@
 
         <!-- Liste des cours -->
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          <div 
-            v-for="cours in filteredCours" 
+          <div
+            v-for="cours in filteredCours"
             :key="cours.id"
             class="bg-gray-800/30 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6 hover:border-purple-500/30 transition-all duration-300 group"
           >
@@ -141,9 +141,9 @@
                 <h3 class="text-lg font-semibold text-white mb-1">{{ cours.nom }}</h3>
                 <p class="text-sm text-gray-400">{{ cours.description }}</p>
               </div>
-              
+
               <div class="flex items-center space-x-2">
-                <span 
+                <span
                   :class="{
                     'bg-green-500/20 text-green-300': cours.actif && cours.places_restantes > 0,
                     'bg-red-500/20 text-red-300': !cours.actif,
@@ -162,17 +162,17 @@
                 <CalendarDaysIcon class="h-4 w-4 mr-2 text-purple-400" />
                 <span>{{ cours.horaire_complet }}</span>
               </div>
-              
+
               <div class="flex items-center text-sm text-gray-300">
                 <UserIcon class="h-4 w-4 mr-2 text-blue-400" />
                 <span>{{ cours.instructeur?.name || 'Non assigné' }}</span>
               </div>
-              
+
               <div class="flex items-center text-sm text-gray-300">
                 <UsersIcon class="h-4 w-4 mr-2 text-green-400" />
                 <span>{{ cours.membres_count }}/{{ cours.places_max }} places</span>
               </div>
-              
+
               <div class="flex items-center text-sm text-gray-300">
                 <CurrencyDollarIcon class="h-4 w-4 mr-2 text-yellow-400" />
                 <span>{{ formatCurrency(cours.prix_mensuel) }}/mois</span>
@@ -196,21 +196,21 @@
 
             <!-- Actions -->
             <div class="flex flex-wrap gap-2">
-              <Link 
+              <Link
                 :href="route('cours.show', cours.id)"
                 class="flex-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-center"
               >
                 Détails
               </Link>
-              
-              <Link 
+
+              <Link
                 :href="route('cours.edit', cours.id)"
                 class="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 px-3 py-2 rounded-lg text-sm transition-all duration-200 text-center"
               >
                 Modifier
               </Link>
-              
-              <button 
+
+              <button
                 @click="toggleStatut(cours)"
                 :class="{
                   'bg-green-600/20 hover:bg-green-600/30 text-green-300': !cours.actif,
@@ -229,7 +229,7 @@
           <AcademicCapIcon class="h-16 w-16 text-gray-500 mx-auto mb-4" />
           <h3 class="text-lg font-medium text-gray-400 mb-2">Aucun cours trouvé</h3>
           <p class="text-gray-500 mb-4">Commencez par créer votre premier cours.</p>
-          <Link 
+          <Link
             :href="route('cours.create')"
             class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center space-x-2"
           >

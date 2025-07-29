@@ -68,7 +68,7 @@
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div class="flex flex-wrap items-center space-x-4">
               <!-- Filtre par saison -->
-              <select v-model="filters.saison" 
+              <select v-model="filters.saison"
                       @change="applyFilters"
                       class="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500">
                 <option value="">🌍 Toutes les saisons</option>
@@ -79,7 +79,7 @@
               </select>
 
               <!-- Filtre par niveau -->
-              <select v-model="filters.niveau" 
+              <select v-model="filters.niveau"
                       @change="applyFilters"
                       class="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500">
                 <option value="">🎯 Tous les niveaux</option>
@@ -92,15 +92,15 @@
               <!-- Recherche -->
               <div class="relative">
                 <MagnifyingGlassIcon class="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input v-model="filters.search" 
+                <input v-model="filters.search"
                        @input="applyFilters"
-                       type="text" 
+                       type="text"
                        placeholder="Rechercher un cours..."
                        class="bg-white/10 border border-white/20 rounded-lg pl-10 pr-4 py-2 text-gray-700 focus:ring-2 focus:ring-blue-500 w-64">
               </div>
             </div>
 
-            <button @click="openCreateModal" 
+            <button @click="openCreateModal"
                     class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg">
               <PlusIcon class="w-5 h-5 inline mr-2" />
               Nouveau Cours
@@ -138,8 +138,8 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200/10">
-                <tr v-for="cours in filteredCours" 
-                    :key="cours.id" 
+                <tr v-for="cours in filteredCours"
+                    :key="cours.id"
                     class="hover:bg-white/10 transition-colors duration-200">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
@@ -168,7 +168,7 @@
                       <span class="text-sm font-medium text-gray-900">{{ cours.inscrits_count }}</span>
                       <span class="text-sm text-gray-500 ml-1">/ {{ cours.capacite_max }}</span>
                       <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                        <div class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full" 
+                        <div class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
                              :style="{ width: (cours.inscrits_count / cours.capacite_max * 100) + '%' }"></div>
                       </div>
                     </div>
@@ -187,19 +187,19 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button @click="editCours(cours)" 
+                    <button @click="editCours(cours)"
                             class="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-100/20 transition-colors">
                       <PencilIcon class="w-4 h-4" />
                     </button>
-                    <button @click="manageHoraires(cours)" 
+                    <button @click="manageHoraires(cours)"
                             class="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-100/20 transition-colors">
                       <CalendarIcon class="w-4 h-4" />
                     </button>
-                    <button @click="viewInscriptions(cours)" 
+                    <button @click="viewInscriptions(cours)"
                             class="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-100/20 transition-colors">
                       <UserGroupIcon class="w-4 h-4" />
                     </button>
-                    <button @click="deleteCours(cours)" 
+                    <button @click="deleteCours(cours)"
                             class="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-100/20 transition-colors">
                       <TrashIcon class="w-4 h-4" />
                     </button>
@@ -213,18 +213,18 @@
         <!-- Pagination -->
         <div class="mt-6 flex justify-between items-center">
           <div class="text-sm text-gray-600">
-            Affichage de {{ ((pagination.current_page - 1) * pagination.per_page) + 1 }} à 
-            {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }} 
+            Affichage de {{ ((pagination.current_page - 1) * pagination.per_page) + 1 }} à
+            {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }}
             sur {{ pagination.total }} cours
           </div>
           <div class="flex space-x-2">
-            <button v-for="page in paginationPages" 
+            <button v-for="page in paginationPages"
                     :key="page"
                     @click="changePage(page)"
                     :class="[
                       'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                      page === pagination.current_page 
-                        ? 'bg-blue-600 text-white' 
+                      page === pagination.current_page
+                        ? 'bg-blue-600 text-white'
                         : 'bg-white/10 text-gray-700 hover:bg-white/20'
                     ]">
               {{ page }}
@@ -235,18 +235,18 @@
     </div>
 
     <!-- Modals -->
-    <CreateCoursModal v-if="showCreateModal" 
-                      @close="showCreateModal = false" 
+    <CreateCoursModal v-if="showCreateModal"
+                      @close="showCreateModal = false"
                       @created="handleCoursCreated" />
-    
-    <EditCoursModal v-if="showEditModal" 
+
+    <EditCoursModal v-if="showEditModal"
                     :cours="selectedCours"
-                    @close="showEditModal = false" 
+                    @close="showEditModal = false"
                     @updated="handleCoursUpdated" />
-    
-    <HorairesModal v-if="showHorairesModal" 
+
+    <HorairesModal v-if="showHorairesModal"
                    :cours="selectedCours"
-                   @close="showHorairesModal = false" 
+                   @close="showHorairesModal = false"
                    @updated="handleHorairesUpdated" />
   </AuthenticatedLayout>
 </template>
@@ -291,22 +291,22 @@ const filters = ref({
 // Cours filtrés
 const filteredCours = computed(() => {
   let result = props.cours || []
-  
+
   if (filters.value.search) {
-    result = result.filter(cours => 
+    result = result.filter(cours =>
       cours.nom.toLowerCase().includes(filters.value.search.toLowerCase()) ||
       cours.description.toLowerCase().includes(filters.value.search.toLowerCase())
     )
   }
-  
+
   if (filters.value.saison) {
     result = result.filter(cours => cours.saison === filters.value.saison)
   }
-  
+
   if (filters.value.niveau) {
     result = result.filter(cours => cours.niveau === filters.value.niveau)
   }
-  
+
   return result
 })
 
@@ -315,11 +315,11 @@ const paginationPages = computed(() => {
   const pages = []
   const current = props.pagination.current_page
   const last = props.pagination.last_page
-  
+
   for (let i = Math.max(1, current - 2); i <= Math.min(last, current + 2); i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 

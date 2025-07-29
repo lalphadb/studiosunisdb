@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white">
     <!-- Background pattern -->
     <div class="absolute inset-0 opacity-50 bg-pattern"></div>
-    
+
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header avec navigation -->
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
@@ -14,7 +14,7 @@
             <span>/</span>
             <span class="text-white">👥 Gestion des Membres</span>
           </nav>
-          
+
           <div class="flex items-center space-x-3 mb-2">
             <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
               <UserGroupIcon class="h-7 w-7 text-white" />
@@ -27,18 +27,18 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Actions rapides -->
         <div class="flex items-center space-x-3">
-          <button 
+          <button
             @click="exportMembers"
             class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 px-4 py-2 rounded-lg hover:bg-gray-700/50 transition-all duration-200 flex items-center space-x-2"
           >
             <DocumentArrowDownIcon class="h-4 w-4" />
             <span class="text-sm">Export</span>
           </button>
-          
-          <button 
+
+          <button
             @click="openCreateModal"
             class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2"
           >
@@ -58,7 +58,7 @@
           format="number"
           color="blue"
         />
-        
+
         <ModernStatsCard
           title="Membres Actifs"
           :value="stats.membres_actifs"
@@ -66,7 +66,7 @@
           format="number"
           color="green"
         />
-        
+
         <ModernStatsCard
           title="Nouvelles Inscriptions"
           :value="stats.nouvelles_inscriptions"
@@ -74,7 +74,7 @@
           format="number"
           color="purple"
         />
-        
+
         <ModernStatsCard
           title="Familles"
           :value="stats.total_familles"
@@ -90,7 +90,7 @@
           <AdjustmentsHorizontalIcon class="h-5 w-5 text-blue-400 mr-2" />
           Filtres et Recherche
         </h3>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Recherche -->
           <div>
@@ -163,7 +163,7 @@
               <UsersIcon class="h-5 w-5 text-blue-400 mr-2" />
               Liste des Membres ({{ paginatedMembers.total }})
             </h3>
-            
+
             <div class="flex items-center space-x-2">
               <!-- Tri -->
               <select
@@ -177,7 +177,7 @@
                 <option value="derniere_presence">⏰ Dernière présence</option>
                 <option value="ceinture">🥋 Niveau de ceinture</option>
               </select>
-              
+
               <!-- Pagination -->
               <div class="flex items-center space-x-2 text-sm text-gray-400">
                 <span>{{ paginatedMembers.from }}-{{ paginatedMembers.to }} sur {{ paginatedMembers.total }}</span>
@@ -200,8 +200,8 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-700/50">
-              <tr 
-                v-for="membre in paginatedMembers.data" 
+              <tr
+                v-for="membre in paginatedMembers.data"
                 :key="membre.id"
                 class="hover:bg-gray-700/20 transition-colors duration-200"
               >
@@ -209,8 +209,8 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-12 w-12">
-                      <img 
-                        :src="membre.photo || '/img/default-avatar.png'" 
+                      <img
+                        :src="membre.photo || '/img/default-avatar.png'"
                         :alt="membre.nom"
                         class="h-12 w-12 rounded-full object-cover border-2 border-gray-600"
                       />
@@ -272,7 +272,7 @@
                     >
                       <EyeIcon class="h-4 w-4" />
                     </button>
-                    
+
                     <button
                       @click="editMember(membre)"
                       class="text-yellow-400 hover:text-yellow-300 transition-colors p-2 rounded-lg hover:bg-yellow-500/10"
@@ -280,7 +280,7 @@
                     >
                       <PencilIcon class="h-4 w-4" />
                     </button>
-                    
+
                     <button
                       @click="manageFamilyLinks(membre)"
                       class="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-500/10"
@@ -288,7 +288,7 @@
                     >
                       <LinkIcon class="h-4 w-4" />
                     </button>
-                    
+
                     <button
                       @click="deleteMember(membre)"
                       class="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-500/10"
@@ -317,7 +317,7 @@
               <option value="100">100 par page</option>
             </select>
           </div>
-          
+
           <div class="flex items-center space-x-2">
             <button
               @click="previousPage"
@@ -326,11 +326,11 @@
             >
               ← Précédent
             </button>
-            
+
             <span class="text-sm text-gray-400">
               Page {{ paginatedMembers.current_page }} sur {{ paginatedMembers.last_page }}
             </span>
-            
+
             <button
               @click="nextPage"
               :disabled="!paginatedMembers.next_page_url"
@@ -350,7 +350,7 @@
       @close="showCreateModal = false"
       @created="onMemberCreated"
     />
-    
+
     <MemberEditModal
       v-if="showEditModal && selectedMember"
       :member="selectedMember"
@@ -358,7 +358,7 @@
       @close="showEditModal = false"
       @updated="onMemberUpdated"
     />
-    
+
     <FamilyLinksModal
       v-if="showFamilyModal && selectedMember"
       :member="selectedMember"
@@ -371,7 +371,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
-import { 
+import {
   UserGroupIcon, UsersIcon, UserPlusIcon, MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon, DocumentArrowDownIcon, EyeIcon,
   PencilIcon, LinkIcon, TrashIcon

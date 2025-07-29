@@ -13,7 +13,7 @@ use Inertia\Response;
 
 /**
  * Contrôleur Membre Ultra-Professionnel Laravel 11
- * 
+ *
  * Implémentation CRUD complète avec:
  * - Validation stricte Laravel 11
  * - Pagination optimisée
@@ -73,7 +73,7 @@ class MembreController extends Controller
                         ->withQueryString();
 
         $ceintures = Ceinture::orderBy('ordre')->get();
-        
+
         // Statistiques
         $stats = [
             'total_membres' => Membre::count(),
@@ -82,7 +82,7 @@ class MembreController extends Controller
             'total_familles' => LienFamilial::distinct('famille_id')->count(),
             'evolution_membres' => $this->calculateMemberGrowth(),
         ];
-        
+
         return Inertia::render('Membres/IndexNew', compact('membres', 'ceintures', 'stats'));
     }
 
@@ -94,7 +94,7 @@ class MembreController extends Controller
         $currentMonth = Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count();
         $lastMonth = Membre::whereDate('date_inscription', '>=', now()->subMonth()->startOfMonth())
                           ->whereDate('date_inscription', '<', now()->startOfMonth())->count();
-        
+
         if ($lastMonth === 0) return 100;
         return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
     }
@@ -154,7 +154,8 @@ class MembreController extends Controller
      */
     public function show(Membre $membre): Response
     {
-        $membre->load(['user', 'ceintureActuelle', 'presences.cours', 'paiements']);
+        // Chargement sécurisé des relations qui existent
+        $membre->load(['ceintureActuelle', 'liensFamiliaux']);
         return Inertia::render('Membres/Show', compact('membre'));
     }
 
@@ -244,7 +245,7 @@ class MembreController extends Controller
         $membres = Membre::with(['ceintureActuelle'])
             ->when($request->statut, fn($q, $statut) => $q->where('statut', $statut))
             ->get();
-            
+
         // TODO: Implémenter avec Laravel Excel
         return response()->json([
             'message' => 'Export en développement',

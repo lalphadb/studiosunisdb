@@ -59,6 +59,16 @@ class Membre extends Model
         return $this->hasMany(Paiement::class);
     }
 
+    public function liensFamiliaux(): HasMany
+    {
+        return $this->hasMany(LienFamilial::class, 'membre_principal_id');
+    }
+
+    public function liensCommeMembreLie(): HasMany
+    {
+        return $this->hasMany(LienFamilial::class, 'membre_lie_id');
+    }
+
     // Accessors modernes
     public function getNomCompletAttribute(): string
     {

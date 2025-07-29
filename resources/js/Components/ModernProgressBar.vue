@@ -9,21 +9,21 @@
     <!-- Progress bar -->
     <div class="relative">
       <!-- Background -->
-      <div 
+      <div
         class="w-full rounded-full overflow-hidden"
         :class="sizeClass"
         :style="{ backgroundColor: backgroundColor }"
       >
         <!-- Progress fill -->
-        <div 
+        <div
           class="h-full transition-all duration-700 ease-out relative overflow-hidden rounded-full"
-          :style="{ 
-            width: animatedPercentage + '%', 
-            background: gradientStyle 
+          :style="{
+            width: animatedPercentage + '%',
+            background: gradientStyle
           }"
         >
           <!-- Shine effect -->
-          <div 
+          <div
             v-if="animated"
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shine"
           ></div>
@@ -31,10 +31,10 @@
       </div>
 
       <!-- Glow effect -->
-      <div 
+      <div
         v-if="glowEffect"
         class="absolute inset-0 rounded-full blur-sm opacity-30"
-        :style="{ 
+        :style="{
           background: gradientStyle,
           width: animatedPercentage + '%'
         }"

@@ -11,7 +11,7 @@ class CeinturesSeeder extends Seeder
     {
         // Suppression des anciennes ceintures pour éviter les doublons
         Ceinture::query()->delete();
-        
+
         // Les 21 ceintures officielles StudiosUnis
         $ceintures = [
             ['ordre' => 1,  'nom' => 'Blanche',         'couleur' => 'white',   'couleur_hex' => '#FFFFFF', 'description' => 'Ceinture de débutant'],

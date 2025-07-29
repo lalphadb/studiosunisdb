@@ -1,10 +1,10 @@
 <template>
   <Head title="Gestion des Paiements" />
-  
+
   <AuthenticatedLayout>
     <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white">
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         <!-- Header avec actions -->
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div class="mb-4 lg:mb-0">
@@ -20,17 +20,17 @@
               </div>
             </div>
           </div>
-          
+
           <div class="flex items-center space-x-3">
-            <button 
+            <button
               @click="exporterRapport"
               class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2"
             >
               <DocumentArrowDownIcon class="h-5 w-5" />
               <span>Exporter</span>
             </button>
-            
-            <button 
+
+            <button
               @click="envoyerRappels"
               :disabled="sendingReminders"
               class="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2"
@@ -52,7 +52,7 @@
             format="currency"
             description="Revenus confirmés ce mois"
           />
-          
+
           <ModernStatsCard
             title="En Attente"
             :value="stats.paiements_en_attente"
@@ -61,7 +61,7 @@
             format="currency"
             description="Paiements en cours de traitement"
           />
-          
+
           <ModernStatsCard
             title="En Retard"
             :value="stats.paiements_en_retard"
@@ -71,7 +71,7 @@
             description="Paiements échéances dépassées"
             :change="stats.retards_evolution"
           />
-          
+
           <ModernStatsCard
             title="Taux de Recouvrement"
             :value="stats.taux_recouvrement"
@@ -142,8 +142,8 @@
           <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Statut</label>
-              <select 
-                v-model="filters.statut" 
+              <select
+                v-model="filters.statut"
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white"
               >
                 <option value="">Tous</option>
@@ -153,11 +153,11 @@
                 <option value="annule">Annulé</option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Période</label>
-              <select 
-                v-model="filters.periode" 
+              <select
+                v-model="filters.periode"
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white"
               >
                 <option value="mois_courant">Mois courant</option>
@@ -166,11 +166,11 @@
                 <option value="annee">Année</option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Méthode</label>
-              <select 
-                v-model="filters.methode" 
+              <select
+                v-model="filters.methode"
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white"
               >
                 <option value="">Toutes</option>
@@ -180,19 +180,19 @@
                 <option value="carte">Carte</option>
               </select>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-2">Recherche</label>
-              <input 
+              <input
                 v-model="filters.recherche"
-                type="text" 
+                type="text"
                 placeholder="Nom du membre..."
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400"
               >
             </div>
-            
+
             <div class="flex items-end">
-              <button 
+              <button
                 @click="resetFilters"
                 class="w-full bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-all duration-200"
               >
@@ -218,8 +218,8 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-700">
-                <tr 
-                  v-for="paiement in filteredPaiements" 
+                <tr
+                  v-for="paiement in filteredPaiements"
                   :key="paiement.id"
                   class="hover:bg-gray-700/30 transition-all duration-200"
                 >
@@ -236,24 +236,24 @@
                       </div>
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-sm text-gray-300">{{ paiement.type_paiement }}</span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-lg font-bold text-white">{{ formatCurrency(paiement.montant) }}</span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-sm text-gray-300">{{ formatDate(paiement.date_echeance) }}</span>
                     <div v-if="isEnRetard(paiement)" class="text-xs text-red-400">
                       Retard: {{ getRetardJours(paiement) }} jours
                     </div>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span 
+                    <span
                       :class="getStatutClasses(paiement.statut)"
                       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                     >
@@ -261,11 +261,11 @@
                       {{ getStatutLabel(paiement.statut) }}
                     </span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-sm text-gray-300">{{ paiement.methode_paiement || 'Non définie' }}</span>
                   </td>
-                  
+
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-2">
                       <button
@@ -275,14 +275,14 @@
                       >
                         Marquer payé
                       </button>
-                      
+
                       <button
                         @click="voirDetails(paiement)"
                         class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 px-3 py-1 rounded text-xs transition-all duration-200"
                       >
                         Détails
                       </button>
-                      
+
                       <button
                         v-if="paiement.statut === 'en_retard'"
                         @click="envoyerRappel(paiement)"
@@ -296,29 +296,29 @@
               </tbody>
             </table>
           </div>
-          
+
           <!-- Pagination -->
           <div class="bg-gray-700/30 px-6 py-3 border-t border-gray-600">
             <div class="flex items-center justify-between">
               <div class="text-sm text-gray-400">
-                Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à {{ Math.min(currentPage * itemsPerPage, filteredPaiements.length) }} 
+                Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }} à {{ Math.min(currentPage * itemsPerPage, filteredPaiements.length) }}
                 sur {{ filteredPaiements.length }} paiements
               </div>
-              
+
               <div class="flex items-center space-x-2">
-                <button 
+                <button
                   @click="previousPage"
                   :disabled="currentPage === 1"
                   class="px-3 py-1 bg-gray-600 hover:bg-gray-700 disabled:opacity-50 rounded text-sm transition-all duration-200"
                 >
                   Précédent
                 </button>
-                
+
                 <span class="text-sm text-gray-300">
                   Page {{ currentPage }} sur {{ totalPages }}
                 </span>
-                
-                <button 
+
+                <button
                   @click="nextPage"
                   :disabled="currentPage === totalPages"
                   class="px-3 py-1 bg-gray-600 hover:bg-gray-700 disabled:opacity-50 rounded text-sm transition-all duration-200"

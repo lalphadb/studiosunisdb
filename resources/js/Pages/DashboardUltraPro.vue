@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 text-white">
     <!-- Background pattern -->
     <div class="absolute inset-0 opacity-50 bg-pattern"></div>
-    
+
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header Section -->
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
@@ -24,18 +24,18 @@
             <span class="text-gray-500 text-xs">• Dernière mise à jour: {{ lastUpdate }}</span>
           </div>
         </div>
-        
+
         <!-- Quick Actions -->
         <div class="flex items-center space-x-3">
-          <button 
-            @click="refreshData" 
+          <button
+            @click="refreshData"
             :disabled="loading"
             class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 px-4 py-2 rounded-lg hover:bg-gray-700/50 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
           >
             <ArrowPathIcon class="h-4 w-4" :class="{ 'animate-spin': loading }" />
             <span class="text-sm">Actualiser</span>
           </button>
-          
+
           <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
             <PlusIcon class="h-4 w-4" />
             <span class="text-sm">Action Rapide</span>
@@ -55,7 +55,7 @@
           format="number"
           description="Membres inscrits dans l'école"
         />
-        
+
         <ModernStatsCard
           title="Membres Actifs"
           :value="stats.membres_actifs"
@@ -65,7 +65,7 @@
           format="number"
           description="Membres avec activité récente"
         />
-        
+
         <ModernStatsCard
           title="Présences Aujourd'hui"
           :value="stats.presences_aujourd_hui"
@@ -74,7 +74,7 @@
           format="number"
           description="Présences confirmées aujourd'hui"
         />
-        
+
         <ModernStatsCard
           title="Revenus du Mois"
           :value="stats.revenus_mois"
@@ -98,7 +98,7 @@
           :badge="`${stats.total_membres} membres`"
           badge-type="info"
         />
-        
+
         <ModernActionCard
           title="Gestion Cours"
           description="Créer, planifier et organiser les cours"
@@ -108,7 +108,7 @@
           :badge="`${stats.cours_actifs || 0} cours actifs`"
           badge-type="info"
         />
-        
+
         <ModernActionCard
           title="Gestion Présences"
           description="Mode tablette pour enregistrer les présences"
@@ -118,7 +118,7 @@
           badge="Mode Tablette"
           badge-type="success"
         />
-        
+
         <ModernActionCard
           title="Gestion Paiements"
           description="Suivi des paiements et facturations"

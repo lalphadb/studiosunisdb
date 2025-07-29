@@ -107,14 +107,14 @@ class Cours extends Model
     {
         $debut = \Carbon\Carbon::parse($this->heure_debut);
         $fin = \Carbon\Carbon::parse($this->heure_fin);
-        
+
         return $debut->diffInMinutes($fin) . ' min';
     }
 
     public function getHoraireCompletAttribute(): string
     {
-        return ucfirst($this->jour_semaine) . ' ' . 
-               $this->heure_debut->format('H:i') . '-' . 
+        return ucfirst($this->jour_semaine) . ' ' .
+               $this->heure_debut->format('H:i') . '-' .
                $this->heure_fin->format('H:i');
     }
 

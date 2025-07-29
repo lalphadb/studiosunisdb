@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('membre_principal_id')->constrained('membres')->onDelete('cascade');
             $table->foreignId('membre_lie_id')->constrained('membres')->onDelete('cascade');
             $table->enum('type_relation', [
-                'parent', 'enfant', 'conjoint', 'frere_soeur', 
-                'grand_parent', 'petit_enfant', 'oncle_tante', 
+                'parent', 'enfant', 'conjoint', 'frere_soeur',
+                'grand_parent', 'petit_enfant', 'oncle_tante',
                 'neveu_niece', 'cousin', 'autre'
             ]);
             $table->string('famille_id', 50)->nullable(); // Identifiant de famille pour grouper
@@ -27,7 +27,7 @@ return new class extends Migration
             // Index pour les performances
             $table->index(['membre_principal_id', 'type_relation']);
             $table->index(['famille_id']);
-            
+
             // Éviter les doublons
             $table->unique(['membre_principal_id', 'membre_lie_id', 'type_relation']);
         });
