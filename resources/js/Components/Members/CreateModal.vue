@@ -357,14 +357,35 @@ const removeFamilyLink = (index) => {
   form.value.liens_familiaux.splice(index, 1)
 }
 
+const resetForm = () => {
+  form.value = {
+    prenom: '',
+    nom: '',
+    date_naissance: '',
+    sexe: '',
+    email: '',
+    telephone: '',
+    telephone_urgence: '',
+    adresse: '',
+    ceinture_actuelle_id: '',
+    statut: 'actif',
+    remarques: '',
+    liens_familiaux: []
+  }
+  errors.value = {}
+}
+
 const submitForm = async () => {
   submitting.value = true
   errors.value = {}
 
   try {
     await router.post('/membres', form.value, {
-      onSuccess: (response) => {
-        emit('created', response.props.membre)
+      onSuccess: () => {
+        // Émettre l'événement de création (même sans data)
+        emit('created')
+        // Réinitialiser le formulaire
+        resetForm()
       },
       onError: (error) => {
         errors.value = error
