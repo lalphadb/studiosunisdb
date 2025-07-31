@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100">
     <!-- Sidebar moderne glassmorphism -->
     <div class="fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:translate-x-0" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
       
       <!-- Sidebar background with glassmorphism -->
-      <div class="h-full bg-white/70 backdrop-blur-xl border-r border-white/20 flex flex-col">
+      <div class="h-full bg-white/75 backdrop-blur-xl border-r border-slate-200/30 flex flex-col">
         
         <!-- Logo section -->
-        <div class="flex items-center justify-center h-20 px-6 border-b border-slate-200/50">
+        <div class="flex items-center justify-center h-20 px-6 border-b border-slate-200/40">
           <Link href="/dashboard" class="flex items-center space-x-3">
             <div class="w-10 h-10 bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl flex items-center justify-center">
               <span class="text-lg">🥋</span>
@@ -88,7 +88,7 @@
           
           <!-- Séparateur -->
           <div class="py-6">
-            <div class="border-t border-slate-200/50"></div>
+            <div class="border-t border-slate-200/40"></div>
           </div>
           
           <!-- Actions rapides -->
@@ -112,7 +112,7 @@
         </nav>
 
         <!-- User info moderne en bas -->
-        <div class="p-6 border-t border-slate-200/50">
+        <div class="p-6 border-t border-slate-200/40">
           <div class="glass-mini-card p-4">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl flex items-center justify-center">
@@ -134,7 +134,7 @@
     <!-- Contenu principal -->
     <div class="lg:pl-72">
       <!-- Top bar mobile -->
-      <div class="lg:hidden sticky top-0 z-40 h-16 flex items-center px-4 bg-white/70 backdrop-blur-xl border-b border-white/20">
+      <div class="lg:hidden sticky top-0 z-40 h-16 flex items-center px-4 bg-white/80 backdrop-blur-xl border-b border-slate-200/30">
         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl text-slate-600 hover:text-slate-800 hover:bg-slate-100/50 transition-colors">
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -145,7 +145,7 @@
 
       <!-- Contenu de la page -->
       <main class="min-h-screen">
-        <header v-if="$slots.header" class="border-b border-white/20">
+        <header v-if="$slots.header" class="border-b border-slate-200/30">
           <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <slot name="header" />
           </div>

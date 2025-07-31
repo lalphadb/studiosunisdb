@@ -23,8 +23,8 @@
                     </p>
                 </div>
                 <Link
-                    :href="route('membres.create')"
-                    class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
+                :href="'/membres/create'"
+                class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -255,7 +255,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-3">
                                             <Link
-                                                :href="route('membres.show', membre.id)"
+                                                :href="`/membres/${membre.id}`"
                                                 class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg text-blue-400 bg-blue-600/20 border border-blue-600/40 hover:bg-blue-600/30 transition-all duration-200"
                                             >
                                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,7 +265,7 @@
                                                 Voir
                                             </Link>
                                             <Link
-                                                :href="route('membres.edit', membre.id)"
+                                                :href="`/membres/${membre.id}/edit`"
                                                 class="inline-flex items-center px-3 py-2 text-xs font-medium rounded-lg text-purple-400 bg-purple-600/20 border border-purple-600/40 hover:bg-purple-600/30 transition-all duration-200"
                                             >
                                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,7 +389,7 @@ const debounceSearch = () => {
 }
 
 const applyFilters = () => {
-    router.get(route('membres.index'), filters, {
+    router.get('/membres', filters, {
         preserveState: true,
         replace: true
     })
@@ -410,6 +410,6 @@ const joursDepuis = (date) => {
 }
 
 const exportMembres = () => {
-    window.open(route('membres.export'), '_blank')
+    window.open('/export/membres', '_blank')
 }
 </script>
