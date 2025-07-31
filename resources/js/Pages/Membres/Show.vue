@@ -8,13 +8,13 @@
         <div class="flex space-x-2">
           <Link
             :href="route('membres.edit', membre.id)"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 flex items-center"
           >
             ✏️ Modifier
           </Link>
           <Link
             :href="route('membres.index')"
-            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 flex items-center"
           >
             ← Retour
           </Link>
@@ -24,6 +24,50 @@
 
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        
+        <!-- Boutons d'action rapides -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            ⚡ Actions Rapides
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Ajouter Ceinture -->
+            <button
+              @click="openModalCeinture"
+              class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+            >
+              <span class="text-2xl">🥋</span>
+              <span class="text-sm">Nouvelle Ceinture</span>
+            </button>
+
+            <!-- Ajouter Séminaire -->
+            <button
+              @click="openModalSeminaire"
+              class="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+            >
+              <span class="text-2xl">🎓</span>
+              <span class="text-sm">Séminaire</span>
+            </button>
+
+            <!-- Ajouter Paiement -->
+            <button
+              @click="openModalPaiement"
+              class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+            >
+              <span class="text-2xl">💳</span>
+              <span class="text-sm">Paiement</span>
+            </button>
+
+            <!-- Marquer Présence -->
+            <button
+              @click="marquerPresence"
+              class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+            >
+              <span class="text-2xl">✅</span>
+              <span class="text-sm">Présence</span>
+            </button>
+          </div>
+        </div>
         
         <!-- Carte profil principal -->
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
@@ -332,10 +376,24 @@
     <div v-if="showModalCeinture" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
-          <h3 class="text-lg font-medium text-gray-900">Changer de ceinture</h3>
+          <h3 class="text-lg font-medium text-gray-900">🥋 Nouvelle Ceinture</h3>
           <div class="mt-4">
-            <!-- Contenu du modal à implémenter -->
-            <p class="text-sm text-gray-500">Fonctionnalité à développer...</p>
+            <label class="block text-sm font-medium text-gray-700">Nouvelle ceinture</label>
+            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+              <option>Blanche</option>
+              <option>Jaune</option>
+              <option>Orange</option>
+              <option>Verte</option>
+              <option>Bleue</option>
+              <option>Brune</option>
+              <option>Noire</option>
+            </select>
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Date d'obtention</label>
+            <input type="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Notes</label>
+            <textarea class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" rows="3" placeholder="Notes sur l'examen..."></textarea>
           </div>
           <div class="mt-4 flex justify-end space-x-2">
             <button
@@ -343,6 +401,92 @@
               class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded text-sm"
             >
               Annuler
+            </button>
+            <button
+              class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded text-sm"
+            >
+              Valider Ceinture
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal séminaire -->
+    <div v-if="showModalSeminaire" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900">🎓 Inscription Séminaire</h3>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700">Type de séminaire</label>
+            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+              <option>Stage technique</option>
+              <option>Stage arbitrage</option>
+              <option>Formation instructeur</option>
+              <option>Séminaire international</option>
+            </select>
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Date du séminaire</label>
+            <input type="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Coût</label>
+            <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="150.00">
+          </div>
+          <div class="mt-4 flex justify-end space-x-2">
+            <button
+              @click="showModalSeminaire = false"
+              class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded text-sm"
+            >
+              Annuler
+            </button>
+            <button
+              class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded text-sm"
+            >
+              Inscrire
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal paiement -->
+    <div v-if="showModalPaiement" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900">💳 Nouveau Paiement</h3>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700">Type de paiement</label>
+            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+              <option>Cotisation mensuelle</option>
+              <option>Inscription annuelle</option>
+              <option>Examen de ceinture</option>
+              <option>Séminaire</option>
+              <option>Équipement</option>
+            </select>
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Montant</label>
+            <input type="number" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="75.00">
+            
+            <label class="block text-sm font-medium text-gray-700 mt-4">Méthode de paiement</label>
+            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+              <option>Comptant</option>
+              <option>Carte de crédit</option>
+              <option>Débit</option>
+              <option>Virement</option>
+              <option>Chèque</option>
+            </select>
+          </div>
+          <div class="mt-4 flex justify-end space-x-2">
+            <button
+              @click="showModalPaiement = false"
+              class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded text-sm"
+            >
+              Annuler
+            </button>
+            <button
+              class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded text-sm"
+            >
+              Enregistrer Paiement
             </button>
           </div>
         </div>
@@ -354,7 +498,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const props = defineProps({
@@ -363,6 +507,8 @@ const props = defineProps({
 })
 
 const showModalCeinture = ref(false)
+const showModalSeminaire = ref(false)
+const showModalPaiement = ref(false)
 
 const calculerAge = (dateNaissance) => {
   return Math.floor((new Date() - new Date(dateNaissance)) / (365.25 * 24 * 60 * 60 * 1000))
@@ -378,6 +524,31 @@ const formatMontant = (montant) => {
     style: 'currency',
     currency: 'CAD'
   }).format(montant)
+}
+
+// Actions des boutons
+const openModalCeinture = () => {
+  showModalCeinture.value = true
+}
+
+const openModalSeminaire = () => {
+  showModalSeminaire.value = true
+}
+
+const openModalPaiement = () => {
+  showModalPaiement.value = true
+}
+
+const marquerPresence = () => {
+  // Logique pour marquer la présence
+  router.post(route('presences.store'), {
+    membre_id: props.membre.id,
+    date: new Date().toISOString().split('T')[0]
+  }, {
+    onSuccess: () => {
+      alert('Présence marquée avec succès!')
+    }
+  })
 }
 
 const ouvrirModalChangementCeinture = () => {

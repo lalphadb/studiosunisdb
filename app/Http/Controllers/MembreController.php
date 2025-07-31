@@ -74,16 +74,19 @@ class MembreController extends Controller
 
         $ceintures = Ceinture::orderBy('ordre')->get();
 
-        // Statistiques
+        // Statistiques complètes pour le dashboard moderne
         $stats = [
             'total_membres' => Membre::count(),
             'membres_actifs' => Membre::where('statut', 'actif')->count(),
-            'nouvelles_inscriptions' => Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count(),
+            'nouveaux_membres_mois' => Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count(),
+            'membres_retard_paiement' => $this->getMembresEnRetardPaiement(),
             'total_familles' => LienFamilial::distinct('famille_id')->count(),
             'evolution_membres' => $this->calculateMemberGrowth(),
         ];
 
-        return Inertia::render('Membres/IndexNew', compact('membres', 'ceintures', 'stats'));
+        return Inertia::render('Membres/Index', compact('membres', 'ceintures', 'stats') + [
+            'filters' => $validated  // Toujours passer les filtres
+        ]);
     }
 
     /**
@@ -97,6 +100,21 @@ class MembreController extends Controller
 
         if ($lastMonth === 0) return 100;
         return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
+    }
+
+    /**
+     * Calcul des membres en retard de paiement
+     */
+    private function getMembresEnRetardPaiement(): int
+    {
+        // TODO: Implémenter avec la table paiements quand elle sera liée
+        // Pour l'instant, simulation basée sur la date de dernière présence
+        return Membre::where('statut', 'actif')
+                    ->where(function($query) {
+                        $query->whereNull('date_derniere_presence')
+                              ->orWhere('date_derniere_presence', '<', now()->subDays(30));
+                    })
+                    ->count();
     }
 
     /**
