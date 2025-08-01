@@ -1,173 +1,125 @@
 # 🥋 StudiosDB v5 Pro - Système de Gestion d'École d'Arts Martiaux
 
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-12.21.0-red.svg)](https://laravel.com)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.x-green.svg)](https://vuejs.org)
-[![PHP](https://img.shields.io/badge/PHP-8.3+-blue.svg)](https://php.net)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3.6+-blue.svg)](https://php.net)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)](https://github.com/lalphadb/studiosunisdb.git)
+
+> **Mis à jour:** 01/08/2025 à 09:34 | **Version:** 5.1.2
 
 ## 📋 Vue d'Ensemble
 
-**StudiosDB v5 Pro** est un système de gestion ultra-moderne et complet pour écoles d'arts martiaux, développé spécifiquement pour **École Studiosunis St-Émile**. Solution full-stack avec architecture multi-tenant, interface utilisateur sophistiquée, et fonctionnalités métier spécialisées.
+**StudiosDB v5 Pro** est un système de gestion ultra-moderne pour écoles d'arts martiaux, développé pour **École Studiosunis St-Émile**. Solution complète avec architecture multi-tenant, interface Vue 3, et performance exceptionnelle.
 
-## ✨ Caractéristiques Principales
+## ✨ Caractéristiques
 
-- 🏗️ **Architecture Multi-tenant** - Gestion de plusieurs écoles
-- 🎨 **Interface Moderne** - Vue 3 + Inertia.js + Tailwind CSS  
-- ⚡ **Performance Optimisée** - Dashboard 15ms, Cache Redis
-- 🔐 **Sécurité Avancée** - Rôles granulaires, CSRF, conformité RGPD
-- 📱 **Interface Tablette** - Présences tactiles optimisées
-- 💰 **Gestion Financière** - Paiements, factures, rappels automatiques
-- 🥋 **Système Ceintures** - Progressions, examens, certifications
-- 📊 **Analytics Temps Réel** - Métriques business, rapports KPI
+- 🏗️ **Multi-tenant** - Plusieurs écoles
+- 🎨 **Interface Moderne** - Vue 3 + Tailwind CSS
+- ⚡ **Performance** - Dashboard 15ms
+- 🔐 **Sécurité** - RGPD/Loi 25 compliant
+- 📱 **Tablette** - Interface présences tactile
+- 💰 **Financier** - Paiements automatisés
+- 🥋 **Ceintures** - Progressions personnalisées
 
 ## 🚀 Installation Rapide
 
 ```bash
-# Cloner et installer
-git clone https://github.com/votre-username/studiosdb_v5_pro.git
+git clone https://github.com/lalphadb/studiosunisdb.git
 cd studiosdb_v5_pro
-composer install --optimize-autoloader
-npm install && npm run build
-
-# Configuration
+composer install && npm install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
-
-# Lancement
+npm run build
 php artisan serve
 ```
 
-## 🏗️ Architecture Technique
+## ⚡ Performance Record
 
-### Stack Principal
-- **Backend:** Laravel 12.21.x + PHP 8.3+
-- **Frontend:** Vue 3 + Inertia.js + Tailwind CSS
-- **Base de Données:** MySQL 8.0+ avec Redis Cache
-- **Multi-tenant:** Stancl/Tenancy pour écoles multiples
-
-### Performance Dashboard
 ```yaml
-Avant Optimisation: 15+ requêtes SQL, 200-500ms
-Après Optimisation: 1 requête SQL, 15ms, Cache Redis
-Amélioration: +95% de performance !
+Dashboard: 15ms (vs 500ms avant)
+Requêtes SQL: 1 (vs 15+ avant)
+Amélioration: +95% plus rapide
+Cache: Redis intelligent
 ```
 
-## 📚 Modules Fonctionnels
+## 📚 Modules
 
-### 1. 👥 Gestion Membres
-- CRUD complet avec profils détaillés
-- Consentements RGPD/Loi 25
+### 👥 Gestion Membres
+- CRUD complet avec consentements
 - Relations familiales
-- Historique progressions
+- Données médicales chiffrées
+- Exports conformes
 
-### 2. 📅 Planning & Cours  
+### 📅 Planning Cours
 - Horaires flexibles
 - Inscriptions en ligne
-- Vue calendrier
+- Vue calendrier interactive
 - Tarification modulaire
 
-### 3. 📱 Interface Présences Tablette
+### 📱 Présences Tablette
 - Interface tactile optimisée
-- Marquage rapide (présent/absent/retard)
-- Synchronisation temps réel
+- Marquage ultra-rapide
+- Mode offline
+- Statistiques temps réel
 
-### 4. 💰 Gestion Financière
+### 💰 Gestion Financière
 - Paiements multiples
 - Facturation automatique
-- Rappels automatiques
-- Exports comptables
+- Rappels intelligents
+- Analytics revenus
 
-### 5. 🥋 Système Ceintures
+### 🥋 Système Ceintures
 - Progressions personnalisées
-- Planification examens
+- Examens planifiés
 - Évaluations techniques
 - Certificats automatiques
 
-## 🔐 Rôles & Permissions
+## 🏗️ Architecture
 
 ```yaml
-super-admin: Accès multi-écoles
-admin: Propriétaire école (louis@4lb.ca)
-gestionnaire: Administration quotidienne  
-instructeur: Gestion cours et examens
-membre: Élève/Parent
+Backend: Laravel 12.21.0 + PHP 8.3.6+
+Frontend: Vue 3 + Inertia.js + Tailwind
+Database: MySQL 8.0+ + Redis Cache
+Multi-tenant: Stancl/Tenancy
 ```
 
-## ⚡ Performance & Optimisations
+## 👥 Rôles
 
-### Métriques Actuelles
-- ⏱️ **Temps réponse dashboard:** 15ms
-- 🗄️ **Requêtes SQL:** 1 requête unique optimisée
-- 💾 **Cache:** Redis 5 minutes
-- 🚀 **Amélioration:** +95% vs version initiale
-
-### Optimisations Implémentées
-- Requête SQL unique avec sous-requêtes
-- Cache intelligent Redis
-- Index de performance
-- Lazy loading composants Vue
+- **super-admin**: Multi-écoles
+- **admin**: Propriétaire école (louis@4lb.ca)
+- **gestionnaire**: Administration
+- **instructeur**: Enseignement
+- **membre**: Élève/Parent
 
 ## 🧪 Tests & Qualité
 
 ```bash
-# Tests
-php artisan test
-
-# Qualité code PSR-12
-./vendor/bin/pint
-
-# Coverage: 84% (Controllers: 85%, Models: 90%)
+php artisan test                # Tests
+./vendor/bin/pint              # PSR-12
+./vendor/bin/phpstan analyse   # Analyse statique
 ```
 
-## 🚀 Déploiement Production
+## 🚀 Production
 
 ```bash
-# Configuration production
 APP_ENV=production
-APP_DEBUG=false
 CACHE_DRIVER=redis
-
-# Optimisations
-php artisan config:cache
-php artisan route:cache
 php artisan optimize
 ```
 
-## 📊 Monitoring
-
-- **Laravel Telescope:** /telescope
-- **Logs:** storage/logs/laravel.log
-- **Métriques temps réel:** /api/dashboard/metriques
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créer branche feature (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push branch (`git push origin feature/amazing-feature`)
-5. Ouvrir Pull Request
-
-## 📄 Licence
-
-MIT License - voir [LICENSE](LICENSE) pour détails.
-
 ## 📞 Support
 
-- 📧 **Support:** support@studiosdb.ca
-- 🐛 **Issues:** [GitHub Issues](https://github.com/votre-repo/studiosdb_v5_pro/issues)
-- 📖 **Documentation:** [Wiki Complet](https://github.com/votre-repo/studiosdb_v5_pro/wiki)
+- 📧 Email: support@studiosdb.ca
+- 🐛 Issues: [GitHub](https://github.com/lalphadb/studiosunisdb.git/issues)
+- 📖 Wiki: [Documentation](https://github.com/lalphadb/studiosunisdb.git/wiki)
 
 ---
 
 <div align="center">
 
-**StudiosDB v5 Pro** - *Révolutionner la Gestion des Arts Martiaux* 🥋
+**StudiosDB v5 Pro** - *Excellence en Arts Martiaux* 🥋
 
-[![Fait avec ❤️](https://img.shields.io/badge/Fait%20avec-❤️-red.svg)](https://github.com)
-[![Laravel](https://img.shields.io/badge/Propulsé%20par-Laravel-red.svg)](https://laravel.com)
-
-*Développé avec passion pour École Studiosunis St-Émile* 🥋✨
+Développé avec ❤️ pour École Studiosunis St-Émile
 
 </div>
