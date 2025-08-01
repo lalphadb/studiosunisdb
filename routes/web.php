@@ -16,7 +16,7 @@ Route::get('/', function () {
     return redirect('/dashboard');
 });
 
-// Routes authentifiées - STRUCTURE ULTRA-PROFESSIONNELLE LARAVEL 11.x
+// Routes authentifiées - STRUCTURE ULTRA-PROFESSIONNELLE LARAVEL 12.x
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // ============================================================================
