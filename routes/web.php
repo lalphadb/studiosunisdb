@@ -82,6 +82,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Routes d'authentification
 require __DIR__.'/auth.php';
 
+// Routes de test diagnostic
+require __DIR__.'/test.php';
+
 // Routes de test diagnostic (temporaires)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard-json', function() {

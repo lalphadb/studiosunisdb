@@ -4,271 +4,321 @@ namespace App\Http\Controllers;
 
 use App\Models\Membre;
 use App\Models\Ceinture;
-use App\Models\LienFamilial;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+use Carbon\Carbon;
 
 /**
- * Contrôleur Membre Ultra-Professionnel Laravel 11
- *
- * Implémentation CRUD complète avec:
- * - Validation stricte Laravel 11
- * - Pagination optimisée
- * - Recherche et filtres avancés
- * - Gestion des liens familiaux
- * - Conformité Loi 25 Québec
- * - Architecture repository pattern ready
- * - Tests unitaires ready
+ * MembreController - Ultra-Professionnel Laravel 12.21
+ * 
+ * Contrôleur de gestion des membres pour StudiosDB v5 Pro
+ * Compatible avec la nouvelle interface de style identique aux cours
+ * 
+ * @package StudiosDB\v5\Controllers
+ * @version 5.0.0
+ * @author StudiosDB Team
  */
 class MembreController extends Controller
 {
     /**
-     * Liste paginée avec filtres et recherche
+     * Affichage de la liste des membres avec statistiques
+     * 
+     * @param Request $request
+     * @return Response
      */
     public function index(Request $request): Response
     {
-        $validated = $request->validate([
-            'search' => 'nullable|string|max:255',
-            'statut' => 'nullable|string|in:actif,inactif,suspendu,diplome',
-            'ceinture' => 'nullable|exists:ceintures,id',
-            'vue' => 'nullable|string|in:tous,familles,adultes,enfants',
-            'sort' => 'nullable|string|in:nom,prenom,date_inscription,date_derniere_presence,ceinture',
-            'per_page' => 'nullable|integer|min:10|max:100'
-        ]);
+        // Construction de la requête avec optimisations
+        $query = Membre::with(['ceintureActuelle', 'user'])
+            ->withCount(['presences', 'paiements'])
+            ->select([
+                'membres.*',
+                'users.name as user_name',
+                'users.email as user_email'
+            ])
+            ->join('users', 'membres.user_id', '=', 'users.id');
 
-        $query = Membre::with(['ceintureActuelle', 'liensFamiliaux.membreLie'])
-            ->when($validated['search'] ?? null, function($q, $search) {
-                $q->where(function($subQuery) use ($search) {
-                    $subQuery->where('nom', 'like', "%{$search}%")
-                             ->orWhere('prenom', 'like', "%{$search}%")
-                             ->orWhere('email', 'like', "%{$search}%");
-                });
-            })
-            ->when($validated['statut'] ?? null, fn($q, $statut) => $q->where('statut', $statut))
-            ->when($validated['ceinture'] ?? null, fn($q, $ceinture) => $q->where('ceinture_actuelle_id', $ceinture))
-            ->when($validated['vue'] ?? null, function($q, $vue) {
-                switch($vue) {
-                    case 'adultes':
-                        $q->whereRaw('DATEDIFF(CURDATE(), date_naissance) >= 6570'); // 18 ans
-                        break;
-                    case 'enfants':
-                        $q->whereRaw('DATEDIFF(CURDATE(), date_naissance) < 6570'); // moins de 18 ans
-                        break;
-                }
+        // Filtres de recherche
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('membres.prenom', 'like', "%{$search}%")
+                  ->orWhere('membres.nom', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%");
             });
-
-        // Tri
-        $sortBy = $validated['sort'] ?? 'nom';
-        if ($sortBy === 'ceinture') {
-            $query->join('ceintures', 'membres.ceinture_actuelle_id', '=', 'ceintures.id')
-                  ->orderBy('ceintures.ordre');
-        } else {
-            $query->orderBy($sortBy);
         }
 
-        $membres = $query->paginate($validated['per_page'] ?? 25)
-                        ->withQueryString();
+        // Filtre par statut
+        if ($request->filled('statut')) {
+            $query->where('membres.statut', $request->get('statut'));
+        }
 
+        // Filtre par ceinture
+        if ($request->filled('ceinture')) {
+            $query->where('membres.ceinture_actuelle_id', $request->get('ceinture'));
+        }
+
+        // Pagination avec tri
+        $membres = $query->orderBy('membres.created_at', 'desc')
+            ->paginate(12)
+            ->appends($request->query());
+
+        // Calcul des statistiques ultra-pro
+        $stats = $this->calculateStats();
+        
+        // Récupération des ceintures pour les filtres
         $ceintures = Ceinture::orderBy('ordre')->get();
 
-        // Statistiques complètes pour le dashboard moderne
-        $stats = [
-            'total_membres' => Membre::count(),
-            'membres_actifs' => Membre::where('statut', 'actif')->count(),
-            'nouveaux_membres_mois' => Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count(),
-            'membres_retard_paiement' => $this->getMembresEnRetardPaiement(),
-            'total_familles' => LienFamilial::distinct('famille_id')->count(),
-            'evolution_membres' => $this->calculateMemberGrowth(),
-        ];
+        // Enrichissement des données membres
+        $membres->getCollection()->transform(function ($membre) {
+            return $this->enrichMembreData($membre);
+        });
 
-        return Inertia::render('Membres/Index', compact('membres', 'ceintures', 'stats') + [
-            'filters' => $validated  // Toujours passer les filtres
+        return Inertia::render('Membres/Index', [
+            'membres' => $membres,
+            'ceintures' => $ceintures,
+            'stats' => $stats,
+            'filters' => $request->only(['search', 'statut', 'ceinture'])
         ]);
     }
 
     /**
-     * Calcul de la croissance des membres
+     * Calcul des statistiques temps réel
+     * 
+     * @return array
      */
-    private function calculateMemberGrowth(): float
+    private function calculateStats(): array
     {
-        $currentMonth = Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count();
-        $lastMonth = Membre::whereDate('date_inscription', '>=', now()->subMonth()->startOfMonth())
-                          ->whereDate('date_inscription', '<', now()->startOfMonth())->count();
-
-        if ($lastMonth === 0) return 100;
-        return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
+        $now = Carbon::now();
+        $debutMois = $now->copy()->startOfMonth();
+        
+        return [
+            'total_membres' => Membre::count(),
+            'membres_actifs' => Membre::where('statut', 'actif')->count(),
+            'nouveaux_mois' => Membre::where('created_at', '>=', $debutMois)->count(),
+            'retard_paiement' => Membre::whereHas('paiements', function ($query) {
+                $query->where('statut', 'en_retard')
+                      ->where('date_echeance', '<', Carbon::now());
+            })->count()
+        ];
     }
 
     /**
-     * Calcul des membres en retard de paiement
+     * Enrichissement des données membre avec calculs
+     * 
+     * @param Membre $membre
+     * @return Membre
      */
-    private function getMembresEnRetardPaiement(): int
+    private function enrichMembreData(Membre $membre): Membre
     {
-        // TODO: Implémenter avec la table paiements quand elle sera liée
-        // Pour l'instant, simulation basée sur la date de dernière présence
-        return Membre::where('statut', 'actif')
-                    ->where(function($query) {
-                        $query->whereNull('date_derniere_presence')
-                              ->orWhere('date_derniere_presence', '<', now()->subDays(30));
-                    })
-                    ->count();
+        // Calcul du taux d'assiduité (30 derniers jours)
+        $dateDebut = Carbon::now()->subDays(30);
+        $totalCours = $membre->cours()->count();
+        $presencesRecentes = $membre->presences()
+            ->where('date_cours', '>=', $dateDebut)
+            ->where('statut', 'present')
+            ->count();
+            
+        $membre->taux_assiduite = $totalCours > 0 
+            ? round(($presencesRecentes / $totalCours) * 100, 1)
+            : 0;
+
+        return $membre;
     }
 
     /**
-     * Formulaire de création
+     * Affichage du formulaire de création
+     * 
+     * @return Response
      */
     public function create(): Response
     {
-        $ceintures = Ceinture::where('actif', true)->orderBy('ordre')->get();
-        return Inertia::render('Membres/Create', compact('ceintures'));
+        $ceintures = Ceinture::orderBy('ordre')->get();
+        
+        return Inertia::render('Membres/Create', [
+            'ceintures' => $ceintures
+        ]);
     }
 
     /**
-     * Enregistrement avec validation stricte
+     * Enregistrement d'un nouveau membre
+     * 
+     * @param Request $request
+     * @return RedirectResponse
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'prenom' => 'required|string|max:255|regex:/^[\pL\s\-]+$/u',
-            'nom' => 'required|string|max:255|regex:/^[\pL\s\-]+$/u',
-            'date_naissance' => 'required|date|before:today|after:1900-01-01',
+            'prenom' => 'required|string|max:255',
+            'nom' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'date_naissance' => 'required|date',
             'sexe' => 'required|in:M,F,Autre',
-            'telephone' => 'nullable|string|max:20|regex:/^[\d\s\-\+\(\)\.]+$/',
-            'adresse' => 'nullable|string|max:500',
-            'ville' => 'nullable|string|max:100',
-            'code_postal' => 'nullable|string|max:10|regex:/^[A-Za-z]\d[A-Za-z][\s\-]?\d[A-Za-z]\d$/',
-            'contact_urgence_nom' => 'required|string|max:255',
-            'contact_urgence_telephone' => 'required|string|max:20|regex:/^[\d\s\-\+\(\)\.]+$/',
-            'contact_urgence_relation' => 'nullable|string|max:50',
-            'ceinture_actuelle_id' => 'required|exists:ceintures,id',
-            'notes_medicales' => 'nullable|string|max:2000',
-            'allergies' => 'nullable|array',
-            'allergies.*' => 'string|max:100',
+            'telephone' => 'nullable|string|max:20',
+            'adresse' => 'nullable|string',
+            'contact_urgence_nom' => 'nullable|string|max:255',
+            'contact_urgence_telephone' => 'nullable|string|max:20',
+            'ceinture_actuelle_id' => 'nullable|exists:ceintures,id',
+            'notes_medicales' => 'nullable|string',
             'consentement_photos' => 'boolean',
-            'consentement_communications' => 'boolean',
-            'consentement_donnees' => 'required|accepted',
-        ], [
-            'prenom.regex' => 'Le prénom ne peut contenir que des lettres, espaces et tirets.',
-            'nom.regex' => 'Le nom ne peut contenir que des lettres, espaces et tirets.',
-            'code_postal.regex' => 'Format de code postal invalide (ex: H1H 1H1).',
-            'consentement_donnees.accepted' => 'Le consentement au traitement des données est obligatoire.',
+            'consentement_communications' => 'boolean'
         ]);
 
-        $validated['date_inscription'] = now();
-        $validated['statut'] = 'actif';
-        $validated['date_consentements'] = now();
+        // Création utilisateur
+        $user = User::create([
+            'name' => $validated['prenom'] . ' ' . $validated['nom'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password'])
+        ]);
 
-        $membre = Membre::create($validated);
+        // Assignation du rôle membre
+        $user->assignRole('membre');
+
+        // Création du membre
+        $membre = Membre::create(array_merge($validated, [
+            'user_id' => $user->id,
+            'date_inscription' => Carbon::now(),
+            'statut' => 'actif'
+        ]));
 
         return redirect()->route('membres.index')
-                        ->with('success', "Membre {$membre->nom_complet} créé avec succès.");
+            ->with('success', 'Membre créé avec succès!');
     }
 
     /**
-     * Affichage détaillé avec relations
+     * Affichage détaillé d'un membre
+     * 
+     * @param Membre $membre
+     * @return Response
      */
     public function show(Membre $membre): Response
     {
-        // Chargement sécurisé des relations qui existent
-        $membre->load(['ceintureActuelle', 'liensFamiliaux']);
-        return Inertia::render('Membres/Show', compact('membre'));
+        $membre->load([
+            'ceintureActuelle',
+            'user',
+            'presences' => fn($q) => $q->latest()->take(10),
+            'paiements' => fn($q) => $q->latest()->take(5),
+            'cours'
+        ]);
+
+        return Inertia::render('Membres/Show', [
+            'membre' => $membre
+        ]);
     }
 
     /**
-     * Formulaire de modification
+     * Affichage du formulaire d'édition
+     * 
+     * @param Membre $membre
+     * @return Response
      */
     public function edit(Membre $membre): Response
     {
-        $ceintures = Ceinture::where('actif', true)->orderBy('ordre')->get();
-        return Inertia::render('Membres/Edit', compact('membre', 'ceintures'));
+        $membre->load(['ceintureActuelle', 'user']);
+        $ceintures = Ceinture::orderBy('ordre')->get();
+
+        return Inertia::render('Membres/Edit', [
+            'membre' => $membre,
+            'ceintures' => $ceintures
+        ]);
     }
 
     /**
-     * Mise à jour avec validation
+     * Mise à jour d'un membre
+     * 
+     * @param Request $request
+     * @param Membre $membre
+     * @return RedirectResponse
      */
     public function update(Request $request, Membre $membre): RedirectResponse
     {
         $validated = $request->validate([
-            'prenom' => 'required|string|max:255|regex:/^[\pL\s\-]+$/u',
-            'nom' => 'required|string|max:255|regex:/^[\pL\s\-]+$/u',
-            'date_naissance' => 'required|date|before:today',
+            'prenom' => 'required|string|max:255',
+            'nom' => 'required|string|max:255',
+            'date_naissance' => 'required|date',
             'sexe' => 'required|in:M,F,Autre',
             'telephone' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string|max:500',
-            'ville' => 'nullable|string|max:100',
-            'code_postal' => 'nullable|string|max:10',
-            'contact_urgence_nom' => 'required|string|max:255',
-            'contact_urgence_telephone' => 'required|string|max:20',
-            'statut' => ['required', Rule::in(['actif', 'inactif', 'suspendu', 'diplome'])],
-            'ceinture_actuelle_id' => 'required|exists:ceintures,id',
-            'notes_medicales' => 'nullable|string|max:2000',
-            'notes_instructeur' => 'nullable|string|max:2000',
+            'adresse' => 'nullable|string',
+            'contact_urgence_nom' => 'nullable|string|max:255',
+            'contact_urgence_telephone' => 'nullable|string|max:20',
+            'ceinture_actuelle_id' => 'nullable|exists:ceintures,id',
+            'statut' => 'required|in:actif,inactif,suspendu',
+            'notes_medicales' => 'nullable|string',
             'consentement_photos' => 'boolean',
-            'consentement_communications' => 'boolean',
+            'consentement_communications' => 'boolean'
         ]);
 
         $membre->update($validated);
 
-        return redirect()->route('membres.show', $membre)
-                        ->with('success', "Membre {$membre->nom_complet} mis à jour avec succès.");
+        // Mise à jour nom utilisateur
+        $membre->user->update([
+            'name' => $validated['prenom'] . ' ' . $validated['nom']
+        ]);
+
+        return redirect()->route('membres.index')
+            ->with('success', 'Membre mis à jour avec succès!');
     }
 
     /**
-     * Suppression (soft delete)
+     * Suppression d'un membre
+     * 
+     * @param Membre $membre
+     * @return RedirectResponse
      */
     public function destroy(Membre $membre): RedirectResponse
     {
-        $nom = $membre->nom_complet;
-        $membre->delete();
-
+        // Soft delete pour préserver l'historique
+        $membre->update(['statut' => 'inactif']);
+        
         return redirect()->route('membres.index')
-                        ->with('success', "Membre {$nom} supprimé avec succès.");
+            ->with('success', 'Membre désactivé avec succès!');
     }
 
     /**
-     * Changement de ceinture avec validation business
+     * Export Excel des membres
+     * 
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function export(Request $request)
+    {
+        return Excel::download(new MembresExport($request->all()), 
+            'membres_' . Carbon::now()->format('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Changement de ceinture
+     * 
+     * @param Request $request
+     * @param Membre $membre
+     * @return RedirectResponse
      */
     public function changerCeinture(Request $request, Membre $membre): RedirectResponse
     {
         $validated = $request->validate([
             'nouvelle_ceinture_id' => 'required|exists:ceintures,id',
-            'date_examen' => 'required|date|before_or_equal:today',
-            'notes' => 'nullable|string|max:1000',
-            'note_finale' => 'nullable|integer|min:0|max:100'
+            'notes_examen' => 'nullable|string'
         ]);
-
-        $nouvelleCeinture = Ceinture::find($validated['nouvelle_ceinture_id']);
-
-        // Validation business rule
-        if (!$membre->peutProgresse($nouvelleCeinture)) {
-            return back()->withErrors(['nouvelle_ceinture_id' => 'Progression non autorisée vers cette ceinture.']);
-        }
 
         $membre->update([
-            'ceinture_actuelle_id' => $validated['nouvelle_ceinture_id'],
-            'date_derniere_progression' => $validated['date_examen']
+            'ceinture_actuelle_id' => $validated['nouvelle_ceinture_id']
         ]);
 
-        return back()->with('success', "Ceinture mise à jour vers {$nouvelleCeinture->nom}");
-    }
-
-    /**
-     * Export de données (RGPD compliant)
-     */
-    public function export(Request $request)
-    {
-        $membres = Membre::with(['ceintureActuelle'])
-            ->when($request->statut, fn($q, $statut) => $q->where('statut', $statut))
-            ->get();
-
-        // TODO: Implémenter avec Laravel Excel
-        return response()->json([
-            'message' => 'Export en développement',
-            'count' => $membres->count(),
-            'rgpd_compliant' => true
+        // Enregistrer la progression
+        ProgressionCeinture::create([
+            'membre_id' => $membre->id,
+            'ceinture_actuelle_id' => $membre->ceinture_actuelle_id,
+            'ceinture_cible_id' => $validated['nouvelle_ceinture_id'],
+            'instructeur_id' => auth()->id(),
+            'statut' => 'certifie',
+            'date_examen' => Carbon::now(),
+            'notes_instructeur' => $validated['notes_examen']
         ]);
+
+        return redirect()->back()
+            ->with('success', 'Ceinture mise à jour avec succès!');
     }
 }

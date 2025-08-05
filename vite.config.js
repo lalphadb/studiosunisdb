@@ -5,9 +5,11 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js'
+            ],
             refresh: true,
-            buildDirectory: 'build',
         }),
         vue({
             template: {
@@ -24,12 +26,12 @@ export default defineConfig({
         },
     },
     build: {
-        manifest: 'manifest.json',
-        outDir: 'public/build',
-        emptyOutDir: true,
+        chunkSizeWarningLimit: 1600,
         rollupOptions: {
             output: {
-                manualChunks: undefined,
+                manualChunks: {
+                    vendor: ['vue', '@inertiajs/vue3'],
+                },
             },
         },
     },

@@ -6,8 +6,8 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 import { Head } from '@inertiajs/vue3';
 
 defineProps<{
-    mustVerifyEmail?: boolean;
-    status?: string;
+    mustVerifyEmail?;
+    status?;
 }>();
 </script>
 
