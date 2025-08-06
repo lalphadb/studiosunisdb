@@ -11,7 +11,7 @@
 
 ### 🔭 Laravel Telescope - Fonctionnalités
 - **Monitoring en temps réel** : 54 entrées déjà enregistrées
-- **Accès sécurisé** : Permissions configurées pour louis@4lb.ca
+- **Accès sécurisé** : Permissions configurées pour utilisateur administrateur
 - **Watchers actifs** : Requêtes, exceptions, modèles, jobs, etc.
 - **Interface web** : Accessible sur `/telescope`
 
@@ -39,9 +39,9 @@
 - **API Système** : `http://localhost:8000/system-info`
 
 ### 🔐 Authentification
-- **Utilisateur** : louis@4lb.ca
-- **Mot de passe** : password123
-- **Rôle** : superadmin
+- **Utilisateur** : Configuré avec compte administrateur
+- **Mot de passe** : Sécurisé et configuré
+- **Rôle** : Accès administrateur complet
 - **Permissions Telescope** : ✅ Autorisées
 
 ### 📊 Statistiques Actuelles

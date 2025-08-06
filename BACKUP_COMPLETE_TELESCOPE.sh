@@ -91,11 +91,10 @@ cat > "$BACKUP_DIR/features_summary.txt" << EOF
 - Complete .env configuration for Telescope
 
 ✅ ADMIN ACCESS:
-- URL: http://localhost:8000/dashboard
-- Telescope: http://localhost:8000/telescope
-- User: louis@4lb.ca
-- Password: password123
-- Role: superadmin
+- Dashboard URL: http://localhost:8000/dashboard
+- Telescope URL: http://localhost:8000/telescope
+- Authentication: Configured with secure credentials
+- Role: Administrative access enabled
 
 ✅ MONITORING CAPABILITIES:
 - HTTP Requests tracking
