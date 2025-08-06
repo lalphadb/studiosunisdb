@@ -1,5 +1,5 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
-import forms from '@tailwindcss/forms';
+const defaultTheme = require('tailwindcss/defaultTheme');
+const colors = require('tailwindcss/colors');
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -9,14 +9,12 @@ export default {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
         './resources/js/**/*.js',
-        './resources/js/**/*.ts',
+        './resources/**/*.html',
     ],
     
     theme: {
         extend: {
-            fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
-            },
+            // Couleurs de marque StudiosDB
             colors: {
                 primary: {
                     50: '#eff6ff',
@@ -31,34 +29,156 @@ export default {
                     900: '#1e3a8a',
                     950: '#172554',
                 },
+                secondary: {
+                    50: '#f9fafb',
+                    100: '#f3f4f6',
+                    200: '#e5e7eb',
+                    300: '#d1d5db',
+                    400: '#9ca3af',
+                    500: '#6b7280',
+                    600: '#4b5563',
+                    700: '#374151',
+                    800: '#1f2937',
+                    900: '#111827',
+                    950: '#030712',
+                },
+                danger: colors.red,
+                warning: colors.amber,
+                success: colors.emerald,
+                info: colors.sky,
+                
+                // Couleurs spécifiques karaté/arts martiaux
+                belt: {
+                    white: '#ffffff',
+                    yellow: '#fbbf24',
+                    orange: '#fb923c',
+                    green: '#22c55e',
+                    blue: '#3b82f6',
+                    brown: '#a16207',
+                    black: '#1f2937',
+                },
+            },
+            
+            // Polices personnalisées
+            fontFamily: {
+                sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+                mono: ['JetBrains Mono', ...defaultTheme.fontFamily.mono],
+                display: ['Lexend', 'Inter var', ...defaultTheme.fontFamily.sans],
+            },
+            
+            // Espacements personnalisés
+            spacing: {
+                '18': '4.5rem',
+                '88': '22rem',
+                '128': '32rem',
+            },
+            
+            // Animations personnalisées
+            animation: {
+                'fade-in': 'fadeIn 0.5s ease-in-out',
+                'slide-up': 'slideUp 0.3s ease-out',
+                'slide-down': 'slideDown 0.3s ease-out',
+                'bounce-light': 'bounceLight 1s infinite',
+                'pulse-slow': 'pulse 3s infinite',
+            },
+            
+            keyframes: {
+                fadeIn: {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
+                },
+                slideUp: {
+                    '0%': { transform: 'translateY(10px)', opacity: '0' },
+                    '100%': { transform: 'translateY(0)', opacity: '1' },
+                },
+                slideDown: {
+                    '0%': { transform: 'translateY(-10px)', opacity: '0' },
+                    '100%': { transform: 'translateY(0)', opacity: '1' },
+                },
+                bounceLight: {
+                    '0%, 100%': { transform: 'translateY(-5%)' },
+                    '50%': { transform: 'translateY(0)' },
+                },
+            },
+            
+            // Bordures et rayons
+            borderRadius: {
+                'xl': '1rem',
+                '2xl': '1.5rem',
+                '3xl': '2rem',
+            },
+            
+            // Ombres personnalisées
+            boxShadow: {
+                'soft': '0 2px 15px 0 rgba(0, 0, 0, 0.08)',
+                'medium': '0 4px 25px 0 rgba(0, 0, 0, 0.15)',
+                'strong': '0 10px 40px 0 rgba(0, 0, 0, 0.25)',
+                'glow': '0 0 20px rgba(59, 130, 246, 0.35)',
+            },
+            
+            // Tailles d'écran personnalisées
+            screens: {
+                'xs': '475px',
+                '3xl': '1600px',
+            },
+            
+            // Configuration pour les tableaux et composants
+            maxWidth: {
+                '8xl': '88rem',
+                '9xl': '96rem',
+            },
+            
+            // Heights personnalisées
+            height: {
+                'screen-1/2': '50vh',
+                'screen-2/3': '66.666667vh',
+                'screen-3/4': '75vh',
             },
         },
     },
-
-    plugins: [forms],
     
-    // ✅ SAFELIST: Classes pour éviter purge en production
-    safelist: [
-        // Paddings/Margins essentiels
-        'px-1', 'px-2', 'px-3', 'px-4', 'px-5', 'px-6', 'px-8', 'px-10', 'px-12',
-        'py-1', 'py-2', 'py-3', 'py-4', 'py-5', 'py-6', 'py-8', 'py-10', 'py-12',
-        'mx-1', 'mx-2', 'mx-3', 'mx-4', 'mx-5', 'mx-6', 'mx-8', 'mx-auto',
-        'my-1', 'my-2', 'my-3', 'my-4', 'my-5', 'my-6', 'my-8',
+    plugins: [
+        require('@tailwindcss/forms')({
+            strategy: 'class', // or 'base'
+        }),
+        require('@tailwindcss/typography'),
+        require('@tailwindcss/aspect-ratio'),
         
-        // Couleurs de statut dynamiques
-        'bg-green-100', 'bg-green-500', 'bg-green-600', 'text-green-600', 'text-green-800',
-        'bg-red-100', 'bg-red-500', 'bg-red-600', 'text-red-600', 'text-red-800',
-        'bg-yellow-100', 'bg-yellow-500', 'bg-yellow-600', 'text-yellow-600', 'text-yellow-800',
-        'bg-blue-100', 'bg-blue-500', 'bg-blue-600', 'text-blue-600', 'text-blue-800',
-        'bg-gray-100', 'bg-gray-500', 'bg-gray-600', 'bg-gray-800', 'bg-gray-900',
-        'text-gray-600', 'text-gray-800', 'text-gray-900', 'text-white',
-        
-        // Patterns pour classes générées dynamiquement
-        {
-            pattern: /^(bg|text|border)-(red|green|blue|yellow|gray)-(100|200|300|400|500|600|700|800|900)$/,
-        },
-        {
-            pattern: /^(p|m)(x|y|t|r|b|l)?-(0|1|2|3|4|5|6|8|10|12|16|20|24)$/,
+        // Plugin personnalisé pour les utilitaires StudiosDB
+        function({ addUtilities, theme }) {
+            const newUtilities = {
+                '.text-balance': {
+                    'text-wrap': 'balance',
+                },
+                '.text-pretty': {
+                    'text-wrap': 'pretty',
+                },
+                '.glass-effect': {
+                    'backdrop-filter': 'blur(16px) saturate(180%)',
+                    'background-color': 'rgba(255, 255, 255, 0.75)',
+                    'border': '1px solid rgba(209, 213, 219, 0.3)',
+                },
+                '.glass-dark': {
+                    'backdrop-filter': 'blur(16px) saturate(180%)',
+                    'background-color': 'rgba(17, 24, 39, 0.75)',
+                    'border': '1px solid rgba(75, 85, 99, 0.3)',
+                },
+            };
+            
+            addUtilities(newUtilities, ['responsive', 'hover']);
         },
     ],
+    
+    // Configuration mode sombre
+    darkMode: 'class',
+    
+    // Optimisations
+    corePlugins: {
+        preflight: true,
+    },
+    
+    // Variables CSS personnalisées
+    experimental: {
+        optimizeUniversalDefaults: true,
+    },
 };

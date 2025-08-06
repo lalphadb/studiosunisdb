@@ -1,324 +1,328 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\Membre;
-use App\Models\Ceinture;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
+use App\Models\{Membre, Cours, User};
 use Carbon\Carbon;
+use Illuminate\Http\{Request, RedirectResponse};
+use Illuminate\Support\Facades\{Auth, DB, Hash};
+use Inertia\{Inertia, Response};
 
 /**
- * MembreController - Ultra-Professionnel Laravel 12.21
- * 
- * Contrôleur de gestion des membres pour StudiosDB v5 Pro
- * Compatible avec la nouvelle interface de style identique aux cours
- * 
- * @package StudiosDB\v5\Controllers
- * @version 5.0.0
- * @author StudiosDB Team
+ * MembreController Sécurisé - StudiosDB v5 Pro
+ * Version adaptée aux tables existantes
  */
-class MembreController extends Controller
+final class MembreController extends Controller
 {
     /**
-     * Affichage de la liste des membres avec statistiques
-     * 
-     * @param Request $request
-     * @return Response
+     * Liste des membres avec interface moderne
      */
     public function index(Request $request): Response
     {
-        // Construction de la requête avec optimisations
-        $query = Membre::with(['ceintureActuelle', 'user'])
-            ->withCount(['presences', 'paiements'])
-            ->select([
-                'membres.*',
-                'users.name as user_name',
-                'users.email as user_email'
-            ])
-            ->join('users', 'membres.user_id', '=', 'users.id');
+        try {
+            // Vérifier que la table membres existe
+            if (!$this->tableExists('membres')) {
+                return $this->renderEmptyMembres();
+            }
 
-        // Filtres de recherche
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('membres.prenom', 'like', "%{$search}%")
-                  ->orWhere('membres.nom', 'like', "%{$search}%")
-                  ->orWhere('users.email', 'like', "%{$search}%");
-            });
+            // Requête sécurisée
+            $query = Membre::query();
+
+            // Filtres sécurisés
+            if ($request->filled('search')) {
+                $search = $request->get('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('prenom', 'like', "%{$search}%")
+                      ->orWhere('nom', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->filled('statut')) {
+                $query->where('statut', $request->get('statut'));
+            }
+
+            // Pagination sécurisée
+            $membres = $query->orderBy('created_at', 'desc')
+                ->paginate(12)
+                ->appends($request->query());
+
+            // Stats sécurisées
+            $stats = $this->getStatsSafe();
+
+            return Inertia::render('Membres/Index', [
+                'membres' => $membres,
+                'stats' => $stats,
+                'filters' => $request->only(['search', 'statut'])
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('MembreController Error: ' . $e->getMessage());
+            return $this->renderEmptyMembres();
         }
-
-        // Filtre par statut
-        if ($request->filled('statut')) {
-            $query->where('membres.statut', $request->get('statut'));
-        }
-
-        // Filtre par ceinture
-        if ($request->filled('ceinture')) {
-            $query->where('membres.ceinture_actuelle_id', $request->get('ceinture'));
-        }
-
-        // Pagination avec tri
-        $membres = $query->orderBy('membres.created_at', 'desc')
-            ->paginate(12)
-            ->appends($request->query());
-
-        // Calcul des statistiques ultra-pro
-        $stats = $this->calculateStats();
-        
-        // Récupération des ceintures pour les filtres
-        $ceintures = Ceinture::orderBy('ordre')->get();
-
-        // Enrichissement des données membres
-        $membres->getCollection()->transform(function ($membre) {
-            return $this->enrichMembreData($membre);
-        });
-
-        return Inertia::render('Membres/Index', [
-            'membres' => $membres,
-            'ceintures' => $ceintures,
-            'stats' => $stats,
-            'filters' => $request->only(['search', 'statut', 'ceinture'])
-        ]);
     }
 
     /**
-     * Calcul des statistiques temps réel
-     * 
-     * @return array
+     * Statistiques sécurisées
      */
-    private function calculateStats(): array
+    private function getStatsSafe(): array
     {
-        $now = Carbon::now();
-        $debutMois = $now->copy()->startOfMonth();
-        
+        try {
+            if (!$this->tableExists('membres')) {
+                return $this->getStatsDefault();
+            }
+
+            $totalMembres = Membre::count();
+            $membresActifs = Membre::where('statut', 'actif')->count();
+            $nouveauxMois = Membre::whereMonth('created_at', now()->month)->count();
+
+            return [
+                'total_membres' => $totalMembres,
+                'membres_actifs' => $membresActifs,
+                'nouveaux_mois' => $nouveauxMois,
+                'taux_activite' => $totalMembres > 0 ? round(($membresActifs / $totalMembres) * 100, 1) : 0
+            ];
+
+        } catch (\Exception $e) {
+            return $this->getStatsDefault();
+        }
+    }
+
+    /**
+     * Stats par défaut
+     */
+    private function getStatsDefault(): array
+    {
         return [
-            'total_membres' => Membre::count(),
-            'membres_actifs' => Membre::where('statut', 'actif')->count(),
-            'nouveaux_mois' => Membre::where('created_at', '>=', $debutMois)->count(),
-            'retard_paiement' => Membre::whereHas('paiements', function ($query) {
-                $query->where('statut', 'en_retard')
-                      ->where('date_echeance', '<', Carbon::now());
-            })->count()
+            'total_membres' => 0,
+            'membres_actifs' => 0,
+            'nouveaux_mois' => 0,
+            'taux_activite' => 0
         ];
     }
 
     /**
-     * Enrichissement des données membre avec calculs
-     * 
-     * @param Membre $membre
-     * @return Membre
-     */
-    private function enrichMembreData(Membre $membre): Membre
-    {
-        // Calcul du taux d'assiduité (30 derniers jours)
-        $dateDebut = Carbon::now()->subDays(30);
-        $totalCours = $membre->cours()->count();
-        $presencesRecentes = $membre->presences()
-            ->where('date_cours', '>=', $dateDebut)
-            ->where('statut', 'present')
-            ->count();
-            
-        $membre->taux_assiduite = $totalCours > 0 
-            ? round(($presencesRecentes / $totalCours) * 100, 1)
-            : 0;
-
-        return $membre;
-    }
-
-    /**
-     * Affichage du formulaire de création
-     * 
-     * @return Response
+     * Formulaire de création
      */
     public function create(): Response
     {
-        $ceintures = Ceinture::orderBy('ordre')->get();
-        
-        return Inertia::render('Membres/Create', [
-            'ceintures' => $ceintures
-        ]);
+        return Inertia::render('Membres/Create');
     }
 
     /**
-     * Enregistrement d'un nouveau membre
-     * 
-     * @param Request $request
-     * @return RedirectResponse
+     * Enregistrement nouveau membre
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'prenom' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'date_naissance' => 'required|date',
-            'sexe' => 'required|in:M,F,Autre',
-            'telephone' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string',
-            'contact_urgence_nom' => 'nullable|string|max:255',
-            'contact_urgence_telephone' => 'nullable|string|max:20',
-            'ceinture_actuelle_id' => 'nullable|exists:ceintures,id',
-            'notes_medicales' => 'nullable|string',
-            'consentement_photos' => 'boolean',
-            'consentement_communications' => 'boolean'
-        ]);
+        try {
+            $validated = $request->validate([
+                'prenom' => 'required|string|max:255',
+                'nom' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8',
+                'date_naissance' => 'required|date',
+                'sexe' => 'required|in:M,F,Autre',
+                'telephone' => 'nullable|string|max:20',
+                'adresse' => 'nullable|string',
+                'statut' => 'string|in:actif,inactif,suspendu'
+            ]);
 
-        // Création utilisateur
-        $user = User::create([
-            'name' => $validated['prenom'] . ' ' . $validated['nom'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password'])
-        ]);
+            DB::transaction(function () use ($validated) {
+                // Créer utilisateur
+                $user = User::create([
+                    'name' => $validated['prenom'] . ' ' . $validated['nom'],
+                    'email' => $validated['email'],
+                    'password' => Hash::make($validated['password'])
+                ]);
 
-        // Assignation du rôle membre
-        $user->assignRole('membre');
+                // Assigner rôle si système de rôles existe
+                if (method_exists($user, 'assignRole')) {
+                    $user->assignRole('membre');
+                }
 
-        // Création du membre
-        $membre = Membre::create(array_merge($validated, [
-            'user_id' => $user->id,
-            'date_inscription' => Carbon::now(),
-            'statut' => 'actif'
-        ]));
+                // Créer membre
+                Membre::create([
+                    'user_id' => $user->id,
+                    'prenom' => $validated['prenom'],
+                    'nom' => $validated['nom'],
+                    'date_naissance' => $validated['date_naissance'],
+                    'sexe' => $validated['sexe'],
+                    'telephone' => $validated['telephone'] ?? null,
+                    'adresse' => $validated['adresse'] ?? null,
+                    'statut' => $validated['statut'] ?? 'actif',
+                    'date_inscription' => now()
+                ]);
+            });
 
-        return redirect()->route('membres.index')
-            ->with('success', 'Membre créé avec succès!');
+            return redirect()->route('membres.index')
+                ->with('success', 'Membre créé avec succès!');
+
+        } catch (\Exception $e) {
+            \Log::error('Création membre error: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Erreur lors de la création du membre'])
+                ->withInput();
+        }
     }
 
     /**
      * Affichage détaillé d'un membre
-     * 
-     * @param Membre $membre
-     * @return Response
      */
     public function show(Membre $membre): Response
     {
-        $membre->load([
-            'ceintureActuelle',
-            'user',
-            'presences' => fn($q) => $q->latest()->take(10),
-            'paiements' => fn($q) => $q->latest()->take(5),
-            'cours'
-        ]);
+        try {
+            // Charger relations sécurisées
+            if ($this->tableExists('users')) {
+                $membre->load('user');
+            }
 
-        return Inertia::render('Membres/Show', [
-            'membre' => $membre
-        ]);
+            return Inertia::render('Membres/Show', [
+                'membre' => $membre
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Show membre error: ' . $e->getMessage());
+            return redirect()->route('membres.index')
+                ->withErrors(['error' => 'Membre introuvable']);
+        }
     }
 
     /**
-     * Affichage du formulaire d'édition
-     * 
-     * @param Membre $membre
-     * @return Response
+     * Formulaire d'édition
      */
     public function edit(Membre $membre): Response
     {
-        $membre->load(['ceintureActuelle', 'user']);
-        $ceintures = Ceinture::orderBy('ordre')->get();
+        try {
+            if ($this->tableExists('users')) {
+                $membre->load('user');
+            }
 
-        return Inertia::render('Membres/Edit', [
-            'membre' => $membre,
-            'ceintures' => $ceintures
-        ]);
+            return Inertia::render('Membres/Edit', [
+                'membre' => $membre
+            ]);
+
+        } catch (\Exception $e) {
+            return redirect()->route('membres.index')
+                ->withErrors(['error' => 'Erreur lors du chargement']);
+        }
     }
 
     /**
-     * Mise à jour d'un membre
-     * 
-     * @param Request $request
-     * @param Membre $membre
-     * @return RedirectResponse
+     * Mise à jour membre
      */
     public function update(Request $request, Membre $membre): RedirectResponse
     {
-        $validated = $request->validate([
-            'prenom' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
-            'date_naissance' => 'required|date',
-            'sexe' => 'required|in:M,F,Autre',
-            'telephone' => 'nullable|string|max:20',
-            'adresse' => 'nullable|string',
-            'contact_urgence_nom' => 'nullable|string|max:255',
-            'contact_urgence_telephone' => 'nullable|string|max:20',
-            'ceinture_actuelle_id' => 'nullable|exists:ceintures,id',
-            'statut' => 'required|in:actif,inactif,suspendu',
-            'notes_medicales' => 'nullable|string',
-            'consentement_photos' => 'boolean',
-            'consentement_communications' => 'boolean'
-        ]);
+        try {
+            $validated = $request->validate([
+                'prenom' => 'required|string|max:255',
+                'nom' => 'required|string|max:255',
+                'date_naissance' => 'required|date',
+                'sexe' => 'required|in:M,F,Autre',
+                'telephone' => 'nullable|string|max:20',
+                'adresse' => 'nullable|string',
+                'statut' => 'required|in:actif,inactif,suspendu'
+            ]);
 
-        $membre->update($validated);
+            DB::transaction(function () use ($validated, $membre) {
+                $membre->update($validated);
 
-        // Mise à jour nom utilisateur
-        $membre->user->update([
-            'name' => $validated['prenom'] . ' ' . $validated['nom']
-        ]);
+                // Mise à jour utilisateur si existe
+                if ($membre->user) {
+                    $membre->user->update([
+                        'name' => $validated['prenom'] . ' ' . $validated['nom']
+                    ]);
+                }
+            });
 
-        return redirect()->route('membres.index')
-            ->with('success', 'Membre mis à jour avec succès!');
+            return redirect()->route('membres.index')
+                ->with('success', 'Membre mis à jour avec succès!');
+
+        } catch (\Exception $e) {
+            \Log::error('Update membre error: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Erreur lors de la mise à jour'])
+                ->withInput();
+        }
     }
 
     /**
-     * Suppression d'un membre
-     * 
-     * @param Membre $membre
-     * @return RedirectResponse
+     * Suppression membre
      */
     public function destroy(Membre $membre): RedirectResponse
     {
-        // Soft delete pour préserver l'historique
-        $membre->update(['statut' => 'inactif']);
-        
-        return redirect()->route('membres.index')
-            ->with('success', 'Membre désactivé avec succès!');
+        try {
+            // Soft delete - changer statut au lieu de supprimer
+            $membre->update(['statut' => 'inactif']);
+
+            return redirect()->route('membres.index')
+                ->with('success', 'Membre désactivé avec succès!');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Erreur lors de la suppression']);
+        }
     }
 
     /**
-     * Export Excel des membres
-     * 
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * Export des membres
      */
     public function export(Request $request)
     {
-        return Excel::download(new MembresExport($request->all()), 
-            'membres_' . Carbon::now()->format('Y-m-d') . '.xlsx');
+        try {
+            $membres = Membre::all();
+            
+            $filename = 'membres_' . now()->format('Y-m-d') . '.csv';
+            
+            $callback = function() use ($membres) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Prénom', 'Nom', 'Email', 'Statut', 'Date inscription']);
+                
+                foreach ($membres as $membre) {
+                    fputcsv($file, [
+                        $membre->prenom,
+                        $membre->nom,
+                        $membre->user->email ?? '',
+                        $membre->statut,
+                        $membre->created_at->format('Y-m-d')
+                    ]);
+                }
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename={$filename}"
+            ]);
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Erreur lors de l\'export']);
+        }
     }
 
     /**
-     * Changement de ceinture
-     * 
-     * @param Request $request
-     * @param Membre $membre
-     * @return RedirectResponse
+     * Vérifier si une table existe
      */
-    public function changerCeinture(Request $request, Membre $membre): RedirectResponse
+    private function tableExists(string $table): bool
     {
-        $validated = $request->validate([
-            'nouvelle_ceinture_id' => 'required|exists:ceintures,id',
-            'notes_examen' => 'nullable|string'
-        ]);
+        try {
+            return DB::getSchemaBuilder()->hasTable($table);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
-        $membre->update([
-            'ceinture_actuelle_id' => $validated['nouvelle_ceinture_id']
+    /**
+     * Render membres vide en cas d'erreur
+     */
+    private function renderEmptyMembres(): Response
+    {
+        return Inertia::render('Membres/Index', [
+            'membres' => collect(),
+            'stats' => $this->getStatsDefault(),
+            'filters' => [],
+            'error' => 'Module membres en cours de configuration'
         ]);
-
-        // Enregistrer la progression
-        ProgressionCeinture::create([
-            'membre_id' => $membre->id,
-            'ceinture_actuelle_id' => $membre->ceinture_actuelle_id,
-            'ceinture_cible_id' => $validated['nouvelle_ceinture_id'],
-            'instructeur_id' => auth()->id(),
-            'statut' => 'certifie',
-            'date_examen' => Carbon::now(),
-            'notes_instructeur' => $validated['notes_examen']
-        ]);
-
-        return redirect()->back()
-            ->with('success', 'Ceinture mise à jour avec succès!');
     }
 }

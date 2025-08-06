@@ -16,6 +16,11 @@ Route::get('/', function () {
     return redirect('/dashboard');
 });
 
+// Route de test temporaire
+Route::get('/test', function () {
+    return Inertia::render('Test');
+});
+
 // Routes authentifiées - STRUCTURE ULTRA-PROFESSIONNELLE LARAVEL 12.x
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -102,4 +107,13 @@ Route::middleware(['auth'])->group(function () {
             'timestamp' => now()->toISOString()
         ]);
     });
+});
+
+// Route Loi 25
+Route::get('/loi25', function() {
+    return Inertia::render('Loi25');
+})->name('loi25');
+
+Route::get('/test', function () {
+    return '<h1>✅ StudiosDB v5 Pro fonctionne!</h1><p>Timestamp: ' . now() . '</p>';
 });
