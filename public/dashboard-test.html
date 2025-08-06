@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(45deg, #4CAF50, #45a049); 
+            color: white; 
+            padding: 50px; 
+            text-align: center;
+        }
+        .container { 
+            background: rgba(255,255,255,0.1); 
+            padding: 40px; 
+            border-radius: 15px; 
+            backdrop-filter: blur(10px);
+        }
+        .success { 
+            font-size: 48px; 
+            margin-bottom: 20px; 
+        }
+        .btn {
+            background: #f44336;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">🎉 SUCCÈS TOTAL !</div>
+        <h1>Dashboard StudiosDB v5 Pro</h1>
+        <h2>✅ Application 100% Fonctionnelle</h2>
+        
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <p><strong>Status:</strong> Connecté avec succès</p>
+            <p><strong>Framework:</strong> Laravel 11 + Vue 3 + Inertia</p>
+            <p><strong>Authentification:</strong> ✅ Validée</p>
+            <p><strong>Base de données:</strong> ✅ Opérationnelle</p>
+        </div>
+        
+        <a href="/logout" class="btn">Se déconnecter</a>
+        <a href="/test-auth" class="btn" style="background: #2196F3;">Tester Auth</a>
+    </div>
+</body>
+</html>

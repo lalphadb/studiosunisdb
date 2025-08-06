@@ -10,7 +10,6 @@ import '../css/app.css';
 // Core Vue 3 et Inertia.js
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 // Routing et helpers
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/index.esm.js';
@@ -24,18 +23,20 @@ createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
     
     resolve: (name) => {
-        const page = resolvePageComponent(
-            `./Pages/${name}.vue`,
-            import.meta.glob('./Pages/**/*.vue', { eager: false })
-        );
+        const pages = import.meta.glob('./Pages/**/*.vue', { eager: true });
+        const page = pages[`./Pages/${name}.vue`];
+        
+        if (!page) {
+            console.error(`Page component not found: ${name}`);
+            throw new Error(`Page component not found: ${name}`);
+        }
         
         // Ajouter layout par défaut si non spécifié
-        return page.then((module) => {
-            if (!module.default.layout && !name.startsWith('Auth/')) {
-                module.default.layout = import('./Layouts/AuthenticatedLayout.vue');
-            }
-            return module;
-        });
+        if (!page.default.layout && !name.startsWith('Auth/')) {
+            page.default.layout = import('./Layouts/AuthenticatedLayout.vue');
+        }
+        
+        return page;
     },
     
     setup({ el, App, props, plugin }) {
@@ -43,7 +44,10 @@ createInertiaApp({
         
         // Plugins Vue
         app.use(plugin);
-        app.use(ZiggyVue);
+        app.use(ZiggyVue, {
+            location: new URL(window.location.href),
+            ...window.Ziggy
+        });
         
         // Variables globales
         app.config.globalProperties.$appName = appName;

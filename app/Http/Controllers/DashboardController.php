@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Membre, Cours, Presence, Paiement, User};
 use Carbon\Carbon;
-use Illuminate\Http\{Request, JsonResponse};
+use Illuminate\Http\{Request, JsonResponse, RedirectResponse};
 use Illuminate\Support\{Collection, Facades\Auth, Facades\Cache, Facades\DB};
 use Inertia\{Inertia, Response};
 
@@ -19,45 +19,41 @@ final class DashboardController extends Controller
     /**
      * Dashboard principal adaptatif selon le rôle utilisateur
      */
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
         try {
             $user = Auth::user();
-            $role = $user->getRoleNames()->first() ?? 'admin';
+            $role = $user->role ?? 'admin';
             
-            // Statistiques sécurisées - uniquement tables existantes
-            $stats = $this->getStatistiquesSafe();
+            // Statistiques de base
+            $totalMembres = \App\Models\Membre::count();
+            $totalCours = \App\Models\Cours::count();
+            $totalPresences = \App\Models\Presence::count();
+            $totalPaiements = \App\Models\Paiement::count();
             
-            // Métadonnées système
-            $meta = [
-                'version' => '5.4.0',
-                'environment' => app()->environment(),
-                'timestamp' => now()->timestamp,
-                'last_updated' => now()->toISOString()
+            $stats = [
+                'total_membres' => $totalMembres,
+                'total_cours' => $totalCours,
+                'total_presences' => $totalPresences,
+                'total_paiements' => $totalPaiements,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_role' => $role
             ];
-
-            return Inertia::render('Dashboard/Admin', [
-                'stats' => $stats,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'roles' => $user->getRoleNames()->toArray()
-                ],
-                'meta' => $meta
-            ]);
+            
+            return view('dashboard-dynamic', $stats);
 
         } catch (\Exception $e) {
             \Log::error('Dashboard Error: ' . $e->getMessage());
             
             // Fallback en cas d'erreur
-            return Inertia::render('Dashboard/Admin', [
+            return Inertia::render('Dashboard', [
                 'stats' => $this->getStatsMinimal(),
                 'user' => [
                     'id' => $user->id ?? 0,
                     'name' => $user->name ?? 'Admin',
                     'email' => $user->email ?? '',
-                    'roles' => []
+                    'role' => $user->role ?? 'admin'
                 ],
                 'meta' => [
                     'version' => '5.4.0',
