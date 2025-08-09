@@ -5,6 +5,30 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.5.0] - 2025-08-08
+
+### ✨ Ajouté
+
+- Middleware EnsureProfileComplete (forçage complétion profil).
+- Pages Vue Privacy/Policy & Consentements (Loi 25) + partages flash.
+- Toast notifications Inertia globales.
+- Tests: RegistrationConsentTest, CoursCreationAvecHorairesTest, LienFamilialControllerTest.
+
+### 🔧 Modifié
+
+- Import statique du layout AuthenticatedLayout (suppression avertissement Vite).
+- Création cours: valeurs par défaut champs legacy & sécurité accès.
+
+### 🐛 Corrigé
+
+- Erreurs NOT NULL et undefined keys lors création de cours.
+- Redirections profil incomplet.
+
+### 📦 Maintenance
+
+- Bump version applicative à 5.5.0.
+
+
 ## [5.4.0] - 2025-08-05
 
 ### ✨ Ajouté

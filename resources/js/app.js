@@ -13,12 +13,15 @@ import { createInertiaApp } from '@inertiajs/vue3';
 
 // Routing et helpers
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/index.esm.js';
+// Fallback local Ziggy routes (generated) if @routes is not injected
+import { Ziggy as ZiggyFallback } from './ziggy.js';
 
 // Configuration globale de l'application
 const appName = import.meta.env.VITE_APP_NAME || 'StudiosDB v5 Pro';
-const appVersion = '5.0.0';
+const appVersion = '5.5.0';
 
 // Configuration Inertia App
+import AuthenticatedLayout from './Layouts/AuthenticatedLayout.vue';
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
     
@@ -33,7 +36,8 @@ createInertiaApp({
         
         // Ajouter layout par défaut si non spécifié
         if (!page.default.layout && !name.startsWith('Auth/')) {
-            page.default.layout = import('./Layouts/AuthenticatedLayout.vue');
+            // Utilisation d'un import statique pour éviter l'avertissement Vite (mix dynamic/static import)
+            page.default.layout = AuthenticatedLayout;
         }
         
         return page;
@@ -44,9 +48,14 @@ createInertiaApp({
         
         // Plugins Vue
         app.use(plugin);
+        // Prefer Blade-injected @routes; fallback to local ziggy.js when absent
+        const ziggyConfig = typeof window !== 'undefined' && window.Ziggy
+            ? { ...window.Ziggy }
+            : { ...ZiggyFallback };
+
         app.use(ZiggyVue, {
             location: new URL(window.location.href),
-            ...window.Ziggy
+            ...ziggyConfig,
         });
         
         // Variables globales
