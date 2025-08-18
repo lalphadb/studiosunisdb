@@ -1,0 +1,17 @@
+# Configuration de rotation des logs pour StudiosDB
+# ==================================================
+
+# Changez cette ligne dans votre fichier .env pour activer la rotation quotidienne des logs
+
+# Ancien (un seul gros fichier):
+# LOG_CHANNEL=stack
+
+# Nouveau (rotation quotidienne automatique):
+LOG_CHANNEL=daily
+
+# Cela créera des fichiers comme:
+# - laravel-2025-08-17.log
+# - laravel-2025-08-18.log
+# etc.
+
+# Les logs de plus de 14 jours seront automatiquement supprimés

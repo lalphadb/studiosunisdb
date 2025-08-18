@@ -1,0 +1,409 @@
+{
+  "design_system": {
+    "colors": {
+      "primary": {
+        "gradient": "from-blue-950 via-blue-900 to-blue-950",
+        "card": "from-blue-900/60 to-indigo-900/60",
+        "border": "border-blue-800/50",
+        "text": {
+          "primary": "text-white",
+          "secondary": "text-blue-200",
+          "muted": "text-blue-400"
+        }
+      },
+      "status": {
+        "success": {
+          "bg": "bg-green-900/50",
+          "text": "text-green-300",
+          "border": "border-green-700"
+        },
+        "warning": {
+          "bg": "bg-yellow-900/50",
+          "text": "text-yellow-300",
+          "border": "border-yellow-700"
+        },
+        "danger": {
+          "bg": "bg-red-900/50",
+          "text": "text-red-300",
+          "border": "border-red-700"
+        },
+        "info": {
+          "bg": "bg-blue-900/50",
+          "text": "text-blue-300",
+          "border": "border-blue-700"
+        }
+      }
+    },
+    "components": {
+      "card": "bg-blue-900/60 backdrop-blur-xl border border-blue-800/50 rounded-xl shadow-lg",
+      "button": {
+        "primary": "bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800",
+        "secondary": "bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800",
+        "danger": "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+      },
+      "input": "bg-blue-950/60 border border-blue-800 rounded-lg px-4 py-2 text-white placeholder-blue-400 focus:outline-none focus:border-blue-500",
+      "table": "bg-blue-900/60 backdrop-blur-xl border border-blue-800/50 rounded-xl overflow-hidden"
+    }
+  },
+  "modules": {
+    "cours": {
+      "name": "Cours",
+      "icon": "AcademicCapIcon",
+      "status": "completed",
+      "progress": 100,
+      "pages": [
+        "Index.vue",
+        "Create.vue",
+        "Edit.vue",
+        "Show.vue",
+        "Planning.vue"
+      ],
+      "stats": [
+        {
+          "key": "cours_actifs",
+          "title": "Cours Actifs",
+          "icon": "academic",
+          "format": "number"
+        },
+        {
+          "key": "total_inscrits",
+          "title": "Total Inscrits",
+          "icon": "users",
+          "format": "number"
+        },
+        {
+          "key": "taux_occupation",
+          "title": "Taux d'Occupation",
+          "icon": "chart",
+          "format": "percentage"
+        },
+        {
+          "key": "revenus_cours",
+          "title": "Revenus Cours",
+          "icon": "currency",
+          "format": "currency"
+        }
+      ]
+    },
+    "membres": {
+      "name": "Membres",
+      "icon": "UsersIcon",
+      "status": "in_progress",
+      "progress": 80,
+      "pages": [
+        "Index.vue",
+        "Create.vue",
+        "Edit.vue",
+        "Show.vue",
+        "Progression.vue"
+      ],
+      "stats": [
+        {
+          "key": "membres_actifs",
+          "title": "Membres Actifs",
+          "icon": "users",
+          "format": "number"
+        },
+        {
+          "key": "nouvelles_inscriptions",
+          "title": "Nouvelles Inscriptions",
+          "icon": "user-plus",
+          "format": "number"
+        },
+        {
+          "key": "taux_presence",
+          "title": "Taux de Présence",
+          "icon": "chart",
+          "format": "percentage"
+        },
+        {
+          "key": "examens_prevus",
+          "title": "Examens Prévus",
+          "icon": "academic",
+          "format": "number"
+        }
+      ]
+    },
+    "presences": {
+      "name": "Présences",
+      "icon": "ClipboardDocumentCheckIcon",
+      "status": "pending",
+      "progress": 0,
+      "pages": [
+        "Index.vue",
+        "Tablette.vue",
+        "Rapports.vue",
+        "Analytics.vue"
+      ],
+      "stats": [
+        {
+          "key": "presences_jour",
+          "title": "Présences du Jour",
+          "icon": "check",
+          "format": "number"
+        },
+        {
+          "key": "taux_global",
+          "title": "Taux Global",
+          "icon": "chart",
+          "format": "percentage"
+        },
+        {
+          "key": "absences_justifiees",
+          "title": "Absences Justifiées",
+          "icon": "x-mark",
+          "format": "number"
+        },
+        {
+          "key": "retards",
+          "title": "Retards",
+          "icon": "clock",
+          "format": "number"
+        }
+      ]
+    },
+    "paiements": {
+      "name": "Paiements",
+      "icon": "CreditCardIcon",
+      "status": "pending",
+      "progress": 0,
+      "pages": [
+        "Index.vue",
+        "Create.vue",
+        "TableauBord.vue",
+        "Factures.vue",
+        "Rapports.vue"
+      ],
+      "stats": [
+        {
+          "key": "revenus_mois",
+          "title": "Revenus du Mois",
+          "icon": "currency",
+          "format": "currency"
+        },
+        {
+          "key": "paiements_attente",
+          "title": "En Attente",
+          "icon": "clock",
+          "format": "number"
+        },
+        {
+          "key": "retards_paiement",
+          "title": "Retards",
+          "icon": "exclamation",
+          "format": "number"
+        },
+        {
+          "key": "taux_recouvrement",
+          "title": "Taux Recouvrement",
+          "icon": "chart",
+          "format": "percentage"
+        }
+      ]
+    },
+    "ceintures": {
+      "name": "Ceintures",
+      "icon": "TrophyIcon",
+      "status": "pending",
+      "progress": 0,
+      "pages": [
+        "Index.vue",
+        "Examens.vue",
+        "Progression.vue",
+        "Certificats.vue"
+      ],
+      "stats": [
+        {
+          "key": "examens_planifies",
+          "title": "Examens Planifiés",
+          "icon": "calendar",
+          "format": "number"
+        },
+        {
+          "key": "candidats_eligibles",
+          "title": "Candidats Éligibles",
+          "icon": "users",
+          "format": "number"
+        },
+        {
+          "key": "taux_reussite",
+          "title": "Taux de Réussite",
+          "icon": "chart",
+          "format": "percentage"
+        },
+        {
+          "key": "progressions_mois",
+          "title": "Progressions ce Mois",
+          "icon": "trending-up",
+          "format": "number"
+        }
+      ]
+    },
+    "dashboard": {
+      "name": "Dashboard",
+      "icon": "ChartBarIcon",
+      "status": "pending",
+      "progress": 25,
+      "pages": [
+        "Admin.vue",
+        "Instructeur.vue",
+        "Membre.vue",
+        "Default.vue"
+      ],
+      "widgets": [
+        "RevenusChart",
+        "PresencesChart",
+        "MembresEvolution",
+        "CoursPopulaires",
+        "AlertesImportantes",
+        "ProchainsCours",
+        "Anniversaires",
+        "ExamensPrevus"
+      ]
+    },
+    "statistiques": {
+      "name": "Statistiques",
+      "icon": "ChartPieIcon",
+      "status": "pending",
+      "progress": 0,
+      "pages": [
+        "Index.vue",
+        "Rapports.vue",
+        "Analytics.vue",
+        "Export.vue"
+      ],
+      "charts": [
+        "LineChart",
+        "BarChart",
+        "PieChart",
+        "AreaChart",
+        "RadarChart",
+        "HeatMap"
+      ]
+    }
+  },
+  "routes": {
+    "membres": {
+      "index": "GET /membres",
+      "create": "GET /membres/create",
+      "store": "POST /membres",
+      "show": "GET /membres/{membre}",
+      "edit": "GET /membres/{membre}/edit",
+      "update": "PUT /membres/{membre}",
+      "destroy": "DELETE /membres/{membre}",
+      "export": "GET /export/membres",
+      "progression": "GET /membres/{membre}/progression",
+      "changer_ceinture": "POST /membres/{membre}/changer-ceinture"
+    },
+    "cours": {
+      "index": "GET /cours",
+      "create": "GET /cours/create",
+      "store": "POST /cours",
+      "show": "GET /cours/{cours}",
+      "edit": "GET /cours/{cours}/edit",
+      "update": "PUT /cours/{cours}",
+      "destroy": "DELETE /cours/{cours}",
+      "planning": "GET /planning-cours",
+      "duplicate": "POST /cours/{cours}/duplicate"
+    },
+    "presences": {
+      "index": "GET /presences",
+      "tablette": "GET /presences/tablette",
+      "marquer": "POST /presences/marquer",
+      "rapports": "GET /presences/rapports",
+      "export": "GET /export/presences"
+    },
+    "paiements": {
+      "index": "GET /paiements",
+      "create": "GET /paiements/create",
+      "store": "POST /paiements",
+      "confirmer": "PATCH /paiements/{paiement}/confirmer",
+      "tableau_bord": "GET /paiements-tableau-bord",
+      "factures": "GET /factures",
+      "generer_factures": "POST /paiements/generer-factures"
+    },
+    "ceintures": {
+      "index": "GET /ceintures",
+      "examens": "GET /ceintures-examens",
+      "planifier": "POST /examens/planifier",
+      "resultat": "PATCH /examens/{examen}/resultat",
+      "certificats": "GET /certificats/{progression}"
+    }
+  },
+  "permissions": {
+    "super-admin": ["*"],
+    "admin": [
+      "membres.*",
+      "cours.*",
+      "presences.*",
+      "paiements.*",
+      "ceintures.*",
+      "statistiques.view",
+      "dashboard.admin"
+    ],
+    "gestionnaire": [
+      "membres.view",
+      "membres.create",
+      "membres.edit",
+      "cours.view",
+      "presences.view",
+      "presences.marquer",
+      "paiements.view",
+      "paiements.create",
+      "dashboard.gestionnaire"
+    ],
+    "instructeur": [
+      "membres.view",
+      "cours.view",
+      "presences.view",
+      "presences.marquer",
+      "ceintures.examens",
+      "dashboard.instructeur"
+    ],
+    "membre": [
+      "membres.view-own",
+      "cours.view",
+      "presences.view-own",
+      "paiements.view-own",
+      "dashboard.membre"
+    ]
+  },
+  "timeline": {
+    "week1": {
+      "title": "Semaine 1: Composants + Module Membres",
+      "tasks": [
+        "Créer composants réutilisables",
+        "Documenter props et events",
+        "Uniformiser module Membres",
+        "Tests unitaires composants"
+      ]
+    },
+    "week2": {
+      "title": "Semaine 2: Modules Présences + Paiements",
+      "tasks": [
+        "Créer interface tablette présences",
+        "Module paiements complet",
+        "Intégration Stripe/PayPal",
+        "Tests fonctionnels"
+      ]
+    },
+    "week3": {
+      "title": "Semaine 3: Module Ceintures + Dashboards",
+      "tasks": [
+        "Système examens ceintures",
+        "Génération certificats PDF",
+        "Dashboards par rôle",
+        "Widgets dynamiques"
+      ]
+    },
+    "week4": {
+      "title": "Semaine 4: Tests + Déploiement",
+      "tasks": [
+        "Tests E2E complets",
+        "Documentation utilisateur",
+        "Optimisation performances",
+        "Déploiement production"
+      ]
+    }
+  }
+}

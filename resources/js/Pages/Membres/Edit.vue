@@ -22,21 +22,21 @@
       </div>
     </template>
 
-    <div class="py-12">
+    <div class="py-12 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 min-h-screen">
       <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl">
           <div class="p-6">
             
             <!-- Alert de modification -->
-            <div class="mb-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div class="mb-6 bg-blue-950/60 border border-blue-800 rounded-md p-4 text-blue-200">
               <div class="flex">
                 <div class="flex-shrink-0">
-                  <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <svg class="h-5 w-5 text-blue-300" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                   </svg>
                 </div>
                 <div class="ml-3">
-                  <p class="text-sm text-blue-700">
+                  <p class="text-sm">
                     Modification du profil de <strong>{{ membre.nom_complet }}</strong>. 
                     Les changements seront sauvegardés immédiatement.
                   </p>
@@ -48,58 +48,58 @@
               
               <!-- Informations personnelles -->
               <div class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <h3 class="text-lg font-semibold text-blue-100 mb-4">
                   Informations personnelles
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Prénom *</label>
+                    <label class="block text-sm font-medium text-blue-200">Prénom *</label>
                     <input
                       v-model="form.prenom"
                       type="text"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
                       :class="{ 'border-red-500': errors.prenom }"
                     />
-                    <div v-if="errors.prenom" class="text-red-500 text-sm mt-1">
+                    <div v-if="errors.prenom" class="text-red-400 text-sm mt-1">
                       {{ errors.prenom }}
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Nom *</label>
+                    <label class="block text-sm font-medium text-blue-200">Nom *</label>
                     <input
                       v-model="form.nom"
                       type="text"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
                       :class="{ 'border-red-500': errors.nom }"
                     />
-                    <div v-if="errors.nom" class="text-red-500 text-sm mt-1">
+                    <div v-if="errors.nom" class="text-red-400 text-sm mt-1">
                       {{ errors.nom }}
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Date de naissance *</label>
+                    <label class="block text-sm font-medium text-blue-200">Date de naissance *</label>
                     <input
                       v-model="form.date_naissance"
                       type="date"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
                       :class="{ 'border-red-500': errors.date_naissance }"
                     />
-                    <div v-if="errors.date_naissance" class="text-red-500 text-sm mt-1">
+                    <div v-if="errors.date_naissance" class="text-red-400 text-sm mt-1">
                       {{ errors.date_naissance }}
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Sexe *</label>
+                    <label class="block text-sm font-medium text-blue-200">Sexe *</label>
                     <select
                       v-model="form.sexe"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       :class="{ 'border-red-500': errors.sexe }"
                     >
                       <option value="">Sélectionner...</option>
@@ -107,27 +107,27 @@
                       <option value="F">Féminin</option>
                       <option value="Autre">Autre</option>
                     </select>
-                    <div v-if="errors.sexe" class="text-red-500 text-sm mt-1">
+                    <div v-if="errors.sexe" class="text-red-400 text-sm mt-1">
                       {{ errors.sexe }}
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Téléphone</label>
+                    <label class="block text-sm font-medium text-blue-200">Téléphone</label>
                     <input
                       v-model="form.telephone"
                       type="tel"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
                       placeholder="(514) 555-0123"
                     />
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Statut *</label>
+                    <label class="block text-sm font-medium text-blue-200">Statut *</label>
                     <select
                       v-model="form.statut"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       :class="{ 'border-red-500': errors.statut }"
                     >
                       <option value="actif">Actif</option>
@@ -135,7 +135,7 @@
                       <option value="suspendu">Suspendu</option>
                       <option value="diplome">Diplômé</option>
                     </select>
-                    <div v-if="errors.statut" class="text-red-500 text-sm mt-1">
+                    <div v-if="errors.statut" class="text-red-400 text-sm mt-1">
                       {{ errors.statut }}
                     </div>
                   </div>
@@ -144,16 +144,16 @@
 
               <!-- Ceinture actuelle -->
               <div class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <h3 class="text-lg font-semibold text-blue-100 mb-4">
                   Progression martiale
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">Ceinture actuelle *</label>
+                    <label class="block text-sm font-medium text-blue-200">Ceinture actuelle *</label>
                     <select
                       v-model="form.ceinture_actuelle_id"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       :class="{ 'border-red-500': errors.ceinture_actuelle_id }"
                     >
                       <option value="">Sélectionner une ceinture...</option>
@@ -165,7 +165,7 @@
                         {{ ceinture.nom }}
                       </option>
                     </select>
-                    <div v-if="errors.ceinture_actuelle_id" class="text-red-500 text-sm mt-1">
+                    <div v-if="errors.ceinture_actuelle_id" class="text-red-400 text-sm mt-1">
                       {{ errors.ceinture_actuelle_id }}
                     </div>
                   </div>
@@ -183,16 +183,16 @@
 
               <!-- Adresse -->
               <div class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <h3 class="text-lg font-semibold text-blue-100 mb-4">
                   Adresse
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">Adresse</label>
+                    <label class="block text-sm font-medium text-blue-200">Adresse</label>
                     <textarea
                       v-model="form.adresse"
                       rows="2"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
                       placeholder="123 Rue Example"
                     ></textarea>
                   </div>

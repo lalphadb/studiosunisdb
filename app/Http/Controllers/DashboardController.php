@@ -21,47 +21,30 @@ final class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        try {
-            $user = Auth::user();
-            $role = $user->role ?? 'admin';
-            
-            // Statistiques de base
-            $totalMembres = \App\Models\Membre::count();
-            $totalCours = \App\Models\Cours::count();
-            $totalPresences = \App\Models\Presence::count();
-            $totalPaiements = \App\Models\Paiement::count();
-            
-            $stats = [
-                'total_membres' => $totalMembres,
-                'total_cours' => $totalCours,
-                'total_presences' => $totalPresences,
-                'total_paiements' => $totalPaiements,
-                'user_name' => $user->name,
-                'user_email' => $user->email,
-                'user_role' => $role
-            ];
-            
-            return view('dashboard-dynamic', $stats);
-
-        } catch (\Exception $e) {
-            \Log::error('Dashboard Error: ' . $e->getMessage());
-            
-            // Fallback en cas d'erreur
-            return Inertia::render('Dashboard', [
-                'stats' => $this->getStatsMinimal(),
-                'user' => [
-                    'id' => $user->id ?? 0,
-                    'name' => $user->name ?? 'Admin',
-                    'email' => $user->email ?? '',
-                    'role' => $user->role ?? 'admin'
-                ],
-                'meta' => [
-                    'version' => '5.4.0',
-                    'timestamp' => now()->timestamp,
-                    'error' => 'Mode sécurisé activé'
-                ]
-            ]);
-        }
+        $user = Auth::user();
+        $role = $user->role ?? 'admin';
+        $stats = [
+            'total_membres' => Membre::count(),
+            'total_cours' => Cours::count(),
+            'total_presences' => Presence::count(),
+            'total_paiements' => Paiement::count(),
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            'user_role' => $role
+        ];
+        return Inertia::render('Dashboard/Admin', [
+            'stats' => $stats,
+            'user' => [
+                'id' => $user->id ?? 0,
+                'name' => $user->name ?? 'Admin',
+                'email' => $user->email ?? '',
+                'role' => $role
+            ],
+            'meta' => [
+                'version' => '5.4.0',
+                'timestamp' => now()->timestamp
+            ]
+        ]);
     }
 
     /**

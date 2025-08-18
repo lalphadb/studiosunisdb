@@ -1,29 +1,22 @@
 <template>
-  <div class="bg-gray-800/30 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 transition-all duration-300 group">
+  <div class="bg-gradient-to-br from-blue-900/60 to-indigo-900/60 backdrop-blur-xl border border-blue-800/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
     <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-          <component :is="iconComponent" class="h-6 w-6 text-white" v-if="iconComponent" />
-          <span v-else class="text-xl">📊</span>
-        </div>
-        <div>
-          <h3 class="text-sm font-medium text-gray-400">{{ title }}</h3>
-          <p class="text-2xl font-bold text-white">{{ formattedValue }}</p>
-        </div>
+      <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-lg flex items-center justify-center">
+        <component :is="iconComponent" class="h-6 w-6 text-blue-300" />
       </div>
-      
-      <div v-if="change !== undefined" class="text-right">
-        <div :class="{
-          'text-green-400': change >= 0,
-          'text-red-400': change < 0
-        }" class="text-sm font-medium">
-          {{ change >= 0 ? '+' : '' }}{{ change }}%
-        </div>
+      <div v-if="trend" class="flex items-center space-x-1">
+        <ArrowTrendingUpIcon v-if="trendIsPositive" class="h-4 w-4 text-green-400" />
+        <ArrowTrendingDownIcon v-else class="h-4 w-4 text-red-400" />
+        <span :class="trendClass" class="text-sm font-medium">
+          {{ trend }}
+        </span>
       </div>
     </div>
     
-    <div v-if="description" class="text-xs text-gray-500">
-      {{ description }}
+    <div>
+      <p class="text-blue-300 text-sm font-medium mb-1">{{ title }}</p>
+      <p class="text-3xl font-bold text-white">{{ formattedValue }}</p>
+      <p v-if="description" class="text-blue-400 text-xs mt-1">{{ description }}</p>
     </div>
   </div>
 </template>
@@ -32,76 +25,63 @@
 import { computed } from 'vue'
 import {
   UsersIcon,
-  CheckCircleIcon,
-  PlusCircleIcon,
+  UserPlusIcon,
   ChartBarIcon,
+  AcademicCapIcon,
   CurrencyDollarIcon,
-  ClockIcon,
-  BellIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  value: {
-    type: [Number, String],
-    required: true
-  },
+  title: String,
+  value: [Number, String],
+  iconType: String,
+  iconName: String,
   format: {
     type: String,
-    default: 'number' // number, currency, percentage
+    default: 'number'
   },
-  iconType: {
+  description: String,
+  trend: String,
+  trendType: {
     type: String,
-    default: 'heroicon'
-  },
-  iconName: {
-    type: String,
-    default: 'chart'
-  },
-  change: {
-    type: Number,
-    default: undefined
-  },
-  description: {
-    type: String,
-    default: ''
+    default: 'auto'
   }
 })
 
-// Icon mapping
 const iconMap = {
   users: UsersIcon,
-  check: CheckCircleIcon,
-  plus: PlusCircleIcon,
+  'user-plus': UserPlusIcon,
   chart: ChartBarIcon,
-  currency: CurrencyDollarIcon,
-  clock: ClockIcon,
-  bell: BellIcon
+  academic: AcademicCapIcon,
+  currency: CurrencyDollarIcon
 }
 
 const iconComponent = computed(() => {
-  return iconMap[props.iconName] || ChartBarIcon
+  return iconMap[props.iconName] || UsersIcon
 })
 
 const formattedValue = computed(() => {
-  const value = props.value
-  
-  switch (props.format) {
-    case 'currency':
-      return new Intl.NumberFormat('fr-CA', {
-        style: 'currency',
-        currency: 'CAD'
-      }).format(value)
-    
-    case 'percentage':
-      return `${value}%`
-    
-    case 'number':
-    default:
-      return new Intl.NumberFormat('fr-CA').format(value)
+  if (props.format === 'currency') {
+    return new Intl.NumberFormat('fr-CA', {
+      style: 'currency',
+      currency: 'CAD'
+    }).format(props.value)
+  } else if (props.format === 'percentage') {
+    return `${props.value}%`
+  } else {
+    return new Intl.NumberFormat('fr-CA').format(props.value)
   }
+})
+
+const trendIsPositive = computed(() => {
+  if (!props.trend) return false
+  return props.trend.startsWith('+')
+})
+
+const trendClass = computed(() => {
+  if (props.trendType === 'info') return 'text-blue-400'
+  return trendIsPositive.value ? 'text-green-400' : 'text-red-400'
 })
 </script>

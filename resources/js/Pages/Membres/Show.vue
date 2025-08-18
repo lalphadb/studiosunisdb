@@ -22,28 +22,28 @@
       </div>
     </template>
 
-    <div class="py-12">
+    <div class="py-12 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 min-h-screen">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- Boutons d'action rapides -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 shadow-sm">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+  <div class="bg-blue-900/80 border border-blue-800 rounded-xl p-6 mb-6 shadow-lg">
+          <h3 class="text-lg font-semibold text-blue-100 mb-4 flex items-center">
             ⚡ Actions Rapides
           </h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <!-- Ajouter Ceinture -->
             <button
               @click="openModalCeinture"
-              class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+              class="bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
             >
-              <span class="text-2xl">🥋</span>
+              <span class="text-2xl">�</span>
               <span class="text-sm">Nouvelle Ceinture</span>
             </button>
 
             <!-- Ajouter Séminaire -->
             <button
               @click="openModalSeminaire"
-              class="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+              class="bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
             >
               <span class="text-2xl">🎓</span>
               <span class="text-sm">Séminaire</span>
@@ -52,7 +52,7 @@
             <!-- Ajouter Paiement -->
             <button
               @click="openModalPaiement"
-              class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+              class="bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
             >
               <span class="text-2xl">💳</span>
               <span class="text-sm">Paiement</span>
@@ -61,7 +61,7 @@
             <!-- Marquer Présence -->
             <button
               @click="marquerPresence"
-              class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
+              class="bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex flex-col items-center space-y-2"
             >
               <span class="text-2xl">✅</span>
               <span class="text-sm">Présence</span>
@@ -70,13 +70,13 @@
         </div>
         
         <!-- Carte profil principal -->
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-          <div class="p-6">
+  <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl mb-6">
+          <div class="p-6 text-blue-100">
             <div class="flex items-start space-x-6">
               
               <!-- Avatar -->
               <div class="flex-shrink-0">
-                <div class="h-24 w-24 rounded-full bg-gray-300 flex items-center justify-center text-2xl font-bold text-gray-700">
+                <div class="h-24 w-24 rounded-full bg-blue-800 flex items-center justify-center text-2xl font-bold text-blue-100 shadow">
                   {{ membre.prenom[0] }}{{ membre.nom[0] }}
                 </div>
               </div>
@@ -85,17 +85,17 @@
               <div class="flex-1 min-w-0">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <h3 class="text-lg font-semibold text-gray-900">{{ membre.nom_complet }}</h3>
-                    <p class="text-sm text-gray-600">{{ calculerAge(membre.date_naissance) }} ans</p>
-                    <p class="text-sm text-gray-600">{{ membre.sexe === 'M' ? 'Masculin' : membre.sexe === 'F' ? 'Féminin' : 'Autre' }}</p>
+                    <h3 class="text-lg font-semibold text-blue-100">{{ membre.nom_complet }}</h3>
+                    <p class="text-sm text-blue-200">{{ calculerAge(membre.date_naissance) }} ans</p>
+                    <p class="text-sm text-blue-200">{{ membre.sexe === 'M' ? 'Masculin' : membre.sexe === 'F' ? 'Féminin' : 'Autre' }}</p>
                     
                     <div class="mt-2">
                       <span
                         :class="{
-                          'bg-green-100 text-green-800': membre.statut === 'actif',
-                          'bg-yellow-100 text-yellow-800': membre.statut === 'inactif',
-                          'bg-red-100 text-red-800': membre.statut === 'suspendu',
-                          'bg-blue-100 text-blue-800': membre.statut === 'diplome'
+                          'bg-blue-700/30 text-blue-200 border border-blue-800': membre.statut === 'actif',
+                          'bg-gray-700/30 text-gray-300 border border-blue-800': membre.statut === 'inactif',
+                          'bg-red-700/30 text-red-200 border border-blue-800': membre.statut === 'suspendu',
+                          'bg-indigo-700/30 text-indigo-200 border border-blue-800': membre.statut === 'diplome'
                         }"
                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                       >
@@ -105,24 +105,24 @@
                   </div>
 
                   <div>
-                    <h4 class="font-medium text-gray-900">Ceinture actuelle</h4>
+                    <h4 class="font-medium text-blue-100">Ceinture actuelle</h4>
                     <div class="flex items-center mt-1">
                       <div
                         class="w-4 h-4 rounded-full mr-2"
                         :style="`background-color: ${membre.ceinture_actuelle?.couleur_hex || '#gray'}`"
                       ></div>
-                      <span class="text-sm text-gray-600">{{ membre.ceinture_actuelle?.nom || 'Aucune' }}</span>
+                      <span class="text-sm text-blue-200">{{ membre.ceinture_actuelle?.nom || 'Aucune' }}</span>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">
+                    <p class="text-xs text-blue-300 mt-1">
                       Inscrit le {{ formatDate(membre.date_inscription) }}
                     </p>
                   </div>
 
                   <div>
-                    <h4 class="font-medium text-gray-900">Contact</h4>
-                    <p class="text-sm text-gray-600" v-if="membre.telephone">📞 {{ membre.telephone }}</p>
-                    <p class="text-sm text-gray-600" v-if="membre.ville">📍 {{ membre.ville }}</p>
-                    <p class="text-xs text-gray-500 mt-1" v-if="membre.date_derniere_presence">
+                    <h4 class="font-medium text-blue-100">Contact</h4>
+                    <p class="text-sm text-blue-200" v-if="membre.telephone">📞 {{ membre.telephone }}</p>
+                    <p class="text-sm text-blue-200" v-if="membre.ville">📍 {{ membre.ville }}</p>
+                    <p class="text-xs text-blue-300 mt-1" v-if="membre.date_derniere_presence">
                       Dernière présence: {{ formatDate(membre.date_derniere_presence) }}
                     </p>
                   </div>
@@ -133,17 +133,17 @@
         </div>
 
         <!-- Grille d'informations détaillées -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           <!-- Progression et ceintures -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl">
+            <div class="p-6 text-blue-100">
+              <h3 class="text-lg font-semibold text-blue-100 mb-4">
                 🥋 Progression et Ceintures
               </h3>
               
               <div class="space-y-4">
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                <div class="flex justify-between items-center p-3 bg-blue-950/60 rounded">
                   <span class="font-medium">Ceinture actuelle:</span>
                   <div class="flex items-center">
                     <div
@@ -166,7 +166,7 @@
                         {{ progression.ceinture.nom }}
                       </div>
                       <span
-                        :class="progression.peut_passer ? 'text-green-600' : 'text-orange-600'"
+                        :class="progression.peut_passer ? 'text-blue-300' : 'text-blue-700'"
                         class="text-sm font-medium"
                       >
                         {{ progression.peut_passer ? '✅ Éligible' : '⏳ En attente' }}
@@ -174,12 +174,12 @@
                     </div>
                     
                     <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
-                      <div class="text-center p-2 bg-gray-100 rounded">
-                        <div class="font-medium">Présences</div>
+                      <div class="text-center p-2 bg-blue-950/60 rounded">
+                        <div class="font-medium text-blue-200">Présences</div>
                         <div>{{ progression.presences_actuelles }} / {{ progression.presences_requises }}</div>
                       </div>
-                      <div class="text-center p-2 bg-gray-100 rounded">
-                        <div class="font-medium">Temps minimum</div>
+                      <div class="text-center p-2 bg-blue-950/60 rounded">
+                        <div class="font-medium text-blue-200">Temps minimum</div>
                         <div>{{ progression.mois_requis }} mois</div>
                       </div>
                     </div>
@@ -187,7 +187,7 @@
 
                   <button
                     @click="ouvrirModalChangementCeinture"
-                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm"
+                    class="w-full bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-bold py-2 px-4 rounded text-sm shadow"
                   >
                     🎯 Changer de ceinture
                   </button>
@@ -197,23 +197,23 @@
           </div>
 
           <!-- Contact d'urgence -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl">
+            <div class="p-6 text-blue-100">
+              <h3 class="text-lg font-semibold text-blue-100 mb-4">
                 🚨 Contact d'urgence
               </h3>
               
               <div class="space-y-3">
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Nom:</span>
+                  <span class="text-blue-200">Nom:</span>
                   <span class="font-medium">{{ membre.contact_urgence_nom }}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Téléphone:</span>
+                  <span class="text-blue-200">Téléphone:</span>
                   <span class="font-medium">{{ membre.contact_urgence_telephone }}</span>
                 </div>
                 <div class="flex justify-between" v-if="membre.contact_urgence_relation">
-                  <span class="text-gray-600">Relation:</span>
+                  <span class="text-blue-200">Relation:</span>
                   <span class="font-medium">{{ membre.contact_urgence_relation }}</span>
                 </div>
               </div>
@@ -221,13 +221,13 @@
           </div>
 
           <!-- Adresse complète -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg" v-if="membre.adresse">
-            <div class="p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl" v-if="membre.adresse">
+            <div class="p-6 text-blue-100">
+              <h3 class="text-lg font-semibold text-blue-100 mb-4">
                 📍 Adresse
               </h3>
               
-              <div class="text-gray-700">
+              <div class="text-blue-200">
                 <p>{{ membre.adresse }}</p>
                 <p v-if="membre.ville || membre.code_postal">
                   <span v-if="membre.ville">{{ membre.ville }}</span>
@@ -238,25 +238,25 @@
           </div>
 
           <!-- Informations médicales -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg" v-if="membre.notes_medicales || membre.allergies?.length">
-            <div class="p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl" v-if="membre.notes_medicales || membre.allergies?.length">
+            <div class="p-6 text-blue-100">
+              <h3 class="text-lg font-semibold text-blue-100 mb-4">
                 🏥 Informations médicales
               </h3>
               
               <div class="space-y-3">
                 <div v-if="membre.notes_medicales">
-                  <h4 class="font-medium text-gray-700">Notes médicales:</h4>
-                  <p class="text-gray-600 text-sm bg-yellow-50 p-2 rounded">{{ membre.notes_medicales }}</p>
+                  <h4 class="font-medium text-blue-200">Notes médicales:</h4>
+                  <p class="text-blue-200 text-sm bg-blue-950/60 p-2 rounded">{{ membre.notes_medicales }}</p>
                 </div>
                 
                 <div v-if="membre.allergies?.length">
-                  <h4 class="font-medium text-gray-700">Allergies:</h4>
+                  <h4 class="font-medium text-blue-200">Allergies:</h4>
                   <div class="flex flex-wrap gap-1 mt-1">
                     <span
                       v-for="allergie in membre.allergies"
                       :key="allergie"
-                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                      class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-700/30 text-red-200 border border-blue-800"
                     >
                       ⚠️ {{ allergie }}
                     </span>
@@ -271,9 +271,9 @@
         <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           <!-- Présences récentes -->
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <div class="bg-blue-900/80 border border-blue-800 overflow-hidden shadow-lg sm:rounded-xl">
+            <div class="p-6 text-blue-100">
+              <h3 class="text-lg font-semibold text-blue-100 mb-4">
                 📅 Présences récentes
               </h3>
               
@@ -281,18 +281,18 @@
                 <div
                   v-for="presence in membre.presences"
                   :key="presence.id"
-                  class="flex justify-between items-center p-2 bg-gray-50 rounded"
+                  class="flex justify-between items-center p-2 bg-blue-950/60 rounded"
                 >
                   <div>
-                    <div class="font-medium text-sm">{{ presence.cours?.nom || 'Cours supprimé' }}</div>
-                    <div class="text-xs text-gray-500">{{ formatDate(presence.date_cours) }}</div>
+                    <div class="font-medium text-sm text-blue-200">{{ presence.cours?.nom || 'Cours supprimé' }}</div>
+                    <div class="text-xs text-blue-300">{{ formatDate(presence.date_cours) }}</div>
                   </div>
                   <span
                     :class="{
-                      'bg-green-100 text-green-800': presence.statut === 'present',
-                      'bg-red-100 text-red-800': presence.statut === 'absent',
-                      'bg-yellow-100 text-yellow-800': presence.statut === 'retard',
-                      'bg-blue-100 text-blue-800': presence.statut === 'excuse'
+                      'bg-blue-700/30 text-blue-200 border border-blue-800': presence.statut === 'present',
+                      'bg-red-700/30 text-red-200 border border-blue-800': presence.statut === 'absent',
+                      'bg-yellow-700/30 text-yellow-200 border border-blue-800': presence.statut === 'retard',
+                      'bg-indigo-700/30 text-indigo-200 border border-blue-800': presence.statut === 'excuse'
                     }"
                     class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                   >
@@ -300,7 +300,7 @@
                   </span>
                 </div>
               </div>
-              <p v-else class="text-gray-500 text-sm">Aucune présence enregistrée</p>
+              <p v-else class="text-blue-300 text-sm">Aucune présence enregistrée</p>
             </div>
           </div>
 
