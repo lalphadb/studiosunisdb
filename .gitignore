@@ -1,3 +1,10 @@
+# Sauvegardes volumineuses à ignorer
+backups/*.tar.xz
+backups/*.zip
+backups/*.gz
+backups/*.bak
+backups/*.sql
+backups/*.tar
 # StudiosDB v5 Pro - .gitignore
 # ================================
 
