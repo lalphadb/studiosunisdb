@@ -23,7 +23,7 @@
     </template>
 
     <div class="py-12 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 min-h-screen">
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+      <div class="max-w-none mx-auto sm:px-6 lg:px-8">
         
         <!-- Boutons d'action rapides -->
   <div class="bg-blue-900/80 border border-blue-800 rounded-xl p-6 mb-6 shadow-lg">

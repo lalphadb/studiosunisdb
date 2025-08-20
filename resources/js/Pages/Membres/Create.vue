@@ -1,365 +1,445 @@
 <template>
+  <Head title="Nouveau Membre" />
+  
   <AuthenticatedLayout>
-    <template #header>
-      <div class="flex justify-between items-center">
-        <h2 class="font-semibold text-xl text-blue-100 leading-tight">
-          Nouveau Membre
-        </h2>
-        <Link
-          :href="route('membres.index')"
-          class="bg-gradient-to-r from-blue-700 to-indigo-800 hover:from-blue-800 hover:to-indigo-900 text-white font-bold py-2 px-4 rounded shadow"
-        >
-          ← Retour à la liste
-        </Link>
-      </div>
-    </template>
-
-    <div class="py-12 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 min-h-screen">
-      <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-blue-900/80 border border-blue-800 shadow-lg sm:rounded-xl">
-          <div class="p-6">
-            <form @submit.prevent="submit">
-              
-              <!-- Informations personnelles -->
-              <div class="mb-8">
-                <h3 class="text-lg font-semibold text-blue-100 mb-4">
-                  Informations personnelles
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Prénom *</label>
-                    <input
-                      v-model="form.prenom"
-                      type="text"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      :class="{ 'border-red-500': errors.prenom }"
-                    />
-                    <div v-if="errors.prenom" class="text-red-400 text-sm mt-1">
-                      {{ errors.prenom }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Nom *</label>
-                    <input
-                      v-model="form.nom"
-                      type="text"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      :class="{ 'border-red-500': errors.nom }"
-                    />
-                    <div v-if="errors.nom" class="text-red-400 text-sm mt-1">
-                      {{ errors.nom }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Date de naissance *</label>
-                    <input
-                      v-model="form.date_naissance"
-                      type="date"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      :class="{ 'border-red-500': errors.date_naissance }"
-                    />
-                    <div v-if="errors.date_naissance" class="text-red-400 text-sm mt-1">
-                      {{ errors.date_naissance }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Sexe *</label>
-                    <select
-                      v-model="form.sexe"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      :class="{ 'border-red-500': errors.sexe }"
-                    >
-                      <option value="">Sélectionner...</option>
-                      <option value="M">Masculin</option>
-                      <option value="F">Féminin</option>
-                      <option value="Autre">Autre</option>
-                    </select>
-                    <div v-if="errors.sexe" class="text-red-400 text-sm mt-1">
-                      {{ errors.sexe }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Téléphone</label>
-                    <input
-                      v-model="form.telephone"
-                      type="tel"
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      placeholder="(514) 555-0123"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Ceinture actuelle *</label>
-                    <select
-                      v-model="form.ceinture_actuelle_id"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      :class="{ 'border-red-500': errors.ceinture_actuelle_id }"
-                    >
-                      <option value="">Sélectionner une ceinture...</option>
-                      <option
-                        v-for="ceinture in ceintures"
-                        :key="ceinture.id"
-                        :value="ceinture.id"
-                      >
-                        {{ ceinture.nom }}
-                      </option>
-                    </select>
-                    <div v-if="errors.ceinture_actuelle_id" class="text-red-400 text-sm mt-1">
-                      {{ errors.ceinture_actuelle_id }}
-                    </div>
-                  </div>
+    <!-- Container principal SANS padding -->
+    <div class="min-h-screen">
+      <!-- Header premium pleine largeur -->
+      <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-2xl mb-6">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+        
+        <!-- Pattern décoratif -->
+        <div class="absolute inset-0">
+          <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+          <div class="absolute -bottom-10 -left-10 w-60 h-60 bg-purple-500/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        <!-- Contenu du header -->
+        <div class="relative px-6 py-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
                 </div>
-              </div>
-
-              <!-- Adresse -->
-              <div class="mb-8">
-                <h3 class="text-lg font-semibold text-blue-100 mb-4">
-                  Adresse
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-blue-200">Adresse</label>
-                    <textarea
-                      v-model="form.adresse"
-                      rows="2"
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      placeholder="123 Rue Example"
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Ville</label>
-                    <input
-                      v-model="form.ville"
-                      type="text"
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      placeholder="Montréal"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Code postal</label>
-                    <input
-                      v-model="form.code_postal"
-                      type="text"
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      placeholder="H1H 1H1"
-                      pattern="[A-Za-z]\d[A-Za-z][\s\-]?\d[A-Za-z]\d"
-                    />
-                    <div v-if="errors.code_postal" class="text-red-400 text-sm mt-1">
-                      {{ errors.code_postal }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Contact d'urgence -->
-              <div class="mb-8">
-                <h3 class="text-lg font-semibold text-blue-100 mb-4">
-                  Contact d'urgence *
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Nom complet *</label>
-                    <input
-                      v-model="form.contact_urgence_nom"
-                      type="text"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      :class="{ 'border-red-500': errors.contact_urgence_nom }"
-                    />
-                    <div v-if="errors.contact_urgence_nom" class="text-red-400 text-sm mt-1">
-                      {{ errors.contact_urgence_nom }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Téléphone *</label>
-                    <input
-                      v-model="form.contact_urgence_telephone"
-                      type="tel"
-                      required
-                      class="mt-1 block w-full rounded-md border-blue-800 bg-blue-950/80 text-blue-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 placeholder-blue-300"
-                      :class="{ 'border-red-500': errors.contact_urgence_telephone }"
-                    />
-                    <div v-if="errors.contact_urgence_telephone" class="text-red-400 text-sm mt-1">
-                      {{ errors.contact_urgence_telephone }}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-blue-200">Relation</label>
-                    <select
-                      v-model="form.contact_urgence_relation"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    >
-                      <option value="">Sélectionner...</option>
-                      <option value="Parent">Parent</option>
-                      <option value="Conjoint">Conjoint(e)</option>
-                      <option value="Frère/Sœur">Frère/Sœur</option>
-                      <option value="Ami">Ami(e)</option>
-                      <option value="Autre">Autre</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Informations médicales -->
-              <div class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                  Informations médicales
-                </h3>
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Notes médicales</label>
-                    <textarea
-                      v-model="form.notes_medicales"
-                      rows="3"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Conditions médicales, limitations, recommandations..."
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Allergies</label>
-                    <input
-                      v-model="allergiesText"
-                      type="text"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Arachides, lactose, pollen... (séparées par des virgules)"
-                      @input="updateAllergies"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Consentements -->
-              <div class="mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                  Consentements (Loi 25 - Québec)
-                </h3>
-                <div class="space-y-4">
-                  <div class="flex items-start">
-                    <input
-                      v-model="form.consentement_donnees"
-                      type="checkbox"
-                      required
-                      class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label class="ml-3 text-sm text-gray-700">
-                      <strong>J'accepte le traitement de mes données personnelles *</strong><br>
-                      <span class="text-xs text-gray-500">
-                        Conformément à la Loi 25 sur la protection des renseignements personnels (Québec)
-                      </span>
-                    </label>
-                  </div>
-
-                  <div class="flex items-start">
-                    <input
-                      v-model="form.consentement_communications"
-                      type="checkbox"
-                      class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label class="ml-3 text-sm text-gray-700">
-                      J'accepte de recevoir des communications par courriel ou SMS
-                    </label>
-                  </div>
-
-                  <div class="flex items-start">
-                    <input
-                      v-model="form.consentement_photos"
-                      type="checkbox"
-                      class="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label class="ml-3 text-sm text-gray-700">
-                      J'autorise la prise et l'utilisation de photos/vidéos pour les activités du dojo
-                    </label>
-                  </div>
-                </div>
-                <div v-if="errors.consentement_donnees" class="text-red-500 text-sm mt-2">
-                  {{ errors.consentement_donnees }}
-                </div>
-              </div>
-
-              <!-- Boutons -->
-              <div class="flex justify-end space-x-3">
-                <Link
-                  :href="route('membres.index')"
-                  class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                >
-                  Annuler
-                </Link>
-                <button
-                  type="submit"
-                  :disabled="processing"
-                  class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                >
-                  <span v-if="processing">Création...</span>
-                  <span v-else>Créer le membre</span>
-                </button>
-              </div>
-
-            </form>
+                Nouveau Membre
+              </h1>
+              <p class="mt-1 text-blue-100">
+                Inscription d'un nouveau membre à l'école
+              </p>
+            </div>
+            
+            <!-- Bouton retour -->
+            <Link :href="route('membres.index')"
+                  class="px-5 py-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-xl flex items-center gap-2 transition-all font-medium">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Retour
+            </Link>
           </div>
         </div>
       </div>
+
+      <!-- Formulaire avec padding horizontal -->
+      <form @submit.prevent="submit" class="space-y-6 px-6 pb-6">
+        <!-- Section Informations personnelles -->
+        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            Informations personnelles
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Prénom -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Prénom <span class="text-red-400">*</span>
+              </label>
+              <input
+                v-model="form.prenom"
+                type="text"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="Jean"
+                required
+              />
+              <p v-if="form.errors.prenom" class="mt-1 text-sm text-red-400">{{ form.errors.prenom }}</p>
+            </div>
+
+            <!-- Nom -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Nom <span class="text-red-400">*</span>
+              </label>
+              <input
+                v-model="form.nom"
+                type="text"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="Dupont"
+                required
+              />
+              <p v-if="form.errors.nom" class="mt-1 text-sm text-red-400">{{ form.errors.nom }}</p>
+            </div>
+
+            <!-- Date de naissance -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Date de naissance <span class="text-red-400">*</span>
+              </label>
+              <input
+                v-model="form.date_naissance"
+                type="date"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+              />
+              <p v-if="form.errors.date_naissance" class="mt-1 text-sm text-red-400">{{ form.errors.date_naissance }}</p>
+            </div>
+
+            <!-- Sexe -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Sexe <span class="text-red-400">*</span>
+              </label>
+              <select
+                v-model="form.sexe"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+              >
+                <option value="">Sélectionner...</option>
+                <option value="M">Masculin</option>
+                <option value="F">Féminin</option>
+                <option value="Autre">Autre</option>
+              </select>
+              <p v-if="form.errors.sexe" class="mt-1 text-sm text-red-400">{{ form.errors.sexe }}</p>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Courriel <span class="text-red-400">*</span>
+              </label>
+              <input
+                v-model="form.email"
+                type="email"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="jean.dupont@email.com"
+                required
+              />
+              <p v-if="form.errors.email" class="mt-1 text-sm text-red-400">{{ form.errors.email }}</p>
+            </div>
+
+            <!-- Téléphone -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Téléphone
+              </label>
+              <input
+                v-model="form.telephone"
+                type="tel"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="(514) 555-0123"
+              />
+              <p v-if="form.errors.telephone" class="mt-1 text-sm text-red-400">{{ form.errors.telephone }}</p>
+            </div>
+
+            <!-- Ceinture actuelle -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Ceinture actuelle
+              </label>
+              <select
+                v-model="form.ceinture_actuelle_id"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <option value="">Sélectionner une ceinture...</option>
+                <option v-for="ceinture in ceintures" :key="ceinture.id" :value="ceinture.id">
+                  {{ ceinture.name_fr }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Statut -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Statut <span class="text-red-400">*</span>
+              </label>
+              <select
+                v-model="form.statut"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+              >
+                <option value="actif">Actif</option>
+                <option value="inactif">Inactif</option>
+                <option value="suspendu">Suspendu</option>
+              </select>
+              <p v-if="form.errors.statut" class="mt-1 text-sm text-red-400">{{ form.errors.statut }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Adresse -->
+        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            Adresse
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Adresse -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Adresse
+              </label>
+              <input
+                v-model="form.adresse"
+                type="text"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="123 Rue Example"
+              />
+            </div>
+
+            <!-- Ville -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Ville
+              </label>
+              <input
+                v-model="form.ville"
+                type="text"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="Montréal"
+              />
+            </div>
+
+            <!-- Code postal -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Code postal
+              </label>
+              <input
+                v-model="form.code_postal"
+                type="text"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="H1H 1H1"
+                maxlength="7"
+              />
+            </div>
+
+            <!-- Province -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Province
+              </label>
+              <select
+                v-model="form.province"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <option value="">Sélectionner...</option>
+                <option value="QC">Québec</option>
+                <option value="ON">Ontario</option>
+                <option value="NB">Nouveau-Brunswick</option>
+                <option value="NS">Nouvelle-Écosse</option>
+                <option value="PE">Île-du-Prince-Édouard</option>
+                <option value="NL">Terre-Neuve-et-Labrador</option>
+                <option value="MB">Manitoba</option>
+                <option value="SK">Saskatchewan</option>
+                <option value="AB">Alberta</option>
+                <option value="BC">Colombie-Britannique</option>
+                <option value="YT">Yukon</option>
+                <option value="NT">Territoires du Nord-Ouest</option>
+                <option value="NU">Nunavut</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Contact d'urgence -->
+        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-500/20 to-orange-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+            </div>
+            Contact d'urgence
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Nom complet -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Nom complet
+              </label>
+              <input
+                v-model="form.contact_urgence_nom"
+                type="text"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="Marie Dupont"
+              />
+            </div>
+
+            <!-- Téléphone -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Téléphone
+              </label>
+              <input
+                v-model="form.contact_urgence_telephone"
+                type="tel"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all"
+                placeholder="(514) 555-9999"
+              />
+            </div>
+
+            <!-- Relation -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">
+                Relation
+              </label>
+              <select
+                v-model="form.contact_urgence_relation"
+                class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <option value="">Sélectionner...</option>
+                <option value="parent">Parent</option>
+                <option value="conjoint">Conjoint(e)</option>
+                <option value="frere_soeur">Frère/Sœur</option>
+                <option value="ami">Ami(e)</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Consentements -->
+        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+          <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-600/20 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            Consentements (Loi 25)
+          </h2>
+          
+          <div class="space-y-4">
+            <!-- Consentement photos -->
+            <label class="flex items-start gap-3 p-4 bg-slate-900/30 rounded-xl border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
+              <input
+                v-model="form.consentement_photos"
+                type="checkbox"
+                class="mt-1 w-5 h-5 text-blue-600 bg-slate-800 border-slate-600 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <div>
+                <p class="text-white font-medium">Autorisation de photos et vidéos</p>
+                <p class="text-sm text-slate-400 mt-1">
+                  J'autorise l'école à prendre et utiliser des photos/vidéos à des fins promotionnelles et pédagogiques.
+                </p>
+              </div>
+            </label>
+
+            <!-- Consentement communications -->
+            <label class="flex items-start gap-3 p-4 bg-slate-900/30 rounded-xl border border-slate-700/30 hover:border-blue-500/50 transition-all cursor-pointer">
+              <input
+                v-model="form.consentement_communications"
+                type="checkbox"
+                class="mt-1 w-5 h-5 text-blue-600 bg-slate-800 border-slate-600 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <div>
+                <p class="text-white font-medium">Communications marketing</p>
+                <p class="text-sm text-slate-400 mt-1">
+                  J'accepte de recevoir des communications sur les événements, promotions et nouvelles de l'école.
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-4">
+          <Link
+            :href="route('membres.index')"
+            class="px-6 py-3 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-xl flex items-center gap-2 transition-all font-medium border border-slate-700"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Annuler
+          </Link>
+          
+          <button
+            type="submit"
+            :disabled="form.processing"
+            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl flex items-center gap-2 transition-all font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="!form.processing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <svg v-else class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {{ form.processing ? 'Création...' : 'Créer le membre' }}
+          </button>
+        </div>
+      </form>
     </div>
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useForm } from '@inertiajs/vue3'
-import { Link } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const props = defineProps({
-  ceintures: Array,
-  errors: Object
+  ceintures: {
+    type: Array,
+    default: () => []
+  }
 })
-
-const allergiesText = ref('')
 
 const form = useForm({
   prenom: '',
   nom: '',
+  email: '',
+  telephone: '',
   date_naissance: '',
   sexe: '',
-  telephone: '',
   adresse: '',
   ville: '',
   code_postal: '',
+  province: 'QC',
   contact_urgence_nom: '',
   contact_urgence_telephone: '',
   contact_urgence_relation: '',
-  ceinture_actuelle_id: '',
-  notes_medicales: '',
-  allergies: [],
+  ceinture_actuelle_id: null,
+  statut: 'actif',
   consentement_photos: false,
-  consentement_communications: true,
-  consentement_donnees: false
+  consentement_communications: false
 })
-
-const updateAllergies = () => {
-  form.allergies = allergiesText.value
-    .split(',')
-    .map(a => a.trim())
-    .filter(a => a.length > 0)
-}
 
 const submit = () => {
   form.post(route('membres.store'), {
+    preserveScroll: true,
     onSuccess: () => {
-      // Redirection automatique gérée par le contrôleur
+      // Redirection automatique gérée par le controller
     }
   })
 }

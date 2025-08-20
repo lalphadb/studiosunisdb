@@ -1,451 +1,387 @@
 <template>
   <Head title="Gestion des Membres" />
 
-  <AuthenticatedLayout>
-    <div class="min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 text-white">
-      <div class="relative z-10 w-full px-6 lg:px-12 py-8">
+  <!-- Container principal SANS padding -->
+  <div class="min-h-screen  max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <!-- Header avec actions -->
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div class="mb-4 lg:mb-0">
-            <div class="flex items-center space-x-3 mb-2">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg">
-                <UsersIcon class="h-7 w-7 text-white" />
-              </div>
+      <!-- Stats Cards style Dashboard avec padding -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 px-6">
+        <!-- Total -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 group">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between">
               <div>
-                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-100 to-blue-300 bg-clip-text text-transparent">
-                  Gestion des Membres
-                </h1>
-                <p class="text-blue-200 font-medium">{{ totalMembres }} membres inscrits à l'école</p>
+                <p class="text-slate-400 text-sm font-medium">Total membres</p>
+                <p class="text-3xl font-bold text-white mt-1">{{ stats.total }}</p>
+                <p class="text-xs text-slate-500 mt-1">Tous statuts confondus</p>
+              </div>
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="flex items-center space-x-3">
-            <button
-              @click="exportMembres"
-              class="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 px-5 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md"
-            >
-              <ArrowDownTrayIcon class="h-5 w-5" />
-              <span>Exporter</span>
-            </button>
-            <Link
-              :href="route('membres.create')"
-              class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md"
-            >
-              <PlusIcon class="h-5 w-5" />
-              <span>Nouveau Membre</span>
-            </Link>
+        <!-- Actifs -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-green-500/50 transition-all duration-300 group">
+          <div class="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-slate-400 text-sm font-medium">Membres actifs</p>
+                <p class="text-3xl font-bold text-white mt-1">{{ stats.actifs }}</p>
+                <p class="text-xs text-green-400 mt-1">
+                  {{ Math.round((stats.actifs / stats.total) * 100) }}% du total
+                </p>
+              </div>
+              <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Statistiques rapides -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
-          <ModernStatsCard
-            title="Membres Actifs"
-            :value="stats.membres_actifs"
-            icon-type="heroicon"
-            icon-name="users"
-            format="number"
-            description="Membres actifs ce mois"
-            :trend="stats.trend_actifs"
-          />
-
-          <ModernStatsCard
-            title="Nouvelles Inscriptions"
-            :value="stats.nouvelles_inscriptions"
-            icon-type="heroicon"
-            icon-name="user-plus"
-            format="number"
-            description="Inscriptions ce mois"
-            :trend="stats.trend_inscriptions"
-          />
-
-          <ModernStatsCard
-            title="Taux de Présence"
-            :value="stats.taux_presence"
-            icon-type="heroicon"
-            icon-name="chart"
-            format="percentage"
-            description="Présence moyenne"
-            :trend="stats.trend_presence"
-          />
-
-          <ModernStatsCard
-            title="Examens Prévus"
-            :value="stats.examens_prevus"
-            icon-type="heroicon"
-            icon-name="academic"
-            format="number"
-            description="Élèves prêts pour examen"
-            trend-type="info"
-          />
+        <!-- Nouveaux -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 group">
+          <div class="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-slate-400 text-sm font-medium">Nouveaux ce mois</p>
+                <p class="text-3xl font-bold text-white mt-1">{{ stats.nouveaux_mois }}</p>
+                <p class="text-xs text-purple-400 mt-1">Inscriptions récentes</p>
+              </div>
+              <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Barre de recherche et filtres -->
-        <div class="bg-blue-900/60 backdrop-blur-xl border border-blue-800/50 rounded-xl p-6 mb-8 shadow-md w-full">
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Présences -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-amber-500/50 transition-all duration-300 group">
+          <div class="absolute inset-0 bg-gradient-to-br from-amber-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-slate-400 text-sm font-medium">Présences aujourd'hui</p>
+                <p class="text-3xl font-bold text-white mt-1">{{ stats.presences_jour }}</p>
+                <p class="text-xs text-amber-400 mt-1">Participation active</p>
+              </div>
+              <div class="w-12 h-12 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtres style Dashboard avec margin horizontal -->
+      <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6 mx-6">
+        <form @submit.prevent="applyFilters" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <!-- Recherche -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-blue-200 mb-2">Rechercher</label>
+            <div class="lg:col-span-2">
+              <label class="block text-sm font-medium text-slate-400 mb-2">Recherche</label>
               <div class="relative">
                 <input
-                  v-model="filters.search"
-                  @input="debouncedSearch"
+                  v-model="form.q"
                   type="text"
-                  placeholder="Nom, prénom, email..."
-                  class="w-full bg-blue-950/60 border border-blue-800 rounded-lg pl-10 pr-4 py-2 text-white placeholder-blue-400 focus:outline-none focus:border-blue-600 transition-colors"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
+                  placeholder="Nom, email, téléphone..."
+                  @input="debouncedSearch"
                 />
-                <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-400" />
+                <svg class="absolute left-3 top-3 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
             </div>
-
-            <!-- Filtre Statut -->
+            
+            <!-- Statut -->
             <div>
-              <label class="block text-sm font-medium text-blue-200 mb-2">Statut</label>
-              <select
-                v-model="filters.statut"
-                @change="applyFilters"
-                class="w-full bg-blue-950/60 border border-blue-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-600 transition-colors"
-              >
-                <option value="">Tous les statuts</option>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Statut</label>
+              <select v-model="form.statut" class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">Tous</option>
                 <option value="actif">Actif</option>
                 <option value="inactif">Inactif</option>
                 <option value="suspendu">Suspendu</option>
               </select>
             </div>
-
-            <!-- Filtre Ceinture -->
+            
+            <!-- Ceinture -->
             <div>
-              <label class="block text-sm font-medium text-blue-200 mb-2">Ceinture</label>
-              <select
-                v-model="filters.ceinture"
-                @change="applyFilters"
-                class="w-full bg-blue-950/60 border border-blue-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-600 transition-colors"
-              >
-                <option value="">Toutes les ceintures</option>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Ceinture</label>
+              <select v-model="form.ceinture_id" class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">Toutes</option>
                 <option v-for="ceinture in ceintures" :key="ceinture.id" :value="ceinture.id">
                   {{ ceinture.nom }}
                 </option>
               </select>
             </div>
-
-            <!-- Filtre Groupe d'âge -->
+            
+            <!-- Âge -->
             <div>
-              <label class="block text-sm font-medium text-blue-200 mb-2">Groupe d'âge</label>
-              <select
-                v-model="filters.groupe_age"
-                @change="applyFilters"
-                class="w-full bg-blue-950/60 border border-blue-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-600 transition-colors"
-              >
-                <option value="">Tous les âges</option>
-                <option value="enfant">Enfants (5-11 ans)</option>
-                <option value="adolescent">Adolescents (12-17 ans)</option>
-                <option value="adulte">Adultes (18+ ans)</option>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Âge</label>
+              <select v-model="form.age_group" class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">Tous</option>
+                <option value="mineur">Mineurs</option>
+                <option value="adulte">Adultes</option>
+              </select>
+            </div>
+            
+            <!-- Tri -->
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Tri par</label>
+              <select v-model="form.sort" class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="created_at">Date création</option>
+                <option value="nom">Nom</option>
+                <option value="prenom">Prénom</option>
+                <option value="date_inscription">Inscription</option>
               </select>
             </div>
           </div>
-
-          <!-- Tags de filtres actifs -->
-          <div v-if="hasActiveFilters" class="mt-4 flex flex-wrap items-center gap-2">
-            <span class="text-sm text-blue-300">Filtres actifs:</span>
-            <span
-              v-for="(value, key) in activeFilters"
-              :key="key"
-              class="inline-flex items-center gap-1 px-3 py-1 bg-blue-800/50 text-blue-200 rounded-full text-sm"
-            >
-              {{ filterLabels[key] }}: {{ value }}
-              <button
-                @click="removeFilter(key)"
-                class="ml-1 hover:text-white transition-colors"
-              >
-                <XMarkIcon class="h-4 w-4" />
-              </button>
-            </span>
+          
+          <!-- Actions -->
+          <div class="flex gap-3">
+            <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl flex items-center gap-2 transition-all font-medium shadow-lg">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filtrer
+            </button>
+            <button type="button" @click="resetFilters" class="px-5 py-2.5 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-xl flex items-center gap-2 transition-all border border-slate-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Réinitialiser
+            </button>
             <button
-              @click="resetFilters"
-              class="text-sm text-blue-300 hover:text-white transition-colors underline"
+              v-if="can.export"
+              type="button"
+              @click="exportData"
+              class="ml-auto px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl flex items-center gap-2 transition-all font-medium shadow-lg"
             >
-              Réinitialiser tout
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Exporter
             </button>
           </div>
+        </form>
+      </div>
+
+      <!-- Table style Dashboard avec margin horizontal -->
+      <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden mx-6 mb-6">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-slate-900/50 border-b border-slate-700/50">
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Membre
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Ceinture
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Statut
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Cours
+                </th>
+                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Présences
+                </th>
+                <th class="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/30">
+              <tr
+                v-for="membre in membres.data"
+                :key="membre.id"
+                class="hover:bg-slate-800/30 transition-all duration-200 group"
+              >
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-lg">
+                        {{ membre.prenom[0] }}{{ membre.nom[0] }}
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-white">
+                        {{ membre.nom_complet }}
+                      </div>
+                      <div class="text-xs text-slate-400">
+                        {{ membre.age }} ans
+                        <span v-if="membre.is_minor" class="ml-1 text-amber-400 font-medium">(Mineur)</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-slate-300">{{ membre.user?.email }}</div>
+                  <div class="text-xs text-slate-500">{{ membre.telephone }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    v-if="membre.ceinture_actuelle"
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                    :style="{
+                      backgroundColor: membre.ceinture_actuelle.couleur_hex + '30',
+                      color: membre.ceinture_actuelle.couleur_hex,
+                      border: `1px solid ${membre.ceinture_actuelle.couleur_hex}50`
+                    }"
+                  >
+                    {{ membre.ceinture_actuelle.nom }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                    :class="{
+                      'bg-green-500/20 text-green-400 border border-green-500/30': membre.statut === 'actif',
+                      'bg-slate-500/20 text-slate-400 border border-slate-500/30': membre.statut === 'inactif',
+                      'bg-red-500/20 text-red-400 border border-red-500/30': membre.statut === 'suspendu'
+                    }"
+                  >
+                    {{ statusLabels[membre.statut] }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                  {{ membre.cours_count || 0 }} cours
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <span class="text-sm text-slate-400">{{ membre.presences_mois || 0 }}</span>
+                    <span class="ml-2 text-xs text-slate-500">/ mois</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link
+                      :href="route('membres.show', membre.id)"
+                      class="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-all"
+                      title="Voir"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </Link>
+                    <Link
+                      v-if="can.update"
+                      :href="route('membres.edit', membre.id)"
+                      class="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition-all"
+                      title="Modifier"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </Link>
+                    <button
+                      v-if="can.delete"
+                      @click="confirmDelete(membre)"
+                      class="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+                      title="Supprimer"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <!-- Tableau des membres -->
-        <div class="bg-blue-900/60 backdrop-blur-xl border border-blue-800/50 rounded-xl shadow-lg overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead>
-                <tr class="bg-blue-950/60 border-b border-blue-800">
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    <button
-                      @click="sort('id')"
-                      class="flex items-center space-x-1 hover:text-white transition-colors"
-                    >
-                      <span>#ID</span>
-                      <ChevronUpDownIcon class="h-4 w-4" />
-                    </button>
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    <button
-                      @click="sort('nom')"
-                      class="flex items-center space-x-1 hover:text-white transition-colors"
-                    >
-                      <span>Membre</span>
-                      <ChevronUpDownIcon class="h-4 w-4" />
-                    </button>
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    Ceinture
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    <button
-                      @click="sort('date_inscription')"
-                      class="flex items-center space-x-1 hover:text-white transition-colors"
-                    >
-                      <span>Inscription</span>
-                      <ChevronUpDownIcon class="h-4 w-4" />
-                    </button>
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    Statut
-                  </th>
-                  <th class="px-6 py-4 text-left text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    Présences
-                  </th>
-                  <th class="px-6 py-4 text-right text-xs font-medium text-blue-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-blue-800/50">
-                <tr
-                  v-for="membre in membres.data"
-                  :key="membre.id"
-                  class="hover:bg-blue-800/30 transition-colors"
-                >
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-200">
-                    #{{ membre.id }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <div class="flex-shrink-0 h-10 w-10">
-                        <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
-                          {{ membre.prenom[0] }}{{ membre.nom[0] }}
-                        </div>
-                      </div>
-                      <div class="ml-4">
-                        <div class="text-sm font-medium text-white">
-                          {{ membre.prenom }} {{ membre.nom }}
-                        </div>
-                        <div class="text-xs text-blue-300">
-                          {{ getAge(membre.date_naissance) }} ans
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-blue-200">{{ membre.email }}</div>
-                    <div class="text-xs text-blue-400">{{ membre.telephone }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      :class="getCeintureClass(membre.ceinture_actuelle)"
-                      class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    >
-                      {{ membre.ceinture_actuelle?.nom || 'Non définie' }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-200">
-                    {{ formatDate(membre.date_inscription) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      :class="getStatutClass(membre.statut)"
-                      class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    >
-                      {{ membre.statut }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center space-x-2">
-                      <div class="text-sm text-blue-200">
-                        {{ membre.presences_mois }} ce mois
-                      </div>
-                      <div class="w-16 bg-blue-950/60 rounded-full h-2">
-                        <div
-                          :style="{ width: `${getPresencePercentage(membre)}%` }"
-                          class="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex items-center justify-end space-x-2">
-                      <Link
-                        :href="route('membres.show', membre.id)"
-                        class="text-blue-400 hover:text-blue-300 transition-colors"
-                        title="Voir le profil"
-                      >
-                        <EyeIcon class="h-5 w-5" />
-                      </Link>
-                      <Link
-                        :href="route('membres.edit', membre.id)"
-                        class="text-yellow-400 hover:text-yellow-300 transition-colors"
-                        title="Modifier"
-                      >
-                        <PencilIcon class="h-5 w-5" />
-                      </Link>
-                      <button
-                        @click="confirmDelete(membre)"
-                        class="text-red-400 hover:text-red-300 transition-colors"
-                        title="Supprimer"
-                      >
-                        <TrashIcon class="h-5 w-5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <div class="bg-blue-950/60 px-6 py-4 border-t border-blue-800">
-            <Pagination :links="membres.links" />
-          </div>
+        
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-slate-700/50 bg-slate-900/30">
+          <Pagination :links="membres.links" />
         </div>
-
       </div>
     </div>
 
-    <!-- Modal de suppression -->
+    <!-- Delete Modal -->
     <ConfirmModal
       :show="showDeleteModal"
       @close="showDeleteModal = false"
       @confirm="deleteMembre"
       title="Supprimer le membre"
-      :message="`Êtes-vous sûr de vouloir supprimer ${membreToDelete?.prenom} ${membreToDelete?.nom} ? Cette action est irréversible.`"
+      :message="`Êtes-vous sûr de vouloir supprimer ${membreToDelete?.nom_complet} ?`"
       confirmText="Supprimer"
-      type="danger"
+      danger
     />
 
-  </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
+import { router, useForm, Link, Head } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import ModernStatsCard from '@/Components/ModernStatsCard.vue'
 import Pagination from '@/Components/Pagination.vue'
 import ConfirmModal from '@/Components/ConfirmModal.vue'
-import {
-  PlusIcon,
-  MagnifyingGlassIcon,
-  UsersIcon,
-  ArrowDownTrayIcon,
-  ChevronUpDownIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  XMarkIcon
-} from '@heroicons/vue/24/outline'
+import { debounce } from 'lodash'
 
-// Props
 const props = defineProps({
   membres: Object,
-  stats: Object,
+  filters: Object,
   ceintures: Array,
-  filters: Object
+  stats: Object,
+  can: Object
 })
 
-// État local
-const filters = ref({
-  search: props.filters?.search || '',
-  statut: props.filters?.statut || '',
-  ceinture: props.filters?.ceinture || '',
-  groupe_age: props.filters?.groupe_age || ''
+const form = useForm({
+  q: props.filters?.q ?? '',
+  statut: props.filters?.statut ?? '',
+  ceinture_id: props.filters?.ceinture_id ?? '',
+  age_group: props.filters?.age_group ?? '',
+  sort: props.filters?.sort ?? 'created_at',
+  dir: props.filters?.dir ?? 'desc',
+  per_page: props.filters?.per_page ?? 15
 })
 
-const sortField = ref('nom')
-const sortDirection = ref('asc')
 const showDeleteModal = ref(false)
 const membreToDelete = ref(null)
 
-// Computed
-const totalMembres = computed(() => props.membres?.total || 0)
-
-const hasActiveFilters = computed(() => {
-  return Object.values(filters.value).some(val => val !== '')
-})
-
-const activeFilters = computed(() => {
-  const active = {}
-  Object.entries(filters.value).forEach(([key, value]) => {
-    if (value !== '') {
-      active[key] = value
-    }
-  })
-  return active
-})
-
-const filterLabels = {
-  search: 'Recherche',
-  statut: 'Statut',
-  ceinture: 'Ceinture',
-  groupe_age: 'Âge'
+const statusLabels = {
+  actif: 'Actif',
+  inactif: 'Inactif',
+  suspendu: 'Suspendu'
 }
 
-// Méthodes
-const debouncedSearch = (() => {
-  let timeout
-  return () => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => {
-      applyFilters()
-    }, 300)
-  }
-})()
+const debouncedSearch = debounce(() => {
+  applyFilters()
+}, 300)
 
 const applyFilters = () => {
-  router.get(route('membres.index'), filters.value, {
+  router.get(route('membres.index'), form.data(), {
     preserveState: true,
-    preserveScroll: true
+    replace: true
   })
-}
-
-const removeFilter = (key) => {
-  filters.value[key] = ''
-  applyFilters()
 }
 
 const resetFilters = () => {
-  Object.keys(filters.value).forEach(key => {
-    filters.value[key] = ''
-  })
+  form.reset()
   applyFilters()
-}
-
-const sort = (field) => {
-  if (sortField.value === field) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortField.value = field
-    sortDirection.value = 'asc'
-  }
-  
-  router.get(route('membres.index'), {
-    ...filters.value,
-    sort: sortField.value,
-    direction: sortDirection.value
-  }, {
-    preserveState: true,
-    preserveScroll: true
-  })
 }
 
 const confirmDelete = (membre) => {
@@ -454,69 +390,15 @@ const confirmDelete = (membre) => {
 }
 
 const deleteMembre = () => {
-  if (membreToDelete.value) {
-    router.delete(route('membres.destroy', membreToDelete.value.id), {
-      onSuccess: () => {
-        showDeleteModal.value = false
-        membreToDelete.value = null
-      }
-    })
-  }
-}
-
-const exportMembres = () => {
-  window.location.href = route('export.membres', filters.value)
-}
-
-const getAge = (dateNaissance) => {
-  const today = new Date()
-  const birthDate = new Date(dateNaissance)
-  let age = today.getFullYear() - birthDate.getFullYear()
-  const monthDiff = today.getMonth() - birthDate.getMonth()
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--
-  }
-  
-  return age
-}
-
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-CA', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  router.delete(route('membres.destroy', membreToDelete.value.id), {
+    onSuccess: () => {
+      showDeleteModal.value = false
+      membreToDelete.value = null
+    }
   })
 }
 
-const getStatutClass = (statut) => {
-  const classes = {
-    'actif': 'bg-green-900/50 text-green-300 border border-green-700',
-    'inactif': 'bg-gray-900/50 text-gray-300 border border-gray-700',
-    'suspendu': 'bg-red-900/50 text-red-300 border border-red-700'
-  }
-  return classes[statut] || classes['inactif']
-}
-
-const getCeintureClass = (ceinture) => {
-  if (!ceinture) return 'bg-gray-900/50 text-gray-300'
-  
-  const couleur = ceinture.nom.toLowerCase()
-  const classes = {
-    'blanc': 'bg-white/20 text-white border border-white/50',
-    'jaune': 'bg-yellow-900/50 text-yellow-300 border border-yellow-700',
-    'orange': 'bg-orange-900/50 text-orange-300 border border-orange-700',
-    'vert': 'bg-green-900/50 text-green-300 border border-green-700',
-    'bleu': 'bg-blue-900/50 text-blue-300 border border-blue-700',
-    'marron': 'bg-amber-900/50 text-amber-300 border border-amber-700',
-    'noir': 'bg-gray-900 text-gray-100 border border-gray-600'
-  }
-  
-  return classes[couleur] || 'bg-gray-900/50 text-gray-300'
-}
-
-const getPresencePercentage = (membre) => {
-  const expectedPresences = 8 // Présences attendues par mois
-  return Math.min(100, Math.round((membre.presences_mois / expectedPresences) * 100))
+const exportData = () => {
+  window.open(route('membres.export', form.data()))
 }
 </script>

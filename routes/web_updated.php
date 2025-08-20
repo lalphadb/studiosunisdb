@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MembreController;
 use App\Http\Controllers\CoursController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\PaiementController;

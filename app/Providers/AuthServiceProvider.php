@@ -1,11 +1,13 @@
+use App\Models\Membre;
+use App\Policies\MembrePolicy;
 <?php
 
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Member;
-use App\Policies\MemberPolicy;
+use App\Models\Membre;
+use App\Policies\MembrePolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -15,7 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        Member::class => MemberPolicy::class,
+        Membre::class => MembrePolicy::class,
     ];
 
     /**
@@ -25,24 +27,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Définir les gates si nécessaire
-        Gate::define('create_members', function ($user) {
-            return $user->hasAnyRole(['admin', 'gestionnaire']);
+        // Superadmin: accès total
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('superadmin') ? true : null;
         });
-
-        Gate::define('update_members', function ($user) {
-            return $user->hasAnyRole(['admin', 'gestionnaire']);
-        });
-
-        Gate::define('delete_members', function ($user) {
-            return $user->hasRole('admin');
-        });
-
-        Gate::define('export_members', function ($user) {
-            return $user->hasAnyRole(['admin', 'gestionnaire']);
-        });
+        // (Optionnel) autres gates personnalisées ici
     }
 }
-
-\App\Policies\MemberPolicy::class => \App\Models\Member::class,
-

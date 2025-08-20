@@ -22,7 +22,7 @@ class CoursSeeder extends Seeder
         if ($instructeurs->isEmpty()) {
             // Créer des instructeurs de test
             $instructeur1 = User::create([
-                'name' => 'Sensei Yamamoto',
+                'name' => 'Sensei Bobby Dion',
                 'email' => 'yamamoto@studiosdb.local',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
@@ -30,7 +30,7 @@ class CoursSeeder extends Seeder
             $instructeur1->assignRole('instructeur');
             
             $instructeur2 = User::create([
-                'name' => 'Sensei Tanaka',
+                'name' => 'Sensei Andre',
                 'email' => 'tanaka@studiosdb.local',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
@@ -38,7 +38,7 @@ class CoursSeeder extends Seeder
             $instructeur2->assignRole('instructeur');
             
             $instructeur3 = User::create([
-                'name' => 'Sensei Nakamura',
+                'name' => 'Sensei Jay',
                 'email' => 'nakamura@studiosdb.local',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
