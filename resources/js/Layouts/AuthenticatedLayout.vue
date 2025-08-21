@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950">
     <!-- Sidebar Premium avec Glassmorphism -->
-  <div class="fixed inset-y-0 left-0 z-50 transition-all duration-500 ease-out lg:translate-x-0"
-     :class="[sidebarOpen ? 'w-72 translate-x-0' : 'w-20 translate-x-0']">
+  <div class="fixed inset-y-0 left-0 z-50 transition-all duration-500 ease-out"
+     :class="[sidebarOpen ? 'w-72 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0']">
       
       <!-- Effet de lumière décoratif -->
       <div class="absolute inset-0 bg-gradient-to-b from-blue-600/10 via-transparent to-purple-600/10 pointer-events-none"></div>
@@ -31,7 +31,7 @@
   </div>
 
         <!-- Navigation élégante -->
-  <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-none">
+  <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           
           <!-- Menu principal -->
           <div class="space-y-1">
@@ -53,7 +53,7 @@
 
             <!-- Membres -->
             <Link 
-              :href="route('membres.index', [], false)" 
+              :href="route('membres.index')" 
               class="nav-item group"
               :class="{ 'active': route().current('membres.*') }"
             >
@@ -130,10 +130,11 @@
           </div>
 
           <!-- Actions rapides -->
-          <div class="space-y-1">
+          <div v-if="sidebarOpen" class="space-y-1">
             <p class="px-3 mb-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Actions rapides</p>
             
-            <button @click="$inertia.visit(route('membres.create'))" 
+            <button v-if="hasRoute('membres.create')" 
+                    @click="navigateTo('membres.create')" 
                     class="quick-action group">
               <div class="quick-action-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +149,8 @@
               </svg>
             </button>
 
-            <button @click="$inertia.visit(route('presences.tablette'))" 
+            <button v-if="hasRoute('presences.tablette')" 
+                    @click="navigateTo('presences.tablette')" 
                     class="quick-action group">
               <div class="quick-action-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,16 +216,21 @@
     </div>
 
     <!-- Zone de contenu principal collé au sidebar -->
-    <div class="lg:pl-72 min-h-screen">
-      <!-- Header mobile -->
+    <div class="transition-all duration-500 ease-out" :class="[sidebarOpen ? 'lg:pl-72' : 'lg:pl-20']">
+      <!-- Header pour mobile et desktop -->
   <div class="sticky top-0 z-40 flex items-center h-16 px-4 bg-slate-900/95 backdrop-blur-xl border-b border-slate-800/50">
-    <button @click="sidebarOpen = !sidebarOpen" 
-            class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
-      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <button @click="toggleSidebar" 
+            class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all"
+            :title="sidebarOpen ? 'Réduire la sidebar' : 'Agrandir la sidebar'">
+      <!-- Icône hamburger sur mobile, chevron sur desktop -->
+      <svg v-if="isMobile" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
+      <svg v-else class="h-6 w-6 transition-transform" :class="{'rotate-180': !sidebarOpen}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
     </button>
-    <div class="flex items-center ml-4 space-x-3">
+    <div class="flex items-center ml-4 space-x-3 lg:hidden">
       <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
         <span class="text-white text-2xl font-bold">🥋</span>
       </div>
@@ -259,7 +266,7 @@
       </main>
     </div>
 
-    <!-- Overlay mobile -->
+    <!-- Overlay mobile seulement -->
     <transition
       enter-active-class="transition-opacity ease-out duration-300"
       enter-from-class="opacity-0"
@@ -268,7 +275,7 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="sidebarOpen" @click="sidebarOpen = false" 
+      <div v-if="sidebarOpen && isMobile" @click="sidebarOpen = false" 
            class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"></div>
     </transition>
 
@@ -287,7 +294,7 @@
           <div class="fixed inset-0 bg-black/80 backdrop-blur-sm" />
         </TransitionChild>
 
-  <div class="fixed inset-0 overflow-y-auto scrollbar-none">
+  <div class="fixed inset-0 overflow-y-auto">
           <div class="flex min-h-full items-center justify-center p-4">
             <TransitionChild
               as="template"
@@ -347,7 +354,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Link, usePage, router } from '@inertiajs/vue3'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
@@ -359,9 +366,49 @@ const props = defineProps({
   }
 })
 
-const sidebarOpen = ref(false)
+// Détection mobile/desktop
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 1024 : false)
+
+// État de la sidebar avec persistance localStorage
+const sidebarOpen = ref(
+  !isMobile.value 
+    ? (localStorage.getItem('sidebarOpen') !== 'false') // Desktop: true par défaut
+    : false // Mobile: fermé par défaut
+)
 const showLoi25Modal = ref(false)
 const page = usePage()
+
+// Gestion du resize
+const handleResize = () => {
+  const wasMobile = isMobile.value
+  isMobile.value = window.innerWidth < 1024
+  
+  // Si on passe de mobile à desktop, restaurer l'état sauvegardé
+  if (wasMobile && !isMobile.value) {
+    sidebarOpen.value = localStorage.getItem('sidebarOpen') !== 'false'
+  }
+  // Si on passe de desktop à mobile, fermer la sidebar
+  else if (!wasMobile && isMobile.value) {
+    sidebarOpen.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+// Fonction pour toggle la sidebar avec logique responsive
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+  // Sauvegarder la préférence sur desktop seulement
+  if (!isMobile.value) {
+    localStorage.setItem('sidebarOpen', sidebarOpen.value.toString())
+  }
+}
 
 const userName = computed(() => page.props?.auth?.user?.name || 'Utilisateur')
 const userRole = computed(() => {
@@ -381,6 +428,25 @@ const userInitials = computed(() => {
     .toUpperCase()
     .slice(0, 2)
 })
+
+// Vérifier si une route existe
+const hasRoute = (name) => {
+  try {
+    route(name)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+// Navigation sécurisée
+const navigateTo = (routeName, params = {}) => {
+  try {
+    router.visit(route(routeName, params))
+  } catch (e) {
+    console.warn(`Route ${routeName} not found`)
+  }
+}
 
 const logout = () => {
   router.post(route('logout'))
@@ -440,34 +506,14 @@ const openLoi25Modal = () => {
   @apply group-hover:bg-blue-500/20;
 }
 
-/* Scrollbar personnalisée */
-.scrollbar-thin {
-  scrollbar-width: thin;
+/* Modern transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgb(71 85 105);
-  border-radius: 3px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(100 116 139);
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
-
-/* Hide all scrollbars for a modern look */
-.scrollbar-none {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-.scrollbar-none::-webkit-scrollbar {
-  display: none !important;
-}

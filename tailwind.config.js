@@ -7,16 +7,8 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
-        './resources/js/**/*.{vue,js,jsx}',
-    ],
-    
-    // S'assurer que les classes non utilisées sont supprimées en production
-    safelist: [
-        'bg-green-500',
-        'bg-red-500',
-        'bg-yellow-500',
-        'bg-blue-500',
-        { pattern: /^(bg|text|border)-(belt|primary|secondary|danger|warning|success|info)-/ },
+        './resources/js/**/*.vue',
+        './resources/js/**/*.js',
     ],
     
     theme: {

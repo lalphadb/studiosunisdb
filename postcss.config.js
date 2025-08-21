@@ -4,14 +4,7 @@ export default {
     autoprefixer: {},
     ...(process.env.NODE_ENV === 'production' ? { 
       cssnano: {
-        preset: ['advanced', {
-          discardComments: {
-            removeAll: true,
-          },
-          reduceIdents: false,
-          zindex: false,
-          autoprefixer: false,
-        }]
+        preset: 'default'
       } 
     } : {})
   },

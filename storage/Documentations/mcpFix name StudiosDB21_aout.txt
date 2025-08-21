@@ -1,0 +1,137 @@
+<mcpFix name="StudiosDB-v6-mono-ecole-cleanup" date="2025-08-21">
+  <issueSummary>
+    <item>La migration <code>2025_08_21_120000_drop_multi_ecole_artifacts.php</code> échoue: FK <code>users_ecole_id_foreign</code> inexistante → erreur MySQL 1091.</item>
+    <item>Références restantes à <code>ecole_id</code> dans:
+      <path>app/Http/Controllers/MembreController.php</path>
+      <path>app/Http/Requests/Membres/StoreMembreRequest.php</path>
+      <path>app/Http/Requests/Membres/UpdateMembreRequest.php</path>
+    </item>
+    <item>Des scripts dans <code>tools/</code> ré‑injectent potentiellement <code>ecole_id</code> (à neutraliser, pas exécutés en runtime).</item>
+  </issueSummary>
+
+  <plan>
+    <step>Remplacer la migration de drop par une version **robuste** qui détecte dynamiquement les contraintes et index avant de drop (via <code>information_schema</code>), puis supprime la colonne si présente.</step>
+    <step>Retirer les assignations/validations <code>ecole_id</code> dans <code>MembreController</code> et les FormRequests.</step>
+    <step>Neutraliser les scripts <code>tools/*alignment*.sh</code> pour éviter la ré‑introduction d’<code>ecole_id</code>.</step>
+    <step>Vérifier, migrer et builder.</step>
+  </plan>
+
+  <commands id="apply">
+    <![CDATA[
+# 1) Remplacer la migration par une version qui inspecte information_schema
+cat > database/migrations/2025_08_21_120000_drop_multi_ecole_artifacts.php <<'EOH'
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        $tables = ['users','membres','cours','presences','paiements'];
+
+        $dbName = DB::getDatabaseName();
+
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'ecole_id')) {
+                continue;
+            }
+
+            // 1) Drop FK si existante (détection dynamique du nom de contrainte)
+            $constraint = DB::table('information_schema.KEY_COLUMN_USAGE')
+                ->where('TABLE_SCHEMA', $dbName)
+                ->where('TABLE_NAME', $table)
+                ->where('COLUMN_NAME', 'ecole_id')
+                ->whereNotNull('REFERENCED_TABLE_NAME')
+                ->value('CONSTRAINT_NAME');
+
+            if ($constraint) {
+                try {
+                    DB::statement(sprintf('ALTER TABLE `%s` DROP FOREIGN KEY `%s`', $table, $constraint));
+                } catch (\Throwable $e) {
+                    // ignorer si déjà retirée
+                }
+            }
+
+            // 2) Drop index sur ecole_id si existant
+            $indexes = DB::table('information_schema.STATISTICS')
+                ->select('INDEX_NAME')
+                ->where('TABLE_SCHEMA', $dbName)
+                ->where('TABLE_NAME', $table)
+                ->where('COLUMN_NAME', 'ecole_id')
+                ->pluck('INDEX_NAME')
+                ->unique()
+                ->toArray();
+
+            foreach ($indexes as $indexName) {
+                if (!is_string($indexName)) continue;
+                try {
+                    Schema::table($table, function (Blueprint $t) use ($indexName) {
+                        // Laravel accepte le nom d'index en string
+                        $t->dropIndex($indexName);
+                    });
+                } catch (\Throwable $e) {
+                    // ignorer si déjà retiré
+                }
+            }
+
+            // 3) Drop la colonne 'ecole_id' si encore présente
+            if (Schema::hasColumn($table, 'ecole_id')) {
+                Schema::table($table, function (Blueprint $t) {
+                    $t->dropColumn('ecole_id');
+                });
+            }
+        }
+    }
+
+    public function down(): void
+    {
+        // No-op: on reste en mono-école
+    }
+};
+EOH
+
+# 2) Purge ecole_id côté code (Controllers/Requests)
+
+# 2.1 MembreController: retirer les assignments 'ecole_id'
+sed -i "s/'ecole_id' *=> *auth()->user()->?->ecole_id, *//g" app/Http/Controllers/MembreController.php
+sed -i "s/'ecole_id' *=> *auth()->user()->ecole_id, *//g" app/Http/Controllers/MembreController.php
+
+# 2.2 StoreMembreRequest: supprimer la variable et la contrainte unique 'par école'
+sed -i "/\\$ecoleId *=/d" app/Http/Requests/Membres/StoreMembreRequest.php
+sed -i "s/->where(.*ecole_id.*)//g" app/Http/Requests/Membres/StoreMembreRequest.php
+
+# 2.3 UpdateMembreRequest: idem
+sed -i "/\\$ecoleId *=/d" app/Http/Requests/Membres/UpdateMembreRequest.php
+sed -i "s/->where(.*ecole_id.*)//g" app/Http/Requests/Membres/UpdateMembreRequest.php
+
+# 3) Neutraliser scripts d’alignement (sans les supprimer), pour éviter toute ré-introduction
+for f in tools/audit_alignment.sh tools/fix_alignment.sh tools/apply_alignment_now.sh; do
+  if [ -f "$f" ]; then
+    sed -i '1s|^|#!/bin/bash\n# DISABLED in mono-ecole mode — do not reintroduce ecole_id\nexit 0\n\n|' "$f"
+    chmod +x "$f"
+  fi
+done
+
+# 4) Vérifs, migration et build
+php artisan optimize:clear
+php artisan migrate
+php artisan route:list | grep dashboard || true
+npm run dev --silent
+    ]]>
+  </commands>
+
+  <acceptance>
+    <check>La migration <code>2025_08_21_120000_drop_multi_ecole_artifacts</code> passe sans erreur 1091.</check>
+    <check><code>grep -RIn -E 'ecole_id|EcoleScope|BelongsToEcole|EcoleSeeder|class Ecole' app database resources routes tools</code> → aucun hit dans app/, database/ (hors commentaire “DISABLED”).</check>
+    <check><code>php artisan route:list | grep dashboard</code> affiche la route GET /dashboard (auth,verified).</check>
+    <check><code>npm run dev --silent</code> ne remonte aucune erreur Vue SFC.</check>
+  </acceptance>
+
+  <rollback>
+    <note>Si besoin de rollback: restaurer la migration précédente depuis Git et revert les sed via <code>git checkout -- *</code> sur les fichiers modifiés.</note>
+  </rollback>
+</mcpFix>
+

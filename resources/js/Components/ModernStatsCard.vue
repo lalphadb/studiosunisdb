@@ -1,87 +1,34 @@
 <template>
-  <div class="bg-gradient-to-br from-blue-900/60 to-indigo-900/60 backdrop-blur-xl border border-blue-800/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-    <div class="flex items-center justify-between mb-4">
-      <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-lg flex items-center justify-center">
-        <component :is="iconComponent" class="h-6 w-6 text-blue-300" />
-      </div>
-      <div v-if="trend" class="flex items-center space-x-1">
-        <ArrowTrendingUpIcon v-if="trendIsPositive" class="h-4 w-4 text-green-400" />
-        <ArrowTrendingDownIcon v-else class="h-4 w-4 text-red-400" />
-        <span :class="trendClass" class="text-sm font-medium">
-          {{ trend }}
-        </span>
-      </div>
-    </div>
+  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-6 border border-slate-700/50">
+    <!-- Effet de lumière décoratif -->
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-purple-600/5 pointer-events-none"></div>
     
-    <div>
-      <p class="text-blue-300 text-sm font-medium mb-1">{{ title }}</p>
-      <p class="text-3xl font-bold text-white">{{ formattedValue }}</p>
-      <p v-if="description" class="text-blue-400 text-xs mt-1">{{ description }}</p>
+    <div class="relative">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-400">{{ label }}</p>
+          <p class="mt-2 text-3xl font-bold text-white">{{ value }}</p>
+        </div>
+        <div class="p-3 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-xl">
+          <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import {
-  UsersIcon,
-  UserPlusIcon,
-  ChartBarIcon,
-  AcademicCapIcon,
-  CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon
-} from '@heroicons/vue/24/outline'
-
-const props = defineProps({
-  title: String,
-  value: [Number, String],
-  iconType: String,
-  iconName: String,
-  format: {
+defineProps({
+  label: {
     type: String,
-    default: 'number'
+    required: true
   },
-  description: String,
-  trend: String,
-  trendType: {
-    type: String,
-    default: 'auto'
+  value: {
+    type: [String, Number],
+    required: true
   }
-})
-
-const iconMap = {
-  users: UsersIcon,
-  'user-plus': UserPlusIcon,
-  chart: ChartBarIcon,
-  academic: AcademicCapIcon,
-  currency: CurrencyDollarIcon
-}
-
-const iconComponent = computed(() => {
-  return iconMap[props.iconName] || UsersIcon
-})
-
-const formattedValue = computed(() => {
-  if (props.format === 'currency') {
-    return new Intl.NumberFormat('fr-CA', {
-      style: 'currency',
-      currency: 'CAD'
-    }).format(props.value)
-  } else if (props.format === 'percentage') {
-    return `${props.value}%`
-  } else {
-    return new Intl.NumberFormat('fr-CA').format(props.value)
-  }
-})
-
-const trendIsPositive = computed(() => {
-  if (!props.trend) return false
-  return props.trend.startsWith('+')
-})
-
-const trendClass = computed(() => {
-  if (props.trendType === 'info') return 'text-blue-400'
-  return trendIsPositive.value ? 'text-green-400' : 'text-red-400'
 })
 </script>
