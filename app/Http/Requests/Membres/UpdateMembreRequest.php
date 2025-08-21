@@ -36,7 +36,7 @@ final class UpdateMembreRequest extends FormRequest
                 'nullable','email','max:255',
                 Rule::unique('users','email')
                     ->ignore($userId)
-                    ->where(fn($q) => $q->where('ecole_id', $ecoleId)),
+                    ,
             ],
             'password'              => ['nullable','string','min:8'],
         ];

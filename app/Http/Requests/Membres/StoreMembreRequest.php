@@ -30,7 +30,7 @@ final class StoreMembreRequest extends FormRequest
             // User lié (optionnel)
             'email'                 => [
                 'nullable','email','max:255',
-                Rule::unique('users','email')->where(fn($q) => $q->where('ecole_id', $ecoleId)),
+                Rule::unique('users','email'),
             ],
             'password'              => ['nullable','string','min:8'],
         ];

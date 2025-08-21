@@ -17,9 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('╚══════════════════════════════════════════╝');
         $this->command->info('');
         
-        // 1. École par défaut (OBLIGATOIRE - doit être en premier)
         $this->command->info('🏢 Création de l\'école par défaut...');
-        $this->call(EcoleSeeder::class);
         
         // 2. Rôles et permissions (OBLIGATOIRE)
         $this->command->info('📋 Création des rôles et permissions...');

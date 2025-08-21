@@ -83,7 +83,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'email_verified_at' => $request->email_verified ? now() : null,
-            'ecole_id' => auth()->user()->ecole_id,
+            
         ]);
 
         if ($request->filled('roles')) {

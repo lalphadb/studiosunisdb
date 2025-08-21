@@ -2,106 +2,40 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Paiement;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Models\User;
 
 class PaiementPolicy
 {
-    use HandlesAuthorization;
-
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('paiements.view');
+        return $user->hasAnyRole(['superadmin','admin_ecole','instructeur']);
     }
 
     public function view(User $user, Paiement $paiement): bool
     {
-        // Un membre peut voir ses propres paiements
-        if ($user->membre && $paiement->membre_id === $user->membre->id) {
-            return true;
-        }
-
-        if (!$user->hasPermissionTo('paiements.view')) {
-            return false;
-        }
-
-        // Scoping par école
-        if (property_exists($user, 'ecole_id') && $paiement->membre) {
-            if ($user->ecole_id && $paiement->membre->ecole_id) {
-                return $user->ecole_id === $paiement->membre->ecole_id;
-            }
-        }
-
-        return true;
+        if ($user->hasAnyRole(['superadmin','admin_ecole','instructeur'])) return true;
+        // membre: peut voir ses propres paiements si liés à son user_id via membre
+        return $paiement->membre && $paiement->membre->user_id === $user->id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('paiements.create');
+        return $user->hasAnyRole(['superadmin','admin_ecole']);
     }
 
     public function update(User $user, Paiement $paiement): bool
     {
-        if (!$user->hasPermissionTo('paiements.edit')) {
-            return false;
-        }
-
-        // Scoping par école
-        if (property_exists($user, 'ecole_id') && $paiement->membre) {
-            if ($user->ecole_id && $paiement->membre->ecole_id) {
-                return $user->ecole_id === $paiement->membre->ecole_id;
-            }
-        }
-
-        return true;
+        return $user->hasAnyRole(['superadmin','admin_ecole']);
     }
 
     public function delete(User $user, Paiement $paiement): bool
     {
-        if (!$user->hasPermissionTo('paiements.delete')) {
-            return false;
-        }
-
-        // Scoping par école
-        if (property_exists($user, 'ecole_id') && $paiement->membre) {
-            if ($user->ecole_id && $paiement->membre->ecole_id) {
-                return $user->ecole_id === $paiement->membre->ecole_id;
-            }
-        }
-
-        return true;
+        return $user->hasAnyRole(['superadmin','admin_ecole']);
     }
 
-    public function confirmer(User $user, Paiement $paiement): bool
+    public function refund(User $user, Paiement $paiement): bool
     {
-        if (!$user->hasPermissionTo('paiements.confirmer')) {
-            return false;
-        }
-
-        // Scoping par école
-        if (property_exists($user, 'ecole_id') && $paiement->membre) {
-            if ($user->ecole_id && $paiement->membre->ecole_id) {
-                return $user->ecole_id === $paiement->membre->ecole_id;
-            }
-        }
-
-        return true;
-    }
-
-    public function rembourser(User $user, Paiement $paiement): bool
-    {
-        if (!$user->hasPermissionTo('paiements.rembourser')) {
-            return false;
-        }
-
-        // Scoping par école
-        if (property_exists($user, 'ecole_id') && $paiement->membre) {
-            if ($user->ecole_id && $paiement->membre->ecole_id) {
-                return $user->ecole_id === $paiement->membre->ecole_id;
-            }
-        }
-
-        return true;
+        return $user->hasAnyRole(['superadmin','admin_ecole']);
     }
 }
