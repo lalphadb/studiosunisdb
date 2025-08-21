@@ -86,4 +86,8 @@ config/production/
 
 # Documentation builds
 /docs/build/
-/docs/.vuepress/dist/
+/docs/.vuepress/dist/# Archives lourdes
+*.tar
+*.tar.*    # .tar.gz, .tar.xz, etc.
+*.zip
+*.7z
