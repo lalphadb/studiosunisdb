@@ -1,5 +1,3 @@
-use App\Models\Membre;
-use App\Policies\MembrePolicy;
 <?php
 
 namespace App\Providers;
@@ -7,30 +5,42 @@ namespace App\Providers;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Membre;
+use App\Models\Cours;
+use App\Models\Presence;
+use App\Models\Paiement;
+use App\Models\Ceinture;
+use App\Models\User;
 use App\Policies\MembrePolicy;
+use App\Policies\CoursPolicy;
+use App\Policies\PresencePolicy;
+use App\Policies\PaiementPolicy;
+use App\Policies\CeinturePolicy;
+use App\Policies\UserPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
     protected $policies = [
-        Membre::class => MembrePolicy::class,
+        Membre::class   => MembrePolicy::class,
+        Cours::class    => CoursPolicy::class,
+        Presence::class => PresencePolicy::class,
+        Paiement::class => PaiementPolicy::class,
+        Ceinture::class => CeinturePolicy::class,
+        User::class     => UserPolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
         $this->registerPolicies();
 
-        // Superadmin: accès total
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('superadmin') ? true : null;
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+            return null;
         });
-        // (Optionnel) autres gates personnalisées ici
+
+        Gate::define('admin-panel', function ($user) {
+            return $user->hasAnyRole(['superadmin', 'admin_ecole']);
+        });
     }
 }
