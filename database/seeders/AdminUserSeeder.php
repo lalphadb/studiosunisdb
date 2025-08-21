@@ -15,10 +15,10 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate(
-            ['email' => 'admin@studiosdb.com'],
+            ['email' => 'logan@4lb.ca'],
             [
                 'name' => 'Administrateur',
-                'email' => 'admin@studiosdb.com',
+                'email' => 'logan@4lb.ca',
                 'password' => Hash::make('password123'),
                 'email_verified_at' => now(),
             ]
@@ -26,10 +26,10 @@ class AdminUserSeeder extends Seeder
 
         // Utilisateur de test pour le développement
         User::firstOrCreate(
-            ['email' => 'test@studiosdb.com'],
+            ['email' => 'lalpha@4lb.ca'],
             [
-                'name' => 'Utilisateur Test',
-                'email' => 'test@studiosdb.com',
+                'name' => 'lalpha membre',
+                'email' => 'lalpha@4lb.ca',
                 'password' => Hash::make('test123'),
                 'email_verified_at' => now(),
             ]

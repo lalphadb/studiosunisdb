@@ -1,0 +1,206 @@
+
+Voici un prompt ultra-détaillé et professionnel que tu peux utiliser (par exemple, avec Grok, ChatGPT, ou un autre AI) pour générer le code et les fonctionnalités nécessaires. Il est conçu pour analyser la base de données (basée sur la structure fournie dans l'historique), créer un flow d'inscription membre auto-gérée (self-registration), avec tous les champs requis/optionnels, automatisation des liens familiaux (recherche auto via nom/email/adresse), et intégration sécurisée (création user/login/password). Le prompt est structuré pour produire du code Laravel/Inertia/Vue prêt à l'emploi, conforme Loi 25 (consentements), et scalable.
+
+Copie-colle ce prompt directement dans un AI pour générer le système.
+
+Prompt pour Génération du Système d'Inscription Membre Self-Service dans StudiosDB v5 Pro
+
+Tu es un expert senior en développement Laravel 12.20 + Inertia.js + Vue 3 + Tailwind CSS. Ton objectif est de créer un module complet d'inscription membre auto-gérée (self-registration), où les membres peuvent créer leur profil sans intervention admin. Cela évite aux admins de créer manuellement 200+ membres.
+
+Contexte Projet :
+
+App : StudiosDB v5 Pro - Gestion école de karaté (Studiosunis St-Émile, Québec).
+Stack : Laravel 12.20, Vue 3 (Composition API), Inertia.js, Tailwind CSS, MySQL
+Auth : Laravel Breeze/Sanctum pour login/password.
+Conformité : Loi 25 Québec (consentements obligatoires pour données/photos/communications, export RGPD-like).
+Objectif : Self-service sécurisé, intuitif, avec validation stricte et UI moderne (dark mode, responsive, animations subtiles).
+Base de Données à Analyser (Structure Existante - Tenant DB : studiosdb_ecole_xxx) :
+
+Table membres (principale) :
+id (auto-increment PK).
+user_id (FK users, required pour login).
+numero_membre (unique, auto-généré e.g., MEM-YYYY-XXX).
+prenom (string required, regex lettres/espaces/tirets).
+nom (string required, regex lettres/espaces/tirets).
+date_naissance (date required, before today, after 1900).
+sexe (enum: M, F, Autre, required).
+telephone (string nullable, regex tel).
+telephone_parent (string nullable, pour mineurs).
+adresse (text nullable).
+ville (string nullable).
+code_postal (string nullable, regex format Québec e.g., A1A 1A1).
+contact_urgence_nom (string required).
+contact_urgence_telephone (string required, regex tel).
+contact_urgence_relation (string nullable).
+notes_medicales (text nullable).
+allergies (json nullable, array strings).
+medicaments (text nullable).
+conditions_medicales (text nullable).
+consentement_photos (boolean default false).
+consentement_communications (boolean default true).
+consentement_donnees (boolean required true).
+date_consentement (timestamp nullable).
+motivation (text nullable).
+objectifs (text nullable).
+experience_anterieure (text nullable).
+niveau_condition_physique (enum: debutant, intermediaire, avance, default debutant).
+ceinture_actuelle_id (FK ceintures, required).
+date_inscription (date auto now).
+date_derniere_presence (date nullable).
+date_derniere_promotion (date nullable).
+statut (enum: actif, inactif, suspendu, ancien, default actif).
+mode_paiement_prefere (enum: mensuel, trimestriel, annuel, default mensuel).
+tarif_special (decimal nullable).
+reduction_appliquee (decimal default 0).
+Indexes : idx_statut, idx_ceinture, fulltext nom/prenom/numero.
+Table progression_ceintures (historique ceintures, optionnel pour past) :
+id (PK).
+membre_id (FK membres).
+ceinture_id (FK ceintures).
+date_obtention (date).
+notes (text nullable).
+Table liens_familiaux (liens familiaux, avec recherche auto) :
+id (PK).
+membre_id (FK membres).
+membre_lie_id (FK membres).
+type_relation (enum: parent, enfant, frere_soeur, conjoint, grand_parent, etc.).
+description (string nullable).
+bidirectionnel (boolean default true).
+Table users (pour login/password, lié via user_id) :
+id (PK).
+name (string).
+email (unique required).
+password (hashed required).
+role (enum: membre, instructeur, admin).
+Analyse de la DB (Fais ça en Premier) :
+
+Identifie tous les champs required/optional de membres.
+Ajoute champs pour past ceintures : Utilise progression_ceintures comme array optionnel (add multiple via form dynamic).
+Dernière ceinture : Auto-set comme ceinture_actuelle_id depuis past ou manuel.
+Séminaires : Pas dans DB—ajoute nouveau champ json 'seminaires' à membres (array [{nom, date, notes}]), optionnel.
+Login/Password : Crée user lié (email unique, password hashed avec bcrypt, min 8 chars/maj/min/special).
+Contact Urgence : Déjà dans DB (required).
+Liens Familiaux : Recherche auto (via API search par nom/email/adresse), add multiple, bidirectionnel (créé lien inverse auto), validation no self-link/cycles.
+Consentements : Required pour données, optionnel autres ; enregistre date_consentement = now().
+Autres : Génère numero_membre auto, statut='actif', date_inscription=now().
+Fonctionnalités à Implémenter :
+
+Flow Public : Page /register-membre (non-auth, guest layout) avec form multi-étape (personnel > contact > karaté > familiaux > consentements > confirm).
+Validation : Front (VeeValidate/Yup : required, regex tel/code_postal, age min 5, email unique via API check, password confirm/strength), Server (Laravel validation avec messages FR).
+UI/UX : Moderne dark mode (gradients blue-purple pour karaté), responsive (mobile first), steps progress bar, dynamic fields (add past ceintures/séminaires/liens), autocomplete pour liens familiaux (search API /membres/search?query=... par nom/email/adresse, suggest based on shared adresse).
+Automatisation : Liens familiaux search auto (suggest if same adresse/telephone), bidirectionnel (créé lien inverse si checké), past ceintures (add multiple rows), séminaires (dynamic array inputs).
+Sécurité : CAPTCHA (Google reCAPTCHA), rate-limiting, consentements required, password hash, email verification post-register.
+Intégration : Crée User + Membre, link user_id, notify admin on new, redirect to login après.
+Erreur/Loading : Toast notifications, spinners pendant submit/search.
+Accessibilité : ARIA labels, keyboard nav, high contrast.
+Output Attendu :
+
+Code Complet : Laravel (Controller/RegisterMembreController.php, routes/web.php updates), Vue (Pages/RegisterMembre.vue multi-step form), JS utils (debounce search).
+Migrations : Add 'seminaires' json à membres if not exists.
+Services : MembreService pour generateNumero, checkEmailUnique, createBidirectionalLink.
+Tests : Pest tests pour controller (testRegisterSuccess, testValidationFail).
+Documentation : README section pour self-registration.
+Génère tout en FR pour UI (labels, errors), code en EN. Assure conformité Loi 25 (consentements logged). Prompt final prêt à copier.Voici un prompt ultra-détaillé et professionnel que tu peux utiliser (par exemple, avec Grok, ChatGPT, ou un autre AI) pour générer le code et les fonctionnalités nécessaires. Il est conçu pour analyser la base de données (basée sur la structure fournie dans l'historique), créer un flow d'inscription membre auto-gérée (self-registration), avec tous les champs requis/optionnels, automatisation des liens familiaux (recherche auto via nom/email/adresse), et intégration sécurisée (création user/login/password). Le prompt est structuré pour produire du code Laravel/Inertia/Vue prêt à l'emploi, conforme Loi 25 (consentements), et scalable.
+
+
+
+Prompt pour Génération du Système d'Inscription Membre Self-Service dans StudiosDB v5 Pro
+
+Tu es un expert senior en développement Laravel 12.20 + Inertia.js + Vue 3 + Tailwind CSS. Ton objectif est de créer un module complet d'inscription membre auto-gérée (self-registration), où les membres peuvent créer leur profil sans intervention admin. Cela évite aux admins de créer manuellement 200+ membres.
+
+Contexte Projet :
+
+App : StudiosDB v5 Pro - Gestion école de karaté (Studiosunis St-Émile, Québec).
+Stack : Laravel 12.20, Vue 3 (Composition API), Inertia.js, Tailwind CSS, MySQL)
+Auth : Laravel Breeze/Sanctum pour login/password.
+Conformité : Loi 25 Québec (consentements obligatoires pour données/photos/communications, export RGPD-like).
+Objectif : Self-service sécurisé, intuitif, avec validation stricte et UI moderne (dark mode, responsive, animations subtiles).
+Base de Données à Analyser (Structure Existante - Tenant DB : studiosdb_ecole_xxx) :
+
+Table membres (principale) :
+id (auto-increment PK).
+user_id (FK users, required pour login).
+numero_membre (unique, auto-généré e.g., MEM-YYYY-XXX).
+prenom (string required, regex lettres/espaces/tirets).
+nom (string required, regex lettres/espaces/tirets).
+date_naissance (date required, before today, after 1900).
+sexe (enum: M, F, Autre, required).
+telephone (string nullable, regex tel).
+telephone_parent (string nullable, pour mineurs).
+adresse (text nullable).
+ville (string nullable).
+code_postal (string nullable, regex format Québec e.g., A1A 1A1).
+contact_urgence_nom (string required).
+contact_urgence_telephone (string required, regex tel).
+contact_urgence_relation (string nullable).
+notes_medicales (text nullable).
+allergies (json nullable, array strings).
+medicaments (text nullable).
+conditions_medicales (text nullable).
+consentement_photos (boolean default false).
+consentement_communications (boolean default true).
+consentement_donnees (boolean required true).
+date_consentement (timestamp nullable).
+motivation (text nullable).
+objectifs (text nullable).
+experience_anterieure (text nullable).
+niveau_condition_physique (enum: debutant, intermediaire, avance, default debutant).
+ceinture_actuelle_id (FK ceintures, required).
+date_inscription (date auto now).
+date_derniere_presence (date nullable).
+date_derniere_promotion (date nullable).
+statut (enum: actif, inactif, suspendu, ancien, default actif).
+mode_paiement_prefere (enum: mensuel, trimestriel, annuel, default mensuel).
+tarif_special (decimal nullable).
+reduction_appliquee (decimal default 0).
+Indexes : idx_statut, idx_ceinture, fulltext nom/prenom/numero.
+Table progression_ceintures (historique ceintures, optionnel pour past) :
+id (PK).
+membre_id (FK membres).
+ceinture_id (FK ceintures).
+date_obtention (date).
+notes (text nullable).
+Table liens_familiaux (liens familiaux, avec recherche auto) :
+id (PK).
+membre_id (FK membres).
+membre_lie_id (FK membres).
+type_relation (enum: parent, enfant, frere_soeur, conjoint, grand_parent, etc.).
+description (string nullable).
+bidirectionnel (boolean default true).
+Table users (pour login/password, lié via user_id) :
+id (PK).
+name (string).
+email (unique required).
+password (hashed required).
+role (enum: membre, instructeur, admin).
+Analyse de la DB (Fais ça en Premier) :
+
+Identifie tous les champs required/optional de membres.
+Ajoute champs pour past ceintures : Utilise progression_ceintures comme array optionnel (add multiple via form dynamic).
+Dernière ceinture : Auto-set comme ceinture_actuelle_id depuis past ou manuel.
+Séminaires : Pas dans DB—ajoute nouveau champ json 'seminaires' à membres (array [{nom, date, notes}]), optionnel.
+Login/Password : Crée user lié (email unique, password hashed avec bcrypt, min 8 chars/maj/min/special).
+Contact Urgence : Déjà dans DB (required).
+Liens Familiaux : Recherche auto (via API search par nom/email/adresse), add multiple, bidirectionnel (créé lien inverse auto), validation no self-link/cycles.
+Consentements : Required pour données, optionnel autres ; enregistre date_consentement = now().
+Autres : Palette personnalisée auto, statut='actif', date_inscription=now().
+Fonctionnalités à Implémenter :
+
+Flow Public : Page /register-membre (non-auth, guest layout) avec form multi-étape (personnel > contact > karaté > familiaux > consentements > confirm).
+Validation : Front (VeeValidate/Yup : required, regex tel/code_postal, age min 5, email unique via API check, password confirm/strength), Server (Laravel validation avec messages FR).
+UI/UX : Moderne dark mode (gradients blue-purple pour karaté), responsive (mobile first), steps progress bar, dynamic fields (add past ceintures/séminaires/liens), autocomplete pour liens familiaux (search API /membres/search?query=... par nom/email/adresse, suggest based on shared adresse).
+Automatisation : Liens familiaux search auto (suggest if same adresse/telephone), bidirectionnel (créé lien inverse si checké), past ceintures (add multiple rows), séminaires (dynamic array inputs).
+Sécurité : CAPTCHA (Google reCAPTCHA), rate-limiting, consentements required, password hash, email verification post-register.
+Intégration : Crée User + Membre, link user_id, notify admin on new, redirect to login après.
+Erreur/Loading : Toast notifications, spinners pendant submit/search (vue-toastification).
+Accessibilité : ARIA labels, keyboard nav, high contrast.
+Output Attendu :
+
+Code Complet : Laravel (Controller/RegisterMembreController.php, routes/web.php updates pour guest route), Vue (Pages/RegisterMembre.vue multi-step form avec Steps component), JS utils (debounce search, API check email unique).
+Migrations : Add 'seminaires' json à membres if not exists (php artisan make:migration add_seminaires_to_membres --table=membres).
+Services : MembreService pour generateNumeroMembre, checkEmailUnique, createBidirectionalLink, suggestFamilyLinks (query par adresse/email).
+Tests : Pest tests pour controller (testRegisterSuccessWithFamilyLinks, testValidationFailNoConsent).
+Documentation : README section pour self-registration, avec screenshots UI.
+Génère tout en FR pour UI (labels, errors, placeholders), code en EN pour standards. Assure conformité Loi 25 (consentements logged avec date). Ajoute email verification (Laravel built-in). Prompt final prêt à copier, avec sections claires.
+
+

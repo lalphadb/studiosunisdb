@@ -3,292 +3,505 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cours;
-use App\Models\CoursHoraire;
-use App\Models\SessionCours;
+use App\Models\User;
 use App\Models\Membre;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-/**
- * Contrôleur Cours Ultra-Professionnel Laravel 11
- * Gestion complète des cours avec horaires et sessions
- */
 class CoursController extends Controller
 {
     /**
-     * Afficher la liste des cours avec filtres et statistiques
+     * Display a listing of the courses.
+     *
+     * @return \Inertia\Response
      */
-    public function index(Request $request): Response
+    public function index()
     {
-        $query = Cours::query();
-
-        // Filtres
-        if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nom', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        // Récupération des cours avec relations
+        $cours = Cours::with(['instructeur', 'membres'])
+            ->withCount('membres as inscrits_count')
+            ->orderBy('jour_semaine')
+            ->orderBy('heure_debut')
+            ->get()
+            ->map(function ($cours) {
+                // Ajouter des données formatées
+                $cours->jour_semaine_display = $this->getJourSemaineDisplay($cours->jour_semaine);
+                $cours->heure_debut_format = Carbon::parse($cours->heure_debut)->format('H:i');
+                $cours->heure_fin_format = Carbon::parse($cours->heure_fin)->format('H:i');
+                return $cours;
             });
-        }
 
-        if ($request->filled('saison')) {
-            $query->where('saison', $request->saison);
-        }
+        // Récupération des instructeurs
+        $instructeurs = User::role('instructeur')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
 
-        if ($request->filled('niveau')) {
-            $query->where('niveau', $request->niveau);
-        }
+        // Calcul des statistiques
+        $stats = [
+            'totalCours' => $cours->count(),
+            'coursActifs' => $cours->where('actif', true)->count(),
+            'totalInstructeurs' => $instructeurs->count(),
+            'seancesParSemaine' => $this->calculateSeancesParSemaine($cours),
+        ];
 
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->statut);
-        }
-
-        // Tri par défaut
-        $query->orderBy('saison', 'desc')
-              ->orderBy('nom', 'asc');
-
-        $cours = $query->paginate(15)->appends($request->query());
-
-        // Statistiques
-        $stats = $this->calculateCoursStats();
-
-        return Inertia::render('Cours/IndexNew', [
-            'cours' => $cours->items(),
-            'pagination' => [
-                'current_page' => $cours->currentPage(),
-                'last_page' => $cours->lastPage(),
-                'per_page' => $cours->perPage(),
-                'total' => $cours->total(),
-            ],
+        return Inertia::render('Cours/Index', [
+            'cours' => $cours,
+            'instructeurs' => $instructeurs,
             'stats' => $stats,
-            'filters' => $request->only(['search', 'saison', 'niveau', 'statut'])
+            'canCreate' => Auth::user()->can('cours.create'),
+            'canEdit' => Auth::user()->can('cours.edit'),
+            'canDelete' => Auth::user()->can('cours.delete'),
         ]);
     }
 
     /**
-     * Créer un nouveau cours
+     * Show the form for creating a new course.
+     *
+     * @return \Inertia\Response
      */
-    public function store(Request $request): RedirectResponse
+    public function create()
     {
+        $this->authorize('create', Cours::class);
+
+        $instructeurs = User::role('instructeur')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Cours/Create', [
+            'instructeurs' => $instructeurs,
+            'niveaux' => ['debutant', 'intermediaire', 'avance', 'competition'],
+            'joursDisponibles' => $this->getJoursDisponibles(),
+        ]);
+    }
+
+    /**
+     * Store a newly created course in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', Cours::class);
+
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string|max:2000',
-            'niveau' => 'required|in:debutant,intermediaire,avance,expert,mixte',
-            'saison' => 'required|in:automne,hiver,printemps,ete',
-            'age_minimum' => 'nullable|integer|min:3|max:100',
-            'capacite_max' => 'required|integer|min:1|max:50',
-            'tarif_mensuel' => 'required|numeric|min:0|max:1000',
-            'tarif_seance' => 'nullable|numeric|min:0|max:200',
-            'tarif_carte' => 'nullable|numeric|min:0|max:2000',
-            'horaires' => 'nullable|array',
-            'horaires.*.jour' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'horaires.*.heure_debut' => 'required|date_format:H:i',
-            'horaires.*.heure_fin' => 'required|date_format:H:i|after:horaires.*.heure_debut'
+            'description' => 'nullable|string',
+            'instructeur_id' => 'required|exists:users,id',
+            'niveau' => 'required|in:debutant,intermediaire,avance,competition',
+            'age_min' => 'required|integer|min:3|max:99',
+            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
+            'places_max' => 'required|integer|min:1|max:50',
+            'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
+            'heure_debut' => 'required|date_format:H:i',
+            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+            'date_debut' => 'required|date',
+            'date_fin' => 'nullable|date|after:date_debut',
+            'tarif_mensuel' => 'required|numeric|min:0|max:500',
+            'actif' => 'boolean',
         ]);
 
-        $cours = Cours::create([
-            'nom' => $validated['nom'],
-            'description' => $validated['description'],
-            'niveau' => $validated['niveau'],
-            'saison' => $validated['saison'],
-            'age_minimum' => $validated['age_minimum'],
-            'capacite_max' => $validated['capacite_max'],
-            'tarif_mensuel' => $validated['tarif_mensuel'],
-            'tarif_seance' => $validated['tarif_seance'],
-            'tarif_carte' => $validated['tarif_carte'],
-            'statut' => 'actif',
-            'visible_inscription' => true
-        ]);
+        // Vérification des conflits horaires
+        $conflict = $this->checkScheduleConflict(
+            $validated['jour_semaine'],
+            $validated['heure_debut'],
+            $validated['heure_fin'],
+            $validated['instructeur_id']
+        );
 
-        // Créer les horaires
-        if (!empty($validated['horaires'])) {
-            foreach ($validated['horaires'] as $horaire) {
-                if (class_exists('App\Models\CoursHoraire')) {
-                    CoursHoraire::create([
-                        'cours_id' => $cours->id,
-                        'jour' => $horaire['jour'],
-                        'heure_debut' => $horaire['heure_debut'],
-                        'heure_fin' => $horaire['heure_fin']
-                    ]);
-                }
-            }
+        if ($conflict) {
+            return back()->withErrors([
+                'horaire' => 'Un conflit horaire existe avec un autre cours.'
+            ])->withInput();
         }
+
+        $cours = Cours::create($validated);
 
         return redirect()->route('cours.index')
-                         ->with('success', "✅ Cours \"{$cours->nom}\" créé avec succès!");
+            ->with('success', 'Cours créé avec succès.');
     }
 
     /**
-     * Afficher un cours spécifique
+     * Display the specified course.
+     *
+     * @param  \App\Models\Cours  $cours
+     * @return \Inertia\Response
      */
-    public function show(Cours $cours): Response
+    public function show(Cours $cours)
     {
+        $cours->load(['instructeur', 'membres.user']);
+
+        // Statistiques du cours
+        $stats = [
+            'totalInscrits' => $cours->membres()->count(),
+            'placesDisponibles' => $cours->places_max - $cours->membres()->count(),
+            'tauxRemplissage' => ($cours->membres()->count() / $cours->places_max) * 100,
+            'presencesMoyenne' => $this->calculatePresenceMoyenne($cours),
+        ];
+
+        // Historique des présences (dernières 4 semaines)
+        $presencesHistory = $this->getPresencesHistory($cours, 4);
+
         return Inertia::render('Cours/Show', [
             'cours' => $cours,
-            'stats' => [
-                'inscriptions_actives' => 0,
-                'revenus_mensuels' => $cours->tarif_mensuel ?? 0,
-                'taux_presence' => 0,
-                'prochaine_session' => null
-            ]
+            'stats' => $stats,
+            'presencesHistory' => $presencesHistory,
+            'canEdit' => Auth::user()->can('edit', $cours),
+            'canDelete' => Auth::user()->can('delete', $cours),
         ]);
     }
 
     /**
-     * Modifier un cours
+     * Show the form for editing the specified course.
+     *
+     * @param  \App\Models\Cours  $cours
+     * @return \Inertia\Response
      */
-    public function update(Request $request, Cours $cours): RedirectResponse
+    public function edit(Cours $cours)
     {
+        $this->authorize('update', $cours);
+
+        $instructeurs = User::role('instructeur')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Cours/Edit', [
+            'cours' => $cours,
+            'instructeurs' => $instructeurs,
+            'niveaux' => ['debutant', 'intermediaire', 'avance', 'competition'],
+            'joursDisponibles' => $this->getJoursDisponibles(),
+        ]);
+    }
+
+    /**
+     * Update the specified course in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function update(Request $request, Cours $cours)
+    {
+        $this->authorize('update', $cours);
+
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string|max:2000',
-            'niveau' => 'required|in:debutant,intermediaire,avance,expert,mixte',
-            'saison' => 'required|in:automne,hiver,printemps,ete',
-            'age_minimum' => 'nullable|integer|min:3|max:100',
-            'capacite_max' => 'required|integer|min:1|max:50',
-            'tarif_mensuel' => 'required|numeric|min:0|max:1000',
-            'tarif_seance' => 'nullable|numeric|min:0|max:200',
-            'tarif_carte' => 'nullable|numeric|min:0|max:2000',
-            'statut' => 'required|in:actif,inactif,complet,annule',
-            'visible_inscription' => 'boolean'
+            'description' => 'nullable|string',
+            'instructeur_id' => 'required|exists:users,id',
+            'niveau' => 'required|in:debutant,intermediaire,avance,competition',
+            'age_min' => 'required|integer|min:3|max:99',
+            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
+            'places_max' => 'required|integer|min:1|max:50',
+            'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
+            'heure_debut' => 'required|date_format:H:i',
+            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+            'date_debut' => 'required|date',
+            'date_fin' => 'nullable|date|after:date_debut',
+            'tarif_mensuel' => 'required|numeric|min:0|max:500',
+            'actif' => 'boolean',
         ]);
+
+        // Vérification des conflits horaires (en excluant le cours actuel)
+        $conflict = $this->checkScheduleConflict(
+            $validated['jour_semaine'],
+            $validated['heure_debut'],
+            $validated['heure_fin'],
+            $validated['instructeur_id'],
+            $cours->id
+        );
+
+        if ($conflict) {
+            return back()->withErrors([
+                'horaire' => 'Un conflit horaire existe avec un autre cours.'
+            ])->withInput();
+        }
 
         $cours->update($validated);
 
-        return redirect()->route('cours.index')
-                         ->with('success', "✅ Cours \"{$cours->nom}\" modifié avec succès!");
+        return redirect()->route('cours.show', $cours)
+            ->with('success', 'Cours mis à jour avec succès.');
     }
 
     /**
-     * Supprimer un cours
+     * Remove the specified course from storage.
+     *
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(Cours $cours): RedirectResponse
+    public function destroy(Cours $cours)
     {
-        $nom = $cours->nom;
+        $this->authorize('delete', $cours);
 
-        // Supprimer en cascade (soft delete)
+        // Vérifier s'il y a des inscriptions actives
+        if ($cours->membres()->count() > 0) {
+            return back()->withErrors([
+                'delete' => 'Impossible de supprimer un cours avec des membres inscrits.'
+            ]);
+        }
+
         $cours->delete();
 
         return redirect()->route('cours.index')
-                         ->with('success', "🗑️ Cours \"{$nom}\" supprimé avec succès.");
+            ->with('success', 'Cours supprimé avec succès.');
     }
 
     /**
-     * Gestion des horaires d'un cours (API)
+     * Duplicate an existing course.
+     *
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function horaires(Cours $cours)
+    public function duplicate(Cours $cours)
     {
-        $horaires = [];
-        $instructeurs = [];
+        $this->authorize('create', Cours::class);
 
-        if (class_exists('App\Models\CoursHoraire')) {
-            $horaires = CoursHoraire::where('cours_id', $cours->id)->get();
-        }
+        $newCours = $cours->replicate();
+        $newCours->nom = $cours->nom . ' (Copie)';
+        $newCours->created_at = now();
+        $newCours->updated_at = now();
+        $newCours->save();
 
-        $instructeurs = Membre::where('role', 'instructeur')->get(['id', 'nom', 'prenom']);
+        return redirect()->route('cours.edit', $newCours)
+            ->with('success', 'Cours dupliqué avec succès. Vous pouvez maintenant le modifier.');
+    }
 
-        return response()->json([
-            'horaires' => $horaires,
-            'instructeurs' => $instructeurs
+    /**
+     * Display the planning calendar view.
+     *
+     * @return \Inertia\Response
+     */
+    public function planning()
+    {
+        $cours = Cours::with(['instructeur', 'membres'])
+            ->where('actif', true)
+            ->orderBy('jour_semaine')
+            ->orderBy('heure_debut')
+            ->get();
+
+        $planning = $this->formatPlanningData($cours);
+
+        return Inertia::render('Cours/Planning', [
+            'planning' => $planning,
+            'instructeurs' => User::role('instructeur')->get(),
         ]);
     }
 
     /**
-     * Ajouter un horaire à un cours
+     * Export courses data.
+     *
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
-    public function storeHoraire(Request $request, Cours $cours): RedirectResponse
+    public function export()
     {
-        if (!class_exists('App\Models\CoursHoraire')) {
-            return back()->withErrors(['horaire' => 'Modèle CoursHoraire non disponible.']);
+        $this->authorize('export', Cours::class);
+
+        $cours = Cours::with(['instructeur', 'membres'])
+            ->orderBy('jour_semaine')
+            ->orderBy('heure_debut')
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="cours_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function() use ($cours) {
+            $file = fopen('php://output', 'w');
+            
+            // En-têtes CSV
+            fputcsv($file, [
+                'ID', 'Nom', 'Description', 'Instructeur', 'Niveau',
+                'Âge Min', 'Âge Max', 'Places Max', 'Inscrits',
+                'Jour', 'Début', 'Fin', 'Tarif Mensuel', 'Statut'
+            ]);
+
+            // Données
+            foreach ($cours as $c) {
+                fputcsv($file, [
+                    $c->id,
+                    $c->nom,
+                    $c->description,
+                    $c->instructeur->name,
+                    $c->niveau,
+                    $c->age_min,
+                    $c->age_max,
+                    $c->places_max,
+                    $c->membres->count(),
+                    $c->jour_semaine,
+                    $c->heure_debut,
+                    $c->heure_fin,
+                    $c->tarif_mensuel,
+                    $c->actif ? 'Actif' : 'Inactif',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Helper: Check for schedule conflicts.
+     *
+     * @param string $jour
+     * @param string $heureDebut
+     * @param string $heureFin
+     * @param int $instructeurId
+     * @param int|null $excludeCoursId
+     * @return bool
+     */
+    private function checkScheduleConflict($jour, $heureDebut, $heureFin, $instructeurId, $excludeCoursId = null)
+    {
+        $query = Cours::where('jour_semaine', $jour)
+            ->where('instructeur_id', $instructeurId)
+            ->where('actif', true)
+            ->where(function($q) use ($heureDebut, $heureFin) {
+                $q->whereBetween('heure_debut', [$heureDebut, $heureFin])
+                  ->orWhereBetween('heure_fin', [$heureDebut, $heureFin])
+                  ->orWhere(function($q2) use ($heureDebut, $heureFin) {
+                      $q2->where('heure_debut', '<=', $heureDebut)
+                         ->where('heure_fin', '>=', $heureFin);
+                  });
+            });
+
+        if ($excludeCoursId) {
+            $query->where('id', '!=', $excludeCoursId);
         }
 
-        $validated = $request->validate([
-            'jour' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'salle' => 'nullable|string|max:100',
-            'instructeur_id' => 'nullable|exists:membres,id'
-        ]);
-
-        CoursHoraire::create(array_merge($validated, ['cours_id' => $cours->id]));
-
-        return back()->with('success', '⏰ Horaire ajouté avec succès!');
+        return $query->exists();
     }
 
     /**
-     * Modifier un horaire
+     * Helper: Calculate average presence for a course.
+     *
+     * @param \App\Models\Cours $cours
+     * @return float
      */
-    public function updateHoraire(Request $request, Cours $cours, $horaireId): RedirectResponse
+    private function calculatePresenceMoyenne($cours)
     {
-        if (!class_exists('App\Models\CoursHoraire')) {
-            return back()->withErrors(['horaire' => 'Modèle CoursHoraire non disponible.']);
+        $presences = DB::table('presences')
+            ->where('cours_id', $cours->id)
+            ->where('statut', 'present')
+            ->count();
+
+        $totalSessions = DB::table('presences')
+            ->where('cours_id', $cours->id)
+            ->distinct('date_cours')
+            ->count('date_cours');
+
+        if ($totalSessions == 0) return 0;
+
+        $membresInscrits = $cours->membres()->count();
+        if ($membresInscrits == 0) return 0;
+
+        return round(($presences / ($totalSessions * $membresInscrits)) * 100, 2);
+    }
+
+    /**
+     * Helper: Get presence history for a course.
+     *
+     * @param \App\Models\Cours $cours
+     * @param int $weeks
+     * @return array
+     */
+    private function getPresencesHistory($cours, $weeks = 4)
+    {
+        $history = [];
+        $startDate = Carbon::now()->subWeeks($weeks);
+
+        for ($i = 0; $i < $weeks; $i++) {
+            $weekStart = $startDate->copy()->addWeeks($i)->startOfWeek();
+            $weekEnd = $weekStart->copy()->endOfWeek();
+
+            $presences = DB::table('presences')
+                ->where('cours_id', $cours->id)
+                ->whereBetween('date_cours', [$weekStart, $weekEnd])
+                ->where('statut', 'present')
+                ->count();
+
+            $history[] = [
+                'semaine' => $weekStart->format('d/m'),
+                'presences' => $presences,
+            ];
         }
 
-        $validated = $request->validate([
-            'jour' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'salle' => 'nullable|string|max:100',
-            'instructeur_id' => 'nullable|exists:membres,id'
-        ]);
-
-        $horaire = CoursHoraire::findOrFail($horaireId);
-        $horaire->update($validated);
-
-        return back()->with('success', '⏰ Horaire modifié avec succès!');
+        return $history;
     }
 
     /**
-     * Supprimer un horaire
+     * Helper: Calculate sessions per week.
+     *
+     * @param \Illuminate\Support\Collection $cours
+     * @return int
      */
-    public function destroyHoraire(Cours $cours, $horaireId): RedirectResponse
+    private function calculateSeancesParSemaine($cours)
     {
-        if (!class_exists('App\Models\CoursHoraire')) {
-            return back()->withErrors(['horaire' => 'Modèle CoursHoraire non disponible.']);
+        return $cours->where('actif', true)->count();
+    }
+
+    /**
+     * Helper: Format planning data for calendar view.
+     *
+     * @param \Illuminate\Support\Collection $cours
+     * @return array
+     */
+    private function formatPlanningData($cours)
+    {
+        $planning = [];
+        $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+
+        foreach ($jours as $jour) {
+            $planning[$jour] = $cours->filter(function($c) use ($jour) {
+                return $c->jour_semaine === $jour;
+            })->values();
         }
 
-        $horaire = CoursHoraire::findOrFail($horaireId);
-        $horaire->delete();
-
-        return back()->with('success', '🗑️ Horaire supprimé avec succès!');
+        return $planning;
     }
 
     /**
-     * Générer les sessions d'une saison
+     * Helper: Get display name for day of week.
+     *
+     * @param string $jour
+     * @return string
      */
-    public function genererSessionsSaison(Request $request, Cours $cours): RedirectResponse
+    private function getJourSemaineDisplay($jour)
     {
-        $validated = $request->validate([
-            'date_debut' => 'required|date',
-            'date_fin' => 'required|date|after:date_debut',
-            'exclure_conges' => 'boolean'
-        ]);
+        $jours = [
+            'lundi' => 'Lundi',
+            'mardi' => 'Mardi',
+            'mercredi' => 'Mercredi',
+            'jeudi' => 'Jeudi',
+            'vendredi' => 'Vendredi',
+            'samedi' => 'Samedi',
+            'dimanche' => 'Dimanche',
+        ];
 
-        // Placeholder pour la génération de sessions
-        $sessionsCreees = 0;
-
-        return back()->with('success', "📅 {$sessionsCreees} sessions générées pour la saison {$cours->saison}!");
+        return $jours[$jour] ?? $jour;
     }
 
     /**
-     * Calculer les statistiques des cours
+     * Helper: Get available days.
+     *
+     * @return array
      */
-    private function calculateCoursStats(): array
+    private function getJoursDisponibles()
     {
         return [
-            'total_cours' => Cours::count(),
-            'cours_actifs' => Cours::where('statut', 'actif')->count(),
-            'total_inscriptions' => 0,
-            'sessions_semaine' => 0,
-            'revenus_mensuels' => 0,
-            'cours_par_saison' => Cours::select('saison')
-                ->selectRaw('count(*) as total')
-                ->groupBy('saison')
-                ->pluck('total', 'saison')
-                ->toArray()
+            ['value' => 'lundi', 'label' => 'Lundi'],
+            ['value' => 'mardi', 'label' => 'Mardi'],
+            ['value' => 'mercredi', 'label' => 'Mercredi'],
+            ['value' => 'jeudi', 'label' => 'Jeudi'],
+            ['value' => 'vendredi', 'label' => 'Vendredi'],
+            ['value' => 'samedi', 'label' => 'Samedi'],
+            ['value' => 'dimanche', 'label' => 'Dimanche'],
         ];
     }
 }

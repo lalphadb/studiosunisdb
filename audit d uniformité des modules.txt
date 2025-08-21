@@ -1,0 +1,98 @@
+Voici l’audit d’uniformité de ton projet StudiosDB v5 Pro, ainsi qu’un plan d’action précis pour uniformiser tous les modules/pages sur le modèle du dashboard :
+
+---
+
+## Audit Uniformité – État actuel
+
+### 1. Référence visuelle
+- **Modèle à suivre** : Dashboard (Admin, Instructeur, Membre, etc.)
+- **Caractéristiques** : 
+  - Fond dégradé bleu/indigo, plein écran
+  - Layout fluide, paddings larges, grilles responsives
+  - Cartes/statistiques en “full width” sur desktop
+  - Sidebar et header uniformes
+  - Boutons, inputs, badges, modales stylés et cohérents
+  - Typographie, couleurs, ombres, radius identiques
+
+### 2. Problèmes constatés
+- **Welcome.vue** : OK (plein écran, moderne)
+- **Dashboard** : OK (modèle de référence)
+- **Index.vue** : Progrès, mais encore “compressé” (conteneur centré, paddings restrictifs)
+- **Index.vue** : Souvent centré, cartes/tables pas “full width”
+- **Autres modules (Présences, Finances, Ceintures, Statistiques, Admin, etc.)** : 
+  - Layouts hétérogènes (certains centrés, d’autres non)
+  - Utilisation variable de `max-w-*`, `mx-auto`, paddings/margins différents
+  - Composants UI parfois différents (boutons, cards, tables)
+  - Responsive et dark mode pas toujours identiques
+
+### 3. Points techniques
+- **Layouts** : Certains modules utilisent encore des layouts hérités ou des conteneurs limités
+- **Composants** : Boutons, cards, tables parfois différents d’un module à l’autre
+- **Palette** : Quelques modules n’utilisent pas la palette du dashboard
+- **Typographie** : Hiérarchie et couleurs parfois différentes
+- **Transitions/animations** : Non uniformes
+- **Accessibilité** : Pas toujours respectée partout
+
+---
+
+## Plan d’action – Uniformisation totale
+
+### 1. Layout global
+- Remplacer tous les conteneurs limités (`max-w-*`, `mx-auto`) par `w-full` et paddings identiques au dashboard
+- Utiliser le même système de grille/flex que le dashboard pour toutes les pages principales
+- S’assurer que le fond, les paddings, et la structure sont identiques
+
+### 2. Sidebar, Header, Navigation
+- Utiliser les mêmes composants Sidebar et Header sur tous les modules/pages
+- Uniformiser la navigation (icônes, couleurs, hover, responsive)
+
+### 3. Composants UI
+- Remplacer tous les boutons, cards, inputs, tables, modales par les composants réutilisables du dashboard
+- S’assurer que tous les états (hover, focus, disabled) sont identiques
+- Utiliser les mêmes classes Tailwind partout
+
+### 4. Palette & Typographie
+- Appliquer la palette du dashboard (bleu/indigo, gradients, success/warning/error/info)
+- Uniformiser la typographie (polices, tailles, couleurs, poids, line-height)
+
+### 5. Responsive & Accessibilité
+- Vérifier tous les breakpoints (mobile, tablette, desktop)
+- S’assurer que tous les modules sont accessibles (contrastes, focus, aria-labels)
+
+### 6. Animations & Transitions
+- Appliquer les mêmes transitions (durée, easing) sur tous les modules
+- Uniformiser les micro-interactions (hover, click, loading)
+
+### 7. Refactorisation technique
+- Créer/mettre à jour les composants réutilisables dans UI
+- Utiliser ces composants dans tous les modules/pages
+
+### 8. Suppression du legacy
+- Supprimer tous les restes de Blade, vieux layouts, ou composants non uniformes
+
+---
+
+## Ordre de migration recommandé
+
+1. **Dashboard** (modèle de référence, déjà OK)
+2. **Membres** (Index, Show, Create, Edit, Progression)
+3. **Cours** (Index, Show, Create, Edit, Planning)
+4. **Présences** (Index, Tablette, Rapports)
+5. **Finances/Paiements** (Index, Create, TableauBord, Factures)
+6. **Ceintures** (Index, Create, Examens, Progression)
+7. **Statistiques** (Index, Revenus, Présences)
+8. **Admin** (Index, Configuration, Utilisateurs, Backup)
+
+---
+
+## Pour chaque module/page
+
+- Appliquer le layout du dashboard (fond, paddings, grilles)
+- Remplacer tous les composants UI par ceux du dashboard
+- Vérifier la palette, la typographie, les transitions
+- Tester le responsive et l’accessibilité
+- Supprimer tout code legacy ou non uniforme
+
+---
+
+Veux-tu commencer l’uniformisation sur un module précis (ex : Membres, Présences) ou dois-je te proposer un patch type pour un module ?

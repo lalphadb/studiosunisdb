@@ -1,0 +1,99 @@
+A. Commutateurs (ON/OFF)
+
+UNIFORMIZE_EXISTING=ON → obligatoire : harmoniser l’existant selon les règles ci-dessous, via patchs minimaux.
+
+ALLOW_CREATE_MISSING_MODULES=ON → autorise uniquement la création des pièces manquantes (pas de reset, pas de re-scaffold global).
+
+TOUCH_COURS=OFF → le Module Cours reste intouchable (FROZEN) hors CRQ.
+
+Par défaut : UNIFORMIZE_EXISTING=ON, ALLOW_CREATE_MISSING_MODULES=ON, TOUCH_COURS=OFF.
+
+B. Registre des modules cibles (vérifier/compléter)
+
+Utilisateurs (admin école)
+
+Membres (+ liens familiaux bidirectionnels, progression manuelle)
+
+Inscription self-service /register-membre (User+Membre, consentements Loi 25, reCAPTCHA)
+
+Dashboard (tuiles, graph, actions rapides, alertes)
+
+(Présences = prochain jalon, préparer seulement les hooks/relations, pas d’UI si non demandée)
+
+Règle : si un module existe, uniformiser; s’il manque, créer les pièces strictement nécessaires (migrations, modèles, policies, contrôleurs, routes, pages Inertia, tests).
+
+C. Contrat d’uniformisation (UI/Code)
+
+Primitives UI : utiliser nos composants communs (UiButton, UiCard, UiInput, UiSelect, StatsCard, Pagination, ConfirmModal).
+
+Layout : AuthenticatedLayout.vue + dark mode + a11y (aria-*, sr-only).
+
+Tables : entêtes uppercase, lignes hover, actions visibles mais désactivées si pas de droit (pas “cachées”).
+
+Filtres + tri : même structure et libellés entre modules ; preserveScroll: true + only: [...] dans les requêtes Inertia.
+
+Exports : ouvrir via window.open(...) (ne pas casser l’historique Inertia).
+
+Nommage : compteurs *_count, relations Laravel standard, ecole_id partout pour le scoping.
+
+Sécurité : Policies + Spatie roles, interdictions (ex.: admin d’école ne peut pas donner superadmin, ni supprimer son compte).
+
+Logs : journaliser opérations sensibles côté back.
+
+D. Politique de création d’un module manquant (Edit-in-Place)
+
+Toujours procéder SCAN→PLAN→PATCH→TEST→REPORT, et uniquement si ALLOW_CREATE_MISSING_MODULES=ON :
+
+SCAN : confirmer absence des artefacts (migrations, modèles, policies, contrôleurs, routes, pages Inertia, tests).
+
+PLAN (≤3 actions) : lister précisément les fichiers à ajouter (chemin exact).
+
+PATCH (création) :
+
+Migrations : préfixe timestamp, clés étrangères, softDeletes si entité critique, ecole_id requis.
+
+Models : $fillable, cast, scopes par ecole_id, relations.
+
+Policies : viewAny/view/create/update/delete avec scoping strict.
+
+Controllers REST : validation, filtrage, tri, pagination.
+
+Routes : routes/web.php avec middlewares (auth, verified, role), noms cohérents (membres.*, users.*).
+
+Pages Inertia : index + create/edit/show selon module, en réutilisant les UI primitives.
+
+Tests Pest : accès par rôle, scoping, flux principal.
+
+TESTS : php artisan migrate --force, route:list, test --filter=<Module>, front npm run dev (pas de 404 Vite).
+
+REPORT : mini-changelog + risques/rollback.
+
+E. Check-list “livraison propre” (à valider à chaque patch)
+
+ Aucun fichier FROZEN modifié.
+
+ Patchs minimaux (diff/sed/cat) et traçables.
+
+ Policies par ecole_id + tests OK.
+
+ Aucune régression sur Cours.
+
+ Vite OK (pas de 404 /@vite/client).
+
+ Migrations/seeders stables (rollback OK).
+
+ README module + ADR/CRQ si nécessaire.
+
+F. Sortie attendue (format)
+
+LEDGER mis à jour.
+
+Mini-changelog (2–5 lignes).
+
+PLAN (≤3 actions).
+
+PATCH (diff/cat/sed).
+
+TESTS (commandes précises + critères succès).
+
+Rollback (1–2 lignes).

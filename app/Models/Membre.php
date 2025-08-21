@@ -2,51 +2,85 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\Concerns\BelongsToEcole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Modèle Membre Ultra-Professionnel Laravel 11
- * Gestion complète des élèves d'arts martiaux
- * Conforme aux standards PSR-12 et Laravel Best Practices
- */
 class Membre extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, BelongsToEcole;
 
     protected $fillable = [
-        'user_id', 'prenom', 'nom', 'date_naissance', 'sexe',
-        'telephone', 'adresse', 'ville', 'code_postal',
-        'contact_urgence_nom', 'contact_urgence_telephone', 'contact_urgence_relation',
-        'statut', 'ceinture_actuelle_id', 'date_inscription', 'date_derniere_presence',
-        'notes_medicales', 'allergies', 'conditions_medicales',
-        'consentement_photos', 'consentement_communications', 'consentement_donnees',
-        'notes_instructeur', 'notes_admin'
+        'user_id',
+        'prenom',
+        'nom',
+        'email',
+        'telephone',
+        'date_naissance',
+        'sexe',
+        'adresse',
+        'ville',
+        'code_postal',
+        'province',
+        'contact_urgence_nom',
+        'contact_urgence_telephone',
+        'contact_urgence_relation',
+        'statut',
+        'ceinture_actuelle_id',
+        'date_inscription',
+        'date_derniere_presence',
+        'notes_medicales',
+        'allergies',
+        'medicaments',
+        'consentement_photos',
+        'consentement_communications',
+        'date_consentement',
+        'family_id',
+        'champs_personnalises'
     ];
 
     protected $casts = [
         'date_naissance' => 'date',
         'date_inscription' => 'date',
-        'date_derniere_presence' => 'datetime',
-        'allergies' => 'array',
+        'date_derniere_presence' => 'date',
+        'date_consentement' => 'datetime',
         'consentement_photos' => 'boolean',
         'consentement_communications' => 'boolean',
-        'consentement_donnees' => 'boolean',
+        'allergies' => 'array',
+        'medicaments' => 'array',
+        'champs_personnalises' => 'array'
     ];
 
-    // Relations Eloquent optimisées
+    protected $appends = [
+        'nom_complet',
+        'age'
+    ];
+
+    // Relations
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    public function family(): BelongsTo
+    {
+        return $this->belongsTo(Family::class);
+    }
+
     public function ceintureActuelle(): BelongsTo
     {
-        return $this->belongsTo(Ceinture::class, 'ceinture_actuelle_id');
+        return $this->belongsTo(Belt::class, 'ceinture_actuelle_id');
+    }
+
+    public function cours(): BelongsToMany
+    {
+        return $this->belongsToMany(Cours::class, 'cours_membres')
+            ->withPivot(['date_inscription', 'date_fin', 'statut'])
+            ->withTimestamps();
     }
 
     public function presences(): HasMany
@@ -59,17 +93,12 @@ class Membre extends Model
         return $this->hasMany(Paiement::class);
     }
 
-    public function liensFamiliaux(): HasMany
+    public function progressionCeintures(): HasMany
     {
-        return $this->hasMany(LienFamilial::class, 'membre_principal_id');
+        return $this->hasMany(ProgressionCeinture::class);
     }
 
-    public function liensCommeMembreLie(): HasMany
-    {
-        return $this->hasMany(LienFamilial::class, 'membre_lie_id');
-    }
-
-    // Accessors modernes
+    // Accesseurs
     public function getNomCompletAttribute(): string
     {
         return "{$this->prenom} {$this->nom}";
@@ -77,10 +106,10 @@ class Membre extends Model
 
     public function getAgeAttribute(): int
     {
-        return $this->date_naissance->diffInYears(now());
+        return $this->date_naissance ? $this->date_naissance->age : 0;
     }
 
-    // Scopes pour requêtes optimisées
+    // Scopes
     public function scopeActif($query)
     {
         return $query->where('statut', 'actif');
@@ -88,17 +117,13 @@ class Membre extends Model
 
     public function scopeRecherche($query, $terme)
     {
+        if (!$terme) return $query;
+        
         return $query->where(function($q) use ($terme) {
             $q->where('prenom', 'like', "%{$terme}%")
               ->orWhere('nom', 'like', "%{$terme}%")
+              ->orWhere('email', 'like', "%{$terme}%")
               ->orWhere('telephone', 'like', "%{$terme}%");
         });
-    }
-
-    // Méthodes business logiques
-    public function peutProgresse($nouvelleCeinture): bool
-    {
-        if (!$this->ceintureActuelle || !$nouvelleCeinture) return false;
-        return $nouvelleCeinture->ordre > $this->ceintureActuelle->ordre;
     }
 }

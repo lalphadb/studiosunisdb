@@ -17,7 +17,7 @@ foreach($extensions as $ext) {
 
 echo "<h2>🗃️ Test Base de Données:</h2>";
 try {
-    $pdo = new PDO('mysql:host=127.0.0.1;dbname=studiosdb_central', 'studiosdb', 'StudiosDB2024!');
+    $pdo = new PDO('mysql:host=127.0.0.1;dbname=studiosdb', 'root', 'LkmP0km1');
     echo "<p>✅ Connexion DB réussie</p>";
 } catch (Exception $e) {
     echo "<p>❌ Erreur DB: " . $e->getMessage() . "</p>";
@@ -25,9 +25,9 @@ try {
 
 echo "<h2>📁 Répertoires:</h2>";
 $dirs = [
-    '/home/studiosdb/studiosunisdb/studiosdb_v5_pro/storage/logs',
-    '/home/studiosdb/studiosunisdb/studiosdb_v5_pro/bootstrap/cache',
-    '/home/studiosdb/studiosunisdb/studiosdb_v5_pro/public'
+    '/home/studiosdb/studiosunisdb/storage/logs',
+    '/home/studiosdb/studiosunisdb/bootstrap/cache',
+    '/home/studiosdb/studiosunisdb/public'
 ];
 
 foreach($dirs as $dir) {

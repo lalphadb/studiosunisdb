@@ -21,27 +21,27 @@ export default defineConfig({
             },
         }),
     ],
-    
+
     resolve: {
         alias: {
             '@': resolve(__dirname, 'resources/js'),
             '~': resolve(__dirname, 'resources'),
         },
     },
-    
+
     server: {
-        host: '0.0.0.0',
+        host: '127.0.0.1',
         port: 5173,
         cors: true,
         hmr: {
-            host: 'localhost',
+            host: '127.0.0.1',
+            port: 5173,
         },
         watch: {
             usePolling: true,
         },
-        origin: 'http://localhost:8001',
     },
-    
+
     build: {
         outDir: 'public/build',
         emptyOutDir: true,
@@ -52,7 +52,7 @@ export default defineConfig({
             },
         },
     },
-    
+
     optimizeDeps: {
         include: [
             'vue',
@@ -63,7 +63,7 @@ export default defineConfig({
             '@heroicons/vue/24/solid',
         ],
     },
-    
+
     define: {
         __VUE_OPTIONS_API__: true,
         __VUE_PROD_DEVTOOLS__: false,
