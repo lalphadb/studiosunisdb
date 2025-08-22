@@ -1,6 +1,6 @@
 <template>
     <GuestLayout>
-        <Head title="Connexion - StudiosDB v5" />
+    <Head :title="`Connexion - ${$appName}`" />
 
         <!-- Background avec gradient moderne -->
         <div class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
@@ -19,7 +19,7 @@
                             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
                         </svg>
                     </div>
-                    <h1 class="text-3xl font-bold text-white mb-2">StudiosDB v5</h1>
+                    <h1 class="text-3xl font-bold text-white mb-2">{{ $appName }}</h1>
                     <p class="text-blue-200">Système de gestion professionnel</p>
                     <p class="text-sm text-blue-300 mt-1">École Studiosunis St-Émile</p>
                 </div>
@@ -151,7 +151,7 @@
                     <!-- Footer -->
                     <div class="mt-8 pt-6 border-t border-white/10">
                         <div class="text-center text-sm text-blue-300">
-                            <p>StudiosDB v5.0.0 Pro</p>
+                            <p>{{ $appName }} • v{{ $appVersion }}</p>
                             <p class="mt-1">© 2024 École Studiosunis St-Émile</p>
                         </div>
                     </div>
@@ -163,7 +163,7 @@
                         Besoin d'aide? Contactez votre administrateur
                     </p>
                     <p class="text-blue-400 text-xs mt-2">
-                        Version: 5.0.0 | Build: {{ new Date().getFullYear() }}
+                        Version: v{{ $appVersion }} | Build: {{ new Date().getFullYear() }}
                     </p>
                 </div>
             </div>

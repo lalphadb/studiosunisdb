@@ -22,7 +22,7 @@
       </div>
       
       <div class="mt-6 text-xs text-gray-400">
-        <p>StudiosDB v5 Pro - Système de récupération d'erreur</p>
+  <p>{{ $appName }} - Système de récupération d'erreur</p>
         <p>{{ new Date().toLocaleString() }}</p>
       </div>
     </div>

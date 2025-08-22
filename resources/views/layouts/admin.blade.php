@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - StudiosDB v5 Pro</title>
+    <title>@yield('title') - StudiosDB v6 Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -149,7 +149,7 @@
     <div class="container">
         <!-- Navigation Header -->
         <div class="nav-header">
-            <div class="nav-title">🥋 StudiosDB v5 Pro</div>
+            <div class="nav-title">🥋 StudiosDB v6 Pro</div>
             <div class="nav-actions">
                 <a href="/dashboard" class="btn btn-primary btn-small">🏠 Dashboard</a>
                 <a href="/telescope" class="btn btn-warning btn-small">🔭 Telescope</a>
@@ -162,7 +162,7 @@
 
         <!-- Footer -->
         <div style="text-align: center; margin-top: 40px; opacity: 0.8; font-size: 14px;">
-            <p>StudiosDB v5 Pro avec Laravel Telescope - {{ date('Y-m-d H:i:s') }}</p>
+            <p>StudiosDB v6 Pro avec Laravel Telescope - {{ date('Y-m-d H:i:s') }}</p>
         </div>
     </div>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudiosDB v5 - Login Blade</title>
+    <title>StudiosDB v6 - Login Blade</title>
     <style>
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
         .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; }
@@ -30,7 +30,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>StudiosDB v5</h1>
+            <h1>StudiosDB v6</h1>
             <p>Connexion - Version Blade</p>
         </div>
 

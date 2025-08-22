@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Middleware Dashboard Access - StudiosDB v5 Pro
+ * Middleware Dashboard Access - StudiosDB v6 Pro
  * Laravel 11.x Ultra-Professionnel
  */
 class CheckDashboardAccess

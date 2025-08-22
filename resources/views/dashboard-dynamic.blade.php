@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - StudiosDB v5 Pro</title>
+    <title>Dashboard - StudiosDB v6 Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -173,7 +173,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="title">🥋 StudiosDB v5 Pro</div>
+            <div class="title">🥋 StudiosDB v6 Pro</div>
             <div class="subtitle">École de Karaté - Dashboard Professionnel Avancé</div>
         </div>
 
@@ -286,7 +286,7 @@
 
         <!-- Footer -->
         <div class="footer">
-            <p>StudiosDB v5 Pro avec Laravel Telescope - {{ date('Y-m-d H:i:s') }}</p>
+            <p>StudiosDB v6 Pro avec Laravel Telescope - {{ date('Y-m-d H:i:s') }}</p>
             <p>Système complet de gestion d'école de karaté</p>
         </div>
     </div>

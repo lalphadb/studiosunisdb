@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHP Info - StudiosDB v5 Pro</title>
+    <title>PHP Info - StudiosDB v6 Pro</title>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -75,7 +75,7 @@
 <body>
     <div class="header">
         <div class="title">🔧 PHP Information</div>
-        <div>StudiosDB v5 Pro - Configuration PHP</div>
+    <div>StudiosDB v6 Pro - Configuration PHP</div>
         <a href="/dashboard" class="btn">🏠 Retour Dashboard</a>
     </div>
 

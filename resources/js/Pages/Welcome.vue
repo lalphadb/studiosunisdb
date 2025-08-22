@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
         <div class="text-center text-white">
-            <h1 class="text-5xl font-bold mb-4">StudiosDB v5 Pro</h1>
+            <h1 class="text-5xl font-bold mb-4">{{ $appName }}</h1>
             <p class="text-xl mb-8">École de Karaté Studiosunis</p>
             
             <div class="space-x-4">

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToEcole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,9 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Membre extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToEcole;
 
     protected $fillable = [
+        'ecole_id',
         'user_id',
         'prenom',
         'nom',
@@ -65,6 +67,11 @@ class Membre extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function ecole(): BelongsTo
+    {
+        return $this->belongsTo(Ecole::class);
+    }
+
     public function family(): BelongsTo
     {
         return $this->belongsTo(Family::class);
@@ -72,7 +79,7 @@ class Membre extends Model
 
     public function ceintureActuelle(): BelongsTo
     {
-        return $this->belongsTo(Belt::class, 'ceinture_actuelle_id');
+        return $this->belongsTo(Ceinture::class, 'ceinture_actuelle_id');
     }
 
     public function cours(): BelongsToMany
@@ -97,6 +104,22 @@ class Membre extends Model
         return $this->hasMany(ProgressionCeinture::class);
     }
 
+    public function examens(): HasMany
+    {
+        return $this->hasMany(Examen::class);
+    }
+
+    // Liens familiaux bidirectionnels
+    public function liensFamiliaux(): HasMany
+    {
+        return $this->hasMany(LienFamilial::class, 'membre_id');
+    }
+
+    public function liensInverses(): HasMany
+    {
+        return $this->hasMany(LienFamilial::class, 'membre_lie_id');
+    }
+
     // Accesseurs
     public function getNomCompletAttribute(): string
     {
@@ -106,6 +129,16 @@ class Membre extends Model
     public function getAgeAttribute(): int
     {
         return $this->date_naissance ? $this->date_naissance->age : 0;
+    }
+
+    public function getTousLiensFamiliauxAttribute()
+    {
+        return $this->liensFamiliaux->merge($this->liensInverses);
+    }
+
+    public function getEstActifAttribute(): bool
+    {
+        return $this->statut === 'actif';
     }
 
     // Scopes

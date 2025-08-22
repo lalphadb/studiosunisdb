@@ -9,46 +9,35 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
-class MembersExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class MembresExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
 {
+    protected $ecoleId;
     protected $filters;
 
-    public function __construct(array $filters = [])
+    public function __construct($ecoleId = null, array $filters = [])
     {
+        $this->ecoleId = $ecoleId ?? auth()->user()->ecole_id;
         $this->filters = $filters;
     }
 
     public function collection()
     {
         $query = Membre::with(['ceintureActuelle', 'user'])
-            ->where('ecole_id', auth()->user()->ecole_id);
+            ->where('ecole_id', $this->ecoleId);
 
         // Appliquer les filtres
         if (!empty($this->filters['statut'])) {
             $query->where('statut', $this->filters['statut']);
         }
 
-        if (!empty($this->filters['q'])) {
-            $q = $this->filters['q'];
-            $query->where(function ($w) use ($q) {
-                $w->where('prenom', 'like', "%{$q}%")
-                  ->orWhere('nom', 'like', "%{$q}%")
-                  ->orWhere('telephone', 'like', "%{$q}%");
-            });
+        if (!empty($this->filters['recherche'])) {
+            $query->recherche($this->filters['recherche']);
         }
 
         if (!empty($this->filters['ceinture_id'])) {
             $query->where('ceinture_actuelle_id', $this->filters['ceinture_id']);
-        }
-
-        if (!empty($this->filters['age_group'])) {
-            if ($this->filters['age_group'] === 'mineur') {
-                $query->whereDate('date_naissance', '>', CarbonImmutable::now()->subYears(18)->toDateString());
-            } elseif ($this->filters['age_group'] === 'adulte') {
-                $query->whereDate('date_naissance', '<=', CarbonImmutable::now()->subYears(18)->toDateString());
-            }
         }
 
         return $query->orderBy('nom')->orderBy('prenom')->get();
@@ -90,7 +79,7 @@ class MembersExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $membre->id,
             $membre->prenom,
             $membre->nom,
-            $membre->user?->email,
+            $membre->email,
             $membre->telephone,
             $membre->date_naissance?->format('Y-m-d'),
             $membre->age,

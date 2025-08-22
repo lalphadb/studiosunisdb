@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
         
-        // Force Vite configuration for StudiosDB v5 Pro
+    // Force Vite configuration for StudiosDB v6 Pro
         if (app()->environment('local')) {
             Vite::useManifestFilename('.vite/manifest.json');
             Vite::useBuildDirectory('build');

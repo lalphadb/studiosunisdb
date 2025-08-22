@@ -34,6 +34,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'app' => [
+                'name' => config('app.name', 'StudiosDB v6'),
+                'version' => config('app.version', 'dev'),
+            ],
         ];
     }
 }

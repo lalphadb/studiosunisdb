@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\{DB, Cache, Log};
 use Carbon\Carbon;
 
 /**
- * Service Statistiques Dashboard - StudiosDB v5 Pro
+ * Service Statistiques Dashboard - StudiosDB v6 Pro
  * Laravel 11.x Ultra-Professionnel avec Cache et Gestion Erreurs
  */
 class DashboardStatsService

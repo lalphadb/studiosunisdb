@@ -2,7 +2,7 @@
   <div>
     <h1>✅ SUCCESS - DASHBOARD FONCTIONNE !</h1>
     <div style="background: #4CAF50; color: white; padding: 20px; margin: 20px; border-radius: 10px;">
-      <h2>🎉 StudiosDB v5 Pro</h2>
+  <h2>🎉 {{ $appName }}</h2>
       <p><strong>Utilisateur:</strong> {{ user_name }}</p>
       <p><strong>Email:</strong> {{ user_email }}</p>
       <p><strong>Message:</strong> {{ message }}</p>

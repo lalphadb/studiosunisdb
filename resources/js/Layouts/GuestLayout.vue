@@ -16,7 +16,7 @@
 
         <!-- Footer -->
         <div class="mt-8 text-center text-sm text-gray-600">
-            StudiosDB v5 Pro • École de Karaté Studiosunis
+            {{ $appName }} • École de Karaté Studiosunis
         </div>
     </div>
 </template>

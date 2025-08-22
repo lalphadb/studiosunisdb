@@ -58,7 +58,7 @@
               En ligne
             </span>
             <span class="text-slate-700 hidden sm:inline">•</span>
-            <span>v5.0.0</span>
+            <span>v{{ $appVersion }}</span>
           </div>
           
           <!-- Menu dropdown mobile -->

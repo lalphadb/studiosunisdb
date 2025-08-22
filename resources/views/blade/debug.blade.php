@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudiosDB v5 - Debug & Navigation</title>
+    <title>StudiosDB v6 - Debug & Navigation</title>
     <style>
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -27,7 +27,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🛠️ StudiosDB v5 Pro - Debug & Navigation</h1>
+            <h1>🛠️ StudiosDB v6 Pro - Debug & Navigation</h1>
             <div class="success">
                 <strong>✅ Laravel {{ $laravel_version }} fonctionne parfaitement !</strong><br>
                 PHP {{ $php_version }} • Toutes extensions installées

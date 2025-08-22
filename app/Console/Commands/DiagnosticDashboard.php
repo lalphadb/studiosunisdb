@@ -7,17 +7,17 @@ use Illuminate\Support\Facades\{DB, Route as RouteFacade};
 use App\Http\Controllers\DashboardController;
 
 /**
- * Commande Diagnostic Dashboard - StudiosDB v5 Pro
+ * Commande Diagnostic Dashboard - StudiosDB v6 Pro
  * Laravel 11.x Ultra-Professionnel
  */
 class DiagnosticDashboard extends Command
 {
     protected $signature = 'studiosdb:diagnostic-dashboard';
-    protected $description = 'Diagnostic complet du dashboard StudiosDB v5';
+    protected $description = 'Diagnostic complet du dashboard StudiosDB v6';
 
     public function handle(): int
     {
-        $this->info('🎯 DIAGNOSTIC DASHBOARD STUDIOSDB V5 PRO');
+    $this->info('🎯 DIAGNOSTIC DASHBOARD STUDIOSDB V6 PRO');
         $this->newLine();
 
         // Test base de données

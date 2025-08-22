@@ -8,7 +8,7 @@
         <meta http-equiv="Pragma" content="no-cache">
         <meta http-equiv="Expires" content="0">
 
-        <title>{{ config('app.name', 'StudiosDB v5') }}</title>
+    <title>{{ config('app.name', 'StudiosDB v6') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -18,6 +18,12 @@
         @routes
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @inertiaHead
+        <script>
+            window.APP_META = {
+                name: @json(config('app.name', 'StudiosDB v6')),
+                version: @json(config('app.version', 'dev')),
+            };
+        </script>
     </head>
     <body class="font-sans antialiased">
         @inertia

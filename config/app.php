@@ -123,4 +123,27 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | Single source of truth for the application version. Defaults to the
+    | contents of the VERSION file at the project root when available, or
+    | falls back to APP_VERSION/.env, then to "dev".
+    |
+    */
+
+    'version' => env('APP_VERSION', (function () {
+        try {
+            $path = base_path('VERSION');
+            if (file_exists($path)) {
+                return trim((string) file_get_contents($path));
+            }
+        } catch (\Throwable $e) {
+            // ignore and fall through to default
+        }
+        return 'dev';
+    })()),
+
 ];

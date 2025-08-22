@@ -1,5 +1,5 @@
 /**
- * StudiosDB v5 Pro - Application JavaScript Ultra-Professionnelle
+ * StudiosDB v6 Pro - Application JavaScript Ultra-Professionnelle
  * Framework: Vue 3 + Composition API + Inertia.js
  * Version: Laravel 11.x Compatible
  */
@@ -17,13 +17,17 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/index.esm.js';
 import { Ziggy as ZiggyFallback } from './ziggy.js';
 
 // Configuration globale de l'application
-const appName = import.meta.env.VITE_APP_NAME || 'StudiosDB v5 Pro';
-const appVersion = '5.5.0';
+const defaultName = 'StudiosDB v6 Pro';
+const defaultVersion = '6.0.0';
 
 // Configuration Inertia App
 import AuthenticatedLayout from './Layouts/AuthenticatedLayout.vue';
 createInertiaApp({
-    title: (title) => title ? `${title} - ${appName}` : appName,
+    title: (title) => {
+        // Title uses server-provided app name when available
+        const provided = (typeof window !== 'undefined' && window.APP_META?.name) || defaultName;
+        return title ? `${title} - ${provided}` : provided;
+    },
     
     resolve: (name) => {
         const pages = import.meta.glob('./Pages/**/*.vue', { eager: true });
@@ -55,9 +59,11 @@ createInertiaApp({
             ...ziggyConfig,
         });
         
-        // Variables globales
-        app.config.globalProperties.$appName = appName;
-        app.config.globalProperties.$appVersion = appVersion;
+    // Variables globales (prefer server props, then window, then defaults)
+    const shared = props.initialPage?.props?.app || {};
+    const metaFromWindow = typeof window !== 'undefined' ? (window.APP_META || {}) : {};
+    app.config.globalProperties.$appName = shared.name || metaFromWindow.name || defaultName;
+    app.config.globalProperties.$appVersion = shared.version || metaFromWindow.version || defaultVersion;
         app.config.globalProperties.$user = props.initialPage.props.auth?.user || null;
         
         // Configuration de production
@@ -111,4 +117,5 @@ createInertiaApp({
 });
 
 // Export pour tests
-export { appName, appVersion };
+export const appName = defaultName;
+export const appVersion = defaultVersion;

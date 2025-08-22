@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudiosDB v5 - Dashboard Blade</title>
+    <title>StudiosDB v6 - Dashboard Blade</title>
     <style>
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 0; background: #f9fafb; }
         .header { background: white; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); padding: 20px 0; }
@@ -33,7 +33,7 @@
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <h1>📊 StudiosDB v5 Pro - Dashboard</h1>
+            <h1>📊 StudiosDB v6 Pro - Dashboard</h1>
             <div class="user-info">
                 Connecté: {{ $user->name }} | {{ $timestamp }}
             </div>
