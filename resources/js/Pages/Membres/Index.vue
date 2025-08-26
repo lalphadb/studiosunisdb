@@ -1,92 +1,18 @@
 <template>
+  <AuthenticatedLayout>
   <Head title="Gestion des Membres" />
-
-  <!-- Container principal SANS padding -->
-  <div class="min-h-screen  max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-      <!-- Stats Cards style Dashboard avec padding -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 px-6">
-        <!-- Total -->
-        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 group">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-slate-400 text-sm font-medium">Total membres</p>
-                <p class="text-3xl font-bold text-white mt-1">{{ stats.total }}</p>
-                <p class="text-xs text-slate-500 mt-1">Tous statuts confondus</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actifs -->
-        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-green-500/50 transition-all duration-300 group">
-          <div class="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-slate-400 text-sm font-medium">Membres actifs</p>
-                <p class="text-3xl font-bold text-white mt-1">{{ stats.actifs }}</p>
-                <p class="text-xs text-green-400 mt-1">
-                  {{ Math.round((stats.actifs / stats.total) * 100) }}% du total
-                </p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Nouveaux -->
-        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 group">
-          <div class="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-slate-400 text-sm font-medium">Nouveaux ce mois</p>
-                <p class="text-3xl font-bold text-white mt-1">{{ stats.nouveaux_mois }}</p>
-                <p class="text-xs text-purple-400 mt-1">Inscriptions récentes</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Présences -->
-        <div class="relative overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 hover:border-amber-500/50 transition-all duration-300 group">
-          <div class="absolute inset-0 bg-gradient-to-br from-amber-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div class="relative">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-slate-400 text-sm font-medium">Présences aujourd'hui</p>
-                <p class="text-3xl font-bold text-white mt-1">{{ stats.presences_jour }}</p>
-                <p class="text-xs text-amber-400 mt-1">Participation active</p>
-              </div>
-              <div class="w-12 h-12 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div class="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <PageHeader title="Membres" description="Gestion centralisée des membres et de leur progression.">
+      <template #actions>
+        <Link :href="route('membres.create')" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium hover:from-indigo-400 hover:to-purple-500">Nouveau membre</Link>
+      </template>
+    </PageHeader>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <StatCard title="Total membres" :value="stats.total" tone="blue" description="Tous statuts" />
+      <StatCard title="Membres actifs" :value="stats.actifs" :change="Math.round((stats.actifs / stats.total) * 100)" format="percentage" tone="green" description="Actifs / total" />
+      <StatCard title="Nouveaux ce mois" :value="stats.nouveaux_mois" tone="purple" description="Inscriptions récentes" />
+      <StatCard title="Présences aujourd'hui" :value="stats.presences_jour" tone="amber" description="Participation active" />
+    </div>
       </div>
 
       <!-- Filtres style Dashboard avec margin horizontal -->
@@ -317,8 +243,7 @@
         <div class="px-6 py-4 border-t border-slate-700/50 bg-slate-900/30">
           <Pagination :links="membres.links" />
         </div>
-      </div>
-    </div>
+  </div>
 
     <!-- Delete Modal -->
     <ConfirmModal
@@ -330,7 +255,7 @@
       confirmText="Supprimer"
       danger
     />
-
+  </AuthenticatedLayout>
 </template>
 
 <script setup>
@@ -339,6 +264,8 @@ import { router, useForm, Link, Head } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Pagination from '@/Components/Pagination.vue'
 import ConfirmModal from '@/Components/ConfirmModal.vue'
+import PageHeader from '@/Components/UI/PageHeader.vue'
+import StatCard from '@/Components/UI/StatCard.vue'
 import { debounce } from 'lodash'
 
 const props = defineProps({

@@ -6,10 +6,7 @@ import { resolve } from 'path';
 export default defineConfig({
     plugins: [
         laravel({
-            input: [
-                'resources/css/app.css',
-                'resources/js/app.js',
-            ],
+            input: 'resources/js/app.js',
             refresh: true,
         }),
         vue({
@@ -30,12 +27,11 @@ export default defineConfig({
     },
 
     server: {
-        host: '127.0.0.1',
+        host: '0.0.0.0',
         port: 5173,
         cors: true,
         hmr: {
-            host: '127.0.0.1',
-            port: 5173,
+            host: 'localhost',
         },
         watch: {
             usePolling: true,

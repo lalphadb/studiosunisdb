@@ -39,7 +39,7 @@
             <Link 
               :href="route('dashboard')" 
               class="nav-item group"
-              :class="{ 'active': route().current('dashboard') }"
+              :class="{ 'active': isCurrent('dashboard') }"
             >
               <div class="nav-icon bg-gradient-to-br from-blue-500/20 to-blue-600/20 group-hover:from-blue-500/30 group-hover:to-blue-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +55,7 @@
             <Link 
               :href="route('membres.index')" 
               class="nav-item group"
-              :class="{ 'active': route().current('membres.*') }"
+              :class="{ 'active': isCurrent('membres.*') }"
             >
               <div class="nav-icon bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 group-hover:from-emerald-500/30 group-hover:to-emerald-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@
             <Link 
               :href="route('cours.index')" 
               class="nav-item group"
-              :class="{ 'active': route().current('cours.*') }"
+              :class="{ 'active': isCurrent('cours.*') }"
             >
               <div class="nav-icon bg-gradient-to-br from-purple-500/20 to-purple-600/20 group-hover:from-purple-500/30 group-hover:to-purple-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +91,7 @@
             <Link 
               :href="route('presences.tablette')" 
               class="nav-item group"
-              :class="{ 'active': route().current('presences.*') }"
+              :class="{ 'active': isCurrent('presences.*') }"
             >
               <div class="nav-icon bg-gradient-to-br from-green-500/20 to-green-600/20 group-hover:from-green-500/30 group-hover:to-green-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@
             <Link 
               :href="route('paiements.index')" 
               class="nav-item group"
-              :class="{ 'active': route().current('paiements.*') }"
+              :class="{ 'active': isCurrent('paiements.*') }"
             >
               <div class="nav-icon bg-gradient-to-br from-amber-500/20 to-amber-600/20 group-hover:from-amber-500/30 group-hover:to-amber-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -454,6 +454,17 @@ const logout = () => {
 
 const openLoi25Modal = () => {
   showLoi25Modal.value = true
+}
+
+// Sélecteur sécurisé d'état actif
+const isCurrent = (namePattern) => {
+  try {
+    return typeof route === 'function' && route().current
+      ? route().current(namePattern)
+      : false
+  } catch (e) {
+    return false
+  }
 }
 </script>
 

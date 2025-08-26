@@ -1,57 +1,29 @@
 <template>
   <Head title="Nouveau Membre" />
-  
   <AuthenticatedLayout>
-    <!-- Container principal SANS padding -->
-    <div class="min-h-screen">
-      <!-- Header premium pleine largeur -->
-      <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-2xl mb-6">
-        <div class="absolute inset-0 bg-black/10"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        
-        <!-- Pattern décoratif -->
-        <div class="absolute inset-0">
-          <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-          <div class="absolute -bottom-10 -left-10 w-60 h-60 bg-purple-500/20 rounded-full blur-3xl"></div>
-        </div>
-        
-        <!-- Contenu du header -->
-        <div class="relative px-6 py-8">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-3xl font-bold text-white flex items-center gap-3">
-                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                </div>
-                Nouveau Membre
-              </h1>
-              <p class="mt-1 text-blue-100">
-                Inscription d'un nouveau membre à l'école
-              </p>
-            </div>
-            
-            <!-- Bouton retour -->
-            <Link :href="route('membres.index')"
-                  class="px-5 py-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-xl flex items-center gap-2 transition-all font-medium">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Retour
-            </Link>
+    <div class="p-6 space-y-8">
+      <PageHeader title="Nouveau membre" description="Inscription d'un nouveau membre à l'école.">
+        <template #icon>
+          <div class="w-12 h-12 rounded-xl bg-slate-800/70 border border-slate-700 flex items-center justify-center">
+            <svg class="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
           </div>
-        </div>
-      </div>
+        </template>
+        <template #actions>
+          <Link :href="route('membres.index')" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Retour
+          </Link>
+        </template>
+      </PageHeader>
 
-      <!-- Formulaire avec padding horizontal -->
-      <form @submit.prevent="submit" class="space-y-6 px-6 pb-6">
+      <form @submit.prevent="submit" class="space-y-8">
         <!-- Section Informations personnelles -->
-        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div class="rounded-2xl border border-slate-700/50 bg-slate-900/60 p-6">
           <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 rounded-xl flex items-center justify-center">
-              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-slate-800/70 border border-slate-700 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -187,10 +159,10 @@
         </div>
 
         <!-- Section Adresse -->
-        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div class="rounded-2xl border border-slate-700/50 bg-slate-900/60 p-6">
           <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-xl flex items-center justify-center">
-              <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-slate-800/70 border border-slate-700 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -270,10 +242,10 @@
         </div>
 
         <!-- Section Contact d'urgence -->
-        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div class="rounded-2xl border border-slate-700/50 bg-slate-900/60 p-6">
           <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-red-500/20 to-orange-600/20 rounded-xl flex items-center justify-center">
-              <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-slate-800/70 border border-slate-700 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
@@ -329,10 +301,10 @@
         </div>
 
         <!-- Section Consentements -->
-        <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+        <div class="rounded-2xl border border-slate-700/50 bg-slate-900/60 p-6">
           <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-600/20 rounded-xl flex items-center justify-center">
-              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 bg-slate-800/70 border border-slate-700 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -374,28 +346,14 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex justify-end gap-4">
-          <Link
-            :href="route('membres.index')"
-            class="px-6 py-3 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-xl flex items-center gap-2 transition-all font-medium border border-slate-700"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+        <div class="flex justify-end gap-3">
+          <Link :href="route('membres.index')" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             Annuler
           </Link>
-          
-          <button
-            type="submit"
-            :disabled="form.processing"
-            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl flex items-center gap-2 transition-all font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="!form.processing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <svg v-else class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+          <button type="submit" :disabled="form.processing" class="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-medium shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg v-if="!form.processing" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            <svg v-else class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             {{ form.processing ? 'Création...' : 'Créer le membre' }}
           </button>
         </div>
@@ -403,17 +361,13 @@
     </div>
   </AuthenticatedLayout>
 </template>
-
-<script setup>
+<script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import PageHeader from '@/Components/UI/PageHeader.vue'
 
-const props = defineProps({
-  ceintures: {
-    type: Array,
-    default: () => []
-  }
-})
+interface Ceinture { id: number; name_fr: string }
+const props = defineProps<{ ceintures: Ceinture[] }>()
 
 const form = useForm({
   prenom: '',
@@ -429,18 +383,13 @@ const form = useForm({
   contact_urgence_nom: '',
   contact_urgence_telephone: '',
   contact_urgence_relation: '',
-  ceinture_actuelle_id: null,
+  ceinture_actuelle_id: null as number | null,
   statut: 'actif',
   consentement_photos: false,
   consentement_communications: false
 })
 
-const submit = () => {
-  form.post(route('membres.store'), {
-    preserveScroll: true,
-    onSuccess: () => {
-      // Redirection automatique gérée par le controller
-    }
-  })
+function submit() {
+  form.post(route('membres.store'), { preserveScroll: true })
 }
 </script>

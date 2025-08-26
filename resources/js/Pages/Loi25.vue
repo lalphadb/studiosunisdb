@@ -1,51 +1,32 @@
 <template>
     <Head title="Loi 25 - Protection des Renseignements Personnels | StudiosDB" />
     
-    <div class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
-        <!-- Navigation simple -->
-        <nav class="bg-black/20 backdrop-blur-lg border-b border-white/10">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <Link :href="route('welcome')" class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                            <span class="text-white font-bold">🥋</span>
-                        </div>
-                        <span class="text-white font-semibold">Studiosunis St-Émile</span>
-                    </Link>
-                    
-                    <Link :href="route('welcome')" class="text-blue-300 hover:text-white transition">
-                        ← Retour à l'accueil
-                    </Link>
-                </div>
-            </div>
-        </nav>
+        <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 text-slate-200">
+                <nav class="border-b border-slate-800/60 bg-slate-900/60 backdrop-blur-xl">
+                    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                        <Link :href="route('welcome')" class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                                <span class="text-white text-sm font-bold">🥋</span>
+                            </div>
+                            <span class="text-sm font-semibold text-white">Studiosunis St-Émile</span>
+                        </Link>
+                        <Link :href="route('welcome')" class="text-xs text-slate-400 hover:text-slate-200 transition">← Retour</Link>
+                    </div>
+                </nav>
 
         <!-- Contenu principal -->
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <!-- Header -->
-            <div class="text-center mb-12">
-                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-0.257-.257A6 6 0 1118 8zM10 4a4 4 0 100 8 4 4 0 000-8z"/>
-                        <path fill-rule="evenodd" d="M10 6a2 2 0 100 4 2 2 0 000-4z"/>
-                    </svg>
-                </div>
-                <h1 class="text-4xl font-bold text-white mb-4">
-                    Protection des Renseignements Personnels
-                </h1>
-                <p class="text-blue-200 text-lg">
-                    Conformité à la Loi 25 du Québec
-                </p>
-                <p class="text-blue-300 text-sm mt-2">
-                    Dernière mise à jour: {{ formatDate(new Date()) }}
-                </p>
-            </div>
+                        <div class="text-center mb-12">
+                            <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent mb-3">Protection des Renseignements Personnels</h1>
+                            <p class="text-slate-400 text-sm">Conformité à la Loi 25 du Québec • Mise à jour: {{ formatDate(new Date()) }}</p>
+                        </div>
 
             <!-- Contenu principal -->
-            <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 mb-8">
+            <div class="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-8 mb-8">
                 <!-- Introduction -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">1</span>
                         Introduction
                     </h2>
@@ -64,7 +45,7 @@
 
                 <!-- Définitions -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">2</span>
                         Définitions
                     </h2>
@@ -94,7 +75,7 @@
 
                 <!-- Collecte des renseignements -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">3</span>
                         Collecte des Renseignements
                     </h2>
@@ -144,7 +125,7 @@
 
                 <!-- Utilisation -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">4</span>
                         Utilisation des Renseignements
                     </h2>
@@ -183,7 +164,7 @@
 
                 <!-- Consentement -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-pink-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">5</span>
                         Consentement
                     </h2>
@@ -209,7 +190,7 @@
 
                 <!-- Sécurité -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">6</span>
                         Sécurité et Conservation
                     </h2>
@@ -247,7 +228,7 @@
 
                 <!-- Vos droits -->
                 <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                    <h2 class="text-xl font-semibold text-white mb-4 flex items-center tracking-tight">
                         <span class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3 text-sm font-bold">7</span>
                         Vos Droits
                     </h2>
@@ -340,22 +321,12 @@
             </div>
 
             <!-- Footer de la page -->
-            <div class="text-center">
-                <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6">
-                    <p class="text-blue-300 text-sm mb-2">
-                        Cette politique est conforme à la Loi 25 du Québec
-                    </p>
-                    <p class="text-blue-400 text-xs">
-                        Dernière révision : {{ formatDate(new Date()) }} | Version 1.0
-                    </p>
-                    <div class="mt-4">
-                        <Link :href="route('welcome')" 
-                              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                            Retour à l'accueil
-                        </Link>
-                    </div>
-                </div>
-            </div>
+                        <div class="text-center">
+                            <div class="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-lg p-6">
+                                <p class="text-slate-400 text-xs mb-2">Cette politique est conforme à la Loi 25 du Québec • Révision {{ formatDate(new Date()) }}</p>
+                                <Link :href="route('welcome')" class="inline-flex items-center px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs font-medium">Retour à l'accueil</Link>
+                            </div>
+                        </div>
         </div>
     </div>
 </template>

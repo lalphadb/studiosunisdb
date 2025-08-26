@@ -6,7 +6,9 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "build:clean": "rm -rf public/build && vite build",
+        "analyze:manifest": "cat public/build/.vite/manifest.json | jq . || cat public/build/.vite/manifest.json"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.14",

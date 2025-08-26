@@ -1,5 +1,312 @@
-const Ziggy = {"url":"http:\/\/127.0.0.1:8000","port":8000,"defaults":{},"routes":{"debugbar.openhandler":{"uri":"_debugbar\/open","methods":["GET","HEAD"]},"debugbar.clockwork":{"uri":"_debugbar\/clockwork\/{id}","methods":["GET","HEAD"],"parameters":["id"]},"debugbar.telescope":{"uri":"_debugbar\/telescope\/{id}","methods":["GET","HEAD"],"parameters":["id"]},"debugbar.assets.css":{"uri":"_debugbar\/assets\/stylesheets","methods":["GET","HEAD"]},"debugbar.assets.js":{"uri":"_debugbar\/assets\/javascript","methods":["GET","HEAD"]},"debugbar.cache.delete":{"uri":"_debugbar\/cache\/{key}\/{tags?}","methods":["DELETE"],"parameters":["key","tags"]},"debugbar.queries.explain":{"uri":"_debugbar\/queries\/explain","methods":["POST"]},"sanctum.csrf-cookie":{"uri":"sanctum\/csrf-cookie","methods":["GET","HEAD"]},"telescope":{"uri":"telescope\/{view?}","methods":["GET","HEAD"],"wheres":{"view":"(.*)"},"parameters":["view"]},"ignition.healthCheck":{"uri":"_ignition\/health-check","methods":["GET","HEAD"]},"ignition.executeSolution":{"uri":"_ignition\/execute-solution","methods":["POST"]},"ignition.updateConfig":{"uri":"_ignition\/update-config","methods":["POST"]},"paiements.index":{"uri":"paiements","methods":["GET","HEAD"]},"paiements.create":{"uri":"paiements\/create","methods":["GET","HEAD"]},"paiements.store":{"uri":"paiements","methods":["POST"]},"paiements.show":{"uri":"paiements\/{paiement}","methods":["GET","HEAD"],"parameters":["paiement"]},"paiements.edit":{"uri":"paiements\/{paiement}\/edit","methods":["GET","HEAD"],"parameters":["paiement"]},"paiements.update":{"uri":"paiements\/{paiement}","methods":["PUT","PATCH"],"parameters":["paiement"]},"paiements.destroy":{"uri":"paiements\/{paiement}","methods":["DELETE"],"parameters":["paiement"]},"presences.index":{"uri":"presences","methods":["GET","HEAD"]},"presences.tablette":{"uri":"presences\/tablette","methods":["GET","HEAD"]},"dashboard":{"uri":"dashboard","methods":["GET","HEAD"]},"membres.index":{"uri":"membres","methods":["GET","HEAD"]},"membres.create":{"uri":"membres\/create","methods":["GET","HEAD"]},"membres.store":{"uri":"membres","methods":["POST"]},"membres.show":{"uri":"membres\/{membre}","methods":["GET","HEAD"],"parameters":["membre"],"bindings":{"membre":"id"}},"membres.edit":{"uri":"membres\/{membre}\/edit","methods":["GET","HEAD"],"parameters":["membre"],"bindings":{"membre":"id"}},"membres.update":{"uri":"membres\/{membre}","methods":["PUT","PATCH"],"parameters":["membre"],"bindings":{"membre":"id"}},"membres.destroy":{"uri":"membres\/{membre}","methods":["DELETE"],"parameters":["membre"],"bindings":{"membre":"id"}},"membres.changer-ceinture":{"uri":"membres\/{membre}\/changer-ceinture","methods":["POST"],"parameters":["membre"],"bindings":{"membre":"id"}},"membres.export":{"uri":"membres\/export","methods":["GET","HEAD"]},"cours.index":{"uri":"cours","methods":["GET","HEAD"]},"cours.create":{"uri":"cours\/create","methods":["GET","HEAD"]},"cours.store":{"uri":"cours","methods":["POST"]},"cours.show":{"uri":"cours\/{cour}","methods":["GET","HEAD"],"parameters":["cour"]},"cours.edit":{"uri":"cours\/{cour}\/edit","methods":["GET","HEAD"],"parameters":["cour"]},"cours.update":{"uri":"cours\/{cour}","methods":["PUT","PATCH"],"parameters":["cour"]},"cours.destroy":{"uri":"cours\/{cour}","methods":["DELETE"],"parameters":["cour"]},"profile.edit":{"uri":"profile","methods":["GET","HEAD"]},"profile.update":{"uri":"profile","methods":["PATCH"]},"profile.destroy":{"uri":"profile","methods":["DELETE"]},"register":{"uri":"register","methods":["GET","HEAD"]},"login":{"uri":"login","methods":["GET","HEAD"]},"password.request":{"uri":"forgot-password","methods":["GET","HEAD"]},"password.email":{"uri":"forgot-password","methods":["POST"]},"password.reset":{"uri":"reset-password\/{token}","methods":["GET","HEAD"],"parameters":["token"]},"password.store":{"uri":"reset-password","methods":["POST"]},"verification.notice":{"uri":"verify-email","methods":["GET","HEAD"]},"verification.verify":{"uri":"verify-email\/{id}\/{hash}","methods":["GET","HEAD"],"parameters":["id","hash"]},"verification.send":{"uri":"email\/verification-notification","methods":["POST"]},"password.confirm":{"uri":"confirm-password","methods":["GET","HEAD"]},"password.update":{"uri":"password","methods":["PUT"]},"logout":{"uri":"logout","methods":["POST"]},"logout.get":{"uri":"logout","methods":["GET","HEAD"]},"membres.bulk":{"uri":"membres\/bulk","methods":["POST"]},"storage.local":{"uri":"storage\/{path}","methods":["GET","HEAD"],"wheres":{"path":".*"},"parameters":["path"]}}};
-if (typeof window !== 'undefined' && typeof window.Ziggy !== 'undefined') {
-  Object.assign(Ziggy.routes, window.Ziggy.routes);
+// Routes Ziggy générées automatiquement
+// Généré le: 2025-08-23
+
+export const Ziggy = {
+  url: 'http://localhost:8000',
+  port: 8000,
+  defaults: {},
+  routes: {
+    // Pages publiques
+    'home': {
+      'uri': '/',
+      'methods': ['GET', 'HEAD']
+    },
+    'loi25': {
+      'uri': 'loi-25',
+      'methods': ['GET', 'HEAD']
+    },
+    
+    // Auth routes
+    'login': {
+      'uri': 'login',
+      'methods': ['GET', 'HEAD']
+    },
+    'logout': {
+      'uri': 'logout',
+      'methods': ['POST']
+    },
+    'register': {
+      'uri': 'register',
+      'methods': ['GET', 'HEAD']
+    },
+    'password.request': {
+      'uri': 'forgot-password',
+      'methods': ['GET', 'HEAD']
+    },
+    'password.email': {
+      'uri': 'forgot-password',
+      'methods': ['POST']
+    },
+    'password.reset': {
+      'uri': 'reset-password/{token}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['token']
+    },
+    'password.update': {
+      'uri': 'reset-password',
+      'methods': ['POST']
+    },
+    'verification.notice': {
+      'uri': 'verify-email',
+      'methods': ['GET', 'HEAD']
+    },
+    'verification.verify': {
+      'uri': 'verify-email/{id}/{hash}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['id', 'hash']
+    },
+    'verification.send': {
+      'uri': 'email/verification-notification',
+      'methods': ['POST']
+    },
+    
+    // Dashboard
+    'dashboard': {
+      'uri': 'dashboard',
+      'methods': ['GET', 'HEAD']
+    },
+    
+    // Profile
+    'profile.edit': {
+      'uri': 'profile',
+      'methods': ['GET', 'HEAD']
+    },
+    'profile.update': {
+      'uri': 'profile',
+      'methods': ['PATCH']
+    },
+    'profile.destroy': {
+      'uri': 'profile',
+      'methods': ['DELETE']
+    },
+    
+    // Membres
+    'membres.index': {
+      'uri': 'membres',
+      'methods': ['GET', 'HEAD']
+    },
+    'membres.create': {
+      'uri': 'membres/create',
+      'methods': ['GET', 'HEAD']
+    },
+    'membres.store': {
+      'uri': 'membres',
+      'methods': ['POST']
+    },
+    'membres.show': {
+      'uri': 'membres/{membre}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['membre']
+    },
+    'membres.edit': {
+      'uri': 'membres/{membre}/edit',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['membre']
+    },
+    'membres.update': {
+      'uri': 'membres/{membre}',
+      'methods': ['PUT', 'PATCH'],
+      'parameters': ['membre']
+    },
+    'membres.destroy': {
+      'uri': 'membres/{membre}',
+      'methods': ['DELETE'],
+      'parameters': ['membre']
+    },
+    'membres.export': {
+      'uri': 'membres-export/{format?}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['format']
+    },
+    
+    // Cours
+    'cours.index': {
+      'uri': 'cours',
+      'methods': ['GET', 'HEAD']
+    },
+    'cours.create': {
+      'uri': 'cours/create',
+      'methods': ['GET', 'HEAD']
+    },
+    'cours.store': {
+      'uri': 'cours',
+      'methods': ['POST']
+    },
+    'cours.show': {
+      'uri': 'cours/{cours}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['cours']
+    },
+    'cours.edit': {
+      'uri': 'cours/{cours}/edit',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['cours']
+    },
+    'cours.update': {
+      'uri': 'cours/{cours}',
+      'methods': ['PUT', 'PATCH'],
+      'parameters': ['cours']
+    },
+    'cours.destroy': {
+      'uri': 'cours/{cours}',
+      'methods': ['DELETE'],
+      'parameters': ['cours']
+    },
+    'cours.planning': {
+      'uri': 'cours/planning',
+      'methods': ['GET', 'HEAD']
+    },
+    
+    // Présences
+    'presences.index': {
+      'uri': 'presences',
+      'methods': ['GET', 'HEAD']
+    },
+    'presences.store': {
+      'uri': 'presences',
+      'methods': ['POST']
+    },
+    'presences.show': {
+      'uri': 'presences/{presence}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['presence']
+    },
+    'presences.update': {
+      'uri': 'presences/{presence}',
+      'methods': ['PUT', 'PATCH'],
+      'parameters': ['presence']
+    },
+    'presences.destroy': {
+      'uri': 'presences/{presence}',
+      'methods': ['DELETE'],
+      'parameters': ['presence']
+    },
+    'presences.tablette': {
+      'uri': 'presences/tablette',
+      'methods': ['GET', 'HEAD']
+    },
+    
+    // Paiements
+    'paiements.index': {
+      'uri': 'paiements',
+      'methods': ['GET', 'HEAD']
+    },
+    'paiements.show': {
+      'uri': 'paiements/{paiement}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['paiement']
+    },
+    'paiements.store': {
+      'uri': 'paiements',
+      'methods': ['POST']
+    },
+    'paiements.update': {
+      'uri': 'paiements/{paiement}',
+      'methods': ['PUT', 'PATCH'],
+      'parameters': ['paiement']
+    },
+    'paiements.refund': {
+      'uri': 'paiements/{paiement}/refund',
+      'methods': ['POST'],
+      'parameters': ['paiement']
+    },
+    
+    // Utilisateurs (admin only)
+    'utilisateurs.index': {
+      'uri': 'utilisateurs',
+      'methods': ['GET', 'HEAD']
+    },
+    'utilisateurs.create': {
+      'uri': 'utilisateurs/create',
+      'methods': ['GET', 'HEAD']
+    },
+    'utilisateurs.store': {
+      'uri': 'utilisateurs',
+      'methods': ['POST']
+    },
+    'utilisateurs.edit': {
+      'uri': 'utilisateurs/{utilisateur}/edit',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['utilisateur']
+    },
+    'utilisateurs.update': {
+      'uri': 'utilisateurs/{utilisateur}',
+      'methods': ['PUT', 'PATCH'],
+      'parameters': ['utilisateur']
+    },
+    'utilisateurs.destroy': {
+      'uri': 'utilisateurs/{utilisateur}',
+      'methods': ['DELETE'],
+      'parameters': ['utilisateur']
+    },
+    
+    // Ceintures
+    'ceintures.index': {
+      'uri': 'ceintures',
+      'methods': ['GET', 'HEAD']
+    },
+    'ceintures.show': {
+      'uri': 'ceintures/{ceinture}',
+      'methods': ['GET', 'HEAD'],
+      'parameters': ['ceinture']
+    },
+    
+    // Examens
+    'examens.index': {
+      'uri': 'examens',
+      'methods': ['GET', 'HEAD']
+    },
+    'examens.store': {
+      'uri': 'examens',
+      'methods': ['POST']
+    },
+    'examens.update': {
+      'uri': 'examens/{examen}',
+      'methods': ['PUT', 'PATCH'],
+      'parameters': ['examen']
+    },
+    
+    // Debug routes (admin only)
+    'debug.phpinfo': {
+      'uri': 'debug/phpinfo',
+      'methods': ['GET', 'HEAD']
+    },
+    'debug.dashboard.simple': {
+      'uri': 'debug/dashboard-simple',
+      'methods': ['GET', 'HEAD']
+    },
+    'debug.dashboard.dynamic': {
+      'uri': 'debug/dashboard-dynamic',
+      'methods': ['GET', 'HEAD']
+    }
+  }
+};
+
+// Helper function for route generation
+if (typeof window !== 'undefined') {
+  window.route = (name, params, absolute) => {
+    const route = Ziggy.routes[name];
+    if (!route) {
+      console.error(`Route ${name} not found`);
+      return '#';
+    }
+    
+    let uri = route.uri;
+    
+    // Replace parameters
+    if (params) {
+      if (route.parameters) {
+        route.parameters.forEach(param => {
+          if (params[param]) {
+            uri = uri.replace(`{${param}}`, params[param]);
+          }
+        });
+      }
+    }
+    
+    // Remove optional parameters
+    uri = uri.replace(/\{[^}]*\?\}/g, '');
+    
+    return absolute ? `${Ziggy.url}/${uri}` : `/${uri}`;
+  };
 }
-export { Ziggy };

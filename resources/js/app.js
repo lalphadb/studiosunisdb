@@ -20,6 +20,41 @@ import { Ziggy as ZiggyFallback } from './ziggy.js';
 const defaultName = 'StudiosDB v6 Pro';
 const defaultVersion = '6.0.0';
 
+// Rendre route() disponible globalement AVANT createInertiaApp
+if (typeof window !== 'undefined') {
+    // Utiliser Ziggy du serveur ou le fallback local
+    const ziggyConfig = window.Ziggy || ZiggyFallback;
+    
+    // Créer la fonction route globale
+    window.route = (name, params, absolute) => {
+        const route = ziggyConfig.routes[name];
+        if (!route) {
+            console.error(`Route ${name} not found`);
+            return '#';
+        }
+        
+        let uri = route.uri;
+        
+        // Remplacer les paramètres
+        if (params) {
+            if (route.parameters) {
+                route.parameters.forEach(param => {
+                    if (params[param]) {
+                        uri = uri.replace(`{${param}}`, params[param]);
+                    }
+                });
+            }
+        }
+        
+        // Retirer les paramètres optionnels
+        uri = uri.replace(/\{[^}]*\?\}/g, '');
+        
+        // Construire l'URL complète
+        const baseUrl = ziggyConfig.url || 'http://localhost:8000';
+        return absolute ? `${baseUrl}/${uri}` : `/${uri}`;
+    };
+}
+
 // Configuration Inertia App
 import AuthenticatedLayout from './Layouts/AuthenticatedLayout.vue';
 createInertiaApp({
@@ -49,7 +84,8 @@ createInertiaApp({
         
         // Plugins Vue
         app.use(plugin);
-        // Prefer Blade-injected @routes; fallback to local ziggy.js when absent
+        
+        // Configurer Ziggy pour Vue
         const ziggyConfig = typeof window !== 'undefined' && window.Ziggy
             ? { ...window.Ziggy }
             : { ...ZiggyFallback };
@@ -59,11 +95,19 @@ createInertiaApp({
             ...ziggyConfig,
         });
         
-    // Variables globales (prefer server props, then window, then defaults)
-    const shared = props.initialPage?.props?.app || {};
-    const metaFromWindow = typeof window !== 'undefined' ? (window.APP_META || {}) : {};
-    app.config.globalProperties.$appName = shared.name || metaFromWindow.name || defaultName;
-    app.config.globalProperties.$appVersion = shared.version || metaFromWindow.version || defaultVersion;
+        // Rendre route() disponible dans tous les composants
+        app.config.globalProperties.$route = window.route;
+        app.mixin({
+            methods: {
+                route: window.route
+            }
+        });
+        
+        // Variables globales (prefer server props, then window, then defaults)
+        const shared = props.initialPage?.props?.app || {};
+        const metaFromWindow = typeof window !== 'undefined' ? (window.APP_META || {}) : {};
+        app.config.globalProperties.$appName = shared.name || metaFromWindow.name || defaultName;
+        app.config.globalProperties.$appVersion = shared.version || metaFromWindow.version || defaultVersion;
         app.config.globalProperties.$user = props.initialPage.props.auth?.user || null;
         
         // Configuration de production

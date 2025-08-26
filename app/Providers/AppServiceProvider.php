@@ -20,12 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Indique à Laravel d'utiliser le manifest généré par Vite 6 dans le sous-dossier .vite
+        // C'est la méthode la plus propre pour résoudre le chemin du manifest sans hacks.
+        Vite::useManifestFilename('.vite/manifest.json');
+
+        // Optionnel: préchargement des assets pour améliorer la performance perçue.
         Vite::prefetch(concurrency: 3);
-        
-    // Force Vite configuration for StudiosDB v6 Pro
-        if (app()->environment('local')) {
-            Vite::useManifestFilename('.vite/manifest.json');
-            Vite::useBuildDirectory('build');
-        }
     }
 }

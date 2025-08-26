@@ -43,43 +43,10 @@
 
         <!-- Métriques financières -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <ModernStatsCard
-            title="Revenus du Mois"
-            :value="stats.revenus_mois"
-            icon-type="heroicon"
-            icon-name="currency"
-            :change="stats.evolution_revenus"
-            format="currency"
-            description="Revenus confirmés ce mois"
-          />
-
-          <ModernStatsCard
-            title="En Attente"
-            :value="stats.paiements_en_attente"
-            icon-type="heroicon"
-            icon-name="clock"
-            format="currency"
-            description="Paiements en cours de traitement"
-          />
-
-          <ModernStatsCard
-            title="En Retard"
-            :value="stats.paiements_en_retard"
-            icon-type="heroicon"
-            icon-name="bell"
-            format="currency"
-            description="Paiements échéances dépassées"
-            :change="stats.retards_evolution"
-          />
-
-          <ModernStatsCard
-            title="Taux de Recouvrement"
-            :value="stats.taux_recouvrement"
-            icon-type="heroicon"
-            icon-name="chart"
-            format="percentage"
-            description="Pourcentage de paiements reçus"
-          />
+          <StatCard title="Revenus du Mois" :value="stats.revenus_mois" :change="stats.evolution_revenus" format="currency" tone="purple" description="Revenus confirmés ce mois" />
+          <StatCard title="En Attente" :value="stats.paiements_en_attente" format="currency" tone="amber" description="Paiements en cours de traitement" />
+          <StatCard title="En Retard" :value="stats.paiements_en_retard" :change="stats.retards_evolution" format="currency" tone="red" description="Paiements échéances dépassées" />
+          <StatCard title="Taux de Recouvrement" :value="stats.taux_recouvrement" format="percentage" tone="green" description="Pourcentage de paiements reçus" />
         </div>
 
         <!-- Objectifs financiers -->
@@ -338,8 +305,8 @@
 import { computed, ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import ModernStatsCard from '@/Components/ModernStatsCard.vue'
-import ModernProgressBar from '@/Components/ModernProgressBar.vue'
+import StatCard from '@/Components/UI/StatCard.vue'
+import ModernProgressBar from '@/Components/ModernProgressBar.vue' // conserver temporairement jusqu'à nouvelle ProgressBar
 
 import {
   CurrencyDollarIcon,
