@@ -57,7 +57,7 @@ final class MembreController extends Controller
         $query = Membre::query()
             ->with([
                 'user:id,email',
-                'ceintureActuelle:id,nom,couleur_hex',
+                'ceintureActuelle:id,name,color_hex',
             ])
             ->withCount([
                 'cours as cours_count',
@@ -110,7 +110,7 @@ final class MembreController extends Controller
                     'telephone'          => $m->telephone,
                     'user'               => $m->relationLoaded('user') ? Arr::only($m->user->toArray(), ['email']) : null,
                     'ceinture_actuelle'  => $m->relationLoaded('ceintureActuelle')
-                        ? Arr::only($m->ceintureActuelle->toArray(), ['id','nom','couleur_hex'])
+                        ? ['id' => $m->ceintureActuelle->id, 'nom' => $m->ceintureActuelle->name, 'couleur_hex' => $m->ceintureActuelle->color_hex]
                         : null,
                     'statut'             => $m->statut,
                     'cours_count'        => (int) $m->getAttribute('cours_count'),
@@ -156,7 +156,7 @@ final class MembreController extends Controller
         $this->authorize('create', Membre::class);
 
         return Inertia::render('Membres/Create', [
-            'ceintures' => Ceinture::select('id','nom')->orderBy('ordre')->get(),
+            'ceintures' => Ceinture::select('id','name','name as name_fr','color_hex as couleur_hex')->orderBy('order')->get(),
         ]);
     }
 
@@ -180,15 +180,26 @@ final class MembreController extends Controller
             /** @var Membre $m */
             $m = Membre::create([
                 'user_id'               => $user?->id,
+                'ecole_id'              => auth()->user()->ecole_id ?? 1, // Assurer ecole_id toujours présent
                 'prenom'                => $data['prenom'],
                 'nom'                   => $data['nom'],
+                'email'                 => $data['email'] ?? null,
                 'date_naissance'        => $data['date_naissance'],
+                'sexe'                  => $data['sexe'] ?? 'Autre',
                 'telephone'             => $data['telephone'] ?? null,
                 'adresse'               => $data['adresse'] ?? null,
+                'ville'                 => $data['ville'] ?? null,
+                'code_postal'           => $data['code_postal'] ?? null,
+                'province'              => $data['province'] ?? 'QC',
+                'contact_urgence_nom'   => $data['contact_urgence_nom'] ?? null,
+                'contact_urgence_telephone' => $data['contact_urgence_telephone'] ?? null,
+                'contact_urgence_relation' => $data['contact_urgence_relation'] ?? null,
                 'statut'                => $data['statut'] ?? 'actif',
                 'ceinture_actuelle_id'  => $data['ceinture_actuelle_id'] ?? null,
                 'date_inscription'      => $data['date_inscription'] ?? now()->toDateString(),
-                'ecole_id'              => auth()->user()?->ecole_id,
+                'consentement_photos'   => $data['consentement_photos'] ?? false,
+                'consentement_communications' => $data['consentement_communications'] ?? true,
+                'date_consentement'     => isset($data['consentement_photos']) || isset($data['consentement_communications']) ? now() : null,
             ]);
 
             if (function_exists('activity')) {
@@ -205,7 +216,7 @@ final class MembreController extends Controller
     {
         $membre->load([
             'user:id,email',
-            'ceintureActuelle:id,nom,couleur_hex',
+            'ceintureActuelle:id,name,color_hex',
             'cours:id,nom', // si relation many-to-many existe
         ]);
 
@@ -220,7 +231,7 @@ final class MembreController extends Controller
                 'telephone'         => $membre->telephone,
                 'adresse'           => $membre->adresse,
                 'statut'            => $membre->statut,
-                'ceinture_actuelle' => $membre->ceintureActuelle?->only(['id','nom','couleur_hex']),
+                'ceinture_actuelle' => $membre->ceintureActuelle ? ['id' => $membre->ceintureActuelle->id, 'nom' => $membre->ceintureActuelle->name, 'couleur_hex' => $membre->ceintureActuelle->color_hex] : null,
                 'user'              => $membre->user?->only(['email']),
                 'cours'             => $membre->cours?->map->only(['id','nom']),
             ],
@@ -229,7 +240,7 @@ final class MembreController extends Controller
 
     public function edit(Membre $membre): Response
     {
-        $ceintures = Ceinture::select('id','nom')->orderBy('ordre')->get();
+        $ceintures = Ceinture::select('id','name as nom','color_hex as couleur_hex')->orderBy('order')->get();
 
         return Inertia::render('Membres/Edit', [
             'membre'    => [
