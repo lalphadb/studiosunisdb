@@ -14,7 +14,7 @@
   <div class="relative h-24 flex items-center justify-center px-2 overflow-hidden">
     <!-- Gradient statique de fond -->
     <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20"></div>
-    <Link :href="route('dashboard')" class="relative flex items-center group">
+    <Link href="/dashboard" class="relative flex items-center group">
       <div class="relative">
         <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
         <div class="relative w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform">
@@ -37,9 +37,9 @@
           <div class="space-y-1">
             <!-- Dashboard -->
             <Link 
-              :href="route('dashboard')" 
+              href="/dashboard" 
               class="nav-item group"
-              :class="{ 'active': isCurrent('dashboard') }"
+              :class="{ 'active': currentPath === '/dashboard' }"
             >
               <div class="nav-icon bg-gradient-to-br from-blue-500/20 to-blue-600/20 group-hover:from-blue-500/30 group-hover:to-blue-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,14 +48,14 @@
                 </svg>
               </div>
               <span v-if="sidebarOpen" class="nav-label">Dashboard</span>
-              <div v-if="sidebarOpen && route().current('dashboard')" class="nav-indicator"></div>
+              <div v-if="sidebarOpen && currentPath === '/dashboard'" class="nav-indicator"></div>
             </Link>
 
             <!-- Membres -->
             <Link 
-              :href="route('membres.index')" 
+              href="/membres" 
               class="nav-item group"
-              :class="{ 'active': isCurrent('membres.*') }"
+              :class="{ 'active': currentPath.startsWith('/membres') }"
             >
               <div class="nav-icon bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 group-hover:from-emerald-500/30 group-hover:to-emerald-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,9 +71,9 @@
 
             <!-- Cours -->
             <Link 
-              :href="route('cours.index')" 
+              href="/cours" 
               class="nav-item group"
-              :class="{ 'active': isCurrent('cours.*') }"
+              :class="{ 'active': currentPath.startsWith('/cours') }"
             >
               <div class="nav-icon bg-gradient-to-br from-purple-500/20 to-purple-600/20 group-hover:from-purple-500/30 group-hover:to-purple-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,9 +89,9 @@
 
             <!-- Présences -->
             <Link 
-              :href="route('presences.tablette')" 
+              href="/presences/tablette" 
               class="nav-item group"
-              :class="{ 'active': isCurrent('presences.*') }"
+              :class="{ 'active': currentPath.startsWith('/presences') }"
             >
               <div class="nav-icon bg-gradient-to-br from-green-500/20 to-green-600/20 group-hover:from-green-500/30 group-hover:to-green-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,9 +107,9 @@
 
             <!-- Finances -->
             <Link 
-              :href="route('paiements.index')" 
+              href="/paiements" 
               class="nav-item group"
-              :class="{ 'active': isCurrent('paiements.*') }"
+              :class="{ 'active': currentPath.startsWith('/paiements') }"
             >
               <div class="nav-icon bg-gradient-to-br from-amber-500/20 to-amber-600/20 group-hover:from-amber-500/30 group-hover:to-amber-600/30">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,8 +133,7 @@
           <div v-if="sidebarOpen" class="space-y-1">
             <p class="px-3 mb-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Actions rapides</p>
             
-            <button v-if="hasRoute('membres.create')" 
-                    @click="navigateTo('membres.create')" 
+            <button @click="navigateTo('/membres/create')" 
                     class="quick-action group">
               <div class="quick-action-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,8 +148,7 @@
               </svg>
             </button>
 
-            <button v-if="hasRoute('presences.tablette')" 
-                    @click="navigateTo('presences.tablette')" 
+            <button @click="navigateTo('/presences/tablette')" 
                     class="quick-action group">
               <div class="quick-action-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -429,43 +427,23 @@ const userInitials = computed(() => {
     .slice(0, 2)
 })
 
-// Vérifier si une route existe
-const hasRoute = (name) => {
-  try {
-    route(name)
-    return true
-  } catch (e) {
-    return false
-  }
-}
-
-// Navigation sécurisée
-const navigateTo = (routeName, params = {}) => {
-  try {
-    router.visit(route(routeName, params))
-  } catch (e) {
-    console.warn(`Route ${routeName} not found`)
-  }
+// Navigation simplifiée
+const navigateTo = (url) => {
+  router.visit(url)
 }
 
 const logout = () => {
-  router.post(route('logout'))
+  router.post('/logout')
 }
 
 const openLoi25Modal = () => {
   showLoi25Modal.value = true
 }
 
-// Sélecteur sécurisé d'état actif
-const isCurrent = (namePattern) => {
-  try {
-    return typeof route === 'function' && route().current
-      ? route().current(namePattern)
-      : false
-  } catch (e) {
-    return false
-  }
-}
+// Path actuel pour détection active
+const currentPath = computed(() => {
+  return typeof window !== 'undefined' ? window.location.pathname : '/'
+})
 </script>
 
 <style scoped>
