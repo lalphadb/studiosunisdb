@@ -1,7 +1,7 @@
 /**
- * StudiosDB v6 Pro - Application JavaScript Ultra-Professionnelle
+ * StudiosDB v6 Pro - Application JavaScript
  * Framework: Vue 3 + Composition API + Inertia.js
- * Version: Laravel 11.x Compatible
+ * Version: Laravel 12.x Compatible
  */
 
 // Importation des styles CSS
@@ -11,55 +11,13 @@ import '../css/app.css';
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 
-// Routing et helpers
-import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/index.esm.js';
-// Fallback local Ziggy routes (generated) if @routes is not injected
-import { Ziggy as ZiggyFallback } from './ziggy.js';
-
 // Configuration globale de l'application
 const defaultName = 'StudiosDB v6 Pro';
 const defaultVersion = '6.0.0';
 
-// Rendre route() disponible globalement AVANT createInertiaApp
-if (typeof window !== 'undefined') {
-    // Utiliser Ziggy du serveur ou le fallback local
-    const ziggyConfig = window.Ziggy || ZiggyFallback;
-    
-    // Créer la fonction route globale
-    window.route = (name, params, absolute) => {
-        const route = ziggyConfig.routes[name];
-        if (!route) {
-            console.error(`Route ${name} not found`);
-            return '#';
-        }
-        
-        let uri = route.uri;
-        
-        // Remplacer les paramètres
-        if (params) {
-            if (route.parameters) {
-                route.parameters.forEach(param => {
-                    if (params[param]) {
-                        uri = uri.replace(`{${param}}`, params[param]);
-                    }
-                });
-            }
-        }
-        
-        // Retirer les paramètres optionnels
-        uri = uri.replace(/\{[^}]*\?\}/g, '');
-        
-        // Construire l'URL complète
-        const baseUrl = ziggyConfig.url || 'http://localhost:8000';
-        return absolute ? `${baseUrl}/${uri}` : `/${uri}`;
-    };
-}
-
 // Configuration Inertia App
-import AuthenticatedLayout from './Layouts/AuthenticatedLayout.vue';
 createInertiaApp({
     title: (title) => {
-        // Title uses server-provided app name when available
         const provided = (typeof window !== 'undefined' && window.APP_META?.name) || defaultName;
         return title ? `${title} - ${provided}` : provided;
     },
@@ -73,9 +31,6 @@ createInertiaApp({
             throw new Error(`Page component not found: ${name}`);
         }
         
-        // NE PAS ajouter le layout automatiquement si la page l'a déjà défini
-        // Les pages définissent leur propre layout
-        
         return page;
     },
     
@@ -85,25 +40,7 @@ createInertiaApp({
         // Plugins Vue
         app.use(plugin);
         
-        // Configurer Ziggy pour Vue
-        const ziggyConfig = typeof window !== 'undefined' && window.Ziggy
-            ? { ...window.Ziggy }
-            : { ...ZiggyFallback };
-
-        app.use(ZiggyVue, {
-            location: new URL(window.location.href),
-            ...ziggyConfig,
-        });
-        
-        // Rendre route() disponible dans tous les composants
-        app.config.globalProperties.$route = window.route;
-        app.mixin({
-            methods: {
-                route: window.route
-            }
-        });
-        
-        // Variables globales (prefer server props, then window, then defaults)
+        // Variables globales
         const shared = props.initialPage?.props?.app || {};
         const metaFromWindow = typeof window !== 'undefined' ? (window.APP_META || {}) : {};
         app.config.globalProperties.$appName = shared.name || metaFromWindow.name || defaultName;
@@ -121,7 +58,7 @@ createInertiaApp({
             console.error('Vue Error:', err, info);
         };
         
-        // Propriétés réactives globales
+        // Filtres globaux utiles
         app.config.globalProperties.$filters = {
             currency: (value) => {
                 return new Intl.NumberFormat('fr-CA', {

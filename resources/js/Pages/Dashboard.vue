@@ -163,7 +163,7 @@
           <h2 class="text-xl font-semibold text-white mb-6">Actions rapides</h2>
           
           <div class="grid grid-cols-2 gap-4">
-            <Link :href="route('membres.create')"
+            <Link href="/membres/create"
                   class="p-4 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 transition group cursor-pointer">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -178,7 +178,7 @@
               </div>
             </Link>
             
-            <Link :href="route('presences.index')"
+            <Link href="/presences"
                   class="p-4 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 transition group cursor-pointer">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -193,7 +193,7 @@
               </div>
             </Link>
             
-            <Link :href="route('cours.index')"
+            <Link href="/cours"
                   class="p-4 rounded-xl bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 transition group cursor-pointer">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">

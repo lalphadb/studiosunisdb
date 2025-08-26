@@ -4,7 +4,7 @@
   <div class="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <PageHeader title="Membres" description="Gestion centralisée des membres et de leur progression.">
       <template #actions>
-        <Link :href="route('membres.create')" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium hover:from-indigo-400 hover:to-purple-500">Nouveau membre</Link>
+        <Link href="/membres/create" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium hover:from-indigo-400 hover:to-purple-500">Nouveau membre</Link>
       </template>
     </PageHeader>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -203,7 +203,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Link
-                      :href="route('membres.show', membre.id)"
+                      :href="`/membres/${membre.id}`"
                       class="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-all"
                       title="Voir"
                     >
@@ -214,7 +214,7 @@
                     </Link>
                     <Link
                       v-if="can.update"
-                      :href="route('membres.edit', membre.id)"
+                      :href="`/membres/${membre.id}/edit`"
                       class="p-2 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition-all"
                       title="Modifier"
                     >
@@ -300,7 +300,7 @@ const debouncedSearch = debounce(() => {
 }, 300)
 
 const applyFilters = () => {
-  router.get(route('membres.index'), form.data(), {
+  router.get('/membres', form.data(), {
     preserveState: true,
     replace: true
   })
@@ -317,7 +317,7 @@ const confirmDelete = (membre) => {
 }
 
 const deleteMembre = () => {
-  router.delete(route('membres.destroy', membreToDelete.value.id), {
+  router.delete(`/membres/${membreToDelete.value.id}`, {
     onSuccess: () => {
       showDeleteModal.value = false
       membreToDelete.value = null
@@ -326,6 +326,7 @@ const deleteMembre = () => {
 }
 
 const exportData = () => {
-  window.open(route('membres.export', form.data()))
+  const params = new URLSearchParams(form.data()).toString()
+  window.open(`/membres-export/xlsx?${params}`)
 }
 </script>

@@ -219,6 +219,9 @@ final class MembreController extends Controller
             'ceintureActuelle:id,name,color_hex',
             'cours:id,nom', // si relation many-to-many existe
         ]);
+        
+        // Récupérer toutes les ceintures pour le modal
+        $ceintures = Ceinture::orderBy('order')->get(['id', 'name', 'color_hex']);
 
         return Inertia::render('Membres/Show', [
             'membre' => [
@@ -234,7 +237,17 @@ final class MembreController extends Controller
                 'ceinture_actuelle' => $membre->ceintureActuelle ? ['id' => $membre->ceintureActuelle->id, 'nom' => $membre->ceintureActuelle->name, 'couleur_hex' => $membre->ceintureActuelle->color_hex] : null,
                 'user'              => $membre->user?->only(['email']),
                 'cours'             => $membre->cours?->map->only(['id','nom']),
+                'date_inscription'  => $membre->date_inscription?->toDateString(),
+                'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
+                'sexe'              => $membre->sexe,
+                'ville'             => $membre->ville,
+                'contact_urgence_nom' => $membre->contact_urgence_nom,
+                'contact_urgence_telephone' => $membre->contact_urgence_telephone,
+                'contact_urgence_relation' => $membre->contact_urgence_relation,
+                'consentement_photos' => $membre->consentement_photos,
+                'consentement_communications' => $membre->consentement_communications,
             ],
+            'ceintures' => $ceintures, // Pour le modal de changement
         ]);
     }
 
@@ -245,13 +258,28 @@ final class MembreController extends Controller
         return Inertia::render('Membres/Edit', [
             'membre'    => [
                 'id'                => $membre->id,
+                'nom_complet'       => $membre->nom_complet,
                 'prenom'            => $membre->prenom,
                 'nom'               => $membre->nom,
                 'date_naissance'    => $membre->date_naissance?->toDateString(),
+                'sexe'              => $membre->sexe,
                 'telephone'         => $membre->telephone,
                 'adresse'           => $membre->adresse,
+                'ville'             => $membre->ville,
+                'code_postal'       => $membre->code_postal,
+                'contact_urgence_nom' => $membre->contact_urgence_nom,
+                'contact_urgence_telephone' => $membre->contact_urgence_telephone,
+                'contact_urgence_relation' => $membre->contact_urgence_relation,
                 'statut'            => $membre->statut,
                 'ceinture_actuelle_id' => $membre->ceinture_actuelle_id,
+                'notes_medicales'   => $membre->notes_medicales,
+                'allergies'         => json_decode($membre->allergies ?? '[]', true) ?: [],
+                'notes_instructeur' => $membre->notes_instructeur,
+                'notes_admin'       => $membre->notes_admin,
+                'consentement_photos' => $membre->consentement_photos,
+                'consentement_communications' => $membre->consentement_communications,
+                'date_inscription'  => $membre->date_inscription?->toDateString(),
+                'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
             ],
             'ceintures' => $ceintures,
         ]);

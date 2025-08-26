@@ -23,7 +23,7 @@
       </div>
       <transition name="fade">
         <div v-if="sidebarOpen" class="ml-3 flex flex-col justify-center">
-          <h1 class="text-white font-extrabold text-xl tracking-tight leading-tight">{{ $appName }}</h1>
+          <h1 class="text-white font-extrabold text-xl tracking-tight leading-tight">StudiosDB</h1>
           <p class="text-indigo-200 text-xs font-medium leading-tight">École de Karaté</p>
         </div>
       </transition>
@@ -205,7 +205,7 @@
                   Loi 25
                 </button>
                 <span>•</span>
-                <span>v{{ $appVersion }}</span>
+                <span>v5.0</span>
               </div>
             </div>
           </div>
@@ -233,7 +233,7 @@
         <span class="text-white text-2xl font-bold">🥋</span>
       </div>
       <div class="flex flex-col justify-center">
-  <h1 class="text-white font-extrabold text-lg leading-tight">{{ $appName }}</h1>
+  <h1 class="text-white font-extrabold text-lg leading-tight">StudiosDB</h1>
         <p class="text-indigo-200 text-xs leading-tight">École de Karaté</p>
       </div>
     </div>

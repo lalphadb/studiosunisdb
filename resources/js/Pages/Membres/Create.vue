@@ -11,7 +11,7 @@
           </div>
         </template>
         <template #actions>
-          <Link :href="route('membres.index')" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition flex items-center gap-2">
+          <Link href="/membres" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Retour
           </Link>
@@ -347,7 +347,7 @@
 
         <!-- Actions -->
         <div class="flex justify-end gap-3">
-          <Link :href="route('membres.index')" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 flex items-center gap-2">
+          <Link href="/membres" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             Annuler
           </Link>
@@ -390,6 +390,6 @@ const form = useForm({
 })
 
 function submit() {
-  form.post(route('membres.store'), { preserveScroll: true })
+  form.post('/membres', { preserveScroll: true })
 }
 </script>

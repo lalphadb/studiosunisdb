@@ -1,42 +1,54 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Exports;
 
 use App\Models\Membre;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Carbon\CarbonImmutable;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\CarbonImmutable;
 
-class MembersExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class MembersExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 {
-    protected $filters;
+    use Exportable;
+
+    protected array $filters;
 
     public function __construct(array $filters = [])
     {
         $this->filters = $filters;
     }
 
-    public function collection()
+    /**
+     * Query builder pour l'export
+     */
+    public function query()
     {
-        $query = Membre::with(['ceintureActuelle', 'user'])
+        $query = Membre::query()
+            ->with([
+                'user:id,email',
+                'ceintureActuelle:id,name,color_hex',
+                'ecole:id,nom'
+            ])
             ->where('ecole_id', auth()->user()->ecole_id);
 
-        // Appliquer les filtres
-        if (!empty($this->filters['statut'])) {
-            $query->where('statut', $this->filters['statut']);
-        }
-
+        // Applique les filtres
         if (!empty($this->filters['q'])) {
             $q = $this->filters['q'];
             $query->where(function ($w) use ($q) {
                 $w->where('prenom', 'like', "%{$q}%")
                   ->orWhere('nom', 'like', "%{$q}%")
-                  ->orWhere('telephone', 'like', "%{$q}%");
+                  ->orWhere('telephone', 'like', "%{$q}%")
+                  ->orWhereHas('user', fn($u) => $u->where('email', 'like', "%{$q}%"));
             });
+        }
+
+        if (!empty($this->filters['statut'])) {
+            $query->where('statut', $this->filters['statut']);
         }
 
         if (!empty($this->filters['ceinture_id'])) {
@@ -51,94 +63,135 @@ class MembersExport implements FromCollection, WithHeadings, WithMapping, WithSt
             }
         }
 
-        return $query->orderBy('nom')->orderBy('prenom')->get();
+        // Tri
+        $sort = $this->filters['sort'] ?? 'nom';
+        $dir = $this->filters['dir'] ?? 'asc';
+        $query->orderBy($sort, $dir);
+
+        return $query;
     }
 
+    /**
+     * Entêtes des colonnes Excel
+     */
     public function headings(): array
     {
         return [
             'ID',
             'Prénom',
             'Nom',
-            'Email',
-            'Téléphone',
             'Date de naissance',
             'Âge',
             'Sexe',
+            'Téléphone',
+            'Email',
             'Adresse',
             'Ville',
             'Code postal',
             'Province',
-            'Contact urgence - Nom',
-            'Contact urgence - Téléphone',
-            'Contact urgence - Relation',
-            'Statut',
             'Ceinture actuelle',
+            'Statut',
             'Date inscription',
             'Dernière présence',
-            'Notes médicales',
-            'Allergies',
-            'Médicaments',
+            'Contact urgence - Nom',
+            'Contact urgence - Tél',
+            'Contact urgence - Relation',
+            'Allergies/Conditions',
             'Consentement photos',
             'Consentement communications',
+            'Notes instructeur',
+            'Notes admin',
         ];
     }
 
+    /**
+     * Mapping des données pour chaque ligne
+     */
     public function map($membre): array
     {
         return [
             $membre->id,
             $membre->prenom,
             $membre->nom,
-            $membre->user?->email,
-            $membre->telephone,
             $membre->date_naissance?->format('Y-m-d'),
             $membre->age,
-            $membre->sexe,
+            $this->formatSexe($membre->sexe),
+            $membre->telephone,
+            $membre->user?->email ?? $membre->email,
             $membre->adresse,
             $membre->ville,
             $membre->code_postal,
-            $membre->province,
+            $membre->province ?? 'QC',
+            $membre->ceintureActuelle?->name ?? 'Aucune',
+            $this->formatStatut($membre->statut),
+            $membre->date_inscription?->format('Y-m-d'),
+            $membre->date_derniere_presence?->format('Y-m-d'),
             $membre->contact_urgence_nom,
             $membre->contact_urgence_telephone,
             $membre->contact_urgence_relation,
-            $membre->statut,
-            $membre->ceintureActuelle?->nom,
-            $membre->date_inscription?->format('Y-m-d'),
-            $membre->date_derniere_presence?->format('Y-m-d'),
-            $membre->notes_medicales,
-            is_array($membre->allergies) ? implode(', ', $membre->allergies) : $membre->allergies,
-            is_array($membre->medicaments) ? implode(', ', $membre->medicaments) : $membre->medicaments,
+            $membre->allergies ? implode(', ', json_decode($membre->allergies, true) ?: []) : '',
             $membre->consentement_photos ? 'Oui' : 'Non',
             $membre->consentement_communications ? 'Oui' : 'Non',
+            $membre->notes_instructeur,
+            $membre->notes_admin,
         ];
     }
 
+    /**
+     * Styles pour l'Excel
+     */
     public function styles(Worksheet $sheet)
     {
-        // Style pour l'en-tête
+        // Ligne d'entête en gras avec fond gris
         $sheet->getStyle('A1:X1')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 11,
             ],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '1F2937'],
+                'startColor' => ['argb' => 'FFE0E0E0'],
             ],
-        ]);
-
-        // Bordures
-        $highestRow = $sheet->getHighestRow();
-        $sheet->getStyle("A1:X{$highestRow}")->applyFromArray([
             'borders' => [
-                'allBorders' => [
+                'bottom' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => 'E5E7EB'],
                 ],
             ],
         ]);
 
+        // Auto-size des colonnes
+        foreach (range('A', 'X') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        // Freeze première ligne
+        $sheet->freezePane('A2');
+
         return [];
+    }
+
+    /**
+     * Formatage du sexe
+     */
+    private function formatSexe(?string $sexe): string
+    {
+        return match($sexe) {
+            'M' => 'Masculin',
+            'F' => 'Féminin',
+            default => 'Autre',
+        };
+    }
+
+    /**
+     * Formatage du statut
+     */
+    private function formatStatut(?string $statut): string
+    {
+        return match($statut) {
+            'actif' => 'Actif',
+            'inactif' => 'Inactif',
+            'suspendu' => 'Suspendu',
+            default => 'Inconnu',
+        };
     }
 }

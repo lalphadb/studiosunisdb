@@ -49,6 +49,16 @@ Route::get('/loi-25', fn () => Inertia::render('Loi25'))
 /* 3) Auth (Breeze/Sanctum) */
 require __DIR__.'/auth.php';
 
+/* 3.5) Inscription publique self-service */
+Route::middleware('guest')->group(function () {
+    Route::get('/register-membre', [App\Http\Controllers\InscriptionController::class, 'create'])
+        ->name('inscription.create');
+    Route::post('/register-membre', [App\Http\Controllers\InscriptionController::class, 'store'])
+        ->name('inscription.store');
+    Route::get('/inscription/search-membres', [App\Http\Controllers\InscriptionController::class, 'searchMembres'])
+        ->name('inscription.search-membres');
+});
+
 /* 4) Espace protégé (auth + verified) */
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -63,6 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /* 4.3) Membres */
     Route::resource('membres', MembreController::class);
+    // Changement de ceinture
+    Route::post('membres/{membre}/ceinture', [MembreController::class, 'changerCeinture'])
+        ->name('membres.changer-ceinture');
     // Export (Excel/PDF) — ajuster l’action si tu utilises un service dédié
     Route::get('membres-export/{format?}', [MembreController::class, 'export'])
         ->whereIn('format', ['xlsx','csv','pdf'])

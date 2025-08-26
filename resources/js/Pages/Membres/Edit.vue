@@ -8,8 +8,8 @@
           </div>
         </template>
         <template #actions>
-          <Link :href="route('membres.show', membre.id)" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Profil</Link>
-          <Link :href="route('membres.index')" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Liste</Link>
+          <Link :href="`/membres/${membre.id}`" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Profil</Link>
+          <Link href="/membres" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Liste</Link>
         </template>
       </PageHeader>
 
@@ -166,7 +166,7 @@
           <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
             <button type="button" @click="confirmerSuppression" class="px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium text-white transition">🗑️ Supprimer</button>
             <div class="flex gap-3">
-              <Link :href="route('membres.show', membre.id)" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-slate-700">Annuler</Link>
+              <Link :href="`/membres/${membre.id}`" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-slate-700">Annuler</Link>
               <button type="submit" :disabled="processing" class="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-medium shadow disabled:opacity-50 flex items-center gap-2">
                 <span v-if="processing" class="animate-pulse">Sauvegarde...</span>
                 <span v-else>💾 Sauvegarder</span>
@@ -244,6 +244,7 @@ const FormField = defineComponent({
 // State
 const showDeleteModal = ref(false)
 const allergiesText = ref('')
+const processing = ref(false)
 
 // Form
 const form = useForm({
@@ -272,9 +273,15 @@ onMounted(() => { if (membre.allergies?.length) allergiesText.value = membre.all
 
 function updateAllergies() { form.allergies = allergiesText.value.split(',').map(a => a.trim()).filter(Boolean) }
 function formatDate(date?: string) { return date ? new Date(date).toLocaleDateString('fr-CA') : 'Non spécifié' }
-function submit() { form.put(route('membres.update', membre.id)) }
+function submit() { 
+  processing.value = true
+  form.put(`/membres/${membre.id}`, {
+    preserveScroll: true,
+    onFinish: () => (processing.value = false)
+  }) 
+}
 function confirmerSuppression() { showDeleteModal.value = true }
-function supprimerMembre() { router.delete(route('membres.destroy', membre.id), { onSuccess: () => (showDeleteModal.value = false) }) }
+function supprimerMembre() { router.delete(`/membres/${membre.id}`, { onSuccess: () => (showDeleteModal.value = false) }) }
 </script>
 
 <style scoped>
