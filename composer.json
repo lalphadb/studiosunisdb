@@ -1,7 +1,7 @@
 {
-    "name": "studiosdb/studiosdb-v5-pro",
+    "name": "studiosdb/studiosdb-v6-pro",
     "type": "project",
-    "description": "StudiosDB v5 Pro - Système de gestion ultra-professionnel pour écoles d'arts martiaux",
+    "description": "StudiosDB v6 Pro - Système de gestion ultra-professionnel pour écoles d'arts martiaux",
     "keywords": ["laravel", "karate", "arts-martiaux", "gestion", "studiosdb"],
     "license": "MIT",
     "require": {
