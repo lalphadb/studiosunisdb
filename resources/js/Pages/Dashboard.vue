@@ -31,7 +31,7 @@
               +12%
             </span>
           </div>
-          <div class="text-3xl font-bold text-white mb-1">{{ stats.membres_actifs }}</div>
+          <div class="text-xl sm:text-2xl xl:text-3xl font-bold text-white mb-1 truncate">{{ stats.membres_actifs }}</div>
           <div class="text-sm text-slate-400">Membres actifs</div>
           <div class="text-xs text-slate-500 mt-1">Actifs 30 derniers jours</div>
         </div>
@@ -48,7 +48,7 @@
               +5
             </span>
           </div>
-          <div class="text-3xl font-bold text-white mb-1">{{ stats.cours_actifs }}</div>
+          <div class="text-xl sm:text-2xl xl:text-3xl font-bold text-white mb-1 truncate">{{ stats.cours_actifs }}</div>
           <div class="text-sm text-slate-400">Cours actifs</div>
           <div class="text-xs text-slate-500 mt-1">Sessions planifiées</div>
         </div>
@@ -65,7 +65,7 @@
               +3%
             </span>
           </div>
-          <div class="text-3xl font-bold text-white mb-1">{{ stats.taux_presence }}%</div>
+          <div class="text-xl sm:text-2xl xl:text-3xl font-bold text-white mb-1 truncate">{{ stats.taux_presence }}%</div>
           <div class="text-sm text-slate-400">Taux de présence</div>
           <div class="text-xs text-slate-500 mt-1">Semaine en cours</div>
         </div>
@@ -82,7 +82,7 @@
               -2
             </span>
           </div>
-          <div class="text-3xl font-bold text-white mb-1">{{ stats.paiements_retard }}</div>
+          <div class="text-xl sm:text-2xl xl:text-3xl font-bold text-white mb-1 truncate">{{ stats.paiements_retard }}</div>
           <div class="text-sm text-slate-400">Paiements en retard</div>
           <div class="text-xs text-slate-500 mt-1">À relancer</div>
         </div>
@@ -99,7 +99,7 @@
               +18%
             </span>
           </div>
-          <div class="text-3xl font-bold text-white mb-1">{{ formatCurrency(stats.revenus_mois) }}</div>
+          <div class="text-xl sm:text-2xl xl:text-3xl font-bold text-white mb-1 truncate">{{ formatCurrency(stats.revenus_mois) }}</div>
           <div class="text-sm text-slate-400">Revenus mois</div>
           <div class="text-xs text-slate-500 mt-1">Chiffre d'affaires</div>
         </div>

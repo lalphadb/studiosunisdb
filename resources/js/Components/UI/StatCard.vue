@@ -3,11 +3,11 @@
     <!-- subtle glow background -->
     <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" :style="glowStyle"></div>
 
-    <div class="relative flex items-start justify-between">
-      <div>
+    <div class="relative flex items-start justify-between min-w-0">
+      <div class="min-w-0 flex-1">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">{{ title }}</p>
         <div class="mt-2 flex items-end space-x-2">
-          <p class="text-3xl font-bold text-white leading-none">{{ formattedValue }}</p>
+          <p class="text-xl sm:text-2xl xl:text-3xl font-bold text-white leading-none truncate min-w-0">{{ formattedValue }}</p>
           <span v-if="change !== undefined" :class="changeClasses" class="text-xs font-semibold inline-flex items-center px-1.5 py-0.5 rounded">
             <svg v-if="numericChange !== 0" :class="arrowClasses" class="w-3.5 h-3.5 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v9.638l3.22-3.22a.75.75 0 111.06 1.061l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.219V3.75A.75.75 0 0110 3z" clip-rule="evenodd"/></svg>
             <span>{{ changeDisplay }}</span>
