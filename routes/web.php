@@ -46,6 +46,17 @@ Route::get('/', function () {
 Route::get('/loi-25', fn () => Inertia::render('Loi25'))
     ->name('loi25');
 
+/* 2.1) Test serveur sans auth */
+Route::get('/test-server', function() {
+    return response()->json([
+        'status' => 'OK',
+        'message' => 'ServeurStudiosDB fonctionne',
+        'timestamp' => now()->toISOString(),
+        'laravel_version' => app()->version(),
+        'php_version' => PHP_VERSION,
+    ]);
+})->name('test-server');
+
 /* 3) Auth (Breeze/Sanctum) */
 require __DIR__.'/auth.php';
 
@@ -83,8 +94,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /* 4.4) Cours */
     Route::resource('cours', CoursController::class);
+    
+    // Actions spéciales cours
+    Route::post('cours/{cours}/duplicate', [CoursController::class, 'duplicate'])
+        ->name('cours.duplicate');
+    Route::get('cours/{cours}/sessions', [CoursController::class, 'sessionsForm'])
+        ->name('cours.sessions.form');
+    Route::post('cours/{cours}/sessions', [CoursController::class, 'createSessions'])
+        ->name('cours.sessions.create');
+    Route::get('cours/export', [CoursController::class, 'export'])
+        ->name('cours.export');
+    
     // Planning / gestion des horaires (Pages/Cours/Planning.vue)
-    Route::get('cours/planning', [CoursController::class, 'planning'])
+    Route::get('planning', [CoursController::class, 'planning'])
         ->name('cours.planning');
 
     /* 4.5) Présences */
@@ -119,6 +141,25 @@ Route::middleware(['auth', 'can:admin-panel'])->group(function () {
     Route::get('/debug/dashboard-simple', [BladeController::class, 'dashboardSimple'])->name('debug.dashboard.simple');
     Route::get('/debug/dashboard-dynamic', [BladeController::class, 'dashboardDynamic'])->name('debug.dashboard.dynamic');
 });
+
+/* 5.1) Diagnostic temporaire cours */
+Route::middleware(['auth'])->get('/debug/cours-access', function() {
+    $user = auth()->user();
+    $diagnostic = [
+        'user_authenticated' => auth()->check(),
+        'user_id' => $user?->id,
+        'user_email' => $user?->email,
+        'user_ecole_id' => $user?->ecole_id,
+        'user_roles' => $user?->getRoleNames()->toArray() ?? [],
+        'can_view_any_cours' => $user ? $user->can('viewAny', \App\Models\Cours::class) : false,
+        'can_create_cours' => $user ? $user->can('create', \App\Models\Cours::class) : false,
+        'cours_count' => \App\Models\Cours::count(),
+        'session_id' => request()->session()->getId(),
+        'csrf_token' => csrf_token(),
+    ];
+    
+    return response()->json($diagnostic, 200, [], JSON_PRETTY_PRINT);
+})->name('debug.cours-access');
 
 /* 6) Fallback (404 Inertia) */
 Route::fallback(function () {

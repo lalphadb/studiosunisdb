@@ -11,6 +11,34 @@ import '../css/app.css';
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 
+// Route helper global pour StudiosDB
+window.route = (name, params = {}) => {
+    const baseUrl = window.location.origin;
+    const routes = {
+        'cours.index': '/cours',
+        'cours.create': '/cours/create',
+        'cours.show': (id) => `/cours/${id}`,
+        'cours.edit': (id) => `/cours/${id}/edit`,
+        'cours.destroy': (id) => `/cours/${id}`,
+        'cours.duplicate': (id) => `/cours/${id}/duplicate`,
+        'cours.export': '/cours/export',
+        'cours.planning': '/cours/planning',
+        'membres.index': '/membres',
+        'membres.create': '/membres/create',
+        'membres.show': (id) => `/membres/${id}`,
+        'membres.edit': (id) => `/membres/${id}/edit`,
+        'dashboard': '/dashboard',
+        'utilisateurs.index': '/utilisateurs',
+        'presences.index': '/presences'
+    };
+    
+    const route = routes[name];
+    if (typeof route === 'function') {
+        return baseUrl + route(params);
+    }
+    return baseUrl + (route || '/');
+};
+
 // Configuration globale de l'application
 const defaultName = 'StudiosDB v6 Pro';
 const defaultVersion = '6.0.0';
@@ -46,6 +74,10 @@ createInertiaApp({
         app.config.globalProperties.$appName = shared.name || metaFromWindow.name || defaultName;
         app.config.globalProperties.$appVersion = shared.version || metaFromWindow.version || defaultVersion;
         app.config.globalProperties.$user = props.initialPage.props.auth?.user || null;
+        
+        // Helper route global
+        app.config.globalProperties.$route = window.route;
+        window.route = window.route; // Assurer disponibilité globale
         
         // Configuration de production
         if (import.meta.env.PROD) {

@@ -6,6 +6,8 @@ use App\Models\Cours;
 use App\Models\User;
 use App\Models\Membre;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreCoursRequest;
+use App\Http\Requests\UpdateCoursRequest;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -20,9 +22,28 @@ class CoursController extends Controller
      */
     public function index()
     {
-        // Récupération des cours avec relations
-        $cours = Cours::with(['instructeur', 'membres'])
-            ->withCount('membres as inscrits_count')
+        // Vérification auth explicite avec message détaillé
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->with('error', 'Vous devez être connecté pour accéder aux cours.');
+        }
+
+        $user = auth()->user();
+        
+        // Vérification permissions avec redirection si problème
+        if (!$user->can('viewAny', Cours::class)) {
+            // Si pas de rôles du tout, problème de session
+            if (!$user->hasAnyRole(['superadmin','admin_ecole','instructeur','membre'])) {
+                return redirect()->route('login')
+                    ->with('error', 'Session expirée. Veuillez vous reconnecter.');
+            }
+            
+            // Sinon, vraiment pas de permissions
+            abort(403, 'Accès refusé aux cours. Rôles requis: admin_ecole, instructeur ou membre.');
+        }
+        // Récupération optimisée des cours avec relations (éviter N+1)
+        $cours = Cours::with(['instructeur', 'ecole'])
+            ->withCount('membresActifs as membres_actifs_count') // Utiliser relation existante
             ->orderBy('jour_semaine')
             ->orderBy('heure_debut')
             ->get()
@@ -31,30 +52,36 @@ class CoursController extends Controller
                 $cours->jour_semaine_display = $this->getJourSemaineDisplay($cours->jour_semaine);
                 $cours->heure_debut_format = Carbon::parse($cours->heure_debut)->format('H:i');
                 $cours->heure_fin_format = Carbon::parse($cours->heure_fin)->format('H:i');
+                $cours->instructeur_nom = $cours->instructeur ? $cours->instructeur->name : 'Non assigné';
+                // Renommer pour éviter conflit avec relation
+                $cours->inscrits_count = $cours->membres_actifs_count;
                 return $cours;
             });
 
-        // Récupération des instructeurs
-        $instructeurs = User::role('instructeur')
+        // Récupération optimisée des instructeurs
+        $instructeurs = User::withoutGlobalScopes()
+            ->role('instructeur')
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
 
-        // Calcul des statistiques
+        // Calcul des statistiques (une seule fois)
         $stats = [
             'totalCours' => $cours->count(),
             'coursActifs' => $cours->where('actif', true)->count(),
             'totalInstructeurs' => $instructeurs->count(),
-            'seancesParSemaine' => $this->calculateSeancesParSemaine($cours),
+            'seancesParSemaine' => $cours->where('actif', true)->count(),
         ];
 
         return Inertia::render('Cours/Index', [
-            'cours' => $cours,
+            'cours' => $cours->values(), // Reset des clés pour JSON propre
             'instructeurs' => $instructeurs,
             'stats' => $stats,
-            'canCreate' => Auth::user()->can('cours.create'),
-            'canEdit' => Auth::user()->can('cours.edit'),
-            'canDelete' => Auth::user()->can('cours.delete'),
+            'canCreate' => auth()->check() ? Auth::user()->can('create', Cours::class) : false,
+            // Permissions globales pour l'interface
+            'canEdit' => auth()->check() ? Auth::user()->hasAnyRole(['superadmin','admin_ecole']) : false,
+            'canDelete' => auth()->check() ? Auth::user()->hasAnyRole(['superadmin','admin_ecole']) : false,
+            'canExport' => auth()->check() ? Auth::user()->can('export', Cours::class) : false,
         ]);
     }
 
@@ -68,13 +95,14 @@ class CoursController extends Controller
         $this->authorize('create', Cours::class);
 
         $instructeurs = User::role('instructeur')
+            ->where('ecole_id', auth()->user()->ecole_id)
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
 
         return Inertia::render('Cours/Create', [
             'instructeurs' => $instructeurs,
-            'niveaux' => ['debutant', 'intermediaire', 'avance', 'competition'],
+            'niveaux' => array_keys(Cours::NIVEAUX), // Utiliser les niveaux étendus du modèle
             'joursDisponibles' => $this->getJoursDisponibles(),
         ]);
     }
@@ -82,42 +110,40 @@ class CoursController extends Controller
     /**
      * Store a newly created course in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\StoreCoursRequest  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(StoreCoursRequest $request)
     {
-        $this->authorize('create', Cours::class);
+        // Autorisation déjà gérée dans StoreCoursRequest::authorize()
+        
+        // Validation et préparation des données déjà gérées dans StoreCoursRequest
+        $validated = $request->validated();
+        
+        // Validation instructeur même école si assigné
+        if ($validated['instructeur_id']) {
+            $instructeur = User::find($validated['instructeur_id']);
+            if (!$instructeur || $instructeur->ecole_id !== auth()->user()->ecole_id) {
+                return back()->withErrors([
+                    'instructeur_id' => 'L\'instructeur doit appartenir à votre école.'
+                ])->withInput();
+            }
+        }
 
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'instructeur_id' => 'required|exists:users,id',
-            'niveau' => 'required|in:debutant,intermediaire,avance,competition',
-            'age_min' => 'required|integer|min:3|max:99',
-            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
-            'places_max' => 'required|integer|min:1|max:50',
-            'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'date_debut' => 'required|date',
-            'date_fin' => 'nullable|date|after:date_debut',
-            'tarif_mensuel' => 'required|numeric|min:0|max:500',
-            'actif' => 'boolean',
-        ]);
+        // Vérification des conflits horaires si instructeur assigné
+        if ($validated['instructeur_id']) {
+            $conflict = $this->checkScheduleConflict(
+                $validated['jour_semaine'],
+                $validated['heure_debut'],
+                $validated['heure_fin'],
+                $validated['instructeur_id']
+            );
 
-        // Vérification des conflits horaires
-        $conflict = $this->checkScheduleConflict(
-            $validated['jour_semaine'],
-            $validated['heure_debut'],
-            $validated['heure_fin'],
-            $validated['instructeur_id']
-        );
-
-        if ($conflict) {
-            return back()->withErrors([
-                'horaire' => 'Un conflit horaire existe avec un autre cours.'
-            ])->withInput();
+            if ($conflict) {
+                return back()->withErrors([
+                    'horaire' => 'Un conflit horaire existe avec un autre cours de cet instructeur.'
+                ])->withInput();
+            }
         }
 
         $cours = Cours::create($validated);
@@ -140,7 +166,7 @@ class CoursController extends Controller
         $stats = [
             'totalInscrits' => $cours->membres()->count(),
             'placesDisponibles' => $cours->places_max - $cours->membres()->count(),
-            'tauxRemplissage' => ($cours->membres()->count() / $cours->places_max) * 100,
+            'tauxRemplissage' => $cours->places_max > 0 ? ($cours->membres()->count() / $cours->places_max) * 100 : 0,
             'presencesMoyenne' => $this->calculatePresenceMoyenne($cours),
         ];
 
@@ -151,8 +177,8 @@ class CoursController extends Controller
             'cours' => $cours,
             'stats' => $stats,
             'presencesHistory' => $presencesHistory,
-            'canEdit' => Auth::user()->can('edit', $cours),
-            'canDelete' => Auth::user()->can('delete', $cours),
+            'canEdit' => auth()->check() ? Auth::user()->can('update', $cours) : false,
+            'canDelete' => auth()->check() ? Auth::user()->can('delete', $cours) : false,
         ]);
     }
 
@@ -167,6 +193,7 @@ class CoursController extends Controller
         $this->authorize('update', $cours);
 
         $instructeurs = User::role('instructeur')
+            ->where('ecole_id', auth()->user()->ecole_id)
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
@@ -174,7 +201,7 @@ class CoursController extends Controller
         return Inertia::render('Cours/Edit', [
             'cours' => $cours,
             'instructeurs' => $instructeurs,
-            'niveaux' => ['debutant', 'intermediaire', 'avance', 'competition'],
+            'niveaux' => array_keys(Cours::NIVEAUX), // Utiliser les niveaux étendus du modèle
             'joursDisponibles' => $this->getJoursDisponibles(),
         ]);
     }
@@ -182,50 +209,170 @@ class CoursController extends Controller
     /**
      * Update the specified course in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\UpdateCoursRequest  $request
      * @param  \App\Models\Cours  $cours
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Cours $cours)
+    public function update(UpdateCoursRequest $request, Cours $cours)
     {
-        $this->authorize('update', $cours);
+        // Autorisation déjà gérée dans UpdateCoursRequest::authorize()
+        
+        // Validation et préparation des données déjà gérées dans UpdateCoursRequest
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'instructeur_id' => 'required|exists:users,id',
-            'niveau' => 'required|in:debutant,intermediaire,avance,competition',
-            'age_min' => 'required|integer|min:3|max:99',
-            'age_max' => 'required|integer|min:3|max:99|gte:age_min',
-            'places_max' => 'required|integer|min:1|max:50',
-            'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'date_debut' => 'required|date',
-            'date_fin' => 'nullable|date|after:date_debut',
-            'tarif_mensuel' => 'required|numeric|min:0|max:500',
-            'actif' => 'boolean',
-        ]);
+        // Validation instructeur même école si assigné
+        if ($validated['instructeur_id']) {
+            $instructeur = User::find($validated['instructeur_id']);
+            if (!$instructeur || $instructeur->ecole_id !== auth()->user()->ecole_id) {
+                return back()->withErrors([
+                    'instructeur_id' => 'L\'instructeur doit appartenir à votre école.'
+                ])->withInput();
+            }
+        }
 
-        // Vérification des conflits horaires (en excluant le cours actuel)
-        $conflict = $this->checkScheduleConflict(
-            $validated['jour_semaine'],
-            $validated['heure_debut'],
-            $validated['heure_fin'],
-            $validated['instructeur_id'],
-            $cours->id
-        );
+        // Vérification des conflits horaires si instructeur assigné (en excluant le cours actuel)
+        if ($validated['instructeur_id']) {
+            $conflict = $this->checkScheduleConflict(
+                $validated['jour_semaine'],
+                $validated['heure_debut'],
+                $validated['heure_fin'],
+                $validated['instructeur_id'],
+                $cours->id
+            );
 
-        if ($conflict) {
-            return back()->withErrors([
-                'horaire' => 'Un conflit horaire existe avec un autre cours.'
-            ])->withInput();
+            if ($conflict) {
+                return back()->withErrors([
+                    'horaire' => 'Un conflit horaire existe avec un autre cours de cet instructeur.'
+                ])->withInput();
+            }
         }
 
         $cours->update($validated);
 
         return redirect()->route('cours.show', $cours)
             ->with('success', 'Cours mis à jour avec succès.');
+    }
+
+    /**
+     * Duplicate the specified course.
+     *
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function duplicate(Cours $cours)
+    {
+        $this->authorize('create', Cours::class);
+        
+        // Créer une copie du cours avec des modifications
+        $nouveauCours = $cours->replicate();
+        $nouveauCours->nom = $cours->nom . ' (Copie)';
+        $nouveauCours->actif = false; // Désactivé par défaut
+        $nouveauCours->created_at = now();
+        $nouveauCours->updated_at = now();
+        
+        $nouveauCours->save();
+        
+        return redirect()->route('cours.edit', $nouveauCours)
+            ->with('success', 'Cours dupliqué avec succès. Modifiez les détails nécessaires.');
+    }
+
+    /**
+     * Show the form for creating multiple sessions.
+     *
+     * @param  \App\Models\Cours  $cours
+     * @return \Inertia\Response
+     */
+    public function sessionsForm(Cours $cours)
+    {
+        $this->authorize('update', $cours);
+        
+        $joursDisponibles = [
+            'lundi' => 'Lundi',
+            'mardi' => 'Mardi', 
+            'mercredi' => 'Mercredi',
+            'jeudi' => 'Jeudi',
+            'vendredi' => 'Vendredi',
+            'samedi' => 'Samedi',
+            'dimanche' => 'Dimanche'
+        ];
+        
+        // Enlever le jour actuel de la liste
+        unset($joursDisponibles[$cours->jour_semaine]);
+        
+        return Inertia::render('Cours/Sessions', [
+            'cours' => $cours->load('instructeur'),
+            'joursDisponibles' => $joursDisponibles,
+        ]);
+    }
+
+    /**
+     * Create multiple sessions for a course.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function createSessions(Request $request, Cours $cours)
+    {
+        $this->authorize('update', $cours);
+        
+        $validated = $request->validate([
+            'jours_semaine' => 'required|array|min:1',
+            'jours_semaine.*' => 'in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
+            'heure_debut' => 'required|date_format:H:i',
+            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+            'date_debut' => 'required|date',
+            'date_fin' => 'nullable|date|after:date_debut',
+            'frequence' => 'required|in:hebdomadaire,bihebdomadaire',
+            'dupliquer_inscriptions' => 'boolean'
+        ]);
+        
+        $sessionsCreees = 0;
+        
+        foreach ($validated['jours_semaine'] as $jour) {
+            // Éviter de dupliquer le jour existant
+            if ($jour === $cours->jour_semaine) {
+                continue;
+            }
+            
+            // Créer nouvelle session
+            $nouveauCours = $cours->replicate();
+            $nouveauCours->nom = $cours->nom . ' (' . ucfirst($jour) . ')';
+            $nouveauCours->jour_semaine = $jour;
+            $nouveauCours->heure_debut = $validated['heure_debut'];
+            $nouveauCours->heure_fin = $validated['heure_fin'];
+            $nouveauCours->date_debut = $validated['date_debut'];
+            $nouveauCours->date_fin = $validated['date_fin'];
+            $nouveauCours->created_at = now();
+            $nouveauCours->updated_at = now();
+            
+            // Vérifier conflits horaires
+            $conflit = $this->checkScheduleConflict(
+                $jour,
+                $validated['heure_debut'],
+                $validated['heure_fin'],
+                $cours->instructeur_id
+            );
+            
+            if ($conflit) {
+                continue; // Passer ce jour en cas de conflit
+            }
+            
+            $nouveauCours->save();
+            
+            // Dupliquer les inscriptions si demandé
+            if ($validated['dupliquer_inscriptions'] ?? false) {
+                $membres = $cours->membresActifs;
+                foreach ($membres as $membre) {
+                    $nouveauCours->inscrireMembre($membre);
+                }
+            }
+            
+            $sessionsCreees++;
+        }
+        
+        return redirect()->route('cours.show', $cours)
+            ->with('success', "$sessionsCreees session(s) supplémentaire(s) créée(s) avec succès.");
     }
 
     /**
@@ -239,7 +386,7 @@ class CoursController extends Controller
         $this->authorize('delete', $cours);
 
         // Vérifier s'il y a des inscriptions actives
-        if ($cours->membres()->count() > 0) {
+        if ($cours->membresActifs()->count() > 0) {
             return back()->withErrors([
                 'delete' => 'Impossible de supprimer un cours avec des membres inscrits.'
             ]);
@@ -249,26 +396,6 @@ class CoursController extends Controller
 
         return redirect()->route('cours.index')
             ->with('success', 'Cours supprimé avec succès.');
-    }
-
-    /**
-     * Duplicate an existing course.
-     *
-     * @param  \App\Models\Cours  $cours
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function duplicate(Cours $cours)
-    {
-        $this->authorize('create', Cours::class);
-
-        $newCours = $cours->replicate();
-        $newCours->nom = $cours->nom . ' (Copie)';
-        $newCours->created_at = now();
-        $newCours->updated_at = now();
-        $newCours->save();
-
-        return redirect()->route('cours.edit', $newCours)
-            ->with('success', 'Cours dupliqué avec succès. Vous pouvez maintenant le modifier.');
     }
 
     /**
@@ -288,7 +415,7 @@ class CoursController extends Controller
 
         return Inertia::render('Cours/Planning', [
             'planning' => $planning,
-            'instructeurs' => User::role('instructeur')->get(),
+            'instructeurs' => User::role('instructeur')->where('ecole_id', auth()->user()->ecole_id)->get(),
         ]);
     }
 
@@ -327,7 +454,7 @@ class CoursController extends Controller
                     $c->id,
                     $c->nom,
                     $c->description,
-                    $c->instructeur->name,
+                    $c->instructeur ? $c->instructeur->name : 'Non assigné',
                     $c->niveau,
                     $c->age_min,
                     $c->age_max,
@@ -386,22 +513,26 @@ class CoursController extends Controller
      */
     private function calculatePresenceMoyenne($cours)
     {
-        $presences = DB::table('presences')
-            ->where('cours_id', $cours->id)
-            ->where('statut', 'present')
-            ->count();
+        try {
+            $presences = DB::table('presences')
+                ->where('cours_id', $cours->id)
+                ->where('statut', 'present')
+                ->count();
 
-        $totalSessions = DB::table('presences')
-            ->where('cours_id', $cours->id)
-            ->distinct('date_cours')
-            ->count('date_cours');
+            $totalSessions = DB::table('presences')
+                ->where('cours_id', $cours->id)
+                ->distinct('date_cours')
+                ->count('date_cours');
 
-        if ($totalSessions == 0) return 0;
+            if ($totalSessions == 0) return 0;
 
-        $membresInscrits = $cours->membres()->count();
-        if ($membresInscrits == 0) return 0;
+            $membresInscrits = $cours->membres()->count();
+            if ($membresInscrits == 0) return 0;
 
-        return round(($presences / ($totalSessions * $membresInscrits)) * 100, 2);
+            return round(($presences / ($totalSessions * $membresInscrits)) * 100, 2);
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     /**
@@ -420,16 +551,23 @@ class CoursController extends Controller
             $weekStart = $startDate->copy()->addWeeks($i)->startOfWeek();
             $weekEnd = $weekStart->copy()->endOfWeek();
 
-            $presences = DB::table('presences')
-                ->where('cours_id', $cours->id)
-                ->whereBetween('date_cours', [$weekStart, $weekEnd])
-                ->where('statut', 'present')
-                ->count();
+            try {
+                $presences = DB::table('presences')
+                    ->where('cours_id', $cours->id)
+                    ->whereBetween('date_cours', [$weekStart, $weekEnd])
+                    ->where('statut', 'present')
+                    ->count();
 
-            $history[] = [
-                'semaine' => $weekStart->format('d/m'),
-                'presences' => $presences,
-            ];
+                $history[] = [
+                    'semaine' => $weekStart->format('d/m'),
+                    'presences' => $presences,
+                ];
+            } catch (\Exception $e) {
+                $history[] = [
+                    'semaine' => $weekStart->format('d/m'),
+                    'presences' => 0,
+                ];
+            }
         }
 
         return $history;

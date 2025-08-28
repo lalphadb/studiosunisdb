@@ -8,14 +8,32 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Schema;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
-     * Désactiver le scope global ecole pour les superadmins
+     * Global scope pour mono-école - DÉSACTIVÉ TEMPORAIREMENT POUR DEBUG
      */
+    protected static function booted()
+    {
+        // Global Scope DÉSACTIVÉ temporairement - causes pages blanches
+        /*
+        static::addGlobalScope('ecole', function ($query) {
+            if (auth()->check() && !auth()->user()->hasRole('superadmin')) {
+                try {
+                    if (Schema::hasColumn('users', 'ecole_id')) {
+                        $query->where('ecole_id', auth()->user()->ecole_id);
+                    }
+                } catch (\Exception $e) {
+                    // Ignorer erreur
+                }
+            }
+        });
+        */
+    }
 
     /**
      * Les attributs attribuables en masse.
@@ -25,7 +43,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        
+        'ecole_id', // Ajouté pour mono-école
     ];
 
     /**
@@ -43,6 +61,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Relation avec l'école
+     */
+    public function ecole()
+    {
+        return $this->belongsTo(Ecole::class);
+    }
 
     /**
      * Vérifier si l'utilisateur est un super admin
@@ -82,5 +108,14 @@ class User extends Authenticatable
     public function membre()
     {
         return $this->hasOne(Membre::class);
+    }
+
+    /**
+     * Scope pour la même école
+     */
+    public function scopeSameEcole($query, $ecoleId = null)
+    {
+        $ecoleId = $ecoleId ?? auth()->user()?->ecole_id;
+        return $query->where('ecole_id', $ecoleId);
     }
 }

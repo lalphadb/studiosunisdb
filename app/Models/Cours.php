@@ -19,6 +19,27 @@ class Cours extends Model
     protected $table = 'cours';
 
     /**
+     * Global scope pour mono-école - DÉSACTIVÉ TEMPORAIREMENT POUR DEBUG
+     */
+    protected static function booted()
+    {
+        // Global Scope DÉSACTIVÉ temporairement - causes pages blanches
+        /*
+        static::addGlobalScope('ecole', function ($query) {
+            if (auth()->check() && !auth()->user()->hasRole('superadmin')) {
+                try {
+                    if (\Schema::hasColumn('cours', 'ecole_id')) {
+                        $query->where('ecole_id', auth()->user()->ecole_id);
+                    }
+                } catch (\Exception $e) {
+                    // Ignorer erreur
+                }
+            }
+        });
+        */
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -27,6 +48,7 @@ class Cours extends Model
         'nom',
         'description',
         'instructeur_id',
+        'ecole_id',
         'niveau',
         'age_min',
         'age_max',
@@ -36,7 +58,11 @@ class Cours extends Model
         'heure_fin',
         'date_debut',
         'date_fin',
-        'tarif_mensuel',
+        'tarif_mensuel', // Conservé pour compatibilité
+        // Nouveau système tarification flexible
+        'type_tarif',
+        'montant',
+        'details_tarif',
         'actif',
         'couleur', // Pour l'affichage dans le calendrier
         'salle', // Salle ou dojo
@@ -55,7 +81,8 @@ class Cours extends Model
         'age_min' => 'integer',
         'age_max' => 'integer',
         'places_max' => 'integer',
-        'tarif_mensuel' => 'decimal:2',
+        'tarif_mensuel' => 'decimal:2', // Conservé pour compatibilité
+        'montant' => 'decimal:2', // Nouveau système
         'date_debut' => 'date',
         'date_fin' => 'date',
         'heure_debut' => 'datetime:H:i',
@@ -87,14 +114,74 @@ class Cours extends Model
         'horaire_complet',
         'statut_inscription',
         'prochaine_seance',
+        'niveau_label',
+        'type_tarif_label',
+        'age_range',
+    ];
+
+    // =================== CONSTANTES ÉTENDUES ===================
+    
+    /**
+     * Niveaux disponibles - ÉTENDUS selon demande
+     */
+    public const NIVEAUX = [
+        'tous' => 'Tous niveaux',
+        'debutant' => 'Débutant',
+        'intermediaire' => 'Intermédiaire',
+        'avance' => 'Avancé',
+        'prive' => 'Cours privé',
+        'competition' => 'Compétition',
+        'a_la_carte' => 'À la carte',
     ];
 
     /**
-     * Get the instructor for the course.
+     * Types de tarification - SYSTÈME FLEXIBLE
+     */
+    public const TYPES_TARIF = [
+        'mensuel' => 'Mensuel',
+        'trimestriel' => 'Trimestriel (3 mois)',
+        'horaire' => 'À l\'heure',
+        'a_la_carte' => 'À la carte (10 samedis)',
+        'autre' => 'Autre (préciser)',
+    ];
+
+    /**
+     * Jours de la semaine
+     */
+    public const JOURS_SEMAINE = [
+        'lundi' => 'Lundi',
+        'mardi' => 'Mardi',
+        'mercredi' => 'Mercredi',
+        'jeudi' => 'Jeudi',
+        'vendredi' => 'Vendredi',
+        'samedi' => 'Samedi',
+        'dimanche' => 'Dimanche',
+    ];
+
+    // =================== RELATIONS ===================
+
+    /**
+     * Get the instructor for the course (optional).
      */
     public function instructeur()
     {
         return $this->belongsTo(User::class, 'instructeur_id');
+    }
+
+    /**
+     * Get instructor name or default text.
+     */
+    public function getInstructeurNomAttribute()
+    {
+        return $this->instructeur ? $this->instructeur->name : 'Non assigné';
+    }
+
+    /**
+     * Get the school for the course.
+     */
+    public function ecole()
+    {
+        return $this->belongsTo(Ecole::class);
     }
 
     /**
@@ -139,11 +226,10 @@ class Cours extends Model
         return $this->hasMany(SessionCours::class);
     }
 
+    // =================== SCOPES ===================
+
     /**
      * Scope a query to only include active courses.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeActif($query)
     {
@@ -152,10 +238,6 @@ class Cours extends Model
 
     /**
      * Scope a query to only include courses for a specific level.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string  $niveau
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeNiveau($query, $niveau)
     {
@@ -164,10 +246,6 @@ class Cours extends Model
 
     /**
      * Scope a query to only include courses on a specific day.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string  $jour
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeJour($query, $jour)
     {
@@ -176,32 +254,55 @@ class Cours extends Model
 
     /**
      * Scope a query to only include courses for a specific age.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  int  $age
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopePourAge($query, $age)
     {
         return $query->where('age_min', '<=', $age)
-                     ->where('age_max', '>=', $age);
+                     ->where(function($q) use ($age) {
+                         $q->where('age_max', '>=', $age)
+                           ->orWhereNull('age_max'); // Gérer âge max optionnel
+                     });
     }
 
     /**
      * Scope a query to only include courses with available places.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeAvecPlacesDisponibles($query)
     {
         return $query->whereRaw('places_max > (SELECT COUNT(*) FROM cours_membres WHERE cours_id = cours.id AND statut = "actif")');
     }
 
+    // =================== ACCESSEURS ÉTENDUS ===================
+
+    /**
+     * Get niveau label from constants.
+     */
+    public function getNiveauLabelAttribute(): string
+    {
+        return self::NIVEAUX[$this->niveau] ?? $this->niveau;
+    }
+
+    /**
+     * Get type tarif label from constants.
+     */
+    public function getTypeTarifLabelAttribute(): string
+    {
+        return self::TYPES_TARIF[$this->type_tarif] ?? $this->type_tarif;
+    }
+
+    /**
+     * Get age range display.
+     */
+    public function getAgeRangeAttribute(): string
+    {
+        if (!$this->age_max) {
+            return $this->age_min . '+ ans';
+        }
+        return $this->age_min . '-' . $this->age_max . ' ans';
+    }
+
     /**
      * Get the number of available places.
-     *
-     * @return int
      */
     public function getPlacesDisponiblesAttribute()
     {
@@ -210,8 +311,6 @@ class Cours extends Model
 
     /**
      * Get the fill rate percentage.
-     *
-     * @return float
      */
     public function getTauxRemplissageAttribute()
     {
@@ -221,20 +320,17 @@ class Cours extends Model
 
     /**
      * Get the complete schedule string.
-     *
-     * @return string
      */
     public function getHoraireCompletAttribute()
     {
-        return ucfirst($this->jour_semaine) . ' ' . 
+        $jour = self::JOURS_SEMAINE[$this->jour_semaine] ?? ucfirst($this->jour_semaine);
+        return $jour . ' ' . 
                Carbon::parse($this->heure_debut)->format('H:i') . ' - ' . 
                Carbon::parse($this->heure_fin)->format('H:i');
     }
 
     /**
      * Get the registration status.
-     *
-     * @return string
      */
     public function getStatutInscriptionAttribute()
     {
@@ -251,8 +347,6 @@ class Cours extends Model
 
     /**
      * Get the next session date.
-     *
-     * @return Carbon|null
      */
     public function getProchaineSeanceAttribute()
     {
@@ -263,7 +357,7 @@ class Cours extends Model
             'jeudi' => 4,
             'vendredi' => 5,
             'samedi' => 6,
-            'dimanche' => 7,
+            'dimanche' => 0, // Dimanche = 0
         ];
 
         $targetDay = $jourMap[$this->jour_semaine] ?? 1;
@@ -290,17 +384,21 @@ class Cours extends Model
         return $nextSession;
     }
 
+    // =================== MÉTHODES BUSINESS ===================
+
     /**
      * Check if a member can enroll in this course.
-     *
-     * @param  \App\Models\Membre  $membre
-     * @return bool
      */
     public function peutInscrire(Membre $membre)
     {
         // Vérifier l'âge
         $age = $membre->age;
-        if ($age < $this->age_min || $age > $this->age_max) {
+        if ($age < $this->age_min) {
+            return false;
+        }
+        
+        // Âge max optionnel
+        if ($this->age_max && $age > $this->age_max) {
             return false;
         }
 
@@ -314,20 +412,11 @@ class Cours extends Model
             return false;
         }
 
-        // Vérifier les prérequis (ceinture)
-        if ($this->prerequis) {
-            // Logique pour vérifier la ceinture du membre
-            // À implémenter selon votre système de ceintures
-        }
-
         return true;
     }
 
     /**
      * Enroll a member in the course.
-     *
-     * @param  \App\Models\Membre  $membre
-     * @return bool
      */
     public function inscrireMembre(Membre $membre)
     {
@@ -345,10 +434,6 @@ class Cours extends Model
 
     /**
      * Unenroll a member from the course.
-     *
-     * @param  \App\Models\Membre  $membre
-     * @param  string  $raison
-     * @return bool
      */
     public function desinscrireMembre(Membre $membre, $raison = null)
     {
@@ -361,55 +446,7 @@ class Cours extends Model
     }
 
     /**
-     * Get statistics for the course.
-     *
-     * @return array
-     */
-    public function getStatistiques()
-    {
-        $totalPresences = $this->presences()->count();
-        $presencesPresents = $this->presences()->where('statut', 'present')->count();
-        $tauxPresence = $totalPresences > 0 ? ($presencesPresents / $totalPresences) * 100 : 0;
-
-        return [
-            'membres_inscrits' => $this->membresActifs()->count(),
-            'places_disponibles' => $this->places_disponibles,
-            'taux_remplissage' => $this->taux_remplissage,
-            'total_presences' => $totalPresences,
-            'taux_presence' => round($tauxPresence, 2),
-            'revenue_mensuel' => $this->membresActifs()->count() * $this->tarif_mensuel,
-        ];
-    }
-
-    /**
-     * Generate color for calendar display.
-     *
-     * @return string
-     */
-    public function getCouleurCalendrierAttribute()
-    {
-        if ($this->couleur) {
-            return $this->couleur;
-        }
-
-        // Couleurs par défaut selon le niveau
-        $couleurs = [
-            'debutant' => '#10b981', // green
-            'intermediaire' => '#3b82f6', // blue
-            'avance' => '#8b5cf6', // purple
-            'competition' => '#ef4444', // red
-        ];
-
-        return $couleurs[$this->niveau] ?? '#6b7280'; // gray par défaut
-    }
-
-    /**
      * Check if course conflicts with another schedule.
-     *
-     * @param  string  $jour
-     * @param  string  $heureDebut
-     * @param  string  $heureFin
-     * @return bool
      */
     public function conflitHoraire($jour, $heureDebut, $heureFin)
     {
@@ -427,10 +464,76 @@ class Cours extends Model
     }
 
     /**
+     * Get statistics for the course - AVEC NOUVEAU SYSTÈME TARIF.
+     */
+    public function getStatistiques()
+    {
+        $totalPresences = $this->presences()->count();
+        $presencesPresents = $this->presences()->where('statut', 'present')->count();
+        $tauxPresence = $totalPresences > 0 ? ($presencesPresents / $totalPresences) * 100 : 0;
+
+        $membresInscrits = $this->membresActifs()->count();
+        
+        // Revenue selon type tarif
+        $revenuEstime = $this->getRevenuEstime($membresInscrits);
+
+        return [
+            'membres_inscrits' => $membresInscrits,
+            'places_disponibles' => $this->places_disponibles,
+            'taux_remplissage' => $this->taux_remplissage,
+            'total_presences' => $totalPresences,
+            'taux_presence' => round($tauxPresence, 2),
+            'revenue_estime' => $revenuEstime,
+            'type_tarif' => $this->type_tarif_label,
+        ];
+    }
+
+    /**
+     * Calculer revenu estimé selon type tarif.
+     */
+    private function getRevenuEstime($membresInscrits)
+    {
+        switch ($this->type_tarif) {
+            case 'mensuel':
+                return $membresInscrits * $this->montant;
+            case 'trimestriel':
+                return $membresInscrits * $this->montant / 3; // Per month
+            case 'horaire':
+                // Estimation 4 séances par mois
+                return $membresInscrits * $this->montant * 4;
+            case 'a_la_carte':
+                // 10 samedis répartis sur ~2.5 mois
+                return $membresInscrits * $this->montant / 2.5;
+            default:
+                return $membresInscrits * $this->montant;
+        }
+    }
+
+    /**
+     * Generate color for calendar display.
+     */
+    public function getCouleurCalendrierAttribute()
+    {
+        if ($this->couleur) {
+            return $this->couleur;
+        }
+
+        // Couleurs par défaut selon le niveau
+        $couleurs = [
+            'tous' => '#6b7280', // gray - tous niveaux
+            'debutant' => '#10b981', // green
+            'intermediaire' => '#3b82f6', // blue
+            'avance' => '#8b5cf6', // purple
+            'prive' => '#f59e0b', // amber - privé
+            'competition' => '#ef4444', // red
+            'a_la_carte' => '#06b6d4', // cyan - à la carte
+        ];
+
+        return $couleurs[$this->niveau] ?? '#6b7280'; // gray par défaut
+    }
+
+    /**
      * Get upcoming sessions for the course.
-     *
-     * @param  int  $limit
-     * @return \Illuminate\Support\Collection
      */
     public function prochainesSeances($limit = 5)
     {
@@ -440,7 +543,7 @@ class Cours extends Model
         for ($i = 0; $i < $limit; $i++) {
             $seances->push([
                 'date' => $date->copy(),
-                'jour' => ucfirst($this->jour_semaine),
+                'jour' => self::JOURS_SEMAINE[$this->jour_semaine] ?? ucfirst($this->jour_semaine),
                 'heure_debut' => $this->heure_debut,
                 'heure_fin' => $this->heure_fin,
             ]);
@@ -452,8 +555,6 @@ class Cours extends Model
 
     /**
      * Format course for calendar display.
-     *
-     * @return array
      */
     public function pourCalendrier()
     {
@@ -463,10 +564,11 @@ class Cours extends Model
             'start' => $this->heure_debut,
             'end' => $this->heure_fin,
             'color' => $this->couleur_calendrier,
-            'instructor' => $this->instructeur->name,
+            'instructor' => $this->instructeur_nom,
             'level' => $this->niveau,
             'enrolled' => $this->membresActifs()->count(),
             'capacity' => $this->places_max,
+            'tarif_info' => $this->type_tarif_label . ' - ' . number_format($this->montant, 2) . '$',
         ];
     }
 }
