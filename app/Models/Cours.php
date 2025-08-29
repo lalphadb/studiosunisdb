@@ -12,18 +12,8 @@ class Cours extends Model
 {
     use HasFactory, SoftDeletes, BelongsToEcole;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'cours';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'nom',
         'description',
@@ -34,35 +24,30 @@ class Cours extends Model
         'age_max',
         'places_max',
         'jour_semaine',
+        'session', // Automne, hiver, printemps, été
         'heure_debut',
         'heure_fin',
         'date_debut',
         'date_fin',
-        'tarif_mensuel', // Conservé pour compatibilité
-        // Nouveau système tarification flexible
+        'tarif_mensuel',
         'type_tarif',
         'montant',
         'details_tarif',
         'actif',
-        'couleur', // Pour l'affichage dans le calendrier
-        'salle', // Salle ou dojo
-        'type_cours', // Kata, Combat, Technique, etc.
-        'prerequis', // Ceinture minimum requise
-        'materiel_requis', // Équipement nécessaire
+        'couleur',
+        'salle',
+        'type_cours',
+        'prerequis',
+        'materiel_requis',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'actif' => 'boolean',
         'age_min' => 'integer',
         'age_max' => 'integer',
         'places_max' => 'integer',
-        'tarif_mensuel' => 'decimal:2', // Conservé pour compatibilité
-        'montant' => 'decimal:2', // Nouveau système
+        'tarif_mensuel' => 'decimal:2',
+        'montant' => 'decimal:2',
         'date_debut' => 'date',
         'date_fin' => 'date',
         'heure_debut' => 'datetime:H:i',
@@ -70,11 +55,6 @@ class Cours extends Model
         'materiel_requis' => 'array',
     ];
 
-    /**
-     * The attributes that should be mutated to dates.
-     *
-     * @var array
-     */
     protected $dates = [
         'date_debut',
         'date_fin',
@@ -83,11 +63,6 @@ class Cours extends Model
         'deleted_at',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array
-     */
     protected $appends = [
         'places_disponibles',
         'taux_remplissage',
@@ -99,11 +74,8 @@ class Cours extends Model
         'age_range',
     ];
 
-    // =================== CONSTANTES ÉTENDUES ===================
-    
-    /**
-     * Niveaux disponibles - ÉTENDUS selon demande
-     */
+    // =================== CONSTANTES ===================
+
     public const NIVEAUX = [
         'tous' => 'Tous niveaux',
         'debutant' => 'Débutant',
@@ -114,9 +86,6 @@ class Cours extends Model
         'a_la_carte' => 'À la carte',
     ];
 
-    /**
-     * Types de tarification - SYSTÈME FLEXIBLE
-     */
     public const TYPES_TARIF = [
         'mensuel' => 'Mensuel',
         'trimestriel' => 'Trimestriel (3 mois)',
@@ -125,9 +94,6 @@ class Cours extends Model
         'autre' => 'Autre (préciser)',
     ];
 
-    /**
-     * Jours de la semaine
-     */
     public const JOURS_SEMAINE = [
         'lundi' => 'Lundi',
         'mardi' => 'Mardi',
@@ -138,27 +104,25 @@ class Cours extends Model
         'dimanche' => 'Dimanche',
     ];
 
+    public const SESSIONS = [
+        'automne' => 'Automne',
+        'hiver' => 'Hiver', 
+        'printemps' => 'Printemps',
+        'ete' => 'Été',
+    ];
+
     // =================== RELATIONS ===================
 
-    /**
-     * Get the instructor for the course (optional).
-     */
     public function instructeur()
     {
         return $this->belongsTo(User::class, 'instructeur_id');
     }
 
-    /**
-     * Get instructor name or default text.
-     */
-    public function getInstructeurNomAttribute()
+    public function getInstructeurNomAttribute(): string
     {
         return $this->instructeur ? $this->instructeur->name : 'Non assigné';
     }
 
-    /**
-     * Get the members enrolled in the course.
-     */
     public function membres()
     {
         return $this->belongsToMany(Membre::class, 'cours_membres')
@@ -166,33 +130,21 @@ class Cours extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Get the active members enrolled in the course.
-     */
     public function membresActifs()
     {
         return $this->membres()->wherePivot('statut', 'actif');
     }
 
-    /**
-     * Get the presences for the course.
-     */
     public function presences()
     {
         return $this->hasMany(Presence::class);
     }
 
-    /**
-     * Get the payments related to the course.
-     */
     public function paiements()
     {
         return $this->hasMany(Paiement::class);
     }
 
-    /**
-     * Get the sessions/events for the course.
-     */
     public function sessions()
     {
         return $this->hasMany(SessionCours::class);
@@ -200,111 +152,76 @@ class Cours extends Model
 
     // =================== SCOPES ===================
 
-    /**
-     * Scope a query to only include active courses.
-     */
     public function scopeActif($query)
     {
         return $query->where('actif', true);
     }
 
-    /**
-     * Scope a query to only include courses for a specific level.
-     */
     public function scopeNiveau($query, $niveau)
     {
         return $query->where('niveau', $niveau);
     }
 
-    /**
-     * Scope a query to only include courses on a specific day.
-     */
     public function scopeJour($query, $jour)
     {
         return $query->where('jour_semaine', $jour);
     }
 
-    /**
-     * Scope a query to only include courses for a specific age.
-     */
     public function scopePourAge($query, $age)
     {
         return $query->where('age_min', '<=', $age)
                      ->where(function($q) use ($age) {
                          $q->where('age_max', '>=', $age)
-                           ->orWhereNull('age_max'); // Gérer âge max optionnel
+                           ->orWhereNull('age_max');
                      });
     }
 
-    /**
-     * Scope a query to only include courses with available places.
-     */
     public function scopeAvecPlacesDisponibles($query)
     {
         return $query->whereRaw('places_max > (SELECT COUNT(*) FROM cours_membres WHERE cours_id = cours.id AND statut = "actif")');
     }
 
-    // =================== ACCESSEURS ÉTENDUS ===================
+    // =================== ACCESSEURS ===================
 
-    /**
-     * Get niveau label from constants.
-     */
     public function getNiveauLabelAttribute(): string
     {
-        return self::NIVEAUX[$this->niveau] ?? $this->niveau;
+        return self::NIVEAUX[$this->niveau] ?? ($this->niveau ?? 'Non défini');
     }
 
-    /**
-     * Get type tarif label from constants.
-     */
     public function getTypeTarifLabelAttribute(): string
     {
-        return self::TYPES_TARIF[$this->type_tarif] ?? $this->type_tarif;
+        return self::TYPES_TARIF[$this->type_tarif] ?? ($this->type_tarif ?? 'Non défini');
     }
 
-    /**
-     * Get age range display.
-     */
     public function getAgeRangeAttribute(): string
     {
+        $ageMin = $this->age_min ?? 0;
         if (!$this->age_max) {
-            return $this->age_min . '+ ans';
+            return $ageMin . '+ ans';
         }
-        return $this->age_min . '-' . $this->age_max . ' ans';
+        return $ageMin . '-' . $this->age_max . ' ans';
     }
 
-    /**
-     * Get the number of available places.
-     */
     public function getPlacesDisponiblesAttribute()
     {
         return max(0, $this->places_max - $this->membresActifs()->count());
     }
 
-    /**
-     * Get the fill rate percentage.
-     */
     public function getTauxRemplissageAttribute()
     {
         if ($this->places_max == 0) return 0;
         return round(($this->membresActifs()->count() / $this->places_max) * 100, 2);
     }
 
-    /**
-     * Get the complete schedule string.
-     */
-    public function getHoraireCompletAttribute()
+    public function getHoraireCompletAttribute(): string
     {
-        $jour = self::JOURS_SEMAINE[$this->jour_semaine] ?? ucfirst($this->jour_semaine);
-        return $jour . ' ' . 
-               Carbon::parse($this->heure_debut)->format('H:i') . ' - ' . 
-               Carbon::parse($this->heure_fin)->format('H:i');
+        $jour = self::JOURS_SEMAINE[$this->jour_semaine] ?? ucfirst($this->jour_semaine ?? 'Inconnue');
+        $heureDebut = $this->heure_debut ? Carbon::parse($this->heure_debut)->format('H:i') : '00:00';
+        $heureFin = $this->heure_fin ? Carbon::parse($this->heure_fin)->format('H:i') : '00:00';
+        return $jour . ' ' . $heureDebut . ' - ' . $heureFin;
     }
 
-    /**
-     * Get the registration status.
-     */
-    public function getStatutInscriptionAttribute()
+    public function getStatutInscriptionAttribute(): string
     {
         if (!$this->actif) {
             return 'ferme';
@@ -317,9 +234,6 @@ class Cours extends Model
         return 'complet';
     }
 
-    /**
-     * Get the next session date.
-     */
     public function getProchaineSeanceAttribute()
     {
         $jourMap = [
@@ -329,57 +243,66 @@ class Cours extends Model
             'jeudi' => 4,
             'vendredi' => 5,
             'samedi' => 6,
-            'dimanche' => 0, // Dimanche = 0
+            'dimanche' => 0,
         ];
 
         $targetDay = $jourMap[$this->jour_semaine] ?? 1;
         $now = Carbon::now();
         $nextSession = $now->copy();
 
-        // Si on est le même jour mais après l'heure du cours
         if ($now->dayOfWeek == $targetDay) {
             $courseTime = Carbon::parse($this->heure_debut);
             if ($now->format('H:i') > $courseTime->format('H:i')) {
                 $nextSession->addWeek();
             }
         } else {
-            // Trouver le prochain jour de la semaine
             while ($nextSession->dayOfWeek != $targetDay) {
                 $nextSession->addDay();
             }
         }
 
-        // Définir l'heure du cours
         $time = Carbon::parse($this->heure_debut);
         $nextSession->setHour($time->hour)->setMinute($time->minute)->setSecond(0);
 
         return $nextSession;
     }
 
+    public function getCouleurCalendrierAttribute(): string
+    {
+        if ($this->couleur) {
+            return $this->couleur;
+        }
+
+        $couleurs = [
+            'tous' => '#6b7280',
+            'debutant' => '#10b981',
+            'intermediaire' => '#3b82f6',
+            'avance' => '#8b5cf6',
+            'prive' => '#f59e0b',
+            'competition' => '#ef4444',
+            'a_la_carte' => '#06b6d4',
+        ];
+
+        return $couleurs[$this->niveau] ?? '#6b7280';
+    }
+
     // =================== MÉTHODES BUSINESS ===================
 
-    /**
-     * Check if a member can enroll in this course.
-     */
     public function peutInscrire(Membre $membre)
     {
-        // Vérifier l'âge
         $age = $membre->age;
         if ($age < $this->age_min) {
             return false;
         }
         
-        // Âge max optionnel
         if ($this->age_max && $age > $this->age_max) {
             return false;
         }
 
-        // Vérifier les places disponibles
         if ($this->places_disponibles <= 0) {
             return false;
         }
 
-        // Vérifier si déjà inscrit
         if ($this->membres()->where('membre_id', $membre->id)->exists()) {
             return false;
         }
@@ -387,9 +310,6 @@ class Cours extends Model
         return true;
     }
 
-    /**
-     * Enroll a member in the course.
-     */
     public function inscrireMembre(Membre $membre)
     {
         if (!$this->peutInscrire($membre)) {
@@ -404,9 +324,6 @@ class Cours extends Model
         return true;
     }
 
-    /**
-     * Unenroll a member from the course.
-     */
     public function desinscrireMembre(Membre $membre, $raison = null)
     {
         $this->membres()->updateExistingPivot($membre->id, [
@@ -417,9 +334,6 @@ class Cours extends Model
         return true;
     }
 
-    /**
-     * Check if course conflicts with another schedule.
-     */
     public function conflitHoraire($jour, $heureDebut, $heureFin)
     {
         if ($this->jour_semaine !== $jour) {
@@ -431,13 +345,9 @@ class Cours extends Model
         $debut2 = Carbon::parse($heureDebut);
         $fin2 = Carbon::parse($heureFin);
 
-        // Vérifier le chevauchement
         return !($fin1 <= $debut2 || $debut1 >= $fin2);
     }
 
-    /**
-     * Get statistics for the course - AVEC NOUVEAU SYSTÈME TARIF.
-     */
     public function getStatistiques()
     {
         $totalPresences = $this->presences()->count();
@@ -445,8 +355,6 @@ class Cours extends Model
         $tauxPresence = $totalPresences > 0 ? ($presencesPresents / $totalPresences) * 100 : 0;
 
         $membresInscrits = $this->membresActifs()->count();
-        
-        // Revenue selon type tarif
         $revenuEstime = $this->getRevenuEstime($membresInscrits);
 
         return [
@@ -460,53 +368,22 @@ class Cours extends Model
         ];
     }
 
-    /**
-     * Calculer revenu estimé selon type tarif.
-     */
     private function getRevenuEstime($membresInscrits)
     {
         switch ($this->type_tarif) {
             case 'mensuel':
                 return $membresInscrits * $this->montant;
             case 'trimestriel':
-                return $membresInscrits * $this->montant / 3; // Per month
+                return $membresInscrits * $this->montant / 3;
             case 'horaire':
-                // Estimation 4 séances par mois
                 return $membresInscrits * $this->montant * 4;
             case 'a_la_carte':
-                // 10 samedis répartis sur ~2.5 mois
                 return $membresInscrits * $this->montant / 2.5;
             default:
                 return $membresInscrits * $this->montant;
         }
     }
 
-    /**
-     * Generate color for calendar display.
-     */
-    public function getCouleurCalendrierAttribute()
-    {
-        if ($this->couleur) {
-            return $this->couleur;
-        }
-
-        // Couleurs par défaut selon le niveau
-        $couleurs = [
-            'tous' => '#6b7280', // gray - tous niveaux
-            'debutant' => '#10b981', // green
-            'intermediaire' => '#3b82f6', // blue
-            'avance' => '#8b5cf6', // purple
-            'prive' => '#f59e0b', // amber - privé
-            'competition' => '#ef4444', // red
-            'a_la_carte' => '#06b6d4', // cyan - à la carte
-        ];
-
-        return $couleurs[$this->niveau] ?? '#6b7280'; // gray par défaut
-    }
-
-    /**
-     * Get upcoming sessions for the course.
-     */
     public function prochainesSeances($limit = 5)
     {
         $seances = collect();
@@ -515,7 +392,7 @@ class Cours extends Model
         for ($i = 0; $i < $limit; $i++) {
             $seances->push([
                 'date' => $date->copy(),
-                'jour' => self::JOURS_SEMAINE[$this->jour_semaine] ?? ucfirst($this->jour_semaine),
+                'jour' => self::JOURS_SEMAINE[$this->jour_semaine] ?? ucfirst($this->jour_semaine ?? 'inconnue'),
                 'heure_debut' => $this->heure_debut,
                 'heure_fin' => $this->heure_fin,
             ]);
@@ -525,9 +402,6 @@ class Cours extends Model
         return $seances;
     }
 
-    /**
-     * Format course for calendar display.
-     */
     public function pourCalendrier()
     {
         return [
@@ -542,5 +416,63 @@ class Cours extends Model
             'capacity' => $this->places_max,
             'tarif_info' => $this->type_tarif_label . ' - ' . number_format($this->montant, 2) . '$',
         ];
+    }
+
+    // =================== MÉTHODES DUPLICATION ===================
+
+    public function duppliquerPourJour($nouveauJour)
+    {
+        $nouveauCours = $this->replicate();
+        $nouveauCours->jour_semaine = $nouveauJour;
+        $nouveauCours->nom = $this->nom . ' (' . ucfirst($nouveauJour) . ')';
+        $nouveauCours->actif = false;
+        $nouveauCours->created_at = now();
+        $nouveauCours->updated_at = now();
+        
+        $nouveauCours->save();
+        
+        return $nouveauCours;
+    }
+
+    public function duppliquerPourSession($nouvelleSession)
+    {
+        $nouveauCours = $this->replicate();
+        $nouveauCours->session = $nouvelleSession;
+        $nouveauCours->nom = $this->nom . ' (' . (self::SESSIONS[$nouvelleSession] ?? ucfirst($nouvelleSession)) . ')';
+        $nouveauCours->actif = false;
+        $nouveauCours->created_at = now();
+        $nouveauCours->updated_at = now();
+        
+        $nouveauCours = $this->adapterDatesSession($nouveauCours, $nouvelleSession);
+        
+        $nouveauCours->save();
+        
+        return $nouveauCours;
+    }
+
+    private function adapterDatesSession($cours, $session)
+    {
+        $year = date('Y');
+        
+        switch($session) {
+            case 'automne':
+                $cours->date_debut = Carbon::parse("$year-09-01");
+                $cours->date_fin = Carbon::parse("$year-12-15");
+                break;
+            case 'hiver':
+                $cours->date_debut = Carbon::parse("$year-01-08");
+                $cours->date_fin = Carbon::parse("$year-03-31");
+                break;
+            case 'printemps':
+                $cours->date_debut = Carbon::parse("$year-04-01");
+                $cours->date_fin = Carbon::parse("$year-06-30");
+                break;
+            case 'ete':
+                $cours->date_debut = Carbon::parse("$year-07-01");
+                $cours->date_fin = Carbon::parse("$year-08-31");
+                break;
+        }
+        
+        return $cours;
     }
 }

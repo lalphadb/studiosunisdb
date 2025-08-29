@@ -8,23 +8,23 @@ class UserPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin','admin_ecole']);
+        return $user->hasAnyRole(['superadmin','admin']);
     }
 
     public function view(User $user, User $model): bool
     {
-        if ($user->hasAnyRole(['superadmin','admin_ecole'])) return true;
+        if ($user->hasAnyRole(['superadmin','admin'])) return true;
         return $user->id === $model->id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin','admin_ecole']);
+        return $user->hasAnyRole(['superadmin','admin']);
     }
 
     public function update(User $user, User $model): bool
     {
-        if ($user->hasAnyRole(['superadmin','admin_ecole'])) return true;
+        if ($user->hasAnyRole(['superadmin','admin'])) return true;
         return $user->id === $model->id;
     }
 

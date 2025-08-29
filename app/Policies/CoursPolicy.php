@@ -7,35 +7,42 @@ use App\Models\User;
 
 class CoursPolicy
 {
+    /** Rôles privilégiés */
+    private array $superRoles = ['superadmin'];
+
+    /** Rôles pouvant consulter la liste */
+    private array $viewRoles = ['superadmin','admin','instructeur','membre'];
+
+    /** Rôles pouvant gérer (create / update / delete / export) */
+    private array $manageRoles = ['superadmin','admin'];
+
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin','admin_ecole','instructeur','membre']);
+        return $user->hasAnyRole($this->viewRoles);
     }
 
     public function view(User $user, Cours $cours): bool
     {
         if (!$this->viewAny($user)) return false;
-        
-        // Superadmin voit tout
-        if ($user->hasRole('superadmin')) return true;
-        
-        // Autres rôles : même école uniquement  
+
+        // Super rôles voient tout
+        if ($user->hasAnyRole($this->superRoles)) return true;
+
+        // Autres rôles : même école
         return $cours->ecole_id === $user->ecole_id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin','admin_ecole']);
+        return $user->hasAnyRole($this->manageRoles);
     }
 
     public function update(User $user, Cours $cours): bool
     {
-        if (!$user->hasAnyRole(['superadmin','admin_ecole'])) return false;
-        
-        // Superadmin peut tout modifier
-        if ($user->hasRole('superadmin')) return true;
-        
-        // Admin école : seulement cours de son école
+        if (!$user->hasAnyRole($this->manageRoles)) return false;
+
+        if ($user->hasAnyRole($this->superRoles)) return true;
+
         return $cours->ecole_id === $user->ecole_id;
     }
 
@@ -43,9 +50,9 @@ class CoursPolicy
     {
         return $this->update($user, $cours); // Même logique
     }
-    
+
     public function export(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin','admin_ecole']);
+        return $user->hasAnyRole($this->manageRoles);
     }
 }

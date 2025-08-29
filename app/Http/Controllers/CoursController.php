@@ -12,9 +12,11 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CoursController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the courses.
      *
@@ -30,17 +32,8 @@ class CoursController extends Controller
 
         $user = auth()->user();
         
-        // Vérification permissions avec redirection si problème
-        if (!$user->can('viewAny', Cours::class)) {
-            // Si pas de rôles du tout, problème de session
-            if (!$user->hasAnyRole(['superadmin','admin_ecole','instructeur','membre'])) {
-                return redirect()->route('login')
-                    ->with('error', 'Session expirée. Veuillez vous reconnecter.');
-            }
-            
-            // Sinon, vraiment pas de permissions
-            abort(403, 'Accès refusé aux cours. Rôles requis: admin_ecole, instructeur ou membre.');
-        }
+    // Autorisation centralisée via policy (supprime duplication & divergences)
+    $this->authorize('viewAny', Cours::class);
         // Récupération optimisée des cours avec relations (éviter N+1)
         $cours = Cours::with(['instructeur', 'ecole'])
             ->withCount('membresActifs as membres_actifs_count') // Utiliser relation existante
@@ -79,8 +72,8 @@ class CoursController extends Controller
             'stats' => $stats,
             'canCreate' => auth()->check() ? Auth::user()->can('create', Cours::class) : false,
             // Permissions globales pour l'interface
-            'canEdit' => auth()->check() ? Auth::user()->hasAnyRole(['superadmin','admin_ecole']) : false,
-            'canDelete' => auth()->check() ? Auth::user()->hasAnyRole(['superadmin','admin_ecole']) : false,
+            'canEdit' => auth()->check() ? Auth::user()->hasAnyRole(['superadmin','admin']) : false,
+            'canDelete' => auth()->check() ? Auth::user()->hasAnyRole(['superadmin','admin']) : false,
             'canExport' => auth()->check() ? Auth::user()->can('export', Cours::class) : false,
         ]);
     }
@@ -155,15 +148,12 @@ class CoursController extends Controller
     /**
      * Display the specified course.
      *
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Inertia\Response
      */
-    public function show($id)
+    public function show(Cours $cours)
     {
-        // CORRECTION: Utiliser withoutGlobalScope puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
-        
-        // Vérifier authorization après avoir trouvé le cours
+        // Vérifier authorization - maintenant que le route model binding est fixé
         $this->authorize('view', $cours);
         
         $cours->load(['instructeur', 'membres.user']);
@@ -171,7 +161,7 @@ class CoursController extends Controller
         // Statistiques du cours
         $stats = [
             'totalInscrits' => $cours->membres()->count(),
-            'placesDisponibles' => $cours->places_max - $cours->membres()->count(),
+            'placesDisponibles' => max(0, $cours->places_max - $cours->membres()->count()),
             'tauxRemplissage' => $cours->places_max > 0 ? ($cours->membres()->count() / $cours->places_max) * 100 : 0,
             'presencesMoyenne' => $this->calculatePresenceMoyenne($cours),
         ];
@@ -183,21 +173,19 @@ class CoursController extends Controller
             'cours' => $cours,
             'stats' => $stats,
             'presencesHistory' => $presencesHistory,
-            'canEdit' => auth()->check() ? Auth::user()->can('update', $cours) : false,
-            'canDelete' => auth()->check() ? Auth::user()->can('delete', $cours) : false,
+            'canEdit' => Auth::user()->can('update', $cours),
+            'canDelete' => Auth::user()->can('delete', $cours),
         ]);
     }
 
     /**
      * Show the form for editing the specified course.
      *
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Inertia\Response
      */
-    public function edit($id)
+    public function edit(Cours $cours)
     {
-        // CORRECTION: Résoudre cours puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
 
         $instructeurs = User::role('instructeur')
@@ -218,13 +206,11 @@ class CoursController extends Controller
      * Update the specified course in storage.
      *
      * @param  \App\Http\Requests\UpdateCoursRequest  $request
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(UpdateCoursRequest $request, $id)
+    public function update(UpdateCoursRequest $request, Cours $cours)
     {
-        // CORRECTION: Résoudre cours puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
         
         // Validation et préparation des données déjà gérées dans UpdateCoursRequest
@@ -259,20 +245,18 @@ class CoursController extends Controller
 
         $cours->update($validated);
 
-        return redirect()->route('cours.show', $cours->id)
+        return redirect()->route('cours.show', $cours)
             ->with('success', 'Cours mis à jour avec succès.');
     }
 
     /**
      * Remove the specified course from storage.
      *
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy($id)
+    public function destroy(Cours $cours)
     {
-        // CORRECTION: Résoudre cours puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('delete', $cours);
 
         // Vérifier s'il y a des inscriptions actives
@@ -291,13 +275,11 @@ class CoursController extends Controller
     /**
      * Duplicate the specified course.
      *
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function duplicate($id)
+    public function duplicate(Cours $cours)
     {
-        // CORRECTION: Résoudre cours puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('create', Cours::class);
         
         // Créer une copie du cours avec des modifications
@@ -309,20 +291,60 @@ class CoursController extends Controller
         
         $nouveauCours->save();
         
-        return redirect()->route('cours.edit', $nouveauCours->id)
+        return redirect()->route('cours.edit', $nouveauCours)
             ->with('success', 'Cours dupliqué avec succès. Modifiez les détails nécessaires.');
+    }
+
+    /**
+     * Dupliquer cours pour un autre jour.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function duplicateJour(Request $request, Cours $cours)
+    {
+        $this->authorize('create', Cours::class);
+        
+        $validated = $request->validate([
+            'nouveau_jour' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche'
+        ]);
+        
+        $nouveauCours = $cours->duppliquerPourJour($validated['nouveau_jour']);
+        
+        return redirect()->route('cours.index')
+            ->with('success', 'Cours dupliqué pour ' . ucfirst($validated['nouveau_jour']) . ' avec succès.');
+    }
+
+    /**
+     * Dupliquer cours pour une autre session.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Cours  $cours
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function duplicateSession(Request $request, Cours $cours)
+    {
+        $this->authorize('create', Cours::class);
+        
+        $validated = $request->validate([
+            'nouvelle_session' => 'required|in:automne,hiver,printemps,ete'
+        ]);
+        
+        $nouveauCours = $cours->duppliquerPourSession($validated['nouvelle_session']);
+        
+        return redirect()->route('cours.index')
+            ->with('success', 'Cours dupliqué pour session ' . Cours::SESSIONS[$validated['nouvelle_session']] . ' avec succès.');
     }
 
     /**
      * Show the form for creating multiple sessions.
      *
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Inertia\Response
      */
-    public function sessionsForm($id)
+    public function sessionsForm(Cours $cours)
     {
-        // CORRECTION: Résoudre cours puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
         
         $joursDisponibles = [
@@ -348,13 +370,11 @@ class CoursController extends Controller
      * Create multiple sessions for a course.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  string  $id
+     * @param  \App\Models\Cours  $cours
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function createSessions(Request $request, $id)
+    public function createSessions(Request $request, Cours $cours)
     {
-        // CORRECTION: Résoudre cours puis vérifier authorization
-        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
         
         $validated = $request->validate([
@@ -412,7 +432,7 @@ class CoursController extends Controller
             $sessionsCreees++;
         }
         
-        return redirect()->route('cours.show', $cours->id)
+        return redirect()->route('cours.show', $cours)
             ->with('success', "$sessionsCreees session(s) supplémentaire(s) créée(s) avec succès.");
     }
 

@@ -5,102 +5,121 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
-    /**
-     * Créer les rôles et permissions essentiels
-     */
-    public function run(): void
+    public function run()
     {
-        // Reset cache
+        // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Créer les rôles principaux
+        // Définir les rôles canoniques StudiosDB
         $roles = [
-            'superadmin',
-            'admin_ecole', 
-            'instructeur',
-            'membre'
+            'superadmin' => 'Super Administrateur - Accès total',
+            'admin_ecole' => 'Administrateur École - Gestion complète école',
+            'instructeur' => 'Instructeur - Gestion cours et membres',
+            'membre' => 'Membre - Accès limité aux informations personnelles'
         ];
 
-        foreach ($roles as $role) {
-            Role::firstOrCreate(['name' => $role]);
+        echo "=== CRÉATION DES RÔLES SPATIE ===\n";
+        
+        foreach ($roles as $roleName => $description) {
+            $role = Role::firstOrCreate(['name' => $roleName], ['guard_name' => 'web']);
+            
+            if ($role->wasRecentlyCreated) {
+                echo "✅ Rôle créé: {$roleName}\n";
+            } else {
+                echo "ℹ️  Rôle existant: {$roleName}\n";
+            }
         }
 
-        // Créer les permissions essentielles
+        // Permissions de base (optionnel - peut être étendu)
         $permissions = [
-            // Membres
-            'membres.view',
-            'membres.create',
-            'membres.edit',
-            'membres.delete',
-            'membres.export',
-            'membres.changer-ceinture',
-            
-            // Utilisateurs
-            'users.view',
-            'users.create',
-            'users.edit',
-            'users.delete',
-            'users.reset-password',
-            
-            // Cours
-            'cours.view',
-            'cours.create',
-            'cours.edit',
-            'cours.delete',
-            'cours.planning',
-            
-            // Présences
-            'presences.view',
-            'presences.tablette',
-            'presences.marquer',
-            'presences.rapports',
-            
-            // Paiements
-            'paiements.view',
-            'paiements.create',
-            'paiements.confirmer',
-            'paiements.rapports',
-            
-            // Admin
-            'admin.dashboard',
-            'admin.configuration',
-            'admin.logs',
-            'admin.backup',
+            'admin-panel' => 'Accès panneau administration',
+            'cours-manage' => 'Gérer les cours',
+            'membres-manage' => 'Gérer les membres',
+            'users-manage' => 'Gérer les utilisateurs',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        echo "\n=== CRÉATION DES PERMISSIONS ===\n";
+        
+        foreach ($permissions as $permName => $description) {
+            $permission = Permission::firstOrCreate(['name' => $permName], ['guard_name' => 'web']);
+            
+            if ($permission->wasRecentlyCreated) {
+                echo "✅ Permission créée: {$permName}\n";
+            } else {
+                echo "ℹ️  Permission existante: {$permName}\n";
+            }
         }
 
-        // Assigner les permissions aux rôles
+        // Attribution des permissions aux rôles
+        echo "\n=== ATTRIBUTION PERMISSIONS ===\n";
+        
         $superadmin = Role::findByName('superadmin');
-        $superadmin->givePermissionTo(Permission::all());
-
         $adminEcole = Role::findByName('admin_ecole');
-        $adminEcole->givePermissionTo(Permission::whereNotIn('name', [
-            'admin.backup',
-            'admin.configuration'
-        ])->get());
-
         $instructeur = Role::findByName('instructeur');
-        $instructeur->givePermissionTo([
-            'membres.view',
-            'membres.changer-ceinture',
-            'cours.view',
-            'presences.view',
-            'presences.tablette',
-            'presences.marquer',
-            'admin.dashboard',
-        ]);
+        
+        // Superadmin : toutes les permissions
+        $superadmin->givePermissionTo(Permission::all());
+        echo "✅ Superadmin: toutes permissions\n";
+        
+        // Admin école : gestion cours, membres, panneau admin
+        $adminEcole->givePermissionTo(['admin-panel', 'cours-manage', 'membres-manage']);
+        echo "✅ Admin École: permissions de gestion\n";
+        
+        // Instructeur : gestion cours et membres (pas users)
+        $instructeur->givePermissionTo(['cours-manage', 'membres-manage']);
+        echo "✅ Instructeur: permissions cours/membres\n";
 
-        $membre = Role::findByName('membre');
-        $membre->givePermissionTo([
-            'cours.view',
-        ]);
+        // Vérifier si l'utilisateur louis@4lb.ca existe et lui donner le rôle superadmin
+        echo "\n=== CONFIGURATION UTILISATEUR LOUIS ===\n";
+        
+        $user = DB::table('users')->where('email', 'louis@4lb.ca')->first();
+        
+        if (!$user) {
+            // Créer l'utilisateur superadmin
+            $userId = DB::table('users')->insertGetId([
+                'name' => 'Louis Superadmin',
+                'email' => 'louis@4lb.ca',
+                'password' => bcrypt('password123'),
+                'ecole_id' => null, // Superadmin n'appartient à aucune école
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            echo "✅ Utilisateur louis@4lb.ca créé avec ID: {$userId}\n";
+            $user = (object) ['id' => $userId, 'email' => 'louis@4lb.ca'];
+        } else {
+            echo "ℹ️  Utilisateur louis@4lb.ca existe déjà (ID: {$user->id})\n";
+        }
 
-        $this->command->info('✅ Rôles et permissions créés');
+        // Attribuer le rôle superadmin
+        $existingRole = DB::table('model_has_roles')
+            ->where('model_id', $user->id)
+            ->where('model_type', 'App\Models\User')
+            ->where('role_id', $superadmin->id)
+            ->first();
+
+        if (!$existingRole) {
+            DB::table('model_has_roles')->insert([
+                'role_id' => $superadmin->id,
+                'model_type' => 'App\Models\User',
+                'model_id' => $user->id,
+            ]);
+            echo "✅ Rôle superadmin attribué à louis@4lb.ca\n";
+        } else {
+            echo "ℹ️  louis@4lb.ca a déjà le rôle superadmin\n";
+        }
+
+        echo "\n=== RÉSUMÉ FINAL ===\n";
+        echo "Rôles disponibles: " . Role::count() . "\n";
+        echo "Permissions disponibles: " . Permission::count() . "\n";
+        echo "✅ Configuration des rôles terminée\n";
+        
+        // Clear cache des permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        echo "✅ Cache permissions réinitialisé\n";
     }
 }
