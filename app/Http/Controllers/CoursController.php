@@ -155,11 +155,17 @@ class CoursController extends Controller
     /**
      * Display the specified course.
      *
-     * @param  \App\Models\Cours  $cours
+     * @param  string  $id
      * @return \Inertia\Response
      */
-    public function show(Cours $cours)
+    public function show($id)
     {
+        // CORRECTION: Utiliser withoutGlobalScope puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
+        
+        // Vérifier authorization après avoir trouvé le cours
+        $this->authorize('view', $cours);
+        
         $cours->load(['instructeur', 'membres.user']);
 
         // Statistiques du cours
@@ -185,11 +191,13 @@ class CoursController extends Controller
     /**
      * Show the form for editing the specified course.
      *
-     * @param  \App\Models\Cours  $cours
+     * @param  string  $id
      * @return \Inertia\Response
      */
-    public function edit(Cours $cours)
+    public function edit($id)
     {
+        // CORRECTION: Résoudre cours puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
 
         $instructeurs = User::role('instructeur')
@@ -210,12 +218,14 @@ class CoursController extends Controller
      * Update the specified course in storage.
      *
      * @param  \App\Http\Requests\UpdateCoursRequest  $request
-     * @param  \App\Models\Cours  $cours
+     * @param  string  $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(UpdateCoursRequest $request, Cours $cours)
+    public function update(UpdateCoursRequest $request, $id)
     {
-        // Autorisation déjà gérée dans UpdateCoursRequest::authorize()
+        // CORRECTION: Résoudre cours puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
+        $this->authorize('update', $cours);
         
         // Validation et préparation des données déjà gérées dans UpdateCoursRequest
         $validated = $request->validated();
@@ -249,18 +259,45 @@ class CoursController extends Controller
 
         $cours->update($validated);
 
-        return redirect()->route('cours.show', $cours)
+        return redirect()->route('cours.show', $cours->id)
             ->with('success', 'Cours mis à jour avec succès.');
+    }
+
+    /**
+     * Remove the specified course from storage.
+     *
+     * @param  string  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy($id)
+    {
+        // CORRECTION: Résoudre cours puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
+        $this->authorize('delete', $cours);
+
+        // Vérifier s'il y a des inscriptions actives
+        if ($cours->membresActifs()->count() > 0) {
+            return back()->withErrors([
+                'delete' => 'Impossible de supprimer un cours avec des membres inscrits.'
+            ]);
+        }
+
+        $cours->delete();
+
+        return redirect()->route('cours.index')
+            ->with('success', 'Cours supprimé avec succès.');
     }
 
     /**
      * Duplicate the specified course.
      *
-     * @param  \App\Models\Cours  $cours
+     * @param  string  $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function duplicate(Cours $cours)
+    public function duplicate($id)
     {
+        // CORRECTION: Résoudre cours puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('create', Cours::class);
         
         // Créer une copie du cours avec des modifications
@@ -272,18 +309,20 @@ class CoursController extends Controller
         
         $nouveauCours->save();
         
-        return redirect()->route('cours.edit', $nouveauCours)
+        return redirect()->route('cours.edit', $nouveauCours->id)
             ->with('success', 'Cours dupliqué avec succès. Modifiez les détails nécessaires.');
     }
 
     /**
      * Show the form for creating multiple sessions.
      *
-     * @param  \App\Models\Cours  $cours
+     * @param  string  $id
      * @return \Inertia\Response
      */
-    public function sessionsForm(Cours $cours)
+    public function sessionsForm($id)
     {
+        // CORRECTION: Résoudre cours puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
         
         $joursDisponibles = [
@@ -309,11 +348,13 @@ class CoursController extends Controller
      * Create multiple sessions for a course.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Cours  $cours
+     * @param  string  $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function createSessions(Request $request, Cours $cours)
+    public function createSessions(Request $request, $id)
     {
+        // CORRECTION: Résoudre cours puis vérifier authorization
+        $cours = Cours::withoutGlobalScope('ecole')->findOrFail($id);
         $this->authorize('update', $cours);
         
         $validated = $request->validate([
@@ -371,31 +412,8 @@ class CoursController extends Controller
             $sessionsCreees++;
         }
         
-        return redirect()->route('cours.show', $cours)
+        return redirect()->route('cours.show', $cours->id)
             ->with('success', "$sessionsCreees session(s) supplémentaire(s) créée(s) avec succès.");
-    }
-
-    /**
-     * Remove the specified course from storage.
-     *
-     * @param  \App\Models\Cours  $cours
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(Cours $cours)
-    {
-        $this->authorize('delete', $cours);
-
-        // Vérifier s'il y a des inscriptions actives
-        if ($cours->membresActifs()->count() > 0) {
-            return back()->withErrors([
-                'delete' => 'Impossible de supprimer un cours avec des membres inscrits.'
-            ]);
-        }
-
-        $cours->delete();
-
-        return redirect()->route('cours.index')
-            ->with('success', 'Cours supprimé avec succès.');
     }
 
     /**

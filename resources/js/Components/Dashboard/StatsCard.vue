@@ -10,10 +10,10 @@
         <span>{{ Math.abs(evolution) }}%</span>
       </div>
     </div>
-    <div class="space-y-1">
-      <p class="text-2xl font-bold text-white">{{ value }}</p>
-      <p class="text-sm text-blue-200">{{ title }}</p>
-      <p v-if="subtext" class="text-xs text-blue-400">{{ subtext }}</p>
+    <div class="space-y-1 min-w-0">
+      <p class="text-xl xl:text-2xl font-bold text-white truncate">{{ value }}</p>
+      <p class="text-sm text-blue-200 truncate">{{ title }}</p>
+      <p v-if="subtext" class="text-xs text-blue-400 truncate">{{ subtext }}</p>
     </div>
   </div>
 </template>

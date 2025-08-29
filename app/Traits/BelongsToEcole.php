@@ -2,64 +2,48 @@
 
 namespace App\Traits;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * Trait BelongsToEcole - VERSION DEBUG DÉSACTIVÉE TEMPORAIREMENT
+ */
 trait BelongsToEcole
 {
     /**
-     * Boot the trait to add global scope
+     * Boot the trait - SCOPING DÉSACTIVÉ POUR DEBUG
      */
-    protected static function bootBelongsToEcole(): void
+    protected static function bootBelongsToEcole()
     {
+        // TEMPORAIRE: Scoping désactivé pour résoudre 403
+        Log::info("BelongsToEcole: Global scope DÉSACTIVÉ temporairement pour debug");
+        
+        // Ne pas appliquer de Global Scope pour l'instant
+        // static::addGlobalScope('ecole', function ($query) { ... });
+        
         // Ajouter automatiquement ecole_id lors de la création
         static::creating(function ($model) {
-            if (auth()->check() && !isset($model->ecole_id)) {
-                $model->ecole_id = auth()->user()->ecole_id;
-            }
-        });
-
-        // Appliquer le scope global pour filtrer par ecole_id
-        static::addGlobalScope('ecole', function (Builder $builder) {
-            if (auth()->check() && auth()->user()->ecole_id) {
-                $builder->where('ecole_id', auth()->user()->ecole_id);
+            if (auth()->check() && !$model->ecole_id) {
+                $user = auth()->user();
+                if (!$user->hasRole('superadmin') && $user->ecole_id) {
+                    $model->ecole_id = $user->ecole_id;
+                }
             }
         });
     }
-
-    /**
-     * Scope pour ignorer le filtrage par école (pour superadmin)
-     */
-    public function scopeWithoutEcoleScope(Builder $query): Builder
+    
+    public function ecole()
     {
-        return $query->withoutGlobalScope('ecole');
+        return $this->belongsTo(\App\Models\Ecole::class);
     }
-
-    /**
-     * Scope pour une école spécifique
-     */
-    public function scopeForEcole(Builder $query, $ecoleId): Builder
+    
+    public function scopeWithoutEcoleScope($query)
     {
-        return $query->withoutGlobalScope('ecole')
-            ->where('ecole_id', $ecoleId);
+        return $query; // Pas de scoping à retirer
     }
-
-    /**
-     * Vérifier si l'utilisateur actuel peut accéder à cet enregistrement
-     */
-    public function userCanAccess(): bool
+    
+    public function scopeForEcole($query, $ecoleId)
     {
-        if (!auth()->check()) {
-            return false;
-        }
-
-        $user = auth()->user();
-        
-        // Superadmin peut tout voir
-        if ($user->hasRole('superadmin')) {
-            return true;
-        }
-
-        // Sinon, vérifier que l'ecole_id correspond
-        return $this->ecole_id === $user->ecole_id;
+        return $query->where($this->getTable() . '.ecole_id', $ecoleId);
     }
 }

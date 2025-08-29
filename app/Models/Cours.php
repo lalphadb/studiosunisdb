@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\BelongsToEcole;
 use Carbon\Carbon;
 
 class Cours extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToEcole;
 
     /**
      * The table associated with the model.
@@ -17,27 +18,6 @@ class Cours extends Model
      * @var string
      */
     protected $table = 'cours';
-
-    /**
-     * Global scope pour mono-école - DÉSACTIVÉ TEMPORAIREMENT POUR DEBUG
-     */
-    protected static function booted()
-    {
-        // Global Scope DÉSACTIVÉ temporairement - causes pages blanches
-        /*
-        static::addGlobalScope('ecole', function ($query) {
-            if (auth()->check() && !auth()->user()->hasRole('superadmin')) {
-                try {
-                    if (\Schema::hasColumn('cours', 'ecole_id')) {
-                        $query->where('ecole_id', auth()->user()->ecole_id);
-                    }
-                } catch (\Exception $e) {
-                    // Ignorer erreur
-                }
-            }
-        });
-        */
-    }
 
     /**
      * The attributes that are mass assignable.
@@ -174,14 +154,6 @@ class Cours extends Model
     public function getInstructeurNomAttribute()
     {
         return $this->instructeur ? $this->instructeur->name : 'Non assigné';
-    }
-
-    /**
-     * Get the school for the course.
-     */
-    public function ecole()
-    {
-        return $this->belongsTo(Ecole::class);
     }
 
     /**
