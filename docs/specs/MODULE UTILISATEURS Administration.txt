@@ -1,0 +1,109 @@
+MODULE UTILISATEURS – Administration (rôle : Admin d’école)
+🎯 Objectif
+Permettre à l’administrateur d’une école de gérer les utilisateurs liés à son dojo, principalement les instructeurs et éventuellement d’autres admins locaux. Ce module permet la création, modification, activation, désactivation, et la gestion sécurisée des accès.
+
+🔐 Accès
+Rôle	Accès module utilisateurs
+SuperAdmin	✅ Tous les utilisateurs toutes écoles
+Admin d’école	✅ Seulement les utilisateurs de son école
+Instructeur	❌ Aucun accès à ce module
+Membre	❌ Aucun accès à ce module
+
+🗂️ Champs utilisateur
+Nom complet
+
+Courriel (utilisé pour la connexion)
+
+Mot de passe
+
+Rôle : admin, instructeur, membre (limité à ceux autorisés pour l’école)
+
+École associée (readonly pour les admins d’école)
+
+Statut : actif, suspendu, inactif
+
+Dernière connexion
+
+Date de création
+
+Logs d’activité (si activé)
+
+🧭 Fonctionnalités principales
+✅ En tant qu’Admin d’école, je peux :
+🔹 Créer un nouvel instructeur dans mon école
+
+🔹 Modifier les informations (nom, rôle, mot de passe)
+
+🔹 Désactiver / réactiver un utilisateur
+
+🔹 Réinitialiser le mot de passe
+
+🔹 Filtrer / chercher par nom, courriel, rôle ou statut
+
+🔹 Voir l’historique de connexion (logs Laravel possibles)
+
+🔹 Changer le rôle (dans la limite de mon école)
+
+🛡️ Règles de sécurité
+✳️ Aucune école ne peut voir ou modifier les utilisateurs d'une autre école
+
+🔐 Le rôle superadmin ne peut pas être attribué/modifié par un admin d’école
+
+✅ Les mots de passe sont hashés (Bcrypt)
+
+✅ Vérification email optionnelle
+
+✅ Gestion des permissions via Spatie Laravel-Permission
+
+🚫 Impossible de supprimer le compte connecté (protection admin)
+
+📋 UI attendue (Interface admin)
+📌 Table utilisateurs avec colonnes :
+
+Nom | Courriel | Rôle | Statut | Actions (✏️ 🔐 🚫)
+
+📌 Bouton + Nouvel utilisateur
+
+📌 Formulaire modal :
+
+Nom, courriel, rôle, mot de passe
+
+📌 Action : Réinitialiser mot de passe
+
+📌 Action : Désactiver utilisateur
+
+📌 Badge dynamique : actif / suspendu
+
+🛠️ Technique
+UserController avec méthodes filtrées par école
+
+Form UserForm avec validation :
+
+Email unique par école
+
+Mot de passe ≥ 8 caractères, confirmation
+
+Formulaire sécurisé avec autorisation via Policies
+
+Table users liée à ecole_id
+
+Middleware can:manage-users + Policy UserPolicy
+
+Traitement des rôles avec Spatie::assignRole()
+
+✅ Étapes de développement
+Création UserController (Admin scope only)
+
+Formulaire create/edit avec validation
+
+Policy UserPolicy par école
+
+Liaison dynamique à l’école active
+
+Gestion sécurisée des mots de passe
+
+Interface table utilisateurs admin
+
+Action reset password + changer rôle
+
+

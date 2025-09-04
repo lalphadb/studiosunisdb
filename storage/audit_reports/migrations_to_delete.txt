@@ -1,0 +1,77 @@
+MIGRATIONS À SUPPRIMER (OBSOLÈTES)
+===================================
+
+Ces fichiers peuvent être supprimés car remplacés par versions plus récentes:
+
+1. 2024_09_01_000000_add_active_last_login_to_users_table.php
+   → Remplacé par 2025_08_29_201000_add_status_last_login_to_users_table.php
+
+2. 2025_01_01_000006_create_cours_table.php
+   → Remplacé par rebuild cours module
+
+3. 2025_01_01_000007_create_cours_membres_table.php
+   → Remplacé par rebuild cours module
+
+4. 2025_08_18_140000_add_deleted_at_to_cours_table.php
+   → Inclus dans rebuild
+
+5. 2025_08_27_145137_add_ecole_id_to_cours_table.php
+   → Remplacé par add_ecole_id_to_all_tables
+
+6. 2025_08_27_200000_add_ecole_id_to_cours_table.php
+   → Remplacé par add_ecole_id_to_all_tables
+
+7. 2025_08_27_210000_finalize_cours_table.php
+   → Remplacé par rebuild
+
+8. 2025_08_28_120000_add_tarification_flexible_to_cours_table.php
+   → Inclus dans rebuild
+
+9. 2025_08_28_130000_extend_niveau_enum_to_string_in_cours_table.php
+   → Inclus dans rebuild
+
+10. 2025_08_28_130000_fix_tarif_mensuel_nullable.php
+    → Inclus dans rebuild
+
+11. 2025_08_28_140000_fix_ecole_id_default_cours.php
+    → Remplacé par add_ecole_id_to_all_tables
+
+12. 2025_08_29_100000_add_deleted_at_to_cours_table.php
+    → Inclus dans rebuild
+
+13. 2025_08_29_120000_fix_uperadmin_role.php
+    → Résolu dans seeders
+
+14. 2025_08_29_150000_add_session_to_cours_table.php
+    → Inclus dans rebuild
+
+15. 2025_08_29_200000_add_parent_and_group_to_cours_table.php
+    → Inclus dans rebuild
+
+16. 2025_08_29_200100_convert_niveau_enum_to_string_in_cours_table.php
+    → Inclus dans rebuild
+
+17. 2025_08_29_200200_add_validation_fields_to_cours_membres_table.php
+    → Inclus dans rebuild
+
+18. 2025_01_01_000003_create_belts_table.php
+    → À décider selon unification ceintures (garder temporairement)
+
+COMMANDES DE SUPPRESSION:
+rm database/migrations/2024_09_01_000000_add_active_last_login_to_users_table.php
+rm database/migrations/2025_01_01_000006_create_cours_table.php
+rm database/migrations/2025_01_01_000007_create_cours_membres_table.php
+rm database/migrations/2025_08_18_140000_add_deleted_at_to_cours_table.php
+rm database/migrations/2025_08_27_145137_add_ecole_id_to_cours_table.php
+rm database/migrations/2025_08_27_200000_add_ecole_id_to_cours_table.php
+rm database/migrations/2025_08_27_210000_finalize_cours_table.php
+rm database/migrations/2025_08_28_120000_add_tarification_flexible_to_cours_table.php
+rm database/migrations/2025_08_28_130000_extend_niveau_enum_to_string_in_cours_table.php
+rm database/migrations/2025_08_28_130000_fix_tarif_mensuel_nullable.php
+rm database/migrations/2025_08_28_140000_fix_ecole_id_default_cours.php
+rm database/migrations/2025_08_29_100000_add_deleted_at_to_cours_table.php
+rm database/migrations/2025_08_29_120000_fix_uperadmin_role.php
+rm database/migrations/2025_08_29_150000_add_session_to_cours_table.php
+rm database/migrations/2025_08_29_200000_add_parent_and_group_to_cours_table.php
+rm database/migrations/2025_08_29_200100_convert_niveau_enum_to_string_in_cours_table.php
+rm database/migrations/2025_08_29_200200_add_validation_fields_to_cours_membres_table.php

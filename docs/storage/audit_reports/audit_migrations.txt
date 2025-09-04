@@ -1,0 +1,153 @@
+AUDIT PROFESSIONNEL DES MIGRATIONS - STUDIOSDB
+==============================================
+
+Date d'audit: $(date)
+Base de données: MySQL/MariaDB (recommandé)
+
+1. INVENTAIRE DES MIGRATIONS
+----------------------------
+
+Total: 42 fichiers de migration
+
+=== MIGRATIONS SYSTÈME LARAVEL ===
+- 0001_01_01_000000_create_users_table.php
+- 0001_01_01_000001_create_cache_table.php  
+- 0001_01_01_000002_create_jobs_table.php
+
+=== MIGRATIONS UTILISATEUR ===
+- 2024_09_01_000000_add_active_last_login_to_users_table.php (OBSOLÈTE - remplacé par 2025_08_29_201000)
+- 2025_01_01_000003_create_belts_table.php (CONFLIT - voir harmonisation)
+- 2025_01_01_000004_create_families_table.php
+- 2025_01_01_000005_create_membres_table.php
+- 2025_01_01_000006_create_cours_table.php (OBSOLÈTE - remplacé par rebuild)
+- 2025_01_01_000007_create_cours_membres_table.php (OBSOLÈTE - remplacé par rebuild)
+- 2025_01_01_000008_create_presences_table.php
+- 2025_01_01_000009_create_paiements_table.php
+- 2025_01_01_000010_create_progression_ceintures_table.php
+- 2025_01_01_000011_create_permission_tables.php (Spatie - OK)
+- 2025_01_01_000012_create_factures_table.php
+- 2025_01_28_add_name_en_to_ceintures.php (CONDITIONNEL - sqlite guard OK)
+- 2025_08_18_140000_add_deleted_at_to_cours_table.php (OBSOLÈTE)
+- 2025_08_18_170800_create_telescope_entries_table.php
+- 2025_08_18_171500_create_examens_table.php
+- 2025_08_20_051143_create_activity_log_table.php
+- 2025_08_20_051144_add_event_column_to_activity_log_table.php
+- 2025_08_20_051145_add_batch_uuid_column_to_activity_log_table.php
+- 2025_08_21_120000_drop_multi_ecole_artifacts.php
+- 2025_08_27_145137_add_ecole_id_to_cours_table.php (OBSOLÈTE)
+- 2025_08_27_200000_add_ecole_id_to_cours_table.php (OBSOLÈTE)
+- 2025_08_27_210000_finalize_cours_table.php (OBSOLÈTE)
+- 2025_08_27_220000_add_ecole_id_to_users_table.php
+- 2025_08_28_120000_add_tarification_flexible_to_cours_table.php (OBSOLÈTE)
+- 2025_08_28_130000_extend_niveau_enum_to_string_in_cours_table.php (OBSOLÈTE)
+- 2025_08_28_130000_fix_tarif_mensuel_nullable.php (OBSOLÈTE)
+- 2025_08_28_140000_fix_ecole_id_default_cours.php (OBSOLÈTE)
+- 2025_08_29_100000_add_deleted_at_to_cours_table.php (OBSOLÈTE)
+- 2025_08_29_120000_fix_uperadmin_role.php (OBSOLÈTE)
+- 2025_08_29_150000_add_session_to_cours_table.php (OBSOLÈTE)
+- 2025_08_29_200000_add_parent_and_group_to_cours_table.php (OBSOLÈTE)
+- 2025_08_29_200100_convert_niveau_enum_to_string_in_cours_table.php (OBSOLÈTE)
+- 2025_08_29_200200_add_validation_fields_to_cours_membres_table.php (OBSOLÈTE)
+- 2025_08_29_201000_add_status_last_login_to_users_table.php (ALIAS CLASS - OK)
+- 2025_08_29_210000_rebuild_cours_module.php (RISQUÉ - drop tables)
+- 2025_08_29_220000_rename_legacy_and_create_new_cours.php (RISQUÉ - rename legacy)
+- 2025_09_01_000001_create_ecoles_table.php
+- 2025_09_01_000002_add_ecole_id_to_all_tables.php
+- 2025_09_01_100000_create_loi25_compliance_tables.php
+- 2025_09_01_110000_harmonize_ceintures_naming.php (BONNE PRATIQUE)
+- 2025_09_01_120000_add_performance_indexes.php (BONNE PRATIQUE)
+
+2. PROBLÈMES IDENTIFIÉS
+-----------------------
+
+=== CRITIQUES ===
+1. MULTIPLES RECONSTRUCTIONS COURS (RISQUE PERTE DONNÉES)
+   - 2025_08_29_210000_rebuild_cours_module.php: DROP tables existantes
+   - 2025_08_29_220000_rename_legacy_and_create_new_cours.php: RENAME legacy
+   - Impact: Perte potentielle de données si exécution partielle
+
+2. MIGRATIONS OBSOLÈTES NON SUPPRIMÉES
+   - 15+ migrations cours marquées OBSOLÈTE mais présentes
+   - Confusion dans l'ordre d'exécution
+
+3. CONFLIT BELTS/CEINTURES
+   - belts_table.php vs harmonize_ceintures_naming.php
+   - Risque de données orphelines pendant transition
+
+=== MOYENS ===
+4. ORDRE D'EXÉCUTION NON CHRONOLOGIQUE
+   - Timestamps 0001_01_01 mélangés avec 2025_*
+   - Besoin de renumérotation pour ordre déterministe
+
+5. GUARDS CONDITIONNELS INCONSISTANTS
+   - Certains migrations ont guards sqlite, d'autres non
+   - Fulltext guard dans membres OK, mais autres manquent
+
+6. ALIAS CLASS POUR COMPATIBILITÉ
+   - add_status_last_login_to_users_table.php utilise alias
+   - Fonctionnel mais non standard
+
+=== MINEURS ===
+7. NOMS DE FICHIERS LONGUEUR INÉGALE
+   - Certains très longs, difficiles à lire
+
+8. MANQUE DE COMMENTAIRES DANS CERTAINES MIGRATIONS
+   - Quelques-unes sans docstring
+
+3. RECOMMANDATIONS DE NETTOYAGE
+-------------------------------
+
+=== PHASE 1: SUPPRESSION IMMÉDIATE ===
+- Supprimer toutes les migrations marquées OBSOLÈTE (15+ fichiers)
+- Garder uniquement les migrations actives finales
+
+=== PHASE 2: RENUMÉROTATION CHRONOLOGIQUE ===
+Renommer pour ordre déterministe MySQL:
+2025_01_01_000001_create_users_table.php
+2025_01_01_000002_create_cache_table.php
+2025_01_01_000003_create_jobs_table.php
+2025_01_01_000004_create_ecoles_table.php
+2025_01_01_000005_create_families_table.php
+2025_01_01_000006_create_belts_table.php (ou ceintures)
+2025_01_01_000007_create_membres_table.php
+2025_01_01_000008_create_cours_table.php (version finale)
+2025_01_01_000009_create_cours_membres_table.php
+2025_01_01_000010_create_presences_table.php
+2025_01_01_000011_create_paiements_table.php
+2025_01_01_000012_create_progression_ceintures_table.php
+2025_01_01_000013_create_permission_tables.php
+2025_01_01_000014_create_factures_table.php
+2025_01_01_000015_create_examens_table.php
+2025_01_01_000016_add_ecole_id_to_all_tables.php
+2025_01_01_000017_add_performance_indexes.php
+2025_01_01_000018_harmonize_ceintures_naming.php
+2025_01_01_000019_add_name_en_to_ceintures.php
+2025_01_01_000020_add_status_last_login_to_users_table.php
+2025_01_01_000021_add_ecole_id_to_users_table.php
+2025_01_01_000022_create_telescope_entries_table.php
+2025_01_01_000023_create_activity_log_table.php
+2025_01_01_000024_add_event_column_to_activity_log_table.php
+2025_01_01_000025_add_batch_uuid_column_to_activity_log_table.php
+2025_01_01_000026_drop_multi_ecole_artifacts.php
+2025_01_01_000027_create_loi25_compliance_tables.php
+
+=== PHASE 3: CONSOLIDATION ===
+- Merger les migrations similaires (ex: tous les add_ecole_id_*)
+- Supprimer les guards inutiles (tout MySQL)
+- Standardiser les alias classes
+
+=== PHASE 4: TESTS ===
+- Tester l'ordre sur base fraîche
+- Vérifier pas de conflits FK
+- Valider données préservées
+
+4. PLAN D'ACTION IMMÉDIAT
+-------------------------
+
+1. BACKUP complet de la base actuelle
+2. Lister les migrations à conserver vs supprimer
+3. Renommer les fichiers conservés
+4. Tester sur environnement de développement
+5. Appliquer en production avec rollback planifié
+
+CONCLUSION: Migration stack nécessite nettoyage majeur pour stabilité MySQL.

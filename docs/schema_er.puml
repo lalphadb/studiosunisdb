@@ -1,0 +1,160 @@
+@startuml
+hide circle
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor White
+  ArrowColor #555555
+  BorderColor #333333
+  FontSize 12
+}
+
+entity users {
+  *id PK
+  name
+  email
+  ecole_id (nullable?)
+  ...
+}
+
+entity cours {
+  *id PK
+  nom
+  instructeur_id FK -> users.id
+  parent_cours_id (nullable, self FK)
+  niveau
+  actif
+  ...
+}
+
+entity membres {
+  *id PK
+  user_id (nullable) FK -> users.id
+  ceinture_actuelle_id FK -> belts.id
+  family_id (nullable) FK -> families.id
+  statut
+  ...
+}
+
+entity cours_membres {
+  *id PK
+  cours_id FK -> cours.id
+  membre_id FK -> membres.id
+  date_inscription
+  statut
+  UNIQUE(cours_id,membre_id)
+}
+
+entity presences {
+  *id PK
+  cours_id FK -> cours.id
+  membre_id FK -> membres.id
+  instructeur_id FK -> users.id
+  date_presence?
+}
+
+entity belts {
+  *id PK
+  ordre
+  nom
+  ...
+}
+
+entity progression_ceintures {
+  *id PK
+  membre_id FK -> membres.id
+  ceinture_actuelle_id FK -> belts.id
+  ceinture_cible_id FK -> belts.id
+  instructeur_id FK -> users.id
+  created_at
+}
+
+entity paiements {
+  *id PK
+  membre_id FK -> membres.id
+  saisi_par_id FK -> users.id
+  montant
+  ...
+}
+
+entity factures {
+  *id PK
+  membre_id FK -> membres.id
+  family_id FK -> families.id
+  total
+  ...
+}
+
+entity families {
+  *id PK
+  nom
+  ...
+}
+
+entity examens {
+  *id PK
+  membre_id FK -> membres.id
+  ceinture_id FK -> belts.id
+  instructeur_id FK -> users.id
+  date_examen
+  statut?
+}
+
+entity roles {
+  *id PK
+  name
+}
+
+entity permissions {
+  *id PK
+  name
+}
+
+entity model_has_roles {
+  role_id FK -> roles.id
+  model_type
+  model_id
+  PK(role_id,model_type,model_id)
+}
+
+entity model_has_permissions {
+  permission_id FK -> permissions.id
+  model_type
+  model_id
+  PK(permission_id,model_type,model_id)
+}
+
+entity role_has_permissions {
+  role_id FK -> roles.id
+  permission_id FK -> permissions.id
+  PK(role_id,permission_id)
+}
+
+' Relations (crow's foot style simplified)
+users ||--o{ cours : "instructeur_id"
+cours ||--o{ cours : "parent_cours_id"
+cours ||--o{ cours_membres
+membres ||--o{ cours_membres
+cours ||--o{ presences
+membres ||--o{ presences
+users ||--o{ presences : "instructeur_id"
+membres ||--o{ progression_ceintures
+belts ||--o{ progression_ceintures : "actuelle"
+belts ||--o{ progression_ceintures : "cible"
+users ||--o{ progression_ceintures : "instructeur_id"
+membres ||--o{ paiements
+users ||--o{ paiements : "saisi_par_id"
+membres ||--o{ factures
+families ||--o{ factures
+membres ||--o{ examens
+belts ||--o{ examens
+users ||--o{ examens : "instructeur_id"
+users ||--o{ membres : "user_id"
+belts ||--o{ membres : "ceinture_actuelle_id"
+families ||--o{ membres : "family_id"
+
+roles ||--o{ model_has_roles
+permissions ||--o{ model_has_permissions
+roles ||--o{ role_has_permissions
+permissions ||--o{ role_has_permissions
+
+@enduml

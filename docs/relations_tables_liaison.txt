@@ -1,0 +1,68 @@
+RAPPORT TABLES DE LIAISON & RELATIONS (StudiosDB)
+
+Pivots / Tables associatives métier:
+1. cours_membres
+   - FK: cours_id -> cours.id (cascade), membre_id -> membres.id (cascade)
+   - Unique: (cours_id, membre_id)
+   - Champs clés: date_inscription, date_fin, statut, notes
+2. presences
+   - FK: cours_id -> cours, membre_id -> membres, instructeur_id -> users
+   - Fact table des présences
+3. progression_ceintures
+   - FK: membre_id -> membres, ceinture_actuelle_id -> belts, ceinture_cible_id -> belts, instructeur_id -> users
+   - Historique de progression
+4. paiements
+   - FK: membre_id -> membres, saisi_par_id -> users (nullable)
+5. factures
+   - FK: membre_id -> membres, family_id -> families (nullable)
+6. examens
+   - FK: membre_id -> membres, ceinture_id -> belts, instructeur_id -> users
+
+Pivots Spatie (ACL):
+7. model_has_roles (role_id -> roles.id)
+8. model_has_permissions (permission_id -> permissions.id)
+9. role_has_permissions (role_id -> roles.id, permission_id -> permissions.id)
+
+Autorelation:
+- cours.parent_cours_id -> cours.id (hiérarchie)
+
+Références supplémentaires:
+- membres.user_id -> users.id (nullable)
+- membres.ceinture_actuelle_id -> belts.id
+- membres.family_id -> families.id
+- progression_ceintures double référence ceinture (actuelle / cible)
+- paiements.saisi_par_id -> users.id
+- factures.family_id -> families.id
+- examens.ceinture_id -> belts.id
+
+Cardinalités principales:
+- users 1..N cours (instructeur_id)
+- cours N..N membres via cours_membres
+- cours 1..N presences ; membres 1..N presences
+- membres 1..N progression_ceintures
+- belts 1..N progression_ceintures (actuelle & cible)
+- membres 1..N paiements ; users 1..N paiements (saisi_par)
+- membres 1..N factures ; families 1..N factures
+- membres 1..N examens ; belts 1..N examens ; users 1..N examens
+- roles N..N users (model_has_roles)
+- permissions N..N roles (role_has_permissions)
+- permissions N..N models (model_has_permissions)
+
+Index / Contraintes notables:
+- cours_membres unique(cours_id, membre_id)
+- Index cours: (jour_semaine, heure_debut), (instructeur_id, actif)
+- Index membres: (statut, date_derniere_presence), (prenom, nom), date_inscription
+- FKs cascade sur pivots clés
+
+Incohérences / Points de vigilance:
+- belts vs ceintures (unifier le naming)
+- progression_ceintures vs membre.ceinture_actuelle_id (garantir synchro)
+- Truncate dans seeders (risque en prod)
+- Index temporels potentiels manquants (presences, paiements, examens)
+
+Recommandations prioritaires (résumé):
+1. Unifier belts/ceintures.
+2. Ajouter colonnes de dates & statuts manquants (examens, progression, presences si besoin).
+3. Index composites analytiques.
+4. Events pour synchro progression -> membre.ceinture_actuelle_id.
+5. Seeders idempotents (remplacer truncate).

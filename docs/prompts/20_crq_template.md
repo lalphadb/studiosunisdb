@@ -1,0 +1,12 @@
+# CRQ (Change Request) — StudiosDB
+- Objet / Scope :
+- Modules impactés :
+- Justification (valeur, risques, alternatives) :
+- Plan technique (étapes, migrations, fichiers) :
+- Rollback prévu (migrations/code/UI/données) :
+- Vérifs préalables (cmds) :
+- Tests prévus (Pest + front + A11y) :
+- Sécurité & Loi 25 (impacts, consentements, logs) :
+- Conformité UI Dashboard (composants, tokens) :
+- États : DRAFT → REVIEW → APPROVED → IMPLEMENTED → FROZEN
+- Approbations (comité) :

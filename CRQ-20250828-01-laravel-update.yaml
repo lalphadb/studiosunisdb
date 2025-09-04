@@ -1,0 +1,47 @@
+CRQ-20250828-01
+Objet : Mise à jour sécurisée Laravel 12.24.0 → 12.26.3 + Sail 1.44.0 → 1.45.0 + Telescope 5.10.2 → 5.11.3
+Scope impacté : Dépendances PHP (framework et outils), build front indirect, artisan/route cache. Aucun changement métier.
+Raison / bénéfices :
+  - Corrections de bugs et améliorations mineures (stabilité, perfs, sécurité).
+  - Alignement sur versions récentes pour future maintenance.
+Risques / mitigations :
+  - Conflits de contraintes Composer → Dry-run + branche dédiée + with-all-dependencies.
+  - Régressions runtime → tests/inspection manuelle, comparaison avant/après.
+  - RouteList actuellement bloqué par InscriptionController manquant → ne pas bloquer la CRQ ; vérifier pages clés via navigateur et logs.
+Plan (étapes) :
+  1. Pré-checks (lecture seule) :
+     - composer show laravel/framework
+     - composer outdated laravel/*   # confirmer 12.26.3 / Sail 1.45.0 / Telescope 5.11.3
+     - php -v && php artisan about
+     - git status && git rev-parse --abbrev-ref HEAD
+  2. Dry-run (aucune écriture) :
+     - composer update laravel/framework laravel/sail laravel/telescope --with-all-dependencies --dry-run
+     - composer why-not laravel/framework 12.26.3 || true
+  3. Branche de travail :
+     - git switch -c chore/laravel-12.26.3
+  4. Mise à jour (environnement de dev) :
+     - composer update laravel/framework laravel/sail laravel/telescope --with-all-dependencies
+     - php artisan optimize:clear
+     - npm run build
+  5. Vérifications :
+     - php artisan about (vérifier version framework)
+     - composer audit (sécurité)
+     - php artisan test || true  # comparer avec l’état avant CRQ si la suite n’est pas encore réparée
+     - Parcours manuel : /login, Dashboard, Cours index/create/edit, Membres index/show
+  6. Validation :
+     - git add composer.json composer.lock && git commit -m "chore(deps): laravel 12.26.3, sail 1.45.0, telescope 5.11.3"
+     - Pull Request + review
+  7. Déploiement :
+     - git merge --no-ff chore/laravel-12.26.3
+     - php artisan optimize && php artisan config:cache && php artisan route:cache
+Rollback :
+  - git restore --source=HEAD~1 composer.lock composer.json && composer install
+  - Ou git revert du commit de mise à jour.
+Tests / validations :
+  - composer outdated laravel/* → plus de delta pour framework/sail/telescope
+  - php artisan about → Laravel v12.26.x
+  - Build vite OK ; navigation des vues clés sans erreurs PHP/JS
+  - Logs sans 5xx, pas de régression visible côté Cours/Membres
+Notes :
+  - La route vers InscriptionController manquant casse php artisan route:list ; ne pas bloquer la CRQ. Correction dans une CRQ séparée.
+  - Aucune migration requise par cette mise à jour.

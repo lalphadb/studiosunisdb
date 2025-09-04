@@ -1,0 +1,93 @@
+# Sauvegardes volumineuses à ignorer
+backups/*.tar.xz
+backups/*.zip
+backups/*.gz
+backups/*.bak
+backups/*.sql
+backups/*.tar
+# StudiosDB v5 Pro - .gitignore
+# ================================
+
+# Laravel
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/storage/*.key
+.env*
+!.env.example
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# IDE & Editors
+/.vscode/
+/.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+/storage/logs/*.log
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*.php
+
+# Testing
+/coverage/
+/.phpunit.cache
+.phpunit.result.cache
+
+# Backup files
+*.bak
+*.backup
+/backups/
+/database/backups/
+
+# StudiosDB Specific
+/public/uploads/*
+/public/avatars/*
+/storage/app/exports/*
+/storage/app/imports/*
+/storage/app/certificates/*
+
+# Cache & Build
+.cache/
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.sqlite
+*.sqlite3
+database.sql
+
+# Configuration
+config/local/
+config/production/
+
+# Documentation builds
+/docs/build/
+/docs/.vuepress/dist/# Archives lourdes
+*.tar
+*.tar.*    # .tar.gz, .tar.xz, etc.
+*.zip
+*.7z

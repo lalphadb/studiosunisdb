@@ -1,0 +1,120 @@
+MIGRATIONS À CONSERVER ET RENOMMER
+===================================
+
+Ordre chronologique déterministe pour MySQL:
+
+ACTUEL → NOUVEAU NOM
+===================
+
+1. 0001_01_01_000000_create_users_table.php
+   → 2025_01_01_000001_create_users_table.php
+
+2. 0001_01_01_000001_create_cache_table.php
+   → 2025_01_01_000002_create_cache_table.php
+
+3. 0001_01_01_000002_create_jobs_table.php
+   → 2025_01_01_000003_create_jobs_table.php
+
+4. 2025_09_01_000001_create_ecoles_table.php
+   → 2025_01_01_000004_create_ecoles_table.php
+
+5. 2025_01_01_000004_create_families_table.php
+   → 2025_01_01_000005_create_families_table.php
+
+6. 2025_01_01_000003_create_belts_table.php
+   → 2025_01_01_000006_create_belts_table.php
+   (À décider: garder temporairement ou remplacer par ceintures)
+
+7. 2025_01_01_000005_create_membres_table.php
+   → 2025_01_01_000007_create_membres_table.php
+
+8. 2025_08_29_210000_rebuild_cours_module.php
+   → 2025_01_01_000008_create_cours_table.php
+   (Renommer classe et fichier)
+
+9. 2025_08_29_220000_rename_legacy_and_create_new_cours.php
+   → 2025_01_01_000009_create_cours_membres_table.php
+   (Renommer classe et fichier)
+
+10. 2025_01_01_000008_create_presences_table.php
+    → 2025_01_01_000010_create_presences_table.php
+
+11. 2025_01_01_000009_create_paiements_table.php
+    → 2025_01_01_000011_create_paiements_table.php
+
+12. 2025_01_01_000010_create_progression_ceintures_table.php
+    → 2025_01_01_000012_create_progression_ceintures_table.php
+
+13. 2025_01_01_000011_create_permission_tables.php
+    → 2025_01_01_000013_create_permission_tables.php
+
+14. 2025_01_01_000012_create_factures_table.php
+    → 2025_01_01_000014_create_factures_table.php
+
+15. 2025_08_18_171500_create_examens_table.php
+    → 2025_01_01_000015_create_examens_table.php
+
+16. 2025_09_01_000002_add_ecole_id_to_all_tables.php
+    → 2025_01_01_000016_add_ecole_id_to_all_tables.php
+
+17. 2025_09_01_120000_add_performance_indexes.php
+    → 2025_01_01_000017_add_performance_indexes.php
+
+18. 2025_09_01_110000_harmonize_ceintures_naming.php
+    → 2025_01_01_000018_harmonize_ceintures_naming.php
+
+19. 2025_01_28_add_name_en_to_ceintures.php
+    → 2025_01_01_000019_add_name_en_to_ceintures.php
+
+20. 2025_08_29_201000_add_status_last_login_to_users_table.php
+    → 2025_01_01_000020_add_status_last_login_to_users_table.php
+
+21. 2025_08_27_220000_add_ecole_id_to_users_table.php
+    → 2025_01_01_000021_add_ecole_id_to_users_table.php
+
+22. 2025_08_18_170800_create_telescope_entries_table.php
+    → 2025_01_01_000022_create_telescope_entries_table.php
+
+23. 2025_08_20_051143_create_activity_log_table.php
+    → 2025_01_01_000023_create_activity_log_table.php
+
+24. 2025_08_20_051144_add_event_column_to_activity_log_table.php
+    → 2025_01_01_000024_add_event_column_to_activity_log_table.php
+
+25. 2025_08_20_051145_add_batch_uuid_column_to_activity_log_table.php
+    → 2025_01_01_000025_add_batch_uuid_column_to_activity_log_table.php
+
+26. 2025_08_21_120000_drop_multi_ecole_artifacts.php
+    → 2025_01_01_000026_drop_multi_ecole_artifacts.php
+
+27. 2025_09_01_100000_create_loi25_compliance_tables.php
+    → 2025_01_01_000027_create_loi25_compliance_tables.php
+
+COMMANDES DE RENOMMAGE:
+mv database/migrations/0001_01_01_000000_create_users_table.php database/migrations/2025_01_01_000001_create_users_table.php
+mv database/migrations/0001_01_01_000001_create_cache_table.php database/migrations/2025_01_01_000002_create_cache_table.php
+mv database/migrations/0001_01_01_000002_create_jobs_table.php database/migrations/2025_01_01_000003_create_jobs_table.php
+mv database/migrations/2025_09_01_000001_create_ecoles_table.php database/migrations/2025_01_01_000004_create_ecoles_table.php
+mv database/migrations/2025_01_01_000004_create_families_table.php database/migrations/2025_01_01_000005_create_families_table.php
+# belts: décider selon unification
+mv database/migrations/2025_01_01_000005_create_membres_table.php database/migrations/2025_01_01_000007_create_membres_table.php
+# rebuild_cours_module: renommer classe aussi
+# rename_legacy: renommer classe aussi
+mv database/migrations/2025_01_01_000008_create_presences_table.php database/migrations/2025_01_01_000010_create_presences_table.php
+mv database/migrations/2025_01_01_000009_create_paiements_table.php database/migrations/2025_01_01_000011_create_paiements_table.php
+mv database/migrations/2025_01_01_000010_create_progression_ceintures_table.php database/migrations/2025_01_01_000012_create_progression_ceintures_table.php
+mv database/migrations/2025_01_01_000011_create_permission_tables.php database/migrations/2025_01_01_000013_create_permission_tables.php
+mv database/migrations/2025_01_01_000012_create_factures_table.php database/migrations/2025_01_01_000014_create_factures_table.php
+mv database/migrations/2025_08_18_171500_create_examens_table.php database/migrations/2025_01_01_000015_create_examens_table.php
+mv database/migrations/2025_09_01_000002_add_ecole_id_to_all_tables.php database/migrations/2025_01_01_000016_add_ecole_id_to_all_tables.php
+mv database/migrations/2025_09_01_120000_add_performance_indexes.php database/migrations/2025_01_01_000017_add_performance_indexes.php
+mv database/migrations/2025_09_01_110000_harmonize_ceintures_naming.php database/migrations/2025_01_01_000018_harmonize_ceintures_naming.php
+mv database/migrations/2025_01_28_add_name_en_to_ceintures.php database/migrations/2025_01_01_000019_add_name_en_to_ceintures.php
+mv database/migrations/2025_08_29_201000_add_status_last_login_to_users_table.php database/migrations/2025_01_01_000020_add_status_last_login_to_users_table.php
+mv database/migrations/2025_08_27_220000_add_ecole_id_to_users_table.php database/migrations/2025_01_01_000021_add_ecole_id_to_users_table.php
+mv database/migrations/2025_08_18_170800_create_telescope_entries_table.php database/migrations/2025_01_01_000022_create_telescope_entries_table.php
+mv database/migrations/2025_08_20_051143_create_activity_log_table.php database/migrations/2025_01_01_000023_create_activity_log_table.php
+mv database/migrations/2025_08_20_051144_add_event_column_to_activity_log_table.php database/migrations/2025_01_01_000024_add_event_column_to_activity_log_table.php
+mv database/migrations/2025_08_20_051145_add_batch_uuid_column_to_activity_log_table.php database/migrations/2025_01_01_000025_add_batch_uuid_column_to_activity_log_table.php
+mv database/migrations/2025_08_21_120000_drop_multi_ecole_artifacts.php database/migrations/2025_01_01_000026_drop_multi_ecole_artifacts.php
+mv database/migrations/2025_09_01_100000_create_loi25_compliance_tables.php database/migrations/2025_01_01_000027_create_loi25_compliance_tables.php

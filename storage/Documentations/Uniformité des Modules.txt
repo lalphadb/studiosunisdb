@@ -1,0 +1,357 @@
+Uniformité des Modules — StudiosDB V6
+
+Guide opérationnel pour harmoniser toutes les features (backend + frontend)
+
+But : garantir un look & feel cohérent, des patterns de code stables, et des comportements identiques dans tous les modules (Members, Courses, Attendances, Payments, Belts, Families, Dashboard, etc.).
+Public : devs Laravel + Inertia/Vue.
+À mettre dans le repo : docs/UNIFORMITE_MODULES.md.
+
+0) Pré-requis (déjà posés)
+
+Design tokens & thèmes : resources/css/design-tokens.css + app.css importés
+
+Tailwind configuré avec mapping vers var(--primary-XXX) (cf. tailwind.config.js)
+
+Composants UI génériques présents : .btn-*, .card, .input, etc.
+
+Dark mode activé (darkMode: 'class') et layout global en place.
+
+1) Anatomie standard d’un module
+app/
+  Http/
+    Controllers/   └─ <Module>Controller.php
+    Requests/      └─ <Module>StoreRequest.php, <Module>UpdateRequest.php
+    Resources/     └─ <Module>Resource.php (optionnel si API)
+  Models/          └─ <Module>.php
+database/
+  migrations/      └─ 20xx_xx_xx_xxxxxx_create_<modules>_table.php
+  seeders/         └─ <Module>Seeder.php (si nécessaire)
+resources/
+  js/Pages/<Module>/
+    ├─ Index.vue        (liste + filtres + pagination)
+    ├─ Create.vue       (formulaire création)
+    ├─ Edit.vue         (formulaire édition)
+    └─ Show.vue         (détails)
+  views/<module>/...    (si Blade requis)
+routes/
+  web.php (Inertia)  ou  api.php (API)
+tests/
+  Feature/<Module>Test.php
+
+2) Convention de nommage
+
+Modèle : singulier (Member, Course)
+
+Table : pluriel snake_case (members, courses)
+
+Contrôleur : <Module>Controller + actions REST (index/create/store/show/edit/update/destroy)
+
+Routes : Route::resource('<modules>', <Module>Controller::class);
+
+Form Requests : <Module>StoreRequest, <Module>UpdateRequest
+
+Pages Vue : Pages/<Module>/{Index,Create,Edit,Show}.vue
+
+Clés de traduction : modules.<module>.*
+
+3) Backend — Règles d’implémentation
+3.1 Migrations
+
+Colonnes standards : id, champs métier, timestamps(), softDeletes() si pertinent.
+
+Indexer les colonnes de filtre/recherche (->index()).
+
+Schema::create('members', function (Blueprint $t) {
+  $t->id();
+  $t->string('first_name');
+  $t->string('last_name')->index();
+  $t->string('email')->unique();
+  $t->timestamps();
+  $t->softDeletes();
+});
+
+3.2 Modèles
+
+$fillable explicite (ou $guarded = [] si conscient)
+
+Relations nommées au pluriel pour hasMany/belongsToMany.
+
+Scopes pour filtres (search, active, date range).
+
+class Member extends Model {
+  protected $fillable = ['first_name','last_name','email'];
+
+  public function courses() { return $this->belongsToMany(Course::class); }
+
+  public function scopeSearch($q, $term) {
+    if (!$term) return $q;
+    return $q->where(fn($qq)=>$qq
+      ->where('first_name','like',"%$term%")
+      ->orWhere('last_name','like',"%$term%")
+      ->orWhere('email','like',"%$term%"));
+  }
+}
+
+3.3 Contrôleurs (Resource + Inertia)
+
+Jamais de logique métier lourde dans le contrôleur → service dédié si besoin.
+
+Filtrage / tri / pagination uniformes (params : q, sort, dir, page, perPage).
+
+public function index(Request $r) {
+  $q = Member::query()
+    ->search($r->q)
+    ->orderBy($r->sort ?? 'id', $r->dir === 'asc' ? 'asc' : 'desc')
+    ->paginate($r->perPage ?? 15)
+    ->withQueryString();
+
+  return Inertia::render('Members/Index', [
+    'items' => $q,
+    'filters' => (object)[
+      'q' => $r->q,
+      'sort' => $r->sort ?? 'id',
+      'dir' => $r->dir ?? 'desc',
+    ],
+  ]);
+}
+
+3.4 Validation (Form Requests)
+
+Toujours via Form Request + messages FR.
+
+class MemberStoreRequest extends FormRequest {
+  public function rules() {
+    return [
+      'first_name'=>'required|string|max:100',
+      'last_name' =>'required|string|max:100',
+      'email'     =>'required|email|unique:members,email',
+    ];
+  }
+}
+
+3.5 Autorisation
+
+Policies par module (php artisan make:policy MemberPolicy --model=Member)
+
+Appeler $this->authorize() dans chaque action sensible.
+
+3.6 Ressource API (si API publique)
+
+Http/Resources/<Module>Resource.php pour exposer un schéma stable.
+
+4) Frontend — Règles d’implémentation
+4.1 Layout & thèmes
+
+Toutes les pages utilisent le layout global.
+
+Aucune couleur Tailwind brute (text-blue-500) → utiliser variables/composants.
+
+Dark mode auto via .dark sur <html>.
+
+4.2 Pages types (Inertia/Vue 3)
+
+Index.vue : table ou cartes + filtres (q/sort/dir) + pagination uniforme.
+
+Create.vue / Edit.vue : même formulaire packagé (réutilisation composant FormSection).
+
+Show.vue : résumé en cards + actions standard (Edit/Delete).
+
+4.3 Composants UI (obligatoires)
+
+Boutons : .btn-primary, .btn-secondary, .btn-danger, .btn-ghost
+
+Cards : .card (+ variantes dark: implicites)
+
+Inputs : .input (clair), .input-dark (si fond sombre custom)
+
+Badges : utiliser tokens sémantiques (success, warning, danger)
+
+Modals : composant standard (confirmations delete, etc.)
+
+4.4 Liste & filtres (extrait)
+<!-- Members/Index.vue -->
+<template>
+  <div class="space-y-6">
+    <div class="card">
+      <form @submit.prevent="submit" class="flex gap-3 items-end">
+        <div class="flex-1">
+          <label class="block text-sm mb-1">Recherche</label>
+          <input v-model="form.q" class="input" placeholder="Nom, email..." />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Trier par</label>
+          <select v-model="form.sort" class="input">
+            <option value="id">ID</option>
+            <option value="last_name">Nom</option>
+            <option value="created_at">Création</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Sens</label>
+          <select v-model="form.dir" class="input">
+            <option value="desc">Desc</option>
+            <option value="asc">Asc</option>
+          </select>
+        </div>
+        <button class="btn-primary">Filtrer</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <!-- tableau ou cartes… -->
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { router, useForm } from '@inertiajs/vue3'
+const props = defineProps({ filters:Object, items:Object })
+const form = useForm({ q: props.filters?.q ?? '', sort: props.filters?.sort ?? 'id', dir: props.filters?.dir ?? 'desc' })
+const submit = () => router.get(route('members.index'), form, { preserveState:true, replace:true })
+</script>
+
+4.5 États & accessibilité
+
+States : :hover, :focus-visible, :disabled implémentés sur tous les interactifs.
+
+A11y : libellés explicites, aria-* si nécessaire, contraste AA.
+
+Skeletons/Loading : classes utilitaires ou composant Skeleton pour chargements.
+
+5) Données — Pagination, tri, filtres
+
+Pagination : serveur (Laravel), 15 par défaut, withQueryString().
+
+Tri : sort (colonne whitelistée), dir (asc|desc).
+
+Recherche : param q + scopeSearch.
+
+Filtres : booléens/nombres/dates → ?status=active&from=2025-01-01&to=2025-01-31.
+
+Export (si prévu) : action dédiée (/modules/export?…) qui réutilise les mêmes filtres.
+
+6) Sécurité
+
+Policies systématiques (lecture/écriture/suppression).
+
+Validation côté serveur (Form Request) + côté client légère (UX).
+
+Mass assignment contrôlé, N+1 évité (eager loading quand utile).
+
+Rate limit sur endpoints sensibles si API.
+
+7) Performance
+
+Debounce des recherches (300ms).
+
+Lazy des pages lourdes (import dynamique).
+
+Images : tailles fixes, loading="lazy".
+
+Build : npm run build sans warnings bloquants.
+
+8) Tests
+
+Feature par module (liste, création valide/invalide, update, delete).
+
+Policy : accès autorisé/interdit.
+
+(Optionnel) Dusk pour scénarios UI critiques.
+
+public function test_member_can_be_created() {
+  $user = User::factory()->create();
+  $this->actingAs($user)
+    ->post(route('members.store'), ['first_name'=>'A','last_name'=>'B','email'=>'a@b.com'])
+    ->assertRedirect();
+  $this->assertDatabaseHas('members', ['email'=>'a@b.com']);
+}
+
+9) Git & workflow
+
+Branches : feat/<module>-..., fix/<module>-..., refactor/ui-...
+
+Commits : feat(ui): …, refactor(ui): …, fix(ui): …
+
+PR : template avec résumé, captures, checklist DOD (ci-dessous).
+
+10) Definition of Done (DoD) — par module
+
+ CRUD complet, routes resource
+
+ Validations (Store/Update), messages FR
+
+ Policies (index/show/create/update/delete)
+
+ Pages Vue Index/Create/Edit/Show sous layout global
+
+ Filtres/tri/pagination uniformes
+
+ UI via composants (pas de couleurs brutes Tailwind)
+
+ Dark mode OK
+
+ A11y (labels, focus, contraste)
+
+ Tests Feature verts
+
+ npm run build sans erreurs
+
+ Commits & PR conformes
+
+11) Plan de migration (module existant → uniforme)
+
+Lister pages & contrôleur actuels.
+
+Brancher refactor/ui-<module>-uniformisation.
+
+Poser Form Requests + Policy si absents.
+
+Standardiser contrôleur : filtres/tri/pagination.
+
+Remplacer styles ad-hoc par .card, .btn-*, .input + tokens.
+
+Nettoyer imports, activer dark mode.
+
+Vérifier a11y rapide + responsive.
+
+Tests rapides + build.
+
+Commit refactor(ui): <Module> uniformisé + Push.
+
+PR avec checklist DoD.
+
+12) Exemples d’ordres (Claude + MCP)
+
+Uniformiser un module
+
+Uniformise le module Members selon docs/UNIFORMITE_MODULES.md :
+
+contrôleur avec filtres/tri/pagination,
+
+Form Requests, Policy,
+
+pages Vue utilisant .card, .btn-*, .input,
+
+dark mode OK, a11y basique.
+Sauvegarde et commit refactor(ui): Members uniformisé, puis push.
+
+Passage global
+
+Applique l’uniformisation à Courses, Attendances, Payments, Belts, Families, puis build, commit & push module par module.
+
+Vérif rapide
+
+Lance php artisan test et npm run build. Si erreurs simples, corrige-les puis commit fix(ui): corrections post-build et push.
+
+13) Annexes — snippets utiles
+Route resource + names
+Route::resource('members', MemberController::class)->names('members');
+
+Suppression (confirm modal côté UI)
+
+Toujours demander confirmation (modal standard), puis DELETE signé CSRF.
+
+✅ Résumé
+
+Ce guide définit quoi livrer (anatomie, UX, thèmes), comment le coder (backend/Frontend), comment le tester, et comment le livrer (Git).
+En l’appliquant module par module, on obtient une UI unifiée et un code prévisible.

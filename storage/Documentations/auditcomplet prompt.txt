@@ -1,0 +1,29 @@
+📦 Format de livraison (impératif)
+- **Nouveaux fichiers** → bloc `cat <<'EOH' > ...` complet.
+- **Fichiers existants** → diff unifié **ou** version complète si petite.
+- À la fin, un bloc **“Commandes de vérification”** que je peux coller.
+
+🧪 Commandes de vérification (à fournir après tes corrections)
+- Routes clés :
+  `php artisan route:list | rg -n 'membres|cours|presences|paiements|ceintures|dashboard' || true`
+- Pages manquantes :
+  `rg -n 'Pages/(Membres|Cours|Presences|Paiements|Ceintures)/(Index|Create|Edit|Show)\\.vue' resources/js || true`
+- Uniformité FR (aucun EN) :
+  `rg -n "Member|Members|Course|Attendance|Payment|Belt" app resources routes || echo "OK: FR only"`
+- Mapping Policy :
+  `rg -n "Membre::class.*MembrePolicy::class" app/Providers || echo "Mapping manquant"`
+- Un seul hamburger :
+  `rg -n "@click=.*sidebar|Bars3Icon" resources/js | wc -l`
+- Build & lint :
+  `composer exec pint -- --test || true && npm run build -s && php artisan optimize:clear`
+- Tests :
+  `php artisan test --filter MembresTest -q || true`
+
+🎁 Priorité d’exécution
+1) **Sécurité & Policies** (critique) → mapping, scoping, validations.
+2) **Liens/Boutons & Routes** (critique) → tout actionnable et fonctionnel.
+3) **Uniformité UI** (élevée) → layout unique, thème aligné, pages nécessaires créées.
+4) **Modules (Membres en 1er)** (élevée) → CRUD complet Inertia + exports.
+5) **Audit code & tests** (moyen) → nettoyage, PSR-12, tests Pest de base.
+
+➡️ Rends les patchs/fichiers par lots, chacun suivi des **commandes de vérif** correspondantes.

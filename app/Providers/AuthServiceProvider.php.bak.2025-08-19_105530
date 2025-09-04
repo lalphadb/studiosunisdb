@@ -1,0 +1,47 @@
+use App\Models\Membre;
+use App\Policies\MembrePolicy;
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Membre;
+use App\Policies\MembrePolicy;
+
+class AuthServiceProvider extends ServiceProvider
+{
+    /**
+     * The model to policy mappings for the application.
+     *
+     * @var array<class-string, class-string>
+     */
+    protected $policies = [
+        Membre::class => MembrePolicy::class,
+    ];
+
+    /**
+     * Register any authentication / authorization services.
+     */
+    public function boot(): void
+    {
+        $this->registerPolicies();
+
+        // Définir les gates si nécessaire
+        Gate::define('create_membres', function ($user) {
+            return $user->hasAnyRole(['admin', 'gestionnaire']);
+        });
+
+        Gate::define('update_membres', function ($user) {
+            return $user->hasAnyRole(['admin', 'gestionnaire']);
+        });
+
+        Gate::define('delete_membres', function ($user) {
+            return $user->hasRole('admin');
+        });
+
+        Gate::define('export_membres', function ($user) {
+            return $user->hasAnyRole(['admin', 'gestionnaire']);
+        });
+    }
+}

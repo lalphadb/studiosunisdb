@@ -1,0 +1,36 @@
+{
+    "name": "studiosdb-v6-pro",
+    "version": "6.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "build:clean": "rm -rf public/build && vite build",
+        "analyze:manifest": "cat public/build/.vite/manifest.json | jq . || cat public/build/.vite/manifest.json"
+    },
+    "devDependencies": {
+        "@inertiajs/vue3": "^1.0.14",
+        "@playwright/test": "^1.55.0",
+        "@tailwindcss/aspect-ratio": "^0.4.2",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/typography": "^0.5.16",
+        "@vitejs/plugin-vue": "^6.0.1",
+        "autoprefixer": "^10.4.21",
+        "cssnano": "^7.1.0",
+        "laravel-vite-plugin": "^1.0.21",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.13",
+        "terser": "^5.43.1",
+        "vite": "^6.0.5",
+        "vue": "^3.5.18"
+    },
+    "dependencies": {
+        "@headlessui/vue": "^1.7.23",
+        "@heroicons/vue": "^2.2.0",
+        "chart.js": "^4.5.0",
+        "lodash": "^4.17.21",
+        "vue-chartjs": "^5.3.2"
+    }
+}
