@@ -1,0 +1,19 @@
+--- a/app/Http/Controllers/CoursController.php
++++ b/app/Http/Controllers/CoursController.php
+@@ -15,7 +15,15 @@ class CoursController extends Controller
+ {
+     private function joursDisponibles(): array
+-    { return ['lundi'=>'Lundi','mardi'=>'Mardi','mercredi'=>'Mercredi','jeudi'=>'Jeudi','vendredi'=>'Vendredi','samedi'=>'Samedi','dimanche'=>'Dimanche']; }
++    { 
++        return [
++            ['value' => 'lundi', 'label' => 'Lundi'],
++            ['value' => 'mardi', 'label' => 'Mardi'],
++            ['value' => 'mercredi', 'label' => 'Mercredi'],
++            ['value' => 'jeudi', 'label' => 'Jeudi'],
++            ['value' => 'vendredi', 'label' => 'Vendredi'],
++            ['value' => 'samedi', 'label' => 'Samedi'],
++            ['value' => 'dimanche', 'label' => 'Dimanche']
++        ];
++    }
+ 
+     public function index(Request $request): Response
