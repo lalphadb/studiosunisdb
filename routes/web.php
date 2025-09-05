@@ -5,24 +5,9 @@ use Inertia\Inertia;
 
 /**
  * ============================================================
- * StudiosDB v7 - Routes Web Consolidées
+ * StudiosDB v7 - Routes Web Consolidées (POST-CALENDRIER)
  * ============================================================
- * TABLE DES MATIÈRES
- *  1) Imports & configuration
- *  2) Pages publiques
- *  3) Auth (Breeze/Sanctum)
- *  4) Espace protégé (auth + verified)
- *     4.1) Dashboard
- *     4.2) Profil (Breeze)
- *     4.3) Membres
- *     4.4) Cours (complet avec toutes actions)
- *     4.5) Présences
- *     4.6) Paiements
- *     4.7) Utilisateurs (admin only)
- *     4.8) Ceintures & Examens
- *     4.9) Exports
- *  5) Administration & Debug
- *  6) Fallback (404 Inertia)
+ * AJOUT: Route planning/calendrier pour module Cours
  * ============================================================
  */
 
@@ -82,7 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->whereIn('format', ['xlsx','csv','pdf'])
         ->name('membres.export');
 
-    /* 4.4) Cours - Routes complètes consolidées */
+    /* 4.4) Cours - Routes complètes avec planning */
     // Route model binding sécurisé pour cours
     Route::bind('cours', function ($value, $route) {
         $user = auth()->user();
@@ -96,49 +81,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return \App\Models\Cours::withTrashed()->findOrFail($value);
     });
     
-    // CRUD de base
-    // IMPORTANT: Laravel singularise "cours" en "cour" => paramètre généré {cour}
-    // Nos méthodes de contrôleur utilisent $cours (avec s). On force donc le nom du paramètre
-    // pour que l'injection de modèle fonctionne (sinon $cours->id reste null et forceDelete ne fait rien).
+    // CRUD de base + paramètre fixé pour injection modèle
     Route::resource('cours', CoursController::class)
         ->parameters(['cours' => 'cours']);
     
-    // Actions spéciales cours
+    // Vue planning/calendrier
+    Route::get('cours-planning', [CoursController::class, 'planning'])->name('cours.planning');
+    Route::get('planning', [CoursController::class, 'planning'])->name('planning'); // Alias
+    
+    // Actions fonctionnelles uniquement
     Route::post('cours/{cours}/restore', [CoursController::class, 'restore'])->name('cours.restore');
     Route::post('cours/{cours}/duplicate', [CoursController::class, 'duplicate'])->name('cours.duplicate');
+    Route::get('cours/{cours}/duplicate-form', [CoursController::class, 'duplicateForm'])->name('cours.duplicate.form');
     Route::post('cours/{cours}/duplicate-jour', [CoursController::class, 'duplicateJour'])->name('cours.duplicate.jour');
     Route::post('cours/{cours}/duplicate-session', [CoursController::class, 'duplicateSession'])->name('cours.duplicate.session');
     
-    // Gestion des sessions
+    // Gestion des sessions multiples (fonctionnel)
     Route::get('cours/{cours}/sessions', [CoursController::class, 'sessionsForm'])->name('cours.sessions.form');
     Route::post('cours/{cours}/sessions', [CoursController::class, 'createSessions'])->name('cours.sessions.create');
-    Route::post('cours/{cours}/sessions/annuler', [CoursController::class, 'annulerSession'])->name('cours.sessions.annuler');
-    Route::post('cours/{cours}/sessions/reporter', [CoursController::class, 'reporterSession'])->name('cours.sessions.reporter');
-    
-    // Gestion des inscriptions
-    Route::post('cours/{cours}/inscrire', [CoursController::class, 'inscrireMembre'])->name('cours.inscrire');
-    Route::post('cours/{cours}/desinscrire', [CoursController::class, 'desinscrireMembre'])->name('cours.desinscrire');
-    Route::get('cours/{cours}/membres', [CoursController::class, 'listeMembres'])->name('cours.membres');
-    Route::post('cours/{cours}/choisir-horaire', [CoursController::class, 'choisirHoraire'])->name('cours.choisir_horaire');
-    Route::post('cours/{cours}/membre/{membre}/valider', [CoursController::class, 'validerInscription'])->name('cours.valider_inscription');
-    Route::post('cours/{cours}/membre/{membre}/refuser', [CoursController::class, 'refuserInscription'])->name('cours.refuser_inscription');
-    Route::post('cours/{cours}/membre/{membre}/alternative', [CoursController::class, 'proposerAlternative'])->name('cours.proposer_alternative');
-    
-    // Planning & Export
-    Route::get('planning', [CoursController::class, 'planning'])->name('cours.planning');
-    Route::get('cours/export', [CoursController::class, 'export'])->name('cours.export');
-    
-    // Statistiques & données
-    Route::get('cours/{cours}/statistiques', [CoursController::class, 'statistiques'])->name('cours.statistiques');
-    Route::get('cours/{cours}/presences', [CoursController::class, 'presences'])->name('cours.presences');
-    
-    // API endpoints pour AJAX
-    Route::prefix('cours/api')->name('cours.api.')->group(function () {
-        Route::get('disponibilites', [CoursController::class, 'checkDisponibilites'])->name('disponibilites');
-        Route::get('conflits', [CoursController::class, 'checkConflits'])->name('conflits');
-        Route::get('search', [CoursController::class, 'search'])->name('search');
-        Route::get('calendrier', [CoursController::class, 'calendrier'])->name('calendrier');
-    });
 
     /* 4.5) Présences */
     Route::get('presences/tablette', [PresenceController::class, 'tablette'])

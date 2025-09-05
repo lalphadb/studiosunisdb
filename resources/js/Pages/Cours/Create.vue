@@ -1,9 +1,11 @@
 <template>
   <AuthenticatedLayout>
-    <Head title="Nouveau Cours" />
+    <Head :title="isDuplicate ? `Dupliquer ${coursSource?.nom || 'cours'}` : 'Nouveau Cours'" />
     
     <div class="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <PageHeader title="Nouveau Cours" description="Créer un nouveau cours de karaté">
+      <PageHeader 
+        :title="isDuplicate ? 'Dupliquer le cours' : 'Nouveau Cours'" 
+        :description="isDuplicate ? `Duplication avec données pré-remplies` : 'Créer un nouveau cours de karaté'">
         <template #actions>
           <Link href="/cours"
                 class="px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-white text-sm font-medium border border-slate-600">
@@ -11,6 +13,19 @@
           </Link>
         </template>
       </PageHeader>
+      
+      <!-- Alerte duplication -->
+      <div v-if="isDuplicate" class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <div>
+            <h4 class="text-blue-300 font-medium">Duplication en cours</h4>
+            <p class="text-blue-400 text-sm">Toutes les données du cours original ont été pré-remplies. Modifiez ce qui est nécessaire et sauvegardez.</p>
+          </div>
+        </div>
+      </div>
       
       <!-- Formulaire -->
       <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
@@ -78,7 +93,7 @@
                   placeholder="Optionnel (pour tous âges, laisser vide)"
                 />
                 <div v-if="errors.age_max" class="text-red-400 text-sm mt-1">{{ errors.age_max }}</div>
-                <div class="text-xs text-slate-500 mt-1">Laisser vide pour \"tous âges\"</div>
+                <div class="text-xs text-slate-500 mt-1">Laisser vide pour "tous âges"</div>
               </div>
               
               <div>
@@ -134,7 +149,9 @@
                   v-model="form.heure_debut"
                   type="time"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  step="900"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.heure_debut }"
                 />
                 <div v-if="errors.heure_debut" class="text-red-400 text-sm mt-1">{{ errors.heure_debut }}</div>
@@ -146,7 +163,9 @@
                   v-model="form.heure_fin"
                   type="time"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  step="900"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.heure_fin }"
                 />
                 <div v-if="errors.heure_fin" class="text-red-400 text-sm mt-1">{{ errors.heure_fin }}</div>
@@ -164,7 +183,8 @@
                   v-model="form.date_debut"
                   type="date"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.date_debut }"
                 />
                 <div v-if="errors.date_debut" class="text-red-400 text-sm mt-1">{{ errors.date_debut }}</div>
@@ -175,7 +195,8 @@
                 <input
                   v-model="form.date_fin"
                   type="date"
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.date_fin }"
                 />
                 <div v-if="errors.date_fin" class="text-red-400 text-sm mt-1">{{ errors.date_fin }}</div>
@@ -276,8 +297,8 @@
               :disabled="form.processing"
               class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-medium shadow-lg transition-all disabled:opacity-50"
             >
-              <span v-if="form.processing">Création...</span>
-              <span v-else>Créer le cours</span>
+              <span v-if="form.processing">{{ isDuplicate ? 'Duplication...' : 'Création...' }}</span>
+              <span v-else>{{ isDuplicate ? 'Dupliquer le cours' : 'Créer le cours' }}</span>
             </button>
           </div>
         </form>
@@ -287,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PageHeader from '@/Components/UI/PageHeader.vue'
@@ -312,32 +333,46 @@ const props = defineProps({
       { value: 'samedi', label: 'Samedi' },
       { value: 'dimanche', label: 'Dimanche' }
     ]
+  },
+  coursSource: {
+    type: Object,
+    default: null
+  },
+  isDuplicate: {
+    type: Boolean,
+    default: false
   }
 })
 
+// Initialiser le formulaire avec données pré-remplies si duplication
 const form = useForm({
-  nom: '',
-  description: '',
-  instructeur_id: '',
-  niveau: '',
-  age_min: '',
-  age_max: '',
-  places_max: '',
-  jour_semaine: '',
-  heure_debut: '',
-  heure_fin: '',
-  date_debut: '',
-  date_fin: '',
+  nom: props.coursSource?.nom || '',
+  description: props.coursSource?.description || '',
+  instructeur_id: props.coursSource?.instructeur_id || '',
+  niveau: props.coursSource?.niveau || '',
+  age_min: props.coursSource?.age_min || '',
+  age_max: props.coursSource?.age_max || '',
+  places_max: props.coursSource?.places_max || '',
+  jour_semaine: props.coursSource?.jour_semaine || '',
+  heure_debut: props.coursSource?.heure_debut || '',
+  heure_fin: props.coursSource?.heure_fin || '',
+  date_debut: props.coursSource?.date_debut || '',
+  date_fin: props.coursSource?.date_fin || '',
   // Nouveau système de tarification flexible
-  type_tarif: 'mensuel',
-  montant: '',
-  details_tarif: '',
-  // Ancien système (conservé pour compatibilité)
-  tarif_mensuel: null,
-  actif: true
+  type_tarif: props.coursSource?.type_tarif || 'mensuel',
+  montant: props.coursSource?.montant || '',
+  details_tarif: props.coursSource?.details_tarif || '',
+  // Ancien système (conservé pour compatibilité - null si non mensuel)
+  tarif_mensuel: props.coursSource?.tarif_mensuel || null,
+  actif: props.coursSource?.actif ?? true
 })
 
 const errors = ref({})
+
+// Configuration locale française Canada
+onMounted(() => {
+  document.documentElement.lang = 'fr-CA'
+})
 
 // Aide contextuelle pour le montant selon le type de tarif
 const getTarifHint = () => {
@@ -356,7 +391,7 @@ const submit = () => {
   if (form.type_tarif === 'mensuel') {
     form.tarif_mensuel = form.montant
   } else {
-    // Envoyer null pour les autres types au lieu de string vide
+    // Explicitement null pour les autres types
     form.tarif_mensuel = null
   }
   
@@ -366,3 +401,68 @@ const submit = () => {
   })
 }
 </script>
+
+<style scoped>
+/* CSS amélioré pour calendriers - contraste maximal */
+.calendar-enhanced {
+  color-scheme: dark;
+}
+
+.calendar-enhanced::-webkit-calendar-picker-indicator {
+  /* Icône calendrier en blanc pur avec fond contrasté */
+  filter: invert(1) brightness(2) contrast(2);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.calendar-enhanced:hover::-webkit-calendar-picker-indicator {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.calendar-enhanced::-webkit-datetime-edit {
+  color: white;
+  font-weight: 500;
+}
+
+.calendar-enhanced::-webkit-datetime-edit-fields-wrapper {
+  background: transparent;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.calendar-enhanced::-webkit-datetime-edit-text {
+  color: rgb(148 163 184); /* slate-400 */
+  padding: 0 3px;
+}
+
+.calendar-enhanced::-webkit-datetime-edit-month-field,
+.calendar-enhanced::-webkit-datetime-edit-day-field,
+.calendar-enhanced::-webkit-datetime-edit-year-field,
+.calendar-enhanced::-webkit-datetime-edit-hour-field,
+.calendar-enhanced::-webkit-datetime-edit-minute-field {
+  color: white;
+  background: transparent;
+  font-weight: 500;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.calendar-enhanced:focus::-webkit-datetime-edit-fields-wrapper {
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 6px;
+  outline: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+/* Support pour Firefox */
+.calendar-enhanced::-moz-calendar-picker-indicator {
+  filter: invert(1) brightness(2);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px;
+}
+</style>

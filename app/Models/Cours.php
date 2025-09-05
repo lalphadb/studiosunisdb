@@ -282,10 +282,58 @@ class Cours extends Model
 
     public function pourCalendrier(){ return ['id'=>$this->id,'title'=>$this->nom,'start'=>$this->heure_debut,'end'=>$this->heure_fin,'color'=>$this->couleur_calendrier,'instructor'=>$this->instructeur_nom,'level'=>$this->niveau,'enrolled'=>$this->membresActifs()->count(),'capacity'=>$this->places_max,'tarif_info'=>$this->type_tarif_label.' - '.number_format($this->montant,2).'$']; }
 
-    // =================== MÉTHODES DUPLICATION ===================
+    // =================== MÉTHODES DUPLICATION CORRIGÉES ===================
 
-    public function dupliquerJour(string $jour){ $n=$this->replicate(); $n->jour_semaine=$jour; $n->nom=$this->nom.' ('.ucfirst($jour).')'; $n->actif=false; $n->save(); return $n; }
-    public function dupliquerClone(): self { $n=$this->replicate(); $n->nom=$this->nom.' (Copie)'; $n->actif=false; $n->save(); return $n; }
+    public function dupliquerJour(string $jour)
+    { 
+        $nouveau = $this->replicate(['duree_minutes']); // Exclure colonne générée
+        $nouveau->jour_semaine = $jour; 
+        $nouveau->nom = $this->nom . ' (' . ucfirst($jour) . ')'; 
+        $nouveau->actif = false; 
+        $nouveau->save(); 
+        return $nouveau; 
+    }
+
+    public function dupliquerClone(): self 
+    { 
+        $nouveau = $this->replicate(['duree_minutes']); // Exclure colonne générée
+        $nouveau->nom = $this->nom . ' (Copie)'; 
+        $nouveau->actif = false; 
+        $nouveau->save(); 
+        return $nouveau; 
+    }
+
+    public function duppliquerPourSession(string $session): self
+    {
+        $nouveau = $this->replicate(['duree_minutes']); // Exclure colonne générée
+        $nouveau->session = $session;
+        $nouveau->nom = $this->nom . ' (' . self::SESSIONS[$session] . ')';
+        $nouveau->actif = false;
+        
+        // Ajuster les dates selon la session
+        $now = now();
+        switch ($session) {
+            case 'automne':
+                $nouveau->date_debut = $now->copy()->month(9)->day(1)->format('Y-m-d');
+                $nouveau->date_fin = $now->copy()->month(12)->day(20)->format('Y-m-d');
+                break;
+            case 'hiver':
+                $nouveau->date_debut = $now->copy()->addYear()->month(1)->day(8)->format('Y-m-d');
+                $nouveau->date_fin = $now->copy()->addYear()->month(3)->day(15)->format('Y-m-d');
+                break;
+            case 'printemps':
+                $nouveau->date_debut = $now->copy()->month(4)->day(1)->format('Y-m-d');
+                $nouveau->date_fin = $now->copy()->month(6)->day(15)->format('Y-m-d');
+                break;
+            case 'ete':
+                $nouveau->date_debut = $now->copy()->month(7)->day(1)->format('Y-m-d');
+                $nouveau->date_fin = $now->copy()->month(8)->day(31)->format('Y-m-d');
+                break;
+        }
+        
+        $nouveau->save();
+        return $nouveau;
+    }
 
     // Slug auto
     // booted removed: slug column n'existe plus

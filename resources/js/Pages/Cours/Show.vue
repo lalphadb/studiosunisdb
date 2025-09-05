@@ -24,7 +24,7 @@
         <StatCard title="Sessions liées" :value="sessionsLiees.length" tone="amber" description="Même cours" />
       </div>
       
-      <!-- Actions rapides -->
+      <!-- Actions rapides améliorées -->
       <div class="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6 mb-6">
         <h3 class="text-lg font-semibold text-white mb-4">Actions</h3>
         <div class="flex flex-wrap gap-3">
@@ -35,15 +35,27 @@
             </svg>
             Sessions multiples
           </Link>
-          <button @click="duplicateCours"
-                  class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg flex items-center gap-2 transition-all text-sm font-medium shadow-lg">
+          
+          <!-- Duplication avec formulaire (recommandé) -->
+          <Link :href="`/cours/${cours.id}/duplicate-form`"
+                class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-lg flex items-center gap-2 transition-all text-sm font-medium shadow-lg">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            Dupliquer
+            Dupliquer (avec formulaire)
+          </Link>
+          
+          <!-- Duplication rapide -->
+          <button @click="duplicateCours"
+                  class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg flex items-center gap-2 transition-all text-sm font-medium shadow-lg">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Dupliquer (rapide)
           </button>
+          
           <Link href="#"
-                class="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg flex items-center gap-2 transition-all text-sm font-medium shadow-lg">
+                class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-lg flex items-center gap-2 transition-all text-sm font-medium shadow-lg">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
@@ -73,8 +85,11 @@
               <span class="text-white">{{ cours.places_max }} places</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-slate-400">Tarif mensuel</span>
-              <span class="text-white font-medium">{{ cours.tarif_mensuel }}$</span>
+              <span class="text-slate-400">Tarif</span>
+              <span class="text-white font-medium">
+                {{ cours.montant || cours.tarif_mensuel }}$ 
+                <span class="text-xs text-slate-500">({{ cours.type_tarif || 'mensuel' }})</span>
+              </span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">Période</span>
@@ -231,7 +246,7 @@ const formatHeure = (heure) => {
 }
 
 const duplicateCours = () => {
-  if (confirm(`Voulez-vous dupliquer le cours "${props.cours.nom}" ?`)) {
+  if (confirm(`Voulez-vous dupliquer rapidement le cours "${props.cours.nom}" ?`)) {
     router.post(`/cours/${props.cours.id}/duplicate`)
   }
 }

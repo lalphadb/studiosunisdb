@@ -12,10 +12,13 @@
       </div>
   <PageHeader title="Cours" description="Planning et gestion des séances de karaté">
         <template #actions>
-          <button @click="showCalendarView = !showCalendarView"
-                  class="px-4 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-white text-sm font-medium border border-slate-600">
+          <Link href="/cours-planning"
+                class="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-sm font-medium flex items-center gap-2 shadow-lg transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
             Vue Calendrier
-          </button>
+          </Link>
       <div class="flex items-center gap-2 bg-slate-800/40 rounded-lg p-1 border border-slate-700/60" data-testid="archives-toggle">
         <button @click="setArchives(false)" :class="['px-3 py-1.5 rounded-md text-sm font-medium transition', !showingArchives ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow' : 'text-slate-300 hover:text-white']">Actifs</button>
         <button @click="setArchives(true)" :class="['px-3 py-1.5 rounded-md text-sm font-medium transition', showingArchives ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white shadow' : 'text-slate-300 hover:text-white']">Archives</button>
@@ -119,7 +122,7 @@
               </svg>
               Réinitialiser
             </button>
-            <button @click="exportCours" class="ml-auto px-4 md:px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl flex items-center gap-2 transition-all font-medium shadow-lg">
+            <button @click="exportCours" class="ml-auto px-4 md:px-5 py-2.5 bg-slate-800/50 hover:bg-slate-700/50 text-white rounded-xl flex items-center gap-2 transition-all border border-slate-700 opacity-60 cursor-not-allowed" disabled title="Export - En développement">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
@@ -217,6 +220,7 @@
                 </td>
                 <td class="px-4 md:px-6 py-3 md:py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex items-center justify-end gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+                    <!-- Actions de base -->
                     <button @click="viewCours(cours)"
                             class="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-all"
                             title="Voir">
@@ -235,22 +239,19 @@
                               d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
-                    <button @click="duplicateCours(cours)"
-                            class="p-1.5 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 rounded-lg transition-all"
-                            title="Dupliquer">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </button>
-        <button @click="deleteCours(cours)"
-          class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-          title="Supprimer" data-testid="btn-delete-cours">
+                    
+                    <!-- Action Archive/Supprimer -->
+                    <button @click="deleteCours(cours)"
+                            class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+                            :title="cours.is_archived ? 'Supprimer définitivement' : 'Archiver'"
+                            data-testid="btn-delete-cours">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
+                    
+                    <!-- Action Restaurer (si archivé) -->
                     <button v-if="cours.is_archived" @click="restoreCours(cours)"
                             class="p-1.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg transition-all"
                             title="Restaurer">
@@ -410,21 +411,6 @@ const editCours = (cours) => {
   router.get(`/cours/${cours.id}/edit`)
 }
 
-const duplicateCours = (cours) => {
-  if (confirm(`Voulez-vous dupliquer le cours "${cours.nom}" ?`)) {
-    router.post(`/cours/${cours.id}/duplicate`, {}, {
-      preserveScroll: true,
-      onSuccess: () => {
-        // Recharger la page pour voir le nouveau cours
-        router.reload({ preserveScroll: true })
-      },
-      onError: (errors) => {
-        console.error('Erreur duplication cours:', errors)
-      }
-    })
-  }
-}
-
 const deleteCours = (cours) => {
   // Infos locales
   const inscrits = cours.inscrits_count ?? cours.membres_actifs_count ?? 0
@@ -476,7 +462,7 @@ Annuler = ${isArchived ? 'Annuler (aucune action)' : 'ARCHIVER (restorable)'}
 }
 
 const exportCours = () => {
-  window.open('/cours/export')
+  alert('Export en cours de développement')
 }
 
 const restoreCours = (cours) => {

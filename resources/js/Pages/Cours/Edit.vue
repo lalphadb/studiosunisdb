@@ -134,7 +134,9 @@
                   v-model="form.heure_debut"
                   type="time"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  step="900"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.heure_debut }"
                 />
                 <div v-if="errors.heure_debut" class="text-red-400 text-sm mt-1">{{ errors.heure_debut }}</div>
@@ -146,7 +148,9 @@
                   v-model="form.heure_fin"
                   type="time"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  step="900"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.heure_fin }"
                 />
                 <div v-if="errors.heure_fin" class="text-red-400 text-sm mt-1">{{ errors.heure_fin }}</div>
@@ -164,7 +168,8 @@
                   v-model="form.date_debut"
                   type="date"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.date_debut }"
                 />
                 <div v-if="errors.date_debut" class="text-red-400 text-sm mt-1">{{ errors.date_debut }}</div>
@@ -175,7 +180,8 @@
                 <input
                   v-model="form.date_fin"
                   type="date"
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         calendar-enhanced"
                   :class="{ 'border-red-500': errors.date_fin }"
                 />
                 <div v-if="errors.date_fin" class="text-red-400 text-sm mt-1">{{ errors.date_fin }}</div>
@@ -287,7 +293,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PageHeader from '@/Components/UI/PageHeader.vue'
@@ -336,12 +342,35 @@ const form = useForm({
   type_tarif: props.cours.type_tarif || 'mensuel',
   montant: props.cours.montant || props.cours.tarif_mensuel || '', // Migration auto si ancien système
   details_tarif: props.cours.details_tarif || '',
-  // Ancien système (conservé pour compatibilité)
+  // Ancien système (conservé pour compatibilité - sera null si non mensuel)
   tarif_mensuel: props.cours.tarif_mensuel || null,
   actif: props.cours.actif ?? true
 })
 
 const errors = ref({})
+
+// Format français Canada pour les dates
+onMounted(() => {
+  // Configurer le navigateur pour format canadien français
+  document.documentElement.lang = 'fr-CA'
+  
+  // Formatter les dates existantes en format YYYY-MM-DD pour les inputs HTML
+  if (form.date_debut && !form.date_debut.includes('-')) {
+    form.date_debut = formatDateForInput(form.date_debut)
+  }
+  if (form.date_fin && !form.date_fin.includes('-')) {
+    form.date_fin = formatDateForInput(form.date_fin)
+  }
+})
+
+const formatDateForInput = (dateStr) => {
+  try {
+    const date = new Date(dateStr)
+    return date.toISOString().split('T')[0] // YYYY-MM-DD
+  } catch (e) {
+    return dateStr
+  }
+}
 
 // Aide contextuelle pour le montant selon le type de tarif
 const getTarifHint = () => {
@@ -360,7 +389,7 @@ const submit = () => {
   if (form.type_tarif === 'mensuel') {
     form.tarif_mensuel = form.montant
   } else {
-    // Envoyer null pour les autres types au lieu de string vide
+    // Explicitement envoyer null pour les autres types
     form.tarif_mensuel = null
   }
   
@@ -370,3 +399,68 @@ const submit = () => {
   })
 }
 </script>
+
+<style scoped>
+/* CSS amélioré pour calendriers - contraste maximal */
+.calendar-enhanced {
+  color-scheme: dark;
+}
+
+.calendar-enhanced::-webkit-calendar-picker-indicator {
+  /* Icône calendrier en blanc pur avec fond contrasté */
+  filter: invert(1) brightness(2) contrast(2);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.calendar-enhanced:hover::-webkit-calendar-picker-indicator {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.calendar-enhanced::-webkit-datetime-edit {
+  color: white;
+  font-weight: 500;
+}
+
+.calendar-enhanced::-webkit-datetime-edit-fields-wrapper {
+  background: transparent;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.calendar-enhanced::-webkit-datetime-edit-text {
+  color: rgb(148 163 184); /* slate-400 */
+  padding: 0 3px;
+}
+
+.calendar-enhanced::-webkit-datetime-edit-month-field,
+.calendar-enhanced::-webkit-datetime-edit-day-field,
+.calendar-enhanced::-webkit-datetime-edit-year-field,
+.calendar-enhanced::-webkit-datetime-edit-hour-field,
+.calendar-enhanced::-webkit-datetime-edit-minute-field {
+  color: white;
+  background: transparent;
+  font-weight: 500;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.calendar-enhanced:focus::-webkit-datetime-edit-fields-wrapper {
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 6px;
+  outline: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+/* Support pour Firefox */
+.calendar-enhanced::-moz-calendar-picker-indicator {
+  filter: invert(1) brightness(2);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px;
+}
+</style>
