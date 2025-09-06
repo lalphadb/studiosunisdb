@@ -29,21 +29,39 @@
 
         <!-- Rôles -->
         <FormField label="Rôles" v-if="can.manageRoles">
-          <div class="flex flex-wrap gap-2">
-            <label v-for="r in rolesList" :key="r" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/60 border border-slate-700/60 text-slate-200 text-sm cursor-pointer hover:bg-slate-700/60">
+          <div class="mb-2 text-xs text-slate-400">
+            Cochez les rôles à assigner. Le rôle "membre" est attribué par défaut.
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <label v-for="r in rolesList" :key="r" 
+                   class="flex items-center gap-2 px-3 py-2 rounded-xl border transition-all cursor-pointer"
+                   :class="form.roles.includes(r) 
+                     ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-200' 
+                     : 'bg-slate-800/60 border-slate-700/60 text-slate-200 hover:bg-slate-700/60'">
               <input type="checkbox" :value="r" v-model="form.roles" class="accent-indigo-600" />
-              <span>{{ r }}</span>
+              <span class="text-sm font-medium">{{ r }}</span>
+              <span v-if="r === 'instructeur'" class="ml-auto text-xs px-1.5 py-0.5 bg-purple-500/20 text-purple-300 rounded-full">Staff</span>
+              <span v-if="r === 'admin_ecole'" class="ml-auto text-xs px-1.5 py-0.5 bg-amber-500/20 text-amber-300 rounded-full">Admin</span>
+              <span v-if="r === 'superadmin'" class="ml-auto text-xs px-1.5 py-0.5 bg-red-500/20 text-red-300 rounded-full">Super</span>
             </label>
           </div>
           <FormError :message="form.errors.roles" />
         </FormField>
 
-        <!-- Email vérifié -->
-        <div class="flex items-center gap-3">
-          <label class="inline-flex items-center gap-2 text-sm text-slate-300">
-            <input type="checkbox" v-model="form.email_verified" class="accent-indigo-600" />
-            Email vérifié
-          </label>
+        <!-- Statuts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-300">
+              <input type="checkbox" v-model="form.email_verified" class="accent-indigo-600" />
+              Email vérifié
+            </label>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-300">
+              <input type="checkbox" v-model="form.active" class="accent-green-600" />
+              Compte actif
+            </label>
+          </div>
         </div>
 
         <!-- Actions -->
@@ -60,11 +78,15 @@
 </template>
 
 <script setup>
+import { inject } from 'vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PageHeader from '@/Components/UI/PageHeader.vue'
 import FormField from '@/Components/Forms/FormField.vue'
 import FormError from '@/Components/Forms/FormError.vue'
+
+// Injecter la fonction route
+const route = inject('route') || window.route
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -72,15 +94,20 @@ const props = defineProps({
   can: { type: Object, default: () => ({ manageRoles:false, delete:false }) }
 })
 
-const rolesList = props.roles.length ? props.roles : (props.user.roles?.map(r=>r.name) || [])
+// Liste des rôles disponibles (passés depuis le controller)
+const rolesList = props.roles || []
+
+// Rôles actuellement assignés à l'utilisateur
+const currentUserRoles = props.user.roles?.map(r => r.name) || []
 
 const form = useForm({
   name: props.user.name || '',
   email: props.user.email || '',
   password: '',
   password_confirmation: '',
-  roles: props.user.roles?.map(r => r.name) || rolesList,
+  roles: currentUserRoles, // Utiliser les rôles actuels
   email_verified: !!props.user.email_verified_at,
+  active: props.user.active !== undefined ? props.user.active : true,
 })
 
 const submit = () => {

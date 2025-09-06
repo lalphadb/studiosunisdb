@@ -53,11 +53,15 @@
 </template>
 
 <script setup>
+import { inject } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PageHeader from '@/Components/UI/PageHeader.vue'
 import FormField from '@/Components/Forms/FormField.vue'
 import FormError from '@/Components/Forms/FormError.vue'
+
+// Injecter la fonction route
+const route = inject('route') || window.route
 
 const props = defineProps({ roles: { type: Array, default: () => [] } })
 const rolesList = props.roles

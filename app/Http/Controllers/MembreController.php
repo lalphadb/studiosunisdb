@@ -10,6 +10,7 @@ use App\Http\Requests\Membres\UpdateMembreRequest;
 use App\Models\Ceinture;
 use App\Models\Membre;
 use App\Models\User;
+use App\Services\ProgressionCeintureService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\RedirectResponse;
@@ -24,8 +25,9 @@ use Maatwebsite\Excel\Facades\Excel;
 
 final class MembreController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private ProgressionCeintureService $progressionService
+    ) {
         // Policy MembrePolicy recommandée
         $this->authorizeResource(Membre::class, 'membre');
     }
@@ -106,10 +108,10 @@ final class MembreController extends Controller
                     'prenom'             => $m->prenom,
                     'nom'                => $m->nom,
                     'age'                => $m->age,
-                    'is_minor'           => $m->is_minor,
+                    'is_minor'           => $m->age < 18,
                     'telephone'          => $m->telephone,
-                    'user'               => $m->relationLoaded('user') ? Arr::only($m->user->toArray(), ['email']) : null,
-                    'ceinture_actuelle'  => $m->relationLoaded('ceintureActuelle')
+                    'user'               => $m->relationLoaded('user') && $m->user ? Arr::only($m->user->toArray(), ['email']) : null,
+                    'ceinture_actuelle'  => $m->relationLoaded('ceintureActuelle') && $m->ceintureActuelle
                         ? ['id' => $m->ceintureActuelle->id, 'nom' => $m->ceintureActuelle->name, 'couleur_hex' => $m->ceintureActuelle->color_hex]
                         : null,
                     'statut'             => $m->statut,
@@ -119,7 +121,7 @@ final class MembreController extends Controller
             });
 
         // Stats tuiles (optimisées, une seule requête)
-        $stats = Membre::query()
+        $statsRaw = Membre::query()
             ->selectRaw('
                 COUNT(*) as total,
                 SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) as actifs,
@@ -129,17 +131,29 @@ final class MembreController extends Controller
                 (int) $now->format('m'),
                 (int) $now->format('Y'),
             ])
-            ->first()
-            ->toArray();
+            ->first();
+        
+        $stats = [
+            'total' => (int) $statsRaw->total,
+            'actifs' => (int) $statsRaw->actifs,
+            'nouveaux_mois' => (int) $statsRaw->nouveaux_mois,
+        ];
         $stats['presences_jour'] = (int) DB::table('presences')->whereDate('date_cours', $now->toDateString())->count();
 
-        $ceintures = Ceinture::query()->select('id','name as nom','color_hex as couleur_hex')->orderBy('order')->get();
+        $ceintures = Ceinture::query()->select('id','name','name_en','color_hex','order')->orderBy('order')->get()->map(function($c) {
+            return [
+                'id' => $c->id,
+                'nom' => $c->name,
+                'couleur_hex' => $c->color_hex,
+                'order' => $c->order,
+            ];
+        });
 
         $can = [
-            'create' => request()->user()?->can('membres.create') ?? false,
-            'update' => request()->user()?->can('membres.edit') ?? false,
-            'delete' => request()->user()?->can('membres.delete') ?? false,
-            'export' => request()->user()?->can('membres.export') ?? false,
+            'create' => request()->user()?->can('create', Membre::class) ?? false,
+            'update' => request()->user()?->can('viewAny', Membre::class) ?? false, // Général - détaillé par membre
+            'delete' => request()->user()?->can('viewAny', Membre::class) ?? false, // Général - détaillé par membre
+            'export' => request()->user()?->can('viewAny', Membre::class) ?? false,
         ];
 
         return Inertia::render('Membres/Index', [
@@ -156,7 +170,14 @@ final class MembreController extends Controller
         $this->authorize('create', Membre::class);
 
         return Inertia::render('Membres/Create', [
-            'ceintures' => Ceinture::select('id','name','name as name_fr','color_hex as couleur_hex')->orderBy('order')->get(),
+            'ceintures' => Ceinture::query()->select('id','name','name_en','color_hex','order')->orderBy('order')->get()->map(function($c) {
+                return [
+                    'id' => $c->id,
+                    'nom' => $c->name,
+                    'couleur_hex' => $c->color_hex,
+                    'order' => $c->order,
+                ];
+            }),
         ]);
     }
 
@@ -216,12 +237,34 @@ final class MembreController extends Controller
     {
         $membre->load([
             'user:id,email',
-            'ceintureActuelle:id,name,color_hex',
+            'ceintureActuelle:id,name,color_hex,order',
             'cours:id,nom', // si relation many-to-many existe
         ]);
         
         // Récupérer toutes les ceintures pour le modal
-        $ceintures = Ceinture::orderBy('order')->get(['id', 'name', 'color_hex']);
+        $ceintures = Ceinture::orderBy('order')->get(['id', 'name', 'color_hex', 'order'])->map(function($c) {
+            return [
+                'id' => $c->id,
+                'nom' => $c->name,
+                'couleur_hex' => $c->color_hex,
+                'order' => $c->order,
+            ];
+        });
+        
+        // Historique progressions
+        $historiqueProgressions = $this->progressionService->getHistoriqueProgression($membre);
+        
+        // Validation progression suivante
+        $prochaineCeinture = $membre->ceintureActuelle?->suivante();
+        $validationProgression = null;
+        if ($prochaineCeinture) {
+            $validationProgression = $this->progressionService->peutProgresser($membre, $prochaineCeinture);
+            $validationProgression['prochaine_ceinture'] = [
+                'id' => $prochaineCeinture->id,
+                'nom' => $prochaineCeinture->nom,
+                'couleur_hex' => $prochaineCeinture->couleur_hex,
+            ];
+        }
 
         return Inertia::render('Membres/Show', [
             'membre' => [
@@ -234,7 +277,12 @@ final class MembreController extends Controller
                 'telephone'         => $membre->telephone,
                 'adresse'           => $membre->adresse,
                 'statut'            => $membre->statut,
-                'ceinture_actuelle' => $membre->ceintureActuelle ? ['id' => $membre->ceintureActuelle->id, 'nom' => $membre->ceintureActuelle->name, 'couleur_hex' => $membre->ceintureActuelle->color_hex] : null,
+                'ceinture_actuelle' => $membre->ceintureActuelle ? [
+                    'id' => $membre->ceintureActuelle->id, 
+                    'nom' => $membre->ceintureActuelle->name, 
+                    'couleur_hex' => $membre->ceintureActuelle->color_hex,
+                    'order' => $membre->ceintureActuelle->order,
+                ] : null,
                 'user'              => $membre->user?->only(['email']),
                 'cours'             => $membre->cours?->map->only(['id','nom']),
                 'date_inscription'  => $membre->date_inscription?->toDateString(),
@@ -248,12 +296,40 @@ final class MembreController extends Controller
                 'consentement_communications' => $membre->consentement_communications,
             ],
             'ceintures' => $ceintures, // Pour le modal de changement
+            'historiqueProgressions' => $historiqueProgressions->map(function ($progression) {
+                return [
+                    'id' => $progression->id,
+                    'date_obtention' => $progression->date_obtention->toDateString(),
+                    'ceinture_precedente' => $progression->ceinturePrecedente ? [
+                        'nom' => $progression->ceinturePrecedente->nom,
+                        'couleur_hex' => $progression->ceinturePrecedente->couleur_hex,
+                    ] : null,
+                    'ceinture_nouvelle' => [
+                        'nom' => $progression->ceintureNouvelle->nom,
+                        'couleur_hex' => $progression->ceintureNouvelle->couleur_hex,
+                    ],
+                    'instructeur' => $progression->instructeur ? $progression->instructeur->name : null,
+                    'notes' => $progression->notes,
+                    'type_progression' => $progression->type_progression,
+                ];
+            }),
+            'validationProgression' => $validationProgression,
         ]);
     }
 
     public function edit(Membre $membre): Response
     {
-        $ceintures = Ceinture::select('id','name as nom','color_hex as couleur_hex')->orderBy('order')->get();
+        // Charger les relations nécessaires
+        $membre->load(['user.roles', 'ceintureActuelle']);
+        
+        $ceintures = Ceinture::query()->select('id','name','name_en','color_hex','order')->orderBy('order')->get()->map(function($c) {
+            return [
+                'id' => $c->id,
+                'nom' => $c->name,
+                'couleur_hex' => $c->color_hex,
+                'order' => $c->order,
+            ];
+        });
 
         return Inertia::render('Membres/Edit', [
             'membre'    => [
@@ -261,6 +337,7 @@ final class MembreController extends Controller
                 'nom_complet'       => $membre->nom_complet,
                 'prenom'            => $membre->prenom,
                 'nom'               => $membre->nom,
+                'email'             => $membre->email,
                 'date_naissance'    => $membre->date_naissance?->toDateString(),
                 'sexe'              => $membre->sexe,
                 'telephone'         => $membre->telephone,
@@ -280,6 +357,20 @@ final class MembreController extends Controller
                 'consentement_communications' => $membre->consentement_communications,
                 'date_inscription'  => $membre->date_inscription?->toDateString(),
                 'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
+                
+                // AJOUT: Données utilisateur pour la gestion des rôles
+                'user' => $membre->user ? [
+                    'id' => $membre->user->id,
+                    'email' => $membre->user->email,
+                    'active' => $membre->user->active ?? true,
+                    'email_verified_at' => $membre->user->email_verified_at,
+                    'created_at' => $membre->user->created_at,
+                    'last_login_at' => $membre->user->last_login_at,
+                    'roles' => $membre->user->roles->map(fn($role) => [
+                        'id' => $role->id,
+                        'name' => $role->name,
+                    ]),
+                ] : null,
             ],
             'ceintures' => $ceintures,
         ]);
@@ -291,31 +382,33 @@ final class MembreController extends Controller
 
         DB::transaction(function () use (&$membre, $data) {
             $membre->update(Arr::only($data, [
-                'prenom','nom','date_naissance','telephone','adresse','statut','ceinture_actuelle_id',
+                'prenom',
+                'nom', 
+                'date_naissance',
+                'sexe',
+                'telephone',
+                'adresse',
+                'ville',
+                'code_postal',
+                'contact_urgence_nom',
+                'contact_urgence_telephone', 
+                'contact_urgence_relation',
+                'statut',
+                'ceinture_actuelle_id',
+                'notes_medicales',
+                'allergies',
+                'notes_instructeur',
+                'notes_admin',
+                'consentement_photos',
+                'consentement_communications'
             ]));
 
-            // Si email envoyé, MAJ du user lié ou création
-            if (!empty($data['email'])) {
-                if ($membre->user) {
-                    $membre->user->update(['email' => $data['email']]);
-                    if (!empty($data['password'])) {
-                        $membre->user->update(['password' => Hash::make($data['password'])]);
-                    }
-                } else {
-                    $user = User::create([
-                        'name'      => trim(($data['prenom'] ?? '').' '.($data['nom'] ?? '')),
-                        'email'     => $data['email'],
-                        'password'  => Hash::make($data['password'] ?? str()->random(16)),
-                        'ecole_id'  => auth()->user()?->ecole_id,
-                    ]);
-                    $user->assignRole('membre');
-                    $membre->update(['user_id' => $user->id]);
-                }
-            }
+            // Gestion compte utilisateur + rôles
+            $this->handleSystemAccess($membre, $data);
 
             if (function_exists('activity')) {
                 activity('membres')->performedOn($membre)->causedBy(auth()->user())
-                    ->withProperties(['payload' => Arr::except($data, ['password'])])
+                    ->withProperties(['payload' => Arr::except($data, ['password','user_password'])])
                     ->log('membre.updated');
             }
         });
@@ -326,7 +419,7 @@ final class MembreController extends Controller
     public function destroy(Membre $membre): RedirectResponse
     {
         DB::transaction(function () use ($membre) {
-            // Optionnel : empêcher suppression si lié à l’utilisateur courant
+            // Optionnel : empêcher suppression si lié à l'utilisateur courant
             if ($membre->user_id && $membre->user_id === auth()->id()) {
                 throw ValidationException::withMessages([
                     'membre' => 'Vous ne pouvez pas supprimer votre propre compte.',
@@ -379,25 +472,125 @@ final class MembreController extends Controller
         return redirect()->back()->with('success', 'Action de masse exécutée.');
     }
 
-    public function changerCeinture(Request $request, Membre $membre): RedirectResponse
+    /**
+     * NOUVELLE MÉTHODE: Faire progresser un membre vers une nouvelle ceinture
+     */
+    public function progresserCeinture(Request $request, Membre $membre): RedirectResponse
     {
         $this->authorize('update', $membre);
 
         $validated = $request->validate([
             'ceinture_id' => ['required','integer','exists:ceintures,id'],
-            'note'        => ['nullable','string','max:2000'],
+            'notes'       => ['nullable','string','max:2000'],
+            'forcer'      => ['boolean'], // Pour outrepasser les validations automatiques
         ]);
 
-        DB::transaction(function () use ($membre, $validated) {
-            $membre->update(['ceinture_actuelle_id' => $validated['ceinture_id']]);
+        $nouvelleCeinture = Ceinture::findOrFail($validated['ceinture_id']);
 
-            if (function_exists('activity')) {
-                activity('membres')->performedOn($membre)->causedBy(auth()->user())
-                    ->withProperties(['ceinture_id' => $validated['ceinture_id'], 'note' => $validated['note'] ?? null])
-                    ->log('membre.changer_ceinture');
+        // Vérifier si la progression est valide (sauf si forcée)
+        if (!$validated['forcer']) {
+            $validation = $this->progressionService->peutProgresser($membre, $nouvelleCeinture);
+            if (!$validation['peut_progresser']) {
+                return back()->withErrors([
+                    'progression' => 'Progression bloquée: ' . implode(', ', $validation['raisons_blocage'])
+                ]);
             }
-        });
+        }
 
-        return redirect()->back()->with('success', 'Ceinture mise à jour.');
+        try {
+            $progression = $this->progressionService->progresserMembre(
+                $membre, 
+                $nouvelleCeinture, 
+                $validated['notes'] ?? null,
+                $validated['forcer'] ? 'attribution_forcee' : 'attribution_manuelle'
+            );
+
+            return redirect()->back()->with('success', 
+                "Progression réussie: {$membre->nom_complet} → {$nouvelleCeinture->nom}"
+            );
+
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'progression' => 'Erreur lors de la progression: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * ANCIENNE MÉTHODE: Compatibilité pour changement simple de ceinture
+     */
+    public function changerCeinture(Request $request, Membre $membre): RedirectResponse
+    {
+        // Rediriger vers la nouvelle méthode de progression
+        return $this->progresserCeinture($request, $membre);
+    }
+
+    /**
+     * Gestion unifiée de l'accès système et des rôles
+     */
+    private function handleSystemAccess(Membre $membre, array $data): void
+    {
+        $hasSystemAccess = $data['has_system_access'] ?? false;
+        
+        if (!$hasSystemAccess) {
+            // Supprimer l'accès système si désactivé
+            if ($membre->user) {
+                $membre->user->delete();
+                $membre->update(['user_id' => null]);
+            }
+            return;
+        }
+
+        // Créer ou mettre à jour le compte utilisateur
+        $userEmail = $data['user_email'] ?? $membre->email;
+        $userName = trim("{$membre->prenom} {$membre->nom}");
+        
+        if ($membre->user) {
+            // Mettre à jour utilisateur existant
+            $updateData = [
+                'name' => $userName,
+                'email' => $userEmail,
+                'active' => $data['user_active'] ?? true,
+            ];
+            
+            if (!empty($data['user_password'])) {
+                $updateData['password'] = Hash::make($data['user_password']);
+            }
+            
+            if (isset($data['user_email_verified'])) {
+                $updateData['email_verified_at'] = $data['user_email_verified'] ? now() : null;
+            }
+            
+            $membre->user->update($updateData);
+            $user = $membre->user;
+        } else {
+            // Créer nouveau utilisateur
+            $user = User::create([
+                'name' => $userName,
+                'email' => $userEmail,
+                'password' => Hash::make($data['user_password'] ?? str()->random(16)),
+                'ecole_id' => auth()->user()?->ecole_id,
+                'active' => $data['user_active'] ?? true,
+                'email_verified_at' => ($data['user_email_verified'] ?? false) ? now() : null,
+            ]);
+            
+            $membre->update(['user_id' => $user->id]);
+        }
+
+        // Gérer les rôles
+        $roles = $data['user_roles'] ?? ['membre'];
+        
+        // Assurer qu'au minimum le rôle 'membre' est assigné
+        if (empty($roles) || !in_array('membre', $roles)) {
+            $roles[] = 'membre';
+        }
+        
+        // Empêcher l'assignation de superadmin par des non-superadmin
+        $authUser = auth()->user();
+        if (!$authUser->hasRole('superadmin')) {
+            $roles = array_filter($roles, fn($role) => $role !== 'superadmin');
+        }
+        
+        $user->syncRoles($roles);
     }
 }

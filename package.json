@@ -8,7 +8,19 @@
         "build": "vite build",
         "preview": "vite preview",
         "build:clean": "rm -rf public/build && vite build",
-        "analyze:manifest": "cat public/build/.vite/manifest.json | jq . || cat public/build/.vite/manifest.json"
+        "analyze:manifest": "cat public/build/.vite/manifest.json | jq . || cat public/build/.vite/manifest.json",
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:ui": "playwright test --ui",
+        "test:debug": "PWDEBUG=1 playwright test",
+        "test:membres": "playwright test membres-visual --headed --project=chromium",
+        "test:membres-ui": "playwright test membres-visual --ui",
+        "test:membres-debug": "PWDEBUG=1 playwright test membres-visual",
+        "test:mobile": "playwright test membres-visual --headed --project=\"Mobile Chrome\"",
+        "test:visual": "./test-playwright-visual.sh",
+        "test:install": "playwright install",
+        "test:report": "playwright show-report",
+        "test:trace": "playwright show-trace test-results/"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^1.0.14",

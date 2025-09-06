@@ -27,8 +27,16 @@ window.route = (name, params = {}) => {
         'membres.create': '/membres/create',
         'membres.show': (id) => `/membres/${id}`,
         'membres.edit': (id) => `/membres/${id}/edit`,
-        'dashboard': '/dashboard',
         'utilisateurs.index': '/utilisateurs',
+        'utilisateurs.create': '/utilisateurs/create',
+        'utilisateurs.show': (id) => `/utilisateurs/${id}`,
+        'utilisateurs.edit': (id) => `/utilisateurs/${id}/edit`,
+        'utilisateurs.store': '/utilisateurs',
+        'utilisateurs.update': (id) => `/utilisateurs/${id}`,
+        'utilisateurs.destroy': (id) => `/utilisateurs/${id}`,
+        'utilisateurs.reset-password': (id) => `/utilisateurs/${id}/reset-password`,
+        'utilisateurs.manage-roles': (id) => `/utilisateurs/${id}/manage-roles`,
+        'dashboard': '/dashboard',
         'presences.index': '/presences'
     };
     
@@ -77,6 +85,7 @@ createInertiaApp({
         
         // Helper route global
         app.config.globalProperties.$route = window.route;
+        app.provide('route', window.route); // Fournir via provide/inject
         window.route = window.route; // Assurer disponibilité globale
         
         // Configuration de production

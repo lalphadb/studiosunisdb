@@ -5,9 +5,9 @@ use Inertia\Inertia;
 
 /**
  * ============================================================
- * StudiosDB v7 - Routes Web Consolidées (POST-CALENDRIER)
+ * StudiosDB v7 - Routes Web Consolidées (MODULE MEMBRES v7)
  * ============================================================
- * AJOUT: Route planning/calendrier pour module Cours
+ * AJOUT: Progression ceintures + liens familiaux
  * ============================================================
  */
 
@@ -57,11 +57,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    /* 4.3) Membres */
+    /* 4.3) Membres - Routes complètes avec progression */
     Route::resource('membres', MembreController::class);
-    // Changement de ceinture
+    
+    // Progression ceintures (nouvelle méthode)
+    Route::post('membres/{membre}/progresser-ceinture', [MembreController::class, 'progresserCeinture'])
+        ->name('membres.progresser-ceinture');
+    
+    // Changement de ceinture (ancienne méthode - compatibilité)
     Route::post('membres/{membre}/ceinture', [MembreController::class, 'changerCeinture'])
         ->name('membres.changer-ceinture');
+    
+    // Actions de masse
+    Route::post('membres/bulk', [MembreController::class, 'bulk'])
+        ->name('membres.bulk');
+    
     // Export (Excel/PDF)
     Route::get('membres-export/{format?}', [MembreController::class, 'export'])
         ->whereIn('format', ['xlsx','csv','pdf'])
@@ -112,7 +122,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /* 4.7) Utilisateurs (admin only) */
     Route::middleware('can:admin-panel')->group(function () {
-        Route::resource('utilisateurs', UserController::class)->except(['show']);
+        Route::resource('utilisateurs', UserController::class);
+        Route::post('utilisateurs/{user}/reset-password', [UserController::class, 'resetPassword'])
+            ->name('utilisateurs.reset-password');
+        Route::post('utilisateurs/{user}/manage-roles', [UserController::class, 'manageRoles'])
+            ->name('utilisateurs.manage-roles');
     });
 
     /* 4.8) Ceintures & Examens */

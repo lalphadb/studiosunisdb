@@ -21,22 +21,29 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('utilisateur')->id ?? $this->route('user')->id;
+        // Récupérer l'ID utilisateur depuis la route de manière sécurisée
+        $userId = null;
+        $routeUser = $this->route('utilisateur') ?? $this->route('user');
+        if ($routeUser && is_object($routeUser)) {
+            $userId = $routeUser->id;
+        }
 
-            $ecoleId = $this->user()?->ecole_id;
-            $authUser = $this->user();
-            $superadminRule = $authUser && $authUser->hasRole('superadmin') ? [] : ['not_in:superadmin'];
-            return [
-                'name' => ['required','string','max:255'],
-                'email' => [
-                    'required','string','email','max:255',
-                    Rule::unique('users')->where(fn($q) => $ecoleId ? $q->where('ecole_id',$ecoleId):$q)->ignore($userId)
-                ],
-                'password' => ['sometimes','nullable','confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
-                'roles' => ['sometimes','array'],
-                'roles.*' => array_merge(['exists:roles,name'], $superadminRule),
-                'email_verified' => ['sometimes','boolean'],
-            ];
+        $ecoleId = $this->user()?->ecole_id;
+        $authUser = $this->user();
+        $superadminRule = $authUser && $authUser->hasRole('superadmin') ? [] : ['not_in:superadmin'];
+        
+        return [
+            'name' => ['required','string','max:255'],
+            'email' => [
+                'required','string','email','max:255',
+                $userId ? Rule::unique('users')->where(fn($q) => $ecoleId ? $q->where('ecole_id',$ecoleId):$q)->ignore($userId) : 'unique:users'
+            ],
+            'password' => ['sometimes','nullable','confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'roles' => ['sometimes','array'],
+            'roles.*' => array_merge(['exists:roles,name'], $superadminRule),
+            'email_verified' => ['sometimes','boolean'],
+            'active' => ['sometimes','boolean'],
+        ];
     }
 
     /**

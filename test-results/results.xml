@@ -1,0 +1,192 @@
+<testsuites id="" name="" tests="45" failures="0" skipped="45" errors="0" time="1399.744871">
+<testsuite name="membres-visual.spec.js" timestamp="2025-09-05T17:20:01.652Z" hostname="chromium" tests="9" failures="0" skipped="9" time="1397.872" errors="0">
+<testcase name="Module Membres - Tests Visuels › 🏠 Navigation vers module Membres" classname="membres-visual.spec.js" time="1397.872">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📊 Vérification Stats Cards" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🔍 Test filtres de recherche" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👁️ Test actions hover-only" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👤 Accès au profil d&apos;un membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🥋 Test système progression ceintures" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📱 Test responsive mobile" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › ➕ Test création nouveau membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🎨 Test thème et design StudiosDB" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="membres-visual.spec.js" timestamp="2025-09-05T17:20:01.652Z" hostname="firefox" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Module Membres - Tests Visuels › 🏠 Navigation vers module Membres" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📊 Vérification Stats Cards" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🔍 Test filtres de recherche" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👁️ Test actions hover-only" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👤 Accès au profil d&apos;un membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🥋 Test système progression ceintures" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📱 Test responsive mobile" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › ➕ Test création nouveau membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🎨 Test thème et design StudiosDB" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="membres-visual.spec.js" timestamp="2025-09-05T17:20:01.652Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Module Membres - Tests Visuels › 🏠 Navigation vers module Membres" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📊 Vérification Stats Cards" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🔍 Test filtres de recherche" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👁️ Test actions hover-only" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👤 Accès au profil d&apos;un membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🥋 Test système progression ceintures" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📱 Test responsive mobile" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › ➕ Test création nouveau membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🎨 Test thème et design StudiosDB" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="membres-visual.spec.js" timestamp="2025-09-05T17:20:01.652Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Module Membres - Tests Visuels › 🏠 Navigation vers module Membres" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📊 Vérification Stats Cards" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🔍 Test filtres de recherche" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👁️ Test actions hover-only" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👤 Accès au profil d&apos;un membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🥋 Test système progression ceintures" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📱 Test responsive mobile" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › ➕ Test création nouveau membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🎨 Test thème et design StudiosDB" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="membres-visual.spec.js" timestamp="2025-09-05T17:20:01.652Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Module Membres - Tests Visuels › 🏠 Navigation vers module Membres" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📊 Vérification Stats Cards" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🔍 Test filtres de recherche" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👁️ Test actions hover-only" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 👤 Accès au profil d&apos;un membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🥋 Test système progression ceintures" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 📱 Test responsive mobile" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › ➕ Test création nouveau membre" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Module Membres - Tests Visuels › 🎨 Test thème et design StudiosDB" classname="membres-visual.spec.js" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+</testsuites>

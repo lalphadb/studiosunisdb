@@ -163,6 +163,143 @@
             </div>
           </section>
 
+          <!-- NOUVELLE SECTION: Accès système et rôles -->
+          <section>
+            <h3 class="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+              <span class="w-8 h-8 rounded-lg bg-slate-800/70 border border-slate-700 flex items-center justify-center text-indigo-300">🔐</span>
+              Accès système et permissions
+            </h3>
+            
+            <!-- Toggle accès système -->
+            <div class="mb-6">
+              <label class="flex items-center gap-3 p-4 rounded-xl bg-slate-800/40 border border-slate-700/40 cursor-pointer hover:bg-slate-800/60 transition">
+                <input 
+                  v-model="form.has_system_access" 
+                  type="checkbox" 
+                  class="w-5 h-5 text-indigo-500 bg-slate-900 border-slate-600 rounded focus:ring-indigo-500" 
+                />
+                <div>
+                  <div class="text-sm font-medium text-slate-200">Autoriser l'accès au système StudiosDB</div>
+                  <div class="text-xs text-slate-400">Active un compte de connexion pour ce membre</div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Détails du compte (si accès activé) -->
+            <div v-if="form.has_system_access" class="space-y-6 border-t border-slate-700/50 pt-6">
+              
+              <!-- Email et mot de passe -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="Email de connexion" :error="errors.user_email">
+                  <input 
+                    v-model="form.user_email" 
+                    type="email" 
+                    class="field"
+                    placeholder="email@exemple.com"
+                  />
+                </FormField>
+                
+                <FormField :label="membre.user ? 'Nouveau mot de passe' : 'Mot de passe'" :error="errors.user_password">
+                  <input 
+                    v-model="form.user_password" 
+                    type="password" 
+                    class="field"
+                    :placeholder="membre.user ? 'Laisser vide pour conserver' : 'Minimum 8 caractères'"
+                  />
+                </FormField>
+              </div>
+
+              <!-- Niveau d'accès / Rôles -->
+              <div>
+                <label class="block text-xs font-medium uppercase tracking-wide text-slate-400 mb-3">Niveau d'accès</label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  
+                  <!-- Membre -->
+                  <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                         :class="form.user_roles.includes('membre') 
+                           ? 'bg-green-500/20 border-green-500/50 text-green-200'
+                           : 'bg-slate-800/60 border-slate-700/60 text-slate-300 hover:bg-slate-700/60'">
+                    <input 
+                      type="checkbox" 
+                      value="membre" 
+                      v-model="form.user_roles"
+                      class="w-4 h-4 text-green-500 bg-slate-900 border-slate-600 rounded focus:ring-green-500" 
+                    />
+                    <div>
+                      <div class="font-medium text-sm">Membre</div>
+                      <div class="text-xs opacity-75">Consulter ses cours, paiements</div>
+                    </div>
+                  </label>
+
+                  <!-- Instructeur -->
+                  <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                         :class="form.user_roles.includes('instructeur') 
+                           ? 'bg-purple-500/20 border-purple-500/50 text-purple-200'
+                           : 'bg-slate-800/60 border-slate-700/60 text-slate-300 hover:bg-slate-700/60'">
+                    <input 
+                      type="checkbox" 
+                      value="instructeur" 
+                      v-model="form.user_roles"
+                      class="w-4 h-4 text-purple-500 bg-slate-900 border-slate-600 rounded focus:ring-purple-500" 
+                    />
+                    <div>
+                      <div class="font-medium text-sm">Instructeur</div>
+                      <div class="text-xs opacity-75">Enseigner + gérer présences</div>
+                    </div>
+                  </label>
+
+                  <!-- Admin école -->
+                  <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                         :class="form.user_roles.includes('admin_ecole') 
+                           ? 'bg-amber-500/20 border-amber-500/50 text-amber-200'
+                           : 'bg-slate-800/60 border-slate-700/60 text-slate-300 hover:bg-slate-700/60'">
+                    <input 
+                      type="checkbox" 
+                      value="admin_ecole" 
+                      v-model="form.user_roles"
+                      class="w-4 h-4 text-amber-500 bg-slate-900 border-slate-600 rounded focus:ring-amber-500" 
+                    />
+                    <div>
+                      <div class="font-medium text-sm">Admin école</div>
+                      <div class="text-xs opacity-75">Gestion complète</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Statut du compte -->
+              <div class="flex items-center gap-6">
+                <label class="flex items-center gap-2 text-sm text-slate-300">
+                  <input 
+                    v-model="form.user_active" 
+                    type="checkbox" 
+                    class="w-4 h-4 text-blue-500 bg-slate-900 border-slate-600 rounded focus:ring-blue-500" 
+                  />
+                  Compte actif
+                </label>
+                
+                <label class="flex items-center gap-2 text-sm text-slate-300">
+                  <input 
+                    v-model="form.user_email_verified" 
+                    type="checkbox" 
+                    class="w-4 h-4 text-green-500 bg-slate-900 border-slate-600 rounded focus:ring-green-500" 
+                  />
+                  Email vérifié
+                </label>
+              </div>
+
+              <!-- Info compte existant -->
+              <div v-if="membre.user" class="bg-slate-900/50 rounded-lg p-3">
+                <div class="text-xs text-slate-400">
+                  Compte créé le {{ formatDate(membre.user?.created_at) }}
+                  <span v-if="membre.user?.last_login_at">
+                    • Dernière connexion : {{ formatDate(membre.user.last_login_at) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
             <button type="button" @click="confirmerSuppression" class="px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium text-white transition">🗑️ Supprimer</button>
             <div class="flex gap-3">
@@ -266,7 +403,15 @@ const form = useForm({
   notes_instructeur: membre.notes_instructeur || '',
   notes_admin: membre.notes_admin || '',
   consentement_photos: membre.consentement_photos,
-  consentement_communications: membre.consentement_communications
+  consentement_communications: membre.consentement_communications,
+  
+  // NOUVEAUX CHAMPS: Accès système et rôles
+  has_system_access: !!membre.user,
+  user_email: membre.user?.email || membre.email || '',
+  user_password: '',
+  user_roles: membre.user?.roles?.map(r => r.name) || [],
+  user_active: membre.user?.active ?? true,
+  user_email_verified: !!membre.user?.email_verified_at,
 })
 
 onMounted(() => { if (membre.allergies?.length) allergiesText.value = membre.allergies.join(', ') })

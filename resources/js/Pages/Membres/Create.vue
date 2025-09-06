@@ -134,7 +134,7 @@
               >
                 <option value="">Sélectionner une ceinture...</option>
                 <option v-for="ceinture in ceintures" :key="ceinture.id" :value="ceinture.id">
-                  {{ ceinture.name_fr }}
+                  {{ ceinture.nom }}
                 </option>
               </select>
             </div>
@@ -366,7 +366,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PageHeader from '@/Components/UI/PageHeader.vue'
 
-interface Ceinture { id: number; name_fr: string }
+interface Ceinture { id: number; nom: string }
 const props = defineProps<{ ceintures: Ceinture[] }>()
 
 const form = useForm({

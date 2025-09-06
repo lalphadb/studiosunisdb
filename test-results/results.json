@@ -1,0 +1,1119 @@
+{
+  "config": {
+    "configFile": "/home/studiosdb/studiosunisdb/playwright.config.js",
+    "rootDir": "/home/studiosdb/studiosunisdb/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/results.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/studiosdb/studiosunisdb/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/home/studiosdb/studiosunisdb/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/vendor/**",
+          "**/.git/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/studiosdb/studiosunisdb/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/home/studiosdb/studiosunisdb/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/vendor/**",
+          "**/.git/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/studiosdb/studiosunisdb/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/home/studiosdb/studiosunisdb/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/vendor/**",
+          "**/.git/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/studiosdb/studiosunisdb/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "/home/studiosdb/studiosunisdb/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/vendor/**",
+          "**/.git/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/studiosdb/studiosunisdb/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 2
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "/home/studiosdb/studiosunisdb/tests/e2e",
+        "testIgnore": [
+          "**/node_modules/**",
+          "**/vendor/**",
+          "**/.git/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 2,
+    "webServer": {
+      "command": "php artisan serve --host=localhost --port=8000",
+      "port": 8000,
+      "reuseExistingServer": true,
+      "stdout": "ignore",
+      "stderr": "pipe"
+    }
+  },
+  "suites": [
+    {
+      "title": "membres-visual.spec.js",
+      "file": "membres-visual.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Module Membres - Tests Visuels",
+          "file": "membres-visual.spec.js",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "🏠 Navigation vers module Membres",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "interrupted",
+                      "duration": 1397872,
+                      "error": {
+                        "message": "Error: browserContext.close: Target page, context or browser has been closed",
+                        "stack": "Error: browserContext.close: Target page, context or browser has been closed"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: browserContext.close: Target page, context or browser has been closed"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:20:02.416Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-8fd6fa86eb63c6c8d1d5",
+              "file": "membres-visual.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "📊 Vérification Stats Cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-05T17:20:02.513Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-0ed0eccfaafa03acd724",
+              "file": "membres-visual.spec.js",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "🔍 Test filtres de recherche",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-3665230bb07ad569018a",
+              "file": "membres-visual.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "👁️ Test actions hover-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-57a32d4e9413431c4e83",
+              "file": "membres-visual.spec.js",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "👤 Accès au profil d'un membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-d3066a86290d72a22caf",
+              "file": "membres-visual.spec.js",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "🥋 Test système progression ceintures",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-9c0be7a2a6c46762d1f4",
+              "file": "membres-visual.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "📱 Test responsive mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-c12b899f6fed0b058ec1",
+              "file": "membres-visual.spec.js",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "➕ Test création nouveau membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-6c2c45c272e33a182647",
+              "file": "membres-visual.spec.js",
+              "line": 204,
+              "column": 3
+            },
+            {
+              "title": "🎨 Test thème et design StudiosDB",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-04f5156ab054909eff47",
+              "file": "membres-visual.spec.js",
+              "line": 229,
+              "column": 3
+            },
+            {
+              "title": "🏠 Navigation vers module Membres",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-919d0784a15e030870f4",
+              "file": "membres-visual.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "📊 Vérification Stats Cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-24d836836c41fb3064b8",
+              "file": "membres-visual.spec.js",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "🔍 Test filtres de recherche",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-aa73507c929760f6a752",
+              "file": "membres-visual.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "👁️ Test actions hover-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-fc9f3363a08000e23333",
+              "file": "membres-visual.spec.js",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "👤 Accès au profil d'un membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-e39f1bcd0d44868cbcf3",
+              "file": "membres-visual.spec.js",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "🥋 Test système progression ceintures",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-c125215c5ad431d2f1cf",
+              "file": "membres-visual.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "📱 Test responsive mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-1d66af1a4967d6b6589c",
+              "file": "membres-visual.spec.js",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "➕ Test création nouveau membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-bb5bdc45556b41fb6f68",
+              "file": "membres-visual.spec.js",
+              "line": 204,
+              "column": 3
+            },
+            {
+              "title": "🎨 Test thème et design StudiosDB",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-c41ce2abdcffb56dc6eb",
+              "file": "membres-visual.spec.js",
+              "line": 229,
+              "column": 3
+            },
+            {
+              "title": "🏠 Navigation vers module Membres",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-6b756159b548b676c9c1",
+              "file": "membres-visual.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "📊 Vérification Stats Cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-fd73747d50953534105c",
+              "file": "membres-visual.spec.js",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "🔍 Test filtres de recherche",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-e8fcf09ff5c76333fa11",
+              "file": "membres-visual.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "👁️ Test actions hover-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-e1da43ad10b80aae35b0",
+              "file": "membres-visual.spec.js",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "👤 Accès au profil d'un membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-a4a885692e6571002f5c",
+              "file": "membres-visual.spec.js",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "🥋 Test système progression ceintures",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-7c2b13537e8dea9edfac",
+              "file": "membres-visual.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "📱 Test responsive mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-8f87aa3f2bc04ddf4fa4",
+              "file": "membres-visual.spec.js",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "➕ Test création nouveau membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-80f9451d3f937e615462",
+              "file": "membres-visual.spec.js",
+              "line": 204,
+              "column": 3
+            },
+            {
+              "title": "🎨 Test thème et design StudiosDB",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-61515efa484512247627",
+              "file": "membres-visual.spec.js",
+              "line": 229,
+              "column": 3
+            },
+            {
+              "title": "🏠 Navigation vers module Membres",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-11b68c642181d2a1881b",
+              "file": "membres-visual.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "📊 Vérification Stats Cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-e4bea777695772468f8d",
+              "file": "membres-visual.spec.js",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "🔍 Test filtres de recherche",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-6dc4f3068e93b27ee95f",
+              "file": "membres-visual.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "👁️ Test actions hover-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-9efe54934a0faf00d5df",
+              "file": "membres-visual.spec.js",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "👤 Accès au profil d'un membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-68f191b4669d3f8c3556",
+              "file": "membres-visual.spec.js",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "🥋 Test système progression ceintures",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-240306234b56f493c759",
+              "file": "membres-visual.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "📱 Test responsive mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-4773947d31a3acfecb70",
+              "file": "membres-visual.spec.js",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "➕ Test création nouveau membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-33a7663891afd0d0dc5d",
+              "file": "membres-visual.spec.js",
+              "line": 204,
+              "column": 3
+            },
+            {
+              "title": "🎨 Test thème et design StudiosDB",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-a497e8f5d10df0e3e2fe",
+              "file": "membres-visual.spec.js",
+              "line": 229,
+              "column": 3
+            },
+            {
+              "title": "🏠 Navigation vers module Membres",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-3406f077091f850d54d4",
+              "file": "membres-visual.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "📊 Vérification Stats Cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-cdc40de87f6370262359",
+              "file": "membres-visual.spec.js",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "🔍 Test filtres de recherche",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-0be7f75a307616eb8564",
+              "file": "membres-visual.spec.js",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "👁️ Test actions hover-only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-1c6d08586e1c046194bc",
+              "file": "membres-visual.spec.js",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "👤 Accès au profil d'un membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-cca805d8dc96a74500dc",
+              "file": "membres-visual.spec.js",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "🥋 Test système progression ceintures",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-d299dfeff4c84b8c4a19",
+              "file": "membres-visual.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "📱 Test responsive mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-0ebd0607a6efbc0f370e",
+              "file": "membres-visual.spec.js",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "➕ Test création nouveau membre",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-489c337523eab6208e9f",
+              "file": "membres-visual.spec.js",
+              "line": 204,
+              "column": 3
+            },
+            {
+              "title": "🎨 Test thème et design StudiosDB",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "92c1446b4baba758804d-703720af569546c1dc0f",
+              "file": "membres-visual.spec.js",
+              "line": 229,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-05T17:20:01.172Z",
+    "duration": 1399744.871,
+    "expected": 0,
+    "skipped": 45,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

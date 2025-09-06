@@ -44,7 +44,9 @@ class User extends Authenticatable
         'password',
         'role',
         'ecole_id', // Ajouté pour mono-école
-    'active',
+        'active',
+        'last_login_at',
+        'email_verified_at',
     ];
 
     /**

@@ -85,7 +85,7 @@ class Membre extends Model
     public function cours(): BelongsToMany
     {
         return $this->belongsToMany(Cours::class, 'cours_membres')
-            ->withPivot(['date_inscription', 'date_fin', 'statut'])
+            ->withPivot(['date_inscription', 'date_fin', 'statut_inscription'])
             ->withTimestamps();
     }
 

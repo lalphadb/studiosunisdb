@@ -12,7 +12,9 @@ final class UpdateMembreRequest extends FormRequest
     {
         /** @var Membre $membre */
         $membre = $this->route('membre');
-        return $this->user()?->can('membres.edit') && $membre?->exists;
+        
+        // Vérifier que le membre existe et que l'utilisateur peut le modifier
+        return $membre?->exists && $this->user()?->can('update', $membre);
     }
 
     public function rules(): array
@@ -25,61 +27,46 @@ final class UpdateMembreRequest extends FormRequest
             'nom' => ['required', 'string', 'max:255'],
             'prenom' => ['required', 'string', 'max:255'],
             'date_naissance' => ['required', 'date', 'before:today'],
-            'sexe' => ['required', 'in:M,F'],
+            'sexe' => ['required', 'in:M,F,Autre'],
             
             // Contact
-            'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('membres')->where(function ($query) {
-                    return $query->where('ecole_id', auth()->user()->ecole_id);
-                })->ignore($membre->id),
-            ],
             'telephone' => ['nullable', 'string', 'max:20'],
-            'telephone_urgence' => ['nullable', 'string', 'max:20'],
-            'contact_urgence' => ['nullable', 'string', 'max:255'],
+            
+            // Contact d'urgence
+            'contact_urgence_nom' => ['nullable', 'string', 'max:255'],
+            'contact_urgence_telephone' => ['nullable', 'string', 'max:20'],
+            'contact_urgence_relation' => ['nullable', 'string', 'max:255'],
             
             // Adresse
-            'adresse' => ['nullable', 'string', 'max:255'],
+            'adresse' => ['nullable', 'string'],
             'ville' => ['nullable', 'string', 'max:100'],
             'code_postal' => ['nullable', 'string', 'max:10'],
-            'province' => ['nullable', 'string', 'max:50'],
             
             // Karaté
-            'ceinture_id' => ['required', 'exists:ceintures,id'],
-            'date_inscription' => ['required', 'date'],
-            'numero_membre' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('membres')->where(function ($query) {
-                    return $query->where('ecole_id', auth()->user()->ecole_id);
-                })->ignore($membre->id),
-            ],
+            'ceinture_actuelle_id' => ['nullable', 'exists:ceintures,id'],
+            'statut' => ['required', 'in:actif,inactif,suspendu,diplome'],
             
             // Médical
-            'allergies' => ['nullable', 'string'],
-            'conditions_medicales' => ['nullable', 'string'],
-            'medications' => ['nullable', 'string'],
+            'notes_medicales' => ['nullable', 'string'],
+            'allergies' => ['nullable', 'array'],
+            'allergies.*' => ['string', 'max:255'],
             
-            // Photo
-            'photo' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
+            // Notes administratives
+            'notes_instructeur' => ['nullable', 'string'],
+            'notes_admin' => ['nullable', 'string'],
             
-            // User lié (mise à jour optionnelle)
-            'user_email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($membre->user_id),
-            ],
+            // Consentements
+            'consentement_photos' => ['boolean'],
+            'consentement_communications' => ['boolean'],
             
-            // Relations familiales
-            'famille_ids' => ['nullable', 'array'],
-            'famille_ids.*' => ['exists:membres,id'],
-            
-            // Statut
-            'statut' => ['required', 'in:actif,inactif,suspendu'],
+            // Accès système et rôles
+            'has_system_access' => ['boolean'],
+            'user_email' => ['nullable', 'email', 'max:255'],
+            'user_password' => ['nullable', 'string', 'min:8'],
+            'user_roles' => ['nullable', 'array'],
+            'user_roles.*' => ['in:membre,instructeur,admin_ecole,superadmin'],
+            'user_active' => ['boolean'],
+            'user_email_verified' => ['boolean'],
         ];
     }
 
@@ -91,12 +78,20 @@ final class UpdateMembreRequest extends FormRequest
             'date_naissance.required' => 'La date de naissance est obligatoire.',
             'date_naissance.before' => 'La date de naissance doit être dans le passé.',
             'sexe.required' => 'Le sexe est obligatoire.',
-            'email.unique' => 'Cet email est déjà utilisé par un autre membre de l\'école.',
-            'ceinture_id.required' => 'La ceinture est obligatoire.',
-            'date_inscription.required' => 'La date d\'inscription est obligatoire.',
-            'numero_membre.unique' => 'Ce numéro de membre est déjà utilisé.',
-            'photo.image' => 'Le fichier doit être une image.',
-            'photo.max' => 'L\'image ne doit pas dépasser 2 MB.',
+            'sexe.in' => 'Le sexe doit être M, F ou Autre.',
+            'ceinture_actuelle_id.exists' => 'La ceinture sélectionnée n\'existe pas.',
+            'statut.required' => 'Le statut est obligatoire.',
+            'statut.in' => 'Le statut doit être actif, inactif, suspendu ou diplômé.',
+            'allergies.array' => 'Les allergies doivent être une liste.',
+            'allergies.*.string' => 'Chaque allergie doit être du texte.',
+            'allergies.*.max' => 'Chaque allergie ne peut dépasser 255 caractères.',
+            'consentement_photos.boolean' => 'Le consentement photos doit être vrai ou faux.',
+            'consentement_communications.boolean' => 'Le consentement communications doit être vrai ou faux.',
+            
+            // Messages accès système
+            'user_email.email' => 'L\'email de connexion doit être valide.',
+            'user_password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'user_roles.*.in' => 'Rôle non autorisé.',
         ];
     }
 }

@@ -9,7 +9,7 @@ final class StoreMembreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('membres.create') ?? false;
+        return $this->user()?->can('create', \App\Models\Membre::class) ?? false;
     }
 
     public function rules(): array

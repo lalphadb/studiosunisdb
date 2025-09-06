@@ -13,19 +13,23 @@ class Ceinture extends Model
     protected $table = 'ceintures';
     
     protected $fillable = [
-        'ordre',
-        'nom',
-        'nom_en',
-        'couleur_hex',
+        'order',
+        'name',
+        'name_en',
+        'color_hex',
         'description',
-        'criteres_passage',
-        'est_active',
+        'technical_requirements',
+        'minimum_duration_months',
+        'minimum_attendances',
+        'active',
     ];
     
     protected $casts = [
-        'ordre' => 'integer',
-        'criteres_passage' => 'array',
-        'est_active' => 'boolean',
+        'order' => 'integer',
+        'technical_requirements' => 'array',
+        'minimum_duration_months' => 'integer',
+        'minimum_attendances' => 'integer',
+        'active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -58,38 +62,49 @@ class Ceinture extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('est_active', true);
+        return $query->where('active', true);
     }
     
     public function scopeOrdered($query)
     {
-        return $query->orderBy('ordre');
+        return $query->orderBy('order');
     }
     
     /**
      * Attributs calculés
      */
+    public function getNomAttribute(): string
+    {
+        return $this->name ?? '';
+    }
+    
+    public function getCouleurHexAttribute(): string
+    {
+        return $this->color_hex ?? '#000000';
+    }
+    
     public function getNomCompletAttribute(): string
     {
-        if ($this->nom_en) {
-            return "{$this->nom} ({$this->nom_en})";
+        $name = $this->name ?? '';
+        if ($this->name_en) {
+            return "{$name} ({$this->name_en})";
         }
-        return $this->nom;
+        return $name;
     }
     
     public function getEstDebutanteAttribute(): bool
     {
-        return $this->ordre <= 2; // Blanche, Jaune, Orange
+        return $this->order <= 2; // Blanche, Jaune, Orange
     }
     
     public function getEstIntermediaireAttribute(): bool
     {
-        return $this->ordre > 2 && $this->ordre <= 5; // Verte, Bleue, Violette
+        return $this->order > 2 && $this->order <= 5; // Verte, Bleue, Violette
     }
     
     public function getEstAvanceeAttribute(): bool
     {
-        return $this->ordre > 5; // Brune, Noire et +
+        return $this->order > 5; // Brune, Noire et +
     }
     
     /**
@@ -98,7 +113,7 @@ class Ceinture extends Model
     public function suivante(): ?self
     {
         return static::active()
-            ->where('ordre', '>', $this->ordre)
+            ->where('order', '>', $this->order)
             ->ordered()
             ->first();
     }
@@ -109,8 +124,8 @@ class Ceinture extends Model
     public function precedente(): ?self
     {
         return static::active()
-            ->where('ordre', '<', $this->ordre)
-            ->orderBy('ordre', 'desc')
+            ->where('order', '<', $this->order)
+            ->orderBy('order', 'desc')
             ->first();
     }
     
@@ -135,47 +150,19 @@ class Ceinture extends Model
      */
     public function getCriteresFormatesAttribute(): array
     {
-        if (!$this->criteres_passage) {
-            return $this->getDefaultCriteres();
-        }
-        
-        return $this->criteres_passage;
-    }
-    
-    /**
-     * Critères par défaut selon le niveau
-     */
-    private function getDefaultCriteres(): array
-    {
         $base = [
-            'temps_minimum' => '3 mois',
-            'presences_requises' => 20,
-            'examen_theorique' => false,
+            'temps_minimum' => $this->minimum_duration_months . ' mois',
+            'presences_requises' => $this->minimum_attendances,
+            'examen_theorique' => $this->est_intermediaire || $this->est_avancee,
             'examen_pratique' => true,
         ];
         
-        if ($this->est_debutante) {
-            return array_merge($base, [
-                'temps_minimum' => '2 mois',
-                'presences_requises' => 15,
-            ]);
-        }
-        
-        if ($this->est_intermediaire) {
-            return array_merge($base, [
-                'temps_minimum' => '4 mois',
-                'presences_requises' => 30,
-                'examen_theorique' => true,
-            ]);
+        if ($this->technical_requirements) {
+            $base['techniques_requises'] = $this->technical_requirements;
         }
         
         if ($this->est_avancee) {
-            return array_merge($base, [
-                'temps_minimum' => '6 mois',
-                'presences_requises' => 50,
-                'examen_theorique' => true,
-                'competition_requise' => true,
-            ]);
+            $base['competition_requise'] = true;
         }
         
         return $base;
@@ -187,9 +174,9 @@ class Ceinture extends Model
     public function getStyleAttribute(): array
     {
         return [
-            'background-color' => $this->couleur_hex,
-            'color' => $this->getContrastColor($this->couleur_hex),
-            'border' => $this->couleur_hex === '#FFFFFF' ? '1px solid #ccc' : 'none',
+            'background-color' => $this->color_hex,
+            'color' => $this->getContrastColor($this->color_hex),
+            'border' => $this->color_hex === '#FFFFFF' ? '1px solid #ccc' : 'none',
         ];
     }
     
@@ -209,32 +196,5 @@ class Ceinture extends Model
         
         // Retourner noir ou blanc selon la luminance
         return $luminance > 0.5 ? '#000000' : '#FFFFFF';
-    }
-    
-    /**
-     * Seeds des ceintures de base
-     */
-    public static function seedDefaults(): void
-    {
-        $ceintures = [
-            ['ordre' => 0, 'nom' => 'Blanche', 'nom_en' => 'White', 'couleur_hex' => '#FFFFFF'],
-            ['ordre' => 1, 'nom' => 'Jaune', 'nom_en' => 'Yellow', 'couleur_hex' => '#FFD700'],
-            ['ordre' => 2, 'nom' => 'Orange', 'nom_en' => 'Orange', 'couleur_hex' => '#FFA500'],
-            ['ordre' => 3, 'nom' => 'Verte', 'nom_en' => 'Green', 'couleur_hex' => '#00FF00'],
-            ['ordre' => 4, 'nom' => 'Bleue', 'nom_en' => 'Blue', 'couleur_hex' => '#0000FF'],
-            ['ordre' => 5, 'nom' => 'Violette', 'nom_en' => 'Purple', 'couleur_hex' => '#800080'],
-            ['ordre' => 6, 'nom' => 'Brune', 'nom_en' => 'Brown', 'couleur_hex' => '#8B4513'],
-            ['ordre' => 7, 'nom' => 'Noire', 'nom_en' => 'Black', 'couleur_hex' => '#000000'],
-            ['ordre' => 8, 'nom' => 'Noire 1er Dan', 'nom_en' => 'Black 1st Dan', 'couleur_hex' => '#000000'],
-            ['ordre' => 9, 'nom' => 'Noire 2e Dan', 'nom_en' => 'Black 2nd Dan', 'couleur_hex' => '#000000'],
-            ['ordre' => 10, 'nom' => 'Noire 3e Dan', 'nom_en' => 'Black 3rd Dan', 'couleur_hex' => '#000000'],
-        ];
-        
-        foreach ($ceintures as $ceinture) {
-            static::updateOrCreate(
-                ['ordre' => $ceinture['ordre']],
-                array_merge($ceinture, ['est_active' => true])
-            );
-        }
     }
 }
