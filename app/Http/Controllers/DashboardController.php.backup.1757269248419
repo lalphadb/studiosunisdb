@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
-use App\Models\User; // CORRIGÉ: User au lieu de Membre
+use App\Models\Membre;
 use App\Models\Cours;
 use App\Models\Presence;
 use Carbon\Carbon;
@@ -27,17 +27,19 @@ class DashboardController extends Controller
     
     private function dashboardMembre($user)
     {
-        // CORRIGÉ: Utiliser directement $user (fusion User + Membre)
+        // Charger les données spécifiques au membre
+        $membre = $user->membre; // Relation User -> Membre
+        
         $memberData = [];
-        if ($user->isMembreKarate()) {
+        if ($membre) {
             $memberData = [
-                'current_belt' => $user->ceintureActuelle?->name ?? 'Aucune',
-                'belt_color' => $user->ceintureActuelle?->color_hex ?? '#666666',
-                'member_since' => $user->date_inscription?->format('M Y') ?? 'Non défini',
-                'attendance_rate' => $this->calculateMemberAttendance($user),
-                'courses_count' => $user->cours()->count(),
-                'next_course' => $this->getNextCourse($user),
-                'belts_history' => $this->getBeltsHistory($user)
+                'current_belt' => $membre->ceintureActuelle?->name ?? 'Aucune',
+                'belt_color' => $membre->ceintureActuelle?->color_hex ?? '#666666',
+                'member_since' => $membre->date_inscription?->format('M Y') ?? 'Non défini',
+                'attendance_rate' => $this->calculateMemberAttendance($membre),
+                'courses_count' => $membre->cours()->count(),
+                'next_course' => $this->getNextCourse($membre),
+                'belts_history' => $this->getBeltsHistory($membre)
             ];
         }
         
@@ -50,9 +52,9 @@ class DashboardController extends Controller
     
     private function dashboardAdmin($user, $role)
     {
-        // CORRIGÉ: Utiliser User::membresKarate() au lieu de Membre::
+        // Statistiques réelles pour admin/instructeur
         $stats = [
-            'membres_actifs' => User::membresKarate()->where('statut', 'actif')->count(),
+            'membres_actifs' => Membre::where('statut', 'actif')->count(),
             'cours_actifs' => Cours::where('actif', true)->count(),
             'taux_presence' => $this->calculatePresenceRate(),
             'paiements_retard' => 7, // Placeholder
@@ -69,18 +71,17 @@ class DashboardController extends Controller
         ]);
     }
     
-    private function calculateMemberAttendance($user)
+    private function calculateMemberAttendance($membre)
     {
         try {
-            // CORRIGÉ: Utiliser user_id au lieu de membre_id
             $totalPresences = DB::table('presences')
-                ->where('user_id', $user->id)
+                ->where('membre_id', $membre->id)
                 ->whereMonth('date_cours', Carbon::now()->month)
                 ->where('statut', 'present')
                 ->count();
                 
             $totalCourses = DB::table('presences')
-                ->where('user_id', $user->id)
+                ->where('membre_id', $membre->id)
                 ->whereMonth('date_cours', Carbon::now()->month)
                 ->count();
                 
@@ -90,10 +91,10 @@ class DashboardController extends Controller
         }
     }
     
-    private function getNextCourse($user)
+    private function getNextCourse($membre)
     {
         try {
-            $nextCourse = $user->cours()
+            $nextCourse = $membre->cours()
                 ->where('jour_semaine', '>=', Carbon::now()->dayOfWeek)
                 ->first();
                 
@@ -117,21 +118,21 @@ class DashboardController extends Controller
         ];
     }
     
-    private function getBeltsHistory($user)
+    private function getBeltsHistory($membre)
     {
         try {
-            $progressions = $user->progressionCeintures()
+            $progressions = $membre->progressionCeintures()
                 ->with('ceintureNouvelle')
                 ->orderBy('date_obtention')
                 ->get();
                 
-            return $progressions->map(function($progression) use ($user) {
+            return $progressions->map(function($progression) {
                 return [
                     'id' => $progression->id,
                     'name' => $progression->ceintureNouvelle->name,
                     'color' => $progression->ceintureNouvelle->color_hex,
                     'date' => $progression->date_obtention->format('d M Y'),
-                    'current' => $progression->ceintureNouvelle->id === $user->ceinture_actuelle_id
+                    'current' => $progression->ceintureNouvelle->id === $membre->ceinture_actuelle_id
                 ];
             })->toArray();
         } catch (\Exception $e) {
