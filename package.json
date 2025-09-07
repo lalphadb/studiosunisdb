@@ -13,6 +13,8 @@
         "test:headed": "playwright test --headed",
         "test:ui": "playwright test --ui",
         "test:debug": "PWDEBUG=1 playwright test",
+        "test:fusion": "playwright test tests/fusion-validation.spec.js --headed --project=chromium",
+        "test:fusion-report": "playwright test tests/fusion-validation.spec.js --reporter=html",
         "test:membres": "playwright test membres-visual --headed --project=chromium",
         "test:membres-ui": "playwright test membres-visual --ui",
         "test:membres-debug": "PWDEBUG=1 playwright test membres-visual",
