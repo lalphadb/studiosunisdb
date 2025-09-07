@@ -41,10 +41,10 @@
                   type="text"
                   required
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500"
-                  :class="{ 'border-red-500': errors.nom }"
+                  :class="{ 'border-red-500': form.errors?.nom }"
                   placeholder="Ex: Karaté Débutants Enfants"
                 />
-                <div v-if="errors.nom" class="text-red-400 text-sm mt-1">{{ errors.nom }}</div>
+                <div v-if="form.errors?.nom" class="text-red-400 text-sm mt-1">{{ form.errors.nom }}</div>
               </div>
               
               <div>
@@ -53,7 +53,7 @@
                   v-model="form.niveau"
                   required
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :class="{ 'border-red-500': errors.niveau }"
+                  :class="{ 'border-red-500': form.errors?.niveau }"
                 >
                   <option value="">Sélectionner...</option>
                   <option value="tous">Tous</option>
@@ -64,7 +64,7 @@
                   <option value="competition">Compétition</option>
                   <option value="a_la_carte">À la carte</option>
                 </select>
-                <div v-if="errors.niveau" class="text-red-400 text-sm mt-1">{{ errors.niveau }}</div>
+                <div v-if="form.errors?.niveau" class="text-red-400 text-sm mt-1">{{ form.errors.niveau }}</div>
               </div>
               
               <div>
@@ -76,9 +76,9 @@
                   max="99"
                   required
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :class="{ 'border-red-500': errors.age_min }"
+                  :class="{ 'border-red-500': form.errors?.age_min }"
                 />
-                <div v-if="errors.age_min" class="text-red-400 text-sm mt-1">{{ errors.age_min }}</div>
+                <div v-if="form.errors?.age_min" class="text-red-400 text-sm mt-1">{{ form.errors.age_min }}</div>
               </div>
               
               <div>
@@ -89,10 +89,10 @@
                   min="3"
                   max="99"
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :class="{ 'border-red-500': errors.age_max }"
+                  :class="{ 'border-red-500': form.errors?.age_max }"
                   placeholder="Optionnel (pour tous âges, laisser vide)"
                 />
-                <div v-if="errors.age_max" class="text-red-400 text-sm mt-1">{{ errors.age_max }}</div>
+                <div v-if="form.errors?.age_max" class="text-red-400 text-sm mt-1">{{ form.errors.age_max }}</div>
                 <div class="text-xs text-slate-500 mt-1">Laisser vide pour "tous âges"</div>
               </div>
               
@@ -105,9 +105,9 @@
                   max="50"
                   required
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :class="{ 'border-red-500': errors.places_max }"
+                  :class="{ 'border-red-500': form.errors?.places_max }"
                 />
-                <div v-if="errors.places_max" class="text-red-400 text-sm mt-1">{{ errors.places_max }}</div>
+                <div v-if="form.errors?.places_max" class="text-red-400 text-sm mt-1">{{ form.errors.places_max }}</div>
               </div>
               
               <div>
@@ -115,12 +115,13 @@
                 <select
                   v-model="form.instructeur_id"
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :class="{ 'border-red-500': errors.instructeur_id }"
+                  :class="{ 'border-red-500': form.errors?.instructeur_id }"
                 >
                   <option value="">Aucun (à assigner plus tard)</option>
                   <option v-for="inst in instructeurs" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
                 </select>
-                <div v-if="errors.instructeur_id" class="text-red-400 text-sm mt-1">{{ errors.instructeur_id }}</div>
+                <div v-if="form.errors?.instructeur_id" class="text-red-400 text-sm mt-1">{{ form.errors.instructeur_id }}</div>
+                <div class="text-xs text-slate-500 mt-1">Optionnel - peut être assigné plus tard</div>
               </div>
             </div>
           </div>
@@ -135,12 +136,12 @@
                   v-model="form.jour_semaine"
                   required
                   class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :class="{ 'border-red-500': errors.jour_semaine }"
+                  :class="{ 'border-red-500': form.errors?.jour_semaine }"
                 >
                   <option value="">Sélectionner...</option>
                   <option v-for="jour in joursDisponibles" :key="jour.value" :value="jour.value">{{ jour.label }}</option>
                 </select>
-                <div v-if="errors.jour_semaine" class="text-red-400 text-sm mt-1">{{ errors.jour_semaine }}</div>
+                <div v-if="form.errors?.jour_semaine" class="text-red-400 text-sm mt-1">{{ form.errors.jour_semaine }}</div>
               </div>
               
               <div>
@@ -150,11 +151,11 @@
                   type="time"
                   required
                   step="900"
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         calendar-enhanced"
-                  :class="{ 'border-red-500': errors.heure_debut }"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent calendar-enhanced"
+                  :class="{ 'border-red-500': form.errors?.heure_debut }"
                 />
-                <div v-if="errors.heure_debut" class="text-red-400 text-sm mt-1">{{ errors.heure_debut }}</div>
+                <div v-if="form.errors?.heure_debut" class="text-red-400 text-sm mt-1">{{ form.errors.heure_debut }}</div>
+                <div class="text-xs text-slate-500 mt-1">Format 24h (ex: 19:00)</div>
               </div>
               
               <div>
@@ -164,11 +165,11 @@
                   type="time"
                   required
                   step="900"
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         calendar-enhanced"
-                  :class="{ 'border-red-500': errors.heure_fin }"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent calendar-enhanced"
+                  :class="{ 'border-red-500': form.errors?.heure_fin }"
                 />
-                <div v-if="errors.heure_fin" class="text-red-400 text-sm mt-1">{{ errors.heure_fin }}</div>
+                <div v-if="form.errors?.heure_fin" class="text-red-400 text-sm mt-1">{{ form.errors.heure_fin }}</div>
+                <div class="text-xs text-slate-500 mt-1">Format 24h (ex: 20:00)</div>
               </div>
             </div>
           </div>
@@ -183,11 +184,11 @@
                   v-model="form.date_debut"
                   type="date"
                   required
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         calendar-enhanced"
-                  :class="{ 'border-red-500': errors.date_debut }"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent calendar-enhanced"
+                  :class="{ 'border-red-500': form.errors?.date_debut }"
                 />
-                <div v-if="errors.date_debut" class="text-red-400 text-sm mt-1">{{ errors.date_debut }}</div>
+                <div v-if="form.errors?.date_debut" class="text-red-400 text-sm mt-1">{{ form.errors.date_debut }}</div>
+                <div class="text-xs text-slate-500 mt-1">Format: AAAA-MM-JJ</div>
               </div>
               
               <div>
@@ -195,11 +196,11 @@
                 <input
                   v-model="form.date_fin"
                   type="date"
-                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         calendar-enhanced"
-                  :class="{ 'border-red-500': errors.date_fin }"
+                  class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent calendar-enhanced"
+                  :class="{ 'border-red-500': form.errors?.date_fin }"
                 />
-                <div v-if="errors.date_fin" class="text-red-400 text-sm mt-1">{{ errors.date_fin }}</div>
+                <div v-if="form.errors?.date_fin" class="text-red-400 text-sm mt-1">{{ form.errors.date_fin }}</div>
+                <div class="text-xs text-slate-500 mt-1">Peut être identique à la date de début pour cours d'une séance</div>
               </div>
             </div>
             
@@ -213,7 +214,7 @@
                     v-model="form.type_tarif"
                     required
                     class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :class="{ 'border-red-500': errors.type_tarif }"
+                    :class="{ 'border-red-500': form.errors?.type_tarif }"
                   >
                     <option value="mensuel">Mensuel</option>
                     <option value="trimestriel">Trimestriel (3 mois)</option>
@@ -221,7 +222,7 @@
                     <option value="a_la_carte">À la carte (10 samedis)</option>
                     <option value="autre">Autre (préciser)</option>
                   </select>
-                  <div v-if="errors.type_tarif" class="text-red-400 text-sm mt-1">{{ errors.type_tarif }}</div>
+                  <div v-if="form.errors?.type_tarif" class="text-red-400 text-sm mt-1">{{ form.errors.type_tarif }}</div>
                 </div>
                 
                 <div>
@@ -236,10 +237,10 @@
                     step="0.01"
                     required
                     class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :class="{ 'border-red-500': errors.montant }"
+                    :class="{ 'border-red-500': form.errors?.montant }"
                     placeholder="0.00"
                   />
-                  <div v-if="errors.montant" class="text-red-400 text-sm mt-1">{{ errors.montant }}</div>
+                  <div v-if="form.errors?.montant" class="text-red-400 text-sm mt-1">{{ form.errors.montant }}</div>
                 </div>
                 
                 <div v-if="form.type_tarif === 'autre'" class="md:col-span-2">
@@ -249,10 +250,10 @@
                     rows="3"
                     required
                     class="w-full bg-slate-900/50 text-white border border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :class="{ 'border-red-500': errors.details_tarif }"
+                    :class="{ 'border-red-500': form.errors?.details_tarif }"
                     placeholder="Précisez les modalités de paiement, fréquence, conditions..."
                   ></textarea>
-                  <div v-if="errors.details_tarif" class="text-red-400 text-sm mt-1">{{ errors.details_tarif }}</div>
+                  <div v-if="form.errors?.details_tarif" class="text-red-400 text-sm mt-1">{{ form.errors.details_tarif }}</div>
                 </div>
               </div>
             </div>
@@ -308,8 +309,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { ref, computed, onMounted } from 'vue'
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PageHeader from '@/Components/UI/PageHeader.vue'
 
@@ -344,6 +345,16 @@ const props = defineProps({
   }
 })
 
+// FIX: Ajouter accès aux données Inertia pour éviter erreurs
+const page = usePage()
+
+// FIX: Définir isMembreRole comme computed property
+const isMembreRole = computed(() => {
+  const user = page.props?.auth?.user
+  if (!user || !user.roles) return false
+  return user.roles.some(role => role.name === 'membre')
+})
+
 // Initialiser le formulaire avec données pré-remplies si duplication
 const form = useForm({
   nom: props.coursSource?.nom || '',
@@ -364,10 +375,9 @@ const form = useForm({
   details_tarif: props.coursSource?.details_tarif || '',
   // Ancien système (conservé pour compatibilité - null si non mensuel)
   tarif_mensuel: props.coursSource?.tarif_mensuel || null,
-  actif: props.coursSource?.actif ?? true
+  actif: props.coursSource?.actif ?? true,
+  statut: props.coursSource?.statut || 'actif'
 })
-
-const errors = ref({})
 
 // Configuration locale française Canada
 onMounted(() => {
@@ -396,8 +406,9 @@ const submit = () => {
   }
   
   form.post('/cours', {
-    onError: (e) => { errors.value = e },
-    onSuccess: () => { errors.value = {} }
+    onSuccess: () => {
+      // Succès géré automatiquement par Inertia
+    }
   })
 }
 </script>

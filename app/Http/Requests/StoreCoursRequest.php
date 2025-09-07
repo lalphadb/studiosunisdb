@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class StoreCoursRequest extends FormRequest
 {
@@ -24,6 +25,7 @@ class StoreCoursRequest extends FormRequest
         return [
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
+            // FIX: instructeur_id nullable pour admin (pas obligatoire)
             'instructeur_id' => [
                 'nullable',
                 'exists:users,id',
@@ -36,8 +38,9 @@ class StoreCoursRequest extends FormRequest
             'jour_semaine' => 'required|in:lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche',
             'heure_debut' => 'required|date_format:H:i',
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'date_debut' => 'required|date',
-            'date_fin' => 'nullable|date|after:date_debut',
+            'date_debut' => 'required|date|date_format:Y-m-d',
+            // FIX CRITIQUE: date_fin peut être égale si heure_fin > heure_debut
+            'date_fin' => 'nullable|date|date_format:Y-m-d|after_or_equal:date_debut',
             // Nouveau système de tarification flexible
             'type_tarif' => 'required|in:mensuel,trimestriel,horaire,a_la_carte,autre',
             'montant' => 'required|numeric|min:0|max:9999.99',
@@ -45,6 +48,7 @@ class StoreCoursRequest extends FormRequest
             // Ancien système (compatibilité) - gérer les strings vides
             'tarif_mensuel' => 'nullable|numeric|min:0|max:500',
             'actif' => 'boolean',
+            'statut' => 'nullable|in:actif,inactif,suspendu,archive',
         ];
     }
 
@@ -56,6 +60,11 @@ class StoreCoursRequest extends FormRequest
         // Convertir les strings vides en null pour tarif_mensuel
         if ($this->has('tarif_mensuel') && $this->input('tarif_mensuel') === '') {
             $this->merge(['tarif_mensuel' => null]);
+        }
+        
+        // Convertir string vide instructeur_id en null
+        if ($this->has('instructeur_id') && $this->input('instructeur_id') === '') {
+            $this->merge(['instructeur_id' => null]);
         }
         
         // Assurer la cohérence du système de tarification
@@ -83,6 +92,40 @@ class StoreCoursRequest extends FormRequest
         }
         
         $this->merge(['ecole_id' => $ecoleId]);
+        
+        // Statut par défaut si non fourni
+        if (!$this->filled('statut')) {
+            $this->merge(['statut' => 'actif']);
+        }
+    }
+
+    /**
+     * Validation personnalisée pour les dates + heures
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $dateDebut = $this->input('date_debut');
+            $dateFin = $this->input('date_fin');
+            $heureDebut = $this->input('heure_debut');
+            $heureFin = $this->input('heure_fin');
+
+            // Si date_fin est fournie, vérifier la logique dates + heures
+            if ($dateFin && $dateDebut && $heureDebut && $heureFin) {
+                try {
+                    $datetimeDebut = Carbon::createFromFormat('Y-m-d H:i', "$dateDebut $heureDebut");
+                    $datetimeFin = Carbon::createFromFormat('Y-m-d H:i', "$dateFin $heureFin");
+
+                    if ($datetimeFin->lte($datetimeDebut)) {
+                        $validator->errors()->add('date_fin', 
+                            'La date et heure de fin doivent être postérieures à la date et heure de début.'
+                        );
+                    }
+                } catch (\Exception $e) {
+                    // Format de date invalide, laissé aux règles de base
+                }
+            }
+        });
     }
 
     /**
@@ -102,16 +145,21 @@ class StoreCoursRequest extends FormRequest
             'places_max.max' => 'Maximum 50 places autorisées.',
             'jour_semaine.required' => 'Le jour de la semaine est obligatoire.',
             'heure_debut.required' => 'L\'heure de début est obligatoire.',
+            'heure_debut.date_format' => 'L\'heure de début doit être au format 24h (ex: 19:00).',
             'heure_fin.required' => 'L\'heure de fin est obligatoire.',
+            'heure_fin.date_format' => 'L\'heure de fin doit être au format 24h (ex: 20:00).',
             'heure_fin.after' => 'L\'heure de fin doit être après l\'heure de début.',
             'date_debut.required' => 'La date de début est obligatoire.',
-            'date_fin.after' => 'La date de fin doit être après la date de début.',
+            'date_debut.date_format' => 'La date de début doit être au format AAAA-MM-JJ.',
+            'date_fin.date_format' => 'La date de fin doit être au format AAAA-MM-JJ.',
+            'date_fin.after_or_equal' => 'La date de fin doit être égale ou postérieure à la date de début.',
             'type_tarif.required' => 'Le type de tarification est obligatoire.',
             'montant.required' => 'Le montant est obligatoire.',
             'montant.numeric' => 'Le montant doit être un nombre.',
             'montant.min' => 'Le montant ne peut pas être négatif.',
             'details_tarif.required_if' => 'Les détails sont obligatoires pour le type "autre".',
             'instructeur_id.exists' => 'L\'instructeur doit appartenir à votre école.',
+            'statut.in' => 'Le statut sélectionné n\'est pas valide.',
         ];
     }
 }

@@ -12,7 +12,7 @@ class Cours extends Model
 {
     use HasFactory, SoftDeletes, BelongsToEcole;
 
-    protected $fillable = [ 'ecole_id','instructeur_id','nom','description','niveau','age_min','age_max','type_cours','jour_semaine','session','heure_debut','heure_fin','date_debut','date_fin','type_tarif','montant','details_tarif','places_max','tarif_mensuel','couleur','salle','prerequis','actif','notes','materiel_requis' ]; // cleaned
+    protected $fillable = [ 'ecole_id','instructeur_id','nom','description','niveau','age_min','age_max','type_cours','jour_semaine','session','heure_debut','heure_fin','date_debut','date_fin','type_tarif','montant','details_tarif','places_max','tarif_mensuel','couleur','salle','prerequis','actif','statut','notes','materiel_requis' ]; // cleaned
 
     protected $casts = [ 'actif'=>'boolean','age_min'=>'integer','age_max'=>'integer','places_max'=>'integer','montant'=>'decimal:2','tarif_mensuel'=>'decimal:2','date_debut'=>'date','date_fin'=>'date','materiel_requis'=>'array' ];
 
