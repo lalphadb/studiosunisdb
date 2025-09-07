@@ -20,10 +20,8 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes, BelongsToEcole;
 
     /**
-     * DÉSACTIVÉ TEMPORAIREMENT - Global scope causait boucle infinie
-     * TODO: Réimplémenter avec protection contre récursion
+     * Global scope pour mono-école
      */
-    /*
     protected static function booted()
     {
         static::addGlobalScope('ecole', function ($query) {
@@ -38,7 +36,6 @@ class User extends Authenticatable
             }
         });
     }
-    */
 
     /**
      * Les attributs attribuables en masse.
@@ -106,12 +103,13 @@ class User extends Authenticatable
     ];
 
     /**
-     * RÉDUIT: Attributs calculés sans relations complexes
+     * Attributs calculés
      */
     protected $appends = [
         'nom_complet',
         'age',
-        'est_actif'
+        'est_actif',
+        'tous_liens_familiaux'
     ];
 
     // Relations Spatie Permission
@@ -169,78 +167,49 @@ class User extends Authenticatable
         return $this->hasMany(LienFamilial::class, 'user_lie_id');
     }
 
-    // Accesseurs SÉCURISÉS (ex-Membre)
+    // Accesseurs (ex-Membre)
     public function getNomCompletAttribute(): string
     {
-        if (!empty($this->prenom) && !empty($this->nom)) {
-            return trim("{$this->prenom} {$this->nom}");
+        if ($this->prenom && $this->nom) {
+            return "{$this->prenom} {$this->nom}";
         }
-        return $this->name ?? 'Utilisateur';
+        return $this->name;
     }
 
     public function getAgeAttribute(): ?int
     {
-        if (!$this->date_naissance) {
-            return null;
-        }
-        
-        try {
-            return $this->date_naissance->age;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return $this->date_naissance ? $this->date_naissance->age : null;
     }
 
     public function getTousLiensFamiliauxAttribute()
     {
-        // SÉCURISÉ: Éviter chargement automatique des relations
-        if (!$this->relationLoaded('liensFamiliaux') || !$this->relationLoaded('liensInverses')) {
-            return collect([]);
-        }
-        
         return $this->liensFamiliaux->merge($this->liensInverses);
     }
 
     public function getEstActifAttribute(): bool
     {
-        return ($this->statut === 'actif' || $this->statut === null) && $this->active;
+        return $this->statut === 'actif' && $this->active;
     }
 
-    // Vérifications rôles SÉCURISÉES
+    // Vérifications rôles (anciennes méthodes)
     public function isSuperAdmin(): bool
     {
-        try {
-            return $this->hasRole('superadmin');
-        } catch (\Exception $e) {
-            return false;
-        }
+        return $this->hasRole('superadmin');
     }
 
     public function isAdminEcole(): bool
     {
-        try {
-            return $this->hasRole('admin_ecole');
-        } catch (\Exception $e) {
-            return false;
-        }
+        return $this->hasRole('admin_ecole');
     }
 
     public function isInstructeur(): bool
     {
-        try {
-            return $this->hasRole('instructeur');
-        } catch (\Exception $e) {
-            return false;
-        }
+        return $this->hasRole('instructeur');
     }
 
     public function isMembre(): bool
     {
-        try {
-            return $this->hasRole('membre');
-        } catch (\Exception $e) {
-            return false;
-        }
+        return $this->hasRole('membre');
     }
 
     // Nouveaux helpers pour membre/karaté
@@ -254,21 +223,15 @@ class User extends Authenticatable
         return !$this->isMembreKarate() && ($this->isAdminEcole() || $this->isSuperAdmin() || $this->isInstructeur());
     }
 
-    // Scopes SÉCURISÉS (ex-Membre)
+    // Scopes (ex-Membre)
     public function scopeActif($query)
     {
-        return $query->where(function($q) {
-            $q->where('statut', 'actif')
-              ->orWhereNull('statut');
-        })->where('active', true);
+        return $query->where('statut', 'actif')->where('active', true);
     }
 
     public function scopeRecherche($query, $terme)
     {
         if (!$terme) return $query;
-        
-        $terme = trim($terme);
-        if (strlen($terme) < 2) return $query;
         
         return $query->where(function($q) use ($terme) {
             $q->where('prenom', 'like', "%{$terme}%")
@@ -288,23 +251,17 @@ class User extends Authenticatable
 
     public function scopeAdminsOnly($query)
     {
-        return $query->where(function($q) {
-            $q->whereNull('prenom')
-              ->orWhereNull('nom')
-              ->orWhereNull('date_naissance');
-        });
+        return $query->whereNull('prenom')
+                    ->orWhereNull('nom')
+                    ->orWhereNull('date_naissance');
     }
 
     /**
-     * Scope pour la même école SÉCURISÉ
+     * Scope pour la même école
      */
     public function scopeSameEcole($query, $ecoleId = null)
     {
-        if (!$ecoleId) {
-            // Éviter récursion en ne chargeant pas auth()->user()
-            return $query;
-        }
-        
+        $ecoleId = $ecoleId ?? auth()->user()?->ecole_id;
         return $query->where('ecole_id', $ecoleId);
     }
 }

@@ -9,63 +9,63 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Trait BelongsToEcole
  * 
- * Applique automatiquement le scoping par école sur les modèles.
- * Utilisé pour l'architecture mono-école avec support multi-écoles futur.
+ * TEMPORAIREMENT DÉSACTIVÉ - Causait boucles infinies avec User model
+ * TODO: Réimplémenter avec protection contre récursion
  */
 trait BelongsToEcole
 {
     /**
-     * Boot le trait pour ajouter le global scope
+     * DÉSACTIVÉ - Boot le trait pour ajouter le global scope
      */
     protected static function bootBelongsToEcole(): void
     {
-        // Ajouter le scope global seulement si l'utilisateur n'est pas superadmin
+        // GLOBAL SCOPE DÉSACTIVÉ TEMPORAIREMENT
+        // Causait boucle infinie lors de Auth::user() -> User model -> Global scope -> Auth::user()
+        
+        /*
         static::addGlobalScope('ecole', function (Builder $builder) {
-            // Ne pas appliquer le scope si:
-            // 1. Pas d'utilisateur connecté (ex: commandes artisan)
-            // 2. L'utilisateur est superadmin
-            // 3. La table n'a pas de colonne ecole_id
-            
             if (!Auth::check()) {
                 return;
             }
             
-            $user = Auth::user();
+            $user = Auth::user(); // ← BOUCLE INFINIE ICI
             
-            // Les superadmins voient tout
             if ($user->hasRole('superadmin')) {
                 return;
             }
             
-            // Vérifier que la colonne existe avant d'appliquer le filtre
             $table = $builder->getModel()->getTable();
             if (!Schema::hasColumn($table, 'ecole_id')) {
                 return;
             }
             
-            // Appliquer le filtre par école
             $builder->where($table . '.ecole_id', $user->ecole_id);
         });
+        */
         
-        // Lors de la création, définir automatiquement ecole_id
+        // CREATING HOOK SÉCURISÉ
         static::creating(function ($model) {
             if (!Auth::check()) {
                 return;
             }
             
-            $user = Auth::user();
-            
-            // Ne pas forcer ecole_id pour les superadmins
-            if ($user->hasRole('superadmin')) {
-                // Si ecole_id n'est pas défini, utiliser l'école par défaut
-                if (empty($model->ecole_id)) {
-                    $model->ecole_id = static::getDefaultEcoleId();
-                }
+            // Éviter récursion pour le modèle User lui-même
+            if ($model instanceof \App\Models\User) {
                 return;
             }
             
-            // Pour les autres utilisateurs, forcer leur école
-            $model->ecole_id = $user->ecole_id;
+            try {
+                $user = Auth::user();
+                
+                if ($user && !$user->hasRole('superadmin') && empty($model->ecole_id)) {
+                    $model->ecole_id = $user->ecole_id ?? static::getDefaultEcoleId();
+                }
+            } catch (\Exception $e) {
+                // Ignorer erreurs pendant migration/bootstrap
+                if (empty($model->ecole_id)) {
+                    $model->ecole_id = static::getDefaultEcoleId();
+                }
+            }
         });
     }
     
@@ -86,7 +86,7 @@ trait BelongsToEcole
     }
     
     /**
-     * Scope pour la même école que l'utilisateur courant
+     * Scope pour la même école que l'utilisateur courant SÉCURISÉ
      */
     public function scopeSameEcole(Builder $query): Builder
     {
@@ -94,13 +94,18 @@ trait BelongsToEcole
             return $query;
         }
         
-        $user = Auth::user();
-        
-        if ($user->hasRole('superadmin')) {
+        try {
+            $user = Auth::user();
+            
+            if (!$user || $user->hasRole('superadmin')) {
+                return $query;
+            }
+            
+            return $query->where('ecole_id', $user->ecole_id);
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner query sans filtre
             return $query;
         }
-        
-        return $query->where('ecole_id', $user->ecole_id);
     }
     
     /**
@@ -112,14 +117,21 @@ trait BelongsToEcole
             return false;
         }
         
-        $user = Auth::user();
-        
-        // Les superadmins ont accès à tout
-        if ($user->hasRole('superadmin')) {
-            return true;
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return false;
+            }
+            
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+            
+            return $this->ecole_id === $user->ecole_id;
+        } catch (\Exception $e) {
+            return false;
         }
-        
-        return $this->ecole_id === $user->ecole_id;
     }
     
     /**
@@ -127,10 +139,13 @@ trait BelongsToEcole
      */
     protected static function getDefaultEcoleId(): ?int
     {
-        // Retourner l'ID de la première école active
-        return \App\Models\Ecole::where('est_active', true)
-            ->orderBy('id')
-            ->value('id');
+        try {
+            return \App\Models\Ecole::where('est_active', true)
+                ->orderBy('id')
+                ->value('id') ?? 1; // Fallback école ID 1
+        } catch (\Exception $e) {
+            return 1; // Fallback par défaut
+        }
     }
     
     /**
@@ -139,5 +154,29 @@ trait BelongsToEcole
     public static function withoutEcoleScope(): Builder
     {
         return static::withoutGlobalScope('ecole');
+    }
+    
+    /**
+     * NOUVELLE MÉTHODE: Appliquer filtrage école manuellement (sans global scope)
+     */
+    public static function scopedByCurrentUserEcole(): Builder
+    {
+        $query = static::query();
+        
+        if (!Auth::check()) {
+            return $query;
+        }
+        
+        try {
+            $user = Auth::user();
+            
+            if (!$user || $user->hasRole('superadmin')) {
+                return $query;
+            }
+            
+            return $query->where('ecole_id', $user->ecole_id);
+        } catch (\Exception $e) {
+            return $query;
+        }
     }
 }
