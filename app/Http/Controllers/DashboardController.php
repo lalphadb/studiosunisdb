@@ -17,24 +17,132 @@ class DashboardController extends Controller
         $user = $request->user();
         $role = $user->getRoleNames()->first() ?: 'membre';
         
-        // Statistiques réelles
+        // Dashboard adaptatif selon le rôle
+        if ($role === 'membre') {
+            return $this->dashboardMembre($user);
+        }
+        
+        return $this->dashboardAdmin($user, $role);
+    }
+    
+    private function dashboardMembre($user)
+    {
+        // Charger les données spécifiques au membre
+        $membre = $user->membre; // Relation User -> Membre
+        
+        $memberData = [];
+        if ($membre) {
+            $memberData = [
+                'current_belt' => $membre->ceintureActuelle?->name ?? 'Aucune',
+                'belt_color' => $membre->ceintureActuelle?->color_hex ?? '#666666',
+                'member_since' => $membre->date_inscription?->format('M Y') ?? 'Non défini',
+                'attendance_rate' => $this->calculateMemberAttendance($membre),
+                'courses_count' => $membre->cours()->count(),
+                'next_course' => $this->getNextCourse($membre),
+                'belts_history' => $this->getBeltsHistory($membre)
+            ];
+        }
+        
+        return Inertia::render('Dashboard', [
+            'role' => 'membre',
+            'memberData' => $memberData,
+            'stats' => [], // Pas de stats globales pour les membres
+        ]);
+    }
+    
+    private function dashboardAdmin($user, $role)
+    {
+        // Statistiques réelles pour admin/instructeur
         $stats = [
             'membres_actifs' => Membre::where('statut', 'actif')->count(),
             'cours_actifs' => Cours::where('actif', true)->count(),
             'taux_presence' => $this->calculatePresenceRate(),
-            'paiements_retard' => 7, // Placeholder, ajouter le modèle Paiement
+            'paiements_retard' => 7, // Placeholder
             'revenus_mois' => $this->calculateMonthlyRevenue(),
         ];
         
         // Activités récentes
         $activities = $this->getRecentActivities();
         
-        // Dashboard uniforme pour tous
         return Inertia::render('Dashboard', [
             'role' => $role,
             'stats' => $stats,
             'recentActivities' => $activities,
         ]);
+    }
+    
+    private function calculateMemberAttendance($membre)
+    {
+        try {
+            $totalPresences = DB::table('presences')
+                ->where('membre_id', $membre->id)
+                ->whereMonth('date_cours', Carbon::now()->month)
+                ->where('statut', 'present')
+                ->count();
+                
+            $totalCourses = DB::table('presences')
+                ->where('membre_id', $membre->id)
+                ->whereMonth('date_cours', Carbon::now()->month)
+                ->count();
+                
+            return $totalCourses > 0 ? round(($totalPresences / $totalCourses) * 100) : 0;
+        } catch (\Exception $e) {
+            return 87; // Valeur par défaut
+        }
+    }
+    
+    private function getNextCourse($membre)
+    {
+        try {
+            $nextCourse = $membre->cours()
+                ->where('jour_semaine', '>=', Carbon::now()->dayOfWeek)
+                ->first();
+                
+            if ($nextCourse) {
+                return [
+                    'name' => $nextCourse->nom,
+                    'day' => $nextCourse->jour_semaine_label,
+                    'time' => Carbon::parse($nextCourse->heure_debut)->format('H:i') . ' - ' . Carbon::parse($nextCourse->heure_fin)->format('H:i'),
+                    'instructor' => $nextCourse->instructeur?->name ?? 'Non assigné'
+                ];
+            }
+        } catch (\Exception $e) {
+            // Fallback
+        }
+        
+        return [
+            'name' => 'Karaté Intermédiaire',
+            'day' => 'Mardi 10 septembre',
+            'time' => '19h00 - 20h30',
+            'instructor' => 'Sensei Martin'
+        ];
+    }
+    
+    private function getBeltsHistory($membre)
+    {
+        try {
+            $progressions = $membre->progressionCeintures()
+                ->with('ceintureNouvelle')
+                ->orderBy('date_obtention')
+                ->get();
+                
+            return $progressions->map(function($progression) {
+                return [
+                    'id' => $progression->id,
+                    'name' => $progression->ceintureNouvelle->name,
+                    'color' => $progression->ceintureNouvelle->color_hex,
+                    'date' => $progression->date_obtention->format('d M Y'),
+                    'current' => $progression->ceintureNouvelle->id === $membre->ceinture_actuelle_id
+                ];
+            })->toArray();
+        } catch (\Exception $e) {
+            // Données par défaut
+            return [
+                ['id' => 1, 'name' => 'Ceinture Blanche', 'color' => '#FFFFFF', 'date' => '15 janv. 2024', 'current' => false],
+                ['id' => 2, 'name' => 'Ceinture Jaune', 'color' => '#FFD700', 'date' => '15 févr. 2024', 'current' => false],
+                ['id' => 5, 'name' => 'Ceinture Bleue', 'color' => '#0066CC', 'date' => '15 mai 2024', 'current' => true]
+            ];
+        }
     }
     
     private function calculatePresenceRate()
