@@ -5,15 +5,16 @@ use Inertia\Inertia;
 
 /**
  * ============================================================
- * StudiosDB v7 - Routes Web Consolidées (MODULE FUSION USER)
+ * StudiosDB v7 - Routes Web Consolidées (MODULE MEMBRES v7)
  * ============================================================
- * FUSION: User + Membre = Model User unifié
+ * AJOUT: Progression ceintures + liens familiaux
  * ============================================================
  */
 
 /* 1) Imports & configuration */
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MembreController;
 use App\Http\Controllers\CoursController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\PaiementController;
@@ -56,60 +57,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    /* 4.3) USERS UNIFIÉ - Remplace Membres + Utilisateurs */
-    Route::resource('users', UserController::class);
+    /* 4.3) Membres - Routes complètes avec progression */
+    Route::resource('membres', MembreController::class);
     
-    // Actions spécialisées
-    Route::post('users/{user}/progresser-ceinture', [UserController::class, 'progresserCeinture'])
-        ->name('users.progresser-ceinture');
-    Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])
-        ->name('users.reset-password');
-    Route::post('users/{user}/manage-roles', [UserController::class, 'manageRoles'])
-        ->name('users.manage-roles');
+    // Progression ceintures (nouvelle méthode)
+    Route::post('membres/{membre}/progresser-ceinture', [MembreController::class, 'progresserCeinture'])
+        ->name('membres.progresser-ceinture');
+    
+    // Changement de ceinture (ancienne méthode - compatibilité)
+    Route::post('membres/{membre}/ceinture', [MembreController::class, 'changerCeinture'])
+        ->name('membres.changer-ceinture');
     
     // Actions de masse
-    Route::post('users/bulk', [UserController::class, 'bulk'])
-        ->name('users.bulk');
+    Route::post('membres/bulk', [MembreController::class, 'bulk'])
+        ->name('membres.bulk');
     
-    // Export
-    Route::get('users-export/{format?}', [UserController::class, 'export'])
+    // Export (Excel/PDF)
+    Route::get('membres-export/{format?}', [MembreController::class, 'export'])
         ->whereIn('format', ['xlsx','csv','pdf'])
-        ->name('users.export');
-
-    /* REDIRECTIONS COMPATIBILITÉ */
-    // Ancien /membres -> /users
-    Route::redirect('/membres', '/users', 301);
-    Route::redirect('/membres/{id}', '/users/{id}', 301);
-    Route::redirect('/membres/{id}/edit', '/users/{id}/edit', 301);
-    
-    // Ancien /utilisateurs -> /users  
-    Route::redirect('/utilisateurs', '/users', 301);
-    Route::redirect('/utilisateurs/{id}', '/users/{id}', 301);
-    Route::redirect('/utilisateurs/{id}/edit', '/users/{id}/edit', 301);
+        ->name('membres.export');
 
     /* 4.4) Cours - Routes complètes avec planning */
+    // Route model binding sécurisé pour cours
     Route::bind('cours', function ($value, $route) {
         $user = auth()->user();
         
+        // Pour superadmin : pas de restriction
         if ($user?->hasRole('superadmin')) {
             return \App\Models\Cours::withTrashed()->findOrFail($value);
         }
         
+        // Pour autres utilisateurs : avec GlobalScope normal mais withTrashed pour restore
         return \App\Models\Cours::withTrashed()->findOrFail($value);
     });
     
+    // CRUD de base + paramètre fixé pour injection modèle
     Route::resource('cours', CoursController::class)
         ->parameters(['cours' => 'cours']);
     
+    // Vue planning/calendrier
     Route::get('cours-planning', [CoursController::class, 'planning'])->name('cours.planning');
-    Route::get('planning', [CoursController::class, 'planning'])->name('planning');
+    Route::get('planning', [CoursController::class, 'planning'])->name('planning'); // Alias
     
+    // Actions fonctionnelles uniquement
     Route::post('cours/{cours}/restore', [CoursController::class, 'restore'])->name('cours.restore');
     Route::post('cours/{cours}/duplicate', [CoursController::class, 'duplicate'])->name('cours.duplicate');
     Route::get('cours/{cours}/duplicate-form', [CoursController::class, 'duplicateForm'])->name('cours.duplicate.form');
     Route::post('cours/{cours}/duplicate-jour', [CoursController::class, 'duplicateJour'])->name('cours.duplicate.jour');
     Route::post('cours/{cours}/duplicate-session', [CoursController::class, 'duplicateSession'])->name('cours.duplicate.session');
     
+    // Gestion des sessions multiples (fonctionnel)
     Route::get('cours/{cours}/sessions', [CoursController::class, 'sessionsForm'])->name('cours.sessions.form');
     Route::post('cours/{cours}/sessions', [CoursController::class, 'createSessions'])->name('cours.sessions.create');
 
@@ -123,13 +120,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('paiements/{paiement}/refund', [PaiementController::class, 'refund'])
         ->name('paiements.refund');
 
-    /* 4.7) Ceintures & Examens */
+    /* 4.7) Utilisateurs (admin only) */
+    Route::middleware('can:admin-panel')->group(function () {
+        Route::resource('utilisateurs', UserController::class);
+        Route::post('utilisateurs/{user}/reset-password', [UserController::class, 'resetPassword'])
+            ->name('utilisateurs.reset-password');
+        Route::post('utilisateurs/{user}/manage-roles', [UserController::class, 'manageRoles'])
+            ->name('utilisateurs.manage-roles');
+    });
+
+    /* 4.8) Ceintures & Examens */
     Route::resource('ceintures', CeintureController::class)->only(['index','show']);
     Route::resource('examens', ExamenController::class)->only(['index','store','update']);
+
+    /* 4.9) Exports additionnels (si besoin) */
+    // Routes d'exports globaux peuvent être ajoutées ici
 });
 
 /* 5) Administration & Debug (admin only) */
 Route::middleware(['auth', 'can:admin-panel'])->group(function () {
+    // Blade de debug si nécessaires
     Route::get('/debug/phpinfo', [BladeController::class, 'phpinfo'])->name('debug.phpinfo');
     Route::get('/debug/dashboard-simple', [BladeController::class, 'dashboardSimple'])->name('debug.dashboard.simple');
     Route::get('/debug/dashboard-dynamic', [BladeController::class, 'dashboardDynamic'])->name('debug.dashboard.dynamic');
