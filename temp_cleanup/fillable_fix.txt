@@ -1,0 +1,1 @@
+    protected $fillable = [ 'ecole_id','instructeur_id','nom','description','niveau','age_min','age_max','type_cours','jour_semaine','session','heure_debut','heure_fin','date_debut','date_fin','type_tarif','montant','details_tarif','places_max','tarif_mensuel','couleur','salle','prerequis','actif','statut','notes','materiel_requis' ]; // cleaned

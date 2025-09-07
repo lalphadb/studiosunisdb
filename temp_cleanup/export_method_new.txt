@@ -1,0 +1,46 @@
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', Membre::class);
+
+        $validated = $request->validate([
+            'type' => ['string', 'in:liste,fiche,complet'],
+            'include_notes' => ['boolean'],
+            'format' => ['string', 'in:xlsx,csv'],
+            // Filtres existants
+            'q' => ['nullable', 'string'],
+            'statut' => ['nullable', 'string'],
+            'ceinture_id' => ['nullable', 'integer'],
+            'age_group' => ['nullable', 'string'],
+            'sort' => ['nullable', 'string'],
+            'dir' => ['nullable', 'string'],
+        ]);
+
+        $exportType = $validated['type'] ?? 'liste';
+        $includeNotes = $validated['include_notes'] ?? false;
+        $format = $validated['format'] ?? 'xlsx';
+        
+        // Vérifier permissions pour notes admin
+        if ($includeNotes && !auth()->user()->hasAnyRole(['superadmin', 'admin_ecole'])) {
+            $includeNotes = false;
+        }
+
+        $filters = $request->only(['q','statut','ceinture_id','age_group','sort','dir']);
+        
+        $typeLabels = [
+            'liste' => 'liste',
+            'fiche' => 'fiches',
+            'complet' => 'export_complet'
+        ];
+        
+        $filename = 'membres_' . $typeLabels[$exportType] . '_' . 
+                   now()->timezone(config('app.timezone', 'UTC'))->format('Ymd_His') . 
+                   '.' . $format;
+
+        $export = new MembersExport($filters, $exportType, $includeNotes);
+
+        if ($format === 'csv') {
+            return $export->download($filename, \Maatwebsite\Excel\Excel::CSV);
+        }
+
+        return $export->download($filename);
+    }
