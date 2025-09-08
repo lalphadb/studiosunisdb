@@ -153,7 +153,7 @@
               <input
                 v-model="filters.recherche"
                 type="text"
-                placeholder="Nom du membre..."
+                placeholder="Nom du user..."
                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400"
               >
             </div>

@@ -1,0 +1,393 @@
+app/Support/ActivityLogger.php:18:     * @param  string       $event       ex. 'membre.created'
+app/Services/Export/MembreExportService.php:18:     * @param  \Illuminate\Support\Collection<int, \App\Models\Membre> $membres
+app/Services/Export/MembreExportService.php:20:    public function excelOrCsv(Collection $membres): Response
+app/Services/Export/MembreExportService.php:22:        $filename = 'membres_' . Date::now()->format('Ymd_His');
+app/Services/Export/MembreExportService.php:26:            $rows = $this->mapRows($membres);
+app/Services/Export/MembreExportService.php:38:        $csv = $this->toCsv($this->mapRows($membres));
+app/Services/Export/MembreExportService.php:48:     * @param  \Illuminate\Support\Collection<int, \App\Models\Membre> $membres
+app/Services/Export/MembreExportService.php:50:    public function pdfOrHtml(Collection $membres): Response
+app/Services/Export/MembreExportService.php:52:        $filename = 'membres_' . Date::now()->format('Ymd_His');
+app/Services/Export/MembreExportService.php:53:        $rows     = $this->mapRows($membres);
+app/Services/Export/MembreExportService.php:56:            $html = view('exports.membres', ['rows' => $rows])->render();
+app/Services/Export/MembreExportService.php:80:     * @param  \Illuminate\Support\Collection<int, \App\Models\Membre> $membres
+app/Services/Export/MembreExportService.php:83:    private function mapRows(Collection $membres): array
+app/Services/Export/MembreExportService.php:85:        return $membres->map(function (Membre $m) {
+app/Services/CourseService.php:66:        $inscrits = $cours->membres()->count();
+app/Services/DashboardStatsService.php:29:            'total_membres' => 0,
+app/Services/DashboardStatsService.php:30:            'membres_actifs' => 0,
+app/Services/DashboardStatsService.php:35:            'evolution_membres' => 0,
+app/Services/DashboardStatsService.php:44:            $stats['total_membres'] = Membre::count();
+app/Services/DashboardStatsService.php:45:            $stats['membres_actifs'] = Membre::where('statut', 'actif')->count();
+app/Services/DashboardStatsService.php:46:            $stats['evolution_membres'] = $this->calculateMemberGrowth();
+app/Services/DashboardStatsService.php:49:            $stats['errors'][] = 'membres';
+app/Services/EnrollmentService.php:11:    public function enroll(Cours $cours, Membre $membre): bool
+app/Services/EnrollmentService.php:13:        if(!$cours->peutInscrire($membre)) return false;
+app/Services/EnrollmentService.php:14:        return DB::transaction(function() use ($cours,$membre){
+app/Services/EnrollmentService.php:15:            $cours->membres()->attach($membre->id,[ 'date_inscription'=>now(),'statut_inscription'=>'actif']);
+app/Services/EnrollmentService.php:21:    public function unenroll(Cours $cours, Membre $membre): bool
+app/Services/EnrollmentService.php:23:        return DB::transaction(function() use ($cours,$membre){
+app/Services/EnrollmentService.php:24:            $cours->membres()->updateExistingPivot($membre->id,['statut_inscription'=>'termine']);
+app/Services/ProgressionCeintureService.php:16:     * Faire progresser un membre vers une nouvelle ceinture
+app/Services/ProgressionCeintureService.php:19:        Membre $membre, 
+app/Services/ProgressionCeintureService.php:26:        $this->validerProgression($membre, $nouvelleCeinture);
+app/Services/ProgressionCeintureService.php:28:        return DB::transaction(function () use ($membre, $nouvelleCeinture, $notes, $typeProgression) {
+app/Services/ProgressionCeintureService.php:32:                'membre_id' => $membre->id,
+app/Services/ProgressionCeintureService.php:33:                'ecole_id' => $membre->ecole_id,
+app/Services/ProgressionCeintureService.php:45:            $membre->update([
+app/Services/ProgressionCeintureService.php:55:                        'membre_id' => $membre->id,
+app/Services/ProgressionCeintureService.php:56:                        'membre_nom' => $membre->nom_complet,
+app/Services/ProgressionCeintureService.php:57:                        'ancienne_ceinture' => $membre->ceintureActuelle?->nom ?? 'Aucune',
+app/Services/ProgressionCeintureService.php:72:    public function peutProgresser(Membre $membre, Ceinture $nouvelleCeinture): array
+app/Services/ProgressionCeintureService.php:82:        if ($membre->ceinture_actuelle_id) {
+app/Services/ProgressionCeintureService.php:83:            $ceintureActuelle = $membre->ceintureActuelle;
+app/Services/ProgressionCeintureService.php:98:        $derniereProgression = $this->getDerniereProgression($membre);
+app/Services/ProgressionCeintureService.php:127:     * Obtenir l'historique des progressions d'un membre
+app/Services/ProgressionCeintureService.php:129:    public function getHistoriqueProgression(Membre $membre): \Illuminate\Database\Eloquent\Collection
+app/Services/ProgressionCeintureService.php:131:        return ProgressionCeinture::where('membre_id', $membre->id)
+app/Services/ProgressionCeintureService.php:138:     * Obtenir la dernière progression d'un membre
+app/Services/ProgressionCeintureService.php:140:    public function getDerniereProgression(Membre $membre): ?ProgressionCeinture
+app/Services/ProgressionCeintureService.php:142:        return ProgressionCeinture::where('membre_id', $membre->id)
+app/Services/ProgressionCeintureService.php:152:        return ProgressionCeinture::with(['membre', 'ceintureCible', 'instructeur'])
+app/Services/ProgressionCeintureService.php:176:        $stats['repartition_ceintures'] = Ceinture::withCount('membres')->get()
+app/Services/ProgressionCeintureService.php:181:                    'nombre_membres' => $ceinture->membres_count,
+app/Services/ProgressionCeintureService.php:196:            ->filter(function ($membre) {
+app/Services/ProgressionCeintureService.php:197:                if (!$membre->ceintureActuelle) return false;
+app/Services/ProgressionCeintureService.php:199:                $prochaineCeinture = $membre->ceintureActuelle->suivante();
+app/Services/ProgressionCeintureService.php:202:                $validation = $this->peutProgresser($membre, $prochaineCeinture);
+app/Services/ProgressionCeintureService.php:212:    private function validerProgression(Membre $membre, Ceinture $nouvelleCeinture): void
+app/Services/ProgressionCeintureService.php:214:        if (!$membre->exists) {
+app/Services/ProgressionCeintureService.php:215:            throw new \InvalidArgumentException('Le membre doit exister en base de données');
+app/Exports/MembersExport.php:110:    public function map($membre): array
+app/Exports/MembersExport.php:113:            $membre->id,
+app/Exports/MembersExport.php:114:            $membre->prenom,
+app/Exports/MembersExport.php:115:            $membre->nom,
+app/Exports/MembersExport.php:116:            $membre->date_naissance?->format('Y-m-d'),
+app/Exports/MembersExport.php:117:            $membre->age,
+app/Exports/MembersExport.php:118:            $this->formatSexe($membre->sexe),
+app/Exports/MembersExport.php:119:            $membre->telephone,
+app/Exports/MembersExport.php:120:            $membre->user?->email ?? $membre->email,
+app/Exports/MembersExport.php:121:            $membre->adresse,
+app/Exports/MembersExport.php:122:            $membre->ville,
+app/Exports/MembersExport.php:123:            $membre->code_postal,
+app/Exports/MembersExport.php:124:            $membre->province ?? 'QC',
+app/Exports/MembersExport.php:125:            $membre->ceintureActuelle?->name ?? 'Aucune',
+app/Exports/MembersExport.php:126:            $this->formatStatut($membre->statut),
+app/Exports/MembersExport.php:127:            $membre->date_inscription?->format('Y-m-d'),
+app/Exports/MembersExport.php:128:            $membre->date_derniere_presence?->format('Y-m-d'),
+app/Exports/MembersExport.php:129:            $membre->contact_urgence_nom,
+app/Exports/MembersExport.php:130:            $membre->contact_urgence_telephone,
+app/Exports/MembersExport.php:131:            $membre->contact_urgence_relation,
+app/Exports/MembersExport.php:132:            $membre->allergies ? implode(', ', json_decode($membre->allergies, true) ?: []) : '',
+app/Exports/MembersExport.php:133:            $membre->consentement_photos ? 'Oui' : 'Non',
+app/Exports/MembersExport.php:134:            $membre->consentement_communications ? 'Oui' : 'Non',
+app/Exports/MembersExport.php:135:            $membre->notes_instructeur,
+app/Exports/MembersExport.php:136:            $membre->notes_admin,
+app/Exports/MembresExport.php:76:    public function map($membre): array
+app/Exports/MembresExport.php:79:            $membre->id,
+app/Exports/MembresExport.php:80:            $membre->prenom,
+app/Exports/MembresExport.php:81:            $membre->nom,
+app/Exports/MembresExport.php:82:            $membre->email,
+app/Exports/MembresExport.php:83:            $membre->telephone,
+app/Exports/MembresExport.php:84:            $membre->date_naissance?->format('Y-m-d'),
+app/Exports/MembresExport.php:85:            $membre->age,
+app/Exports/MembresExport.php:86:            $membre->sexe,
+app/Exports/MembresExport.php:87:            $membre->adresse,
+app/Exports/MembresExport.php:88:            $membre->ville,
+app/Exports/MembresExport.php:89:            $membre->code_postal,
+app/Exports/MembresExport.php:90:            $membre->province,
+app/Exports/MembresExport.php:91:            $membre->contact_urgence_nom,
+app/Exports/MembresExport.php:92:            $membre->contact_urgence_telephone,
+app/Exports/MembresExport.php:93:            $membre->contact_urgence_relation,
+app/Exports/MembresExport.php:94:            $membre->statut,
+app/Exports/MembresExport.php:95:            $membre->ceintureActuelle?->nom,
+app/Exports/MembresExport.php:96:            $membre->date_inscription?->format('Y-m-d'),
+app/Exports/MembresExport.php:97:            $membre->date_derniere_presence?->format('Y-m-d'),
+app/Exports/MembresExport.php:98:            $membre->notes_medicales,
+app/Exports/MembresExport.php:99:            is_array($membre->allergies) ? implode(', ', $membre->allergies) : $membre->allergies,
+app/Exports/MembresExport.php:100:            is_array($membre->medicaments) ? implode(', ', $membre->medicaments) : $membre->medicaments,
+app/Exports/MembresExport.php:101:            $membre->consentement_photos ? 'Oui' : 'Non',
+app/Exports/MembresExport.php:102:            $membre->consentement_communications ? 'Oui' : 'Non',
+app/Console/Commands/AuditRoles.php:24:                'viewAny' => ['superadmin','admin_ecole','instructeur','membre'],
+app/Console/Commands/AuditRoles.php:27:            'membre' => [
+app/Policies/MembrePolicy.php:15:    public function view(User $user, Membre $membre): bool
+app/Policies/MembrePolicy.php:19:        return $user->id === $membre->user_id;
+app/Policies/MembrePolicy.php:27:    public function update(User $user, Membre $membre): bool
+app/Policies/MembrePolicy.php:34:    public function delete(User $user, Membre $membre): bool
+app/Policies/PaiementPolicy.php:19:        return $paiement->membre && $paiement->membre->user_id === $user->id;
+app/Policies/PresencePolicy.php:19:        return $presence->membre && $presence->membre->user_id === $user->id;
+app/Policies/CoursPolicy.php:14:    private array $viewRoles = ['superadmin','admin','admin_ecole','instructeur','membre'];
+app/Http/Resources/MembreResource.php:59:                    'membre_lie' => [
+app/Http/Resources/MembreResource.php:60:                        'id' => $lien->membreLie->id,
+app/Http/Resources/MembreResource.php:61:                        'nom_complet' => $lien->membreLie->prenom . ' ' . $lien->membreLie->nom,
+app/Http/Resources/MembreResource.php:62:                        'telephone' => $lien->membreLie->telephone,
+app/Http/Resources/MembreResource.php:63:                        'email' => $lien->membreLie->email,
+app/Http/Controllers/CoursController_backup.php:26:            ->withCount('membresActifs as membres_actifs_count')
+app/Http/Controllers/CoursController_backup.php:34:            $c->inscrits_count = $c->membres_actifs_count; $c->is_archived = $c->deleted_at!==null; return $c; });
+app/Http/Controllers/CoursController_backup.php:83:      $force = request()->boolean('force'); if($force && $cours->membresActifs()->count()>0) return back()->withErrors(['delete'=>'Inscriptions actives: suppression définitive impossible.']);
+app/Http/Controllers/UserController.php:70:            'membres' => User::where('ecole_id', Auth::user()->ecole_id)
+app/Http/Controllers/UserController.php:72:                    $q->where('name', 'membre');
+app/Http/Controllers/CoursController_corrupt_backup.php:38:            ->withCount('membresActifs as membres_actifs_count')
+app/Http/Controllers/CoursController_corrupt_backup.php:49:            $c->inscrits_count = $c->membres_actifs_count;
+app/Http/Controllers/CoursController_corrupt_backup.php:149:        if ($force && $cours->membresActifs()->count() > 0) {
+app/Http/Controllers/CoursController_corrupt_backup.php:240:        $cours->load(['instructeur', 'membres.user']);
+app/Http/Controllers/CoursController_corrupt_backup.php:244:            'totalInscrits' => $cours->membres()->count(),
+app/Http/Controllers/CoursController_corrupt_backup.php:245:            'placesDisponibles' => max(0, $cours->places_max - $cours->membres()->count()),
+app/Http/Controllers/CoursController_corrupt_backup.php:246:            'tauxRemplissage' => $cours->places_max > 0 ? ($cours->membres()->count() / $cours->places_max) * 100 : 0,
+app/Http/Controllers/CoursController_corrupt_backup.php:360:        if ($force && $cours->membresActifs()->count() > 0) {
+app/Http/Controllers/CoursController_corrupt_backup.php:520:                $membres = $cours->membresActifs;
+app/Http/Controllers/CoursController_corrupt_backup.php:521:                foreach ($membres as $membre) {
+app/Http/Controllers/CoursController_corrupt_backup.php:522:                    $nouveauCours->inscrireMembre($membre);
+app/Http/Controllers/CoursController_corrupt_backup.php:537:        $membre = Auth::user()->membre ?? null;
+app/Http/Controllers/CoursController_corrupt_backup.php:538:        if (!$membre) return back()->withErrors(['membre' => 'Profil membre requis.']);
+app/Http/Controllers/CoursController_corrupt_backup.php:539:        if (!$cours->membres()->where('membre_id', $membre->id)->exists()) {
+app/Http/Controllers/CoursController_corrupt_backup.php:540:            $cours->inscrireMembre($membre);
+app/Http/Controllers/CoursController_corrupt_backup.php:542:        $cours->membres()->updateExistingPivot($membre->id, [
+app/Http/Controllers/CoursController_corrupt_backup.php:549:    public function validerInscription(Cours $cours, Membre $membre)
+app/Http/Controllers/CoursController_corrupt_backup.php:552:        $cours->membres()->updateExistingPivot($membre->id, ['statut_validation' => 'approuve']);
+app/Http/Controllers/CoursController_corrupt_backup.php:556:    public function refuserInscription(Cours $cours, Membre $membre)
+app/Http/Controllers/CoursController_corrupt_backup.php:559:        $cours->membres()->updateExistingPivot($membre->id, ['statut_validation' => 'refuse']);
+app/Http/Controllers/CoursController_corrupt_backup.php:563:    public function proposerAlternative(Request $request, Cours $cours, Membre $membre)
+app/Http/Controllers/CoursController_corrupt_backup.php:567:        $cours->membres()->updateExistingPivot($membre->id, [
+app/Http/Controllers/CoursController_corrupt_backup.php:581:        $cours = Cours::with(['instructeur', 'membres'])
+app/Http/Controllers/CoursController_corrupt_backup.php:604:        $cours = Cours::with(['instructeur', 'membres'])
+app/Http/Controllers/CoursController_corrupt_backup.php:635:                    $c->membres->count(),
+app/Http/Controllers/CoursController_corrupt_backup.php:699:            $membresInscrits = $cours->membres()->count();
+app/Http/Controllers/CoursController_corrupt_backup.php:700:            if ($membresInscrits == 0) return 0;
+app/Http/Controllers/CoursController_corrupt_backup.php:702:            return round(($presences / ($totalSessions * $membresInscrits)) * 100, 2);
+app/Http/Controllers/CoursController_corrupt_backup.php:821:        $data = $request->validate(['membre_id' => 'nullable|integer|exists:membres,id']);
+app/Http/Controllers/CoursController_corrupt_backup.php:822:        $membre = null;
+app/Http/Controllers/CoursController_corrupt_backup.php:823:        if (isset($data['membre_id'])) {
+app/Http/Controllers/CoursController_corrupt_backup.php:824:            $membre = Membre::find($data['membre_id']);
+app/Http/Controllers/CoursController_corrupt_backup.php:826:            $membre = auth()->user()->membre ?? null;
+app/Http/Controllers/CoursController_corrupt_backup.php:828:        if (!$membre) {
+app/Http/Controllers/CoursController_corrupt_backup.php:829:            return back()->withErrors(['membre' => 'Profil membre introuvable.']);
+app/Http/Controllers/CoursController_corrupt_backup.php:831:        if (!$cours->peutInscrire($membre)) {
+app/Http/Controllers/CoursController_corrupt_backup.php:834:        $enrollmentService->enroll($cours, $membre);
+app/Http/Controllers/CoursController_corrupt_backup.php:841:        $data = $request->validate(['membre_id' => 'required|integer|exists:membres,id']);
+app/Http/Controllers/CoursController_corrupt_backup.php:842:        $membre = Membre::findOrFail($data['membre_id']);
+app/Http/Controllers/CoursController_corrupt_backup.php:843:        $enrollmentService->unenroll($cours, $membre);
+app/Http/Controllers/CoursController_corrupt_backup.php:850:        $membres = $cours->membres()->with('user:id,name,email')->get()->map(function($m){
+app/Http/Controllers/CoursController_corrupt_backup.php:859:        return response()->json(['cours_id'=>$cours->id,'membres'=>$membres]);
+app/Http/Controllers/CoursController.php:36:            ->withCount('membresActifs as membres_actifs_count')
+app/Http/Controllers/CoursController.php:44:            $c->inscrits_count = $c->membres_actifs_count; $c->is_archived = $c->deleted_at!==null; return $c; });
+app/Http/Controllers/CoursController.php:192:            ->withCount('membresActifs as inscrits_count')
+app/Http/Controllers/CoursController.php:282:      $force = request()->boolean('force'); if($force && $cours->membresActifs()->count()>0) return back()->withErrors(['delete'=>'Inscriptions actives: suppression définitive impossible.']);
+app/Http/Controllers/PresenceController.php:137:            'membres_actifs' => Presence::whereDate('date_cours', '>=', $dateDebut)
+app/Http/Controllers/DashboardController.php:18:        $role = $user->getRoleNames()->first() ?: 'membre';
+app/Http/Controllers/DashboardController.php:21:        if ($role === 'membre') {
+app/Http/Controllers/DashboardController.php:45:            'role' => 'membre',
+app/Http/Controllers/DashboardController.php:55:            'membres_actifs' => User::membresKarate()->where('statut', 'actif')->count(),
+app/Http/Controllers/DashboardController.php:186:                'title' => 'Nouveau membre inscrit',
+app/Http/Controllers/DashboardController.php:221:                'students' => $c->membres_count ?? rand(8, 25),
+app/Http/Controllers/BladeController.php:74:            'membres_actifs' => Membre::where('statut', 'actif')->count(),
+app/Http/Controllers/BladeController.php:75:            'total_membres' => Membre::count(),
+app/Http/Controllers/BladeController.php:95:    public function membres()
+app/Http/Controllers/BladeController.php:101:        $membres = Membre::with('user')->paginate(10);
+app/Http/Controllers/BladeController.php:103:        return view('blade.membres', [
+app/Http/Controllers/BladeController.php:104:            'membres' => $membres,
+app/Http/Controllers/MembreController.php:32:        $this->authorizeResource(Membre::class, 'membre');
+app/Http/Controllers/MembreController.php:100:        $membres = $query
+app/Http/Controllers/MembreController.php:160:            'membres'  => $membres,
+app/Http/Controllers/MembreController.php:198:                $user->assignRole('membre');
+app/Http/Controllers/MembreController.php:227:                activity('membres')->performedOn($m)->causedBy(auth()->user())
+app/Http/Controllers/MembreController.php:229:                    ->log('membre.created');
+app/Http/Controllers/MembreController.php:233:        return redirect()->route('membres.index')->with('success', 'Membre créé avec succès.');
+app/Http/Controllers/MembreController.php:236:    public function show(Membre $membre): Response
+app/Http/Controllers/MembreController.php:238:        $membre->load([
+app/Http/Controllers/MembreController.php:255:        $historiqueProgressions = $this->progressionService->getHistoriqueProgression($membre);
+app/Http/Controllers/MembreController.php:258:        $prochaineCeinture = $membre->ceintureActuelle?->suivante();
+app/Http/Controllers/MembreController.php:261:            $validationProgression = $this->progressionService->peutProgresser($membre, $prochaineCeinture);
+app/Http/Controllers/MembreController.php:270:            'membre' => [
+app/Http/Controllers/MembreController.php:271:                'id'                => $membre->id,
+app/Http/Controllers/MembreController.php:272:                'nom_complet'       => $membre->nom_complet,
+app/Http/Controllers/MembreController.php:273:                'prenom'            => $membre->prenom,
+app/Http/Controllers/MembreController.php:274:                'nom'               => $membre->nom,
+app/Http/Controllers/MembreController.php:275:                'date_naissance'    => $membre->date_naissance?->toDateString(),
+app/Http/Controllers/MembreController.php:276:                'age'               => $membre->age,
+app/Http/Controllers/MembreController.php:277:                'telephone'         => $membre->telephone,
+app/Http/Controllers/MembreController.php:278:                'adresse'           => $membre->adresse,
+app/Http/Controllers/MembreController.php:279:                'statut'            => $membre->statut,
+app/Http/Controllers/MembreController.php:280:                'ceinture_actuelle' => $membre->ceintureActuelle ? [
+app/Http/Controllers/MembreController.php:281:                    'id' => $membre->ceintureActuelle->id, 
+app/Http/Controllers/MembreController.php:282:                    'nom' => $membre->ceintureActuelle->name, 
+app/Http/Controllers/MembreController.php:283:                    'couleur_hex' => $membre->ceintureActuelle->color_hex,
+app/Http/Controllers/MembreController.php:284:                    'order' => $membre->ceintureActuelle->order,
+app/Http/Controllers/MembreController.php:286:                'user'              => $membre->user?->only(['email']),
+app/Http/Controllers/MembreController.php:287:                'cours'             => $membre->cours?->map->only(['id','nom']),
+app/Http/Controllers/MembreController.php:288:                'date_inscription'  => $membre->date_inscription?->toDateString(),
+app/Http/Controllers/MembreController.php:289:                'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
+app/Http/Controllers/MembreController.php:290:                'sexe'              => $membre->sexe,
+app/Http/Controllers/MembreController.php:291:                'ville'             => $membre->ville,
+app/Http/Controllers/MembreController.php:292:                'contact_urgence_nom' => $membre->contact_urgence_nom,
+app/Http/Controllers/MembreController.php:293:                'contact_urgence_telephone' => $membre->contact_urgence_telephone,
+app/Http/Controllers/MembreController.php:294:                'contact_urgence_relation' => $membre->contact_urgence_relation,
+app/Http/Controllers/MembreController.php:295:                'consentement_photos' => $membre->consentement_photos,
+app/Http/Controllers/MembreController.php:296:                'consentement_communications' => $membre->consentement_communications,
+app/Http/Controllers/MembreController.php:320:    public function edit(Membre $membre): Response
+app/Http/Controllers/MembreController.php:323:        $membre->load(['user.roles', 'ceintureActuelle']);
+app/Http/Controllers/MembreController.php:335:            'membre'    => [
+app/Http/Controllers/MembreController.php:336:                'id'                => $membre->id,
+app/Http/Controllers/MembreController.php:337:                'nom_complet'       => $membre->nom_complet,
+app/Http/Controllers/MembreController.php:338:                'prenom'            => $membre->prenom,
+app/Http/Controllers/MembreController.php:339:                'nom'               => $membre->nom,
+app/Http/Controllers/MembreController.php:340:                'email'             => $membre->email,
+app/Http/Controllers/MembreController.php:341:                'date_naissance'    => $membre->date_naissance?->toDateString(),
+app/Http/Controllers/MembreController.php:342:                'sexe'              => $membre->sexe,
+app/Http/Controllers/MembreController.php:343:                'telephone'         => $membre->telephone,
+app/Http/Controllers/MembreController.php:344:                'adresse'           => $membre->adresse,
+app/Http/Controllers/MembreController.php:345:                'ville'             => $membre->ville,
+app/Http/Controllers/MembreController.php:346:                'code_postal'       => $membre->code_postal,
+app/Http/Controllers/MembreController.php:347:                'contact_urgence_nom' => $membre->contact_urgence_nom,
+app/Http/Controllers/MembreController.php:348:                'contact_urgence_telephone' => $membre->contact_urgence_telephone,
+app/Http/Controllers/MembreController.php:349:                'contact_urgence_relation' => $membre->contact_urgence_relation,
+app/Http/Controllers/MembreController.php:350:                'statut'            => $membre->statut,
+app/Http/Controllers/MembreController.php:351:                'ceinture_actuelle_id' => $membre->ceinture_actuelle_id,
+app/Http/Controllers/MembreController.php:352:                'notes_medicales'   => $membre->notes_medicales,
+app/Http/Controllers/MembreController.php:353:                'allergies'         => json_decode($membre->allergies ?? '[]', true) ?: [],
+app/Http/Controllers/MembreController.php:354:                'notes_instructeur' => $membre->notes_instructeur,
+app/Http/Controllers/MembreController.php:355:                'notes_admin'       => $membre->notes_admin,
+app/Http/Controllers/MembreController.php:356:                'consentement_photos' => $membre->consentement_photos,
+app/Http/Controllers/MembreController.php:357:                'consentement_communications' => $membre->consentement_communications,
+app/Http/Controllers/MembreController.php:358:                'date_inscription'  => $membre->date_inscription?->toDateString(),
+app/Http/Controllers/MembreController.php:359:                'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
+app/Http/Controllers/MembreController.php:362:                'user' => $membre->user ? [
+app/Http/Controllers/MembreController.php:363:                    'id' => $membre->user->id,
+app/Http/Controllers/MembreController.php:364:                    'email' => $membre->user->email,
+app/Http/Controllers/MembreController.php:365:                    'active' => $membre->user->active ?? true,
+app/Http/Controllers/MembreController.php:366:                    'email_verified_at' => $membre->user->email_verified_at,
+app/Http/Controllers/MembreController.php:367:                    'created_at' => $membre->user->created_at,
+app/Http/Controllers/MembreController.php:368:                    'last_login_at' => $membre->user->last_login_at,
+app/Http/Controllers/MembreController.php:369:                    'roles' => $membre->user->roles->map(fn($role) => [
+app/Http/Controllers/MembreController.php:379:    public function update(UpdateMembreRequest $request, Membre $membre): RedirectResponse
+app/Http/Controllers/MembreController.php:383:        DB::transaction(function () use (&$membre, $data) {
+app/Http/Controllers/MembreController.php:384:            $membre->update(Arr::only($data, [
+app/Http/Controllers/MembreController.php:407:            $this->handleSystemAccess($membre, $data);
+app/Http/Controllers/MembreController.php:410:                activity('membres')->performedOn($membre)->causedBy(auth()->user())
+app/Http/Controllers/MembreController.php:412:                    ->log('membre.updated');
+app/Http/Controllers/MembreController.php:416:        return redirect()->route('membres.show', $membre->id)->with('success', 'Membre mis à jour.');
+app/Http/Controllers/MembreController.php:419:    public function destroy(Membre $membre): RedirectResponse
+app/Http/Controllers/MembreController.php:421:        DB::transaction(function () use ($membre) {
+app/Http/Controllers/MembreController.php:423:            if ($membre->user_id && $membre->user_id === auth()->id()) {
+app/Http/Controllers/MembreController.php:425:                    'membre' => 'Vous ne pouvez pas supprimer votre propre compte.',
+app/Http/Controllers/MembreController.php:429:            $membre->delete();
+app/Http/Controllers/MembreController.php:432:                activity('membres')->performedOn($membre)->causedBy(auth()->user())->log('membre.deleted');
+app/Http/Controllers/MembreController.php:436:        return redirect()->route('membres.index')->with('success', 'Membre supprimé.');
+app/Http/Controllers/MembreController.php:444:        $filename = 'membres_'.now()->timezone(config('app.timezone', 'UTC'))->format('Ymd_His').'.xlsx';
+app/Http/Controllers/MembreController.php:466:                activity('membres')->causedBy(auth()->user())
+app/Http/Controllers/MembreController.php:468:                    ->log("membres.bulk.{$action}");
+app/Http/Controllers/MembreController.php:476:     * NOUVELLE MÉTHODE: Faire progresser un membre vers une nouvelle ceinture
+app/Http/Controllers/MembreController.php:478:    public function progresserCeinture(Request $request, Membre $membre): RedirectResponse
+app/Http/Controllers/MembreController.php:480:        $this->authorize('update', $membre);
+app/Http/Controllers/MembreController.php:492:            $validation = $this->progressionService->peutProgresser($membre, $nouvelleCeinture);
+app/Http/Controllers/MembreController.php:502:                $membre, 
+app/Http/Controllers/MembreController.php:509:                "Progression réussie: {$membre->nom_complet} → {$nouvelleCeinture->nom}"
+app/Http/Controllers/MembreController.php:522:    public function changerCeinture(Request $request, Membre $membre): RedirectResponse
+app/Http/Controllers/MembreController.php:525:        return $this->progresserCeinture($request, $membre);
+app/Http/Controllers/MembreController.php:531:    private function handleSystemAccess(Membre $membre, array $data): void
+app/Http/Controllers/MembreController.php:537:            if ($membre->user) {
+app/Http/Controllers/MembreController.php:538:                $membre->user->delete();
+app/Http/Controllers/MembreController.php:539:                $membre->update(['user_id' => null]);
+app/Http/Controllers/MembreController.php:545:        $userEmail = $data['user_email'] ?? $membre->email;
+app/Http/Controllers/MembreController.php:546:        $userName = trim("{$membre->prenom} {$membre->nom}");
+app/Http/Controllers/MembreController.php:548:        if ($membre->user) {
+app/Http/Controllers/MembreController.php:564:            $membre->user->update($updateData);
+app/Http/Controllers/MembreController.php:565:            $user = $membre->user;
+app/Http/Controllers/MembreController.php:577:            $membre->update(['user_id' => $user->id]);
+app/Http/Controllers/MembreController.php:581:        $roles = $data['user_roles'] ?? ['membre'];
+app/Http/Controllers/MembreController.php:584:        if (empty($roles) || !in_array('membre', $roles)) {
+app/Http/Controllers/MembreController.php:585:            $roles[] = 'membre';
+app/Http/Requests/MembreRequest.php:17:        $membreId = $this->route('membre')?->id;
+app/Http/Requests/MembreRequest.php:27:                Rule::unique('membres')
+app/Http/Requests/MembreRequest.php:29:                    ->ignore($membreId)
+app/Http/Requests/MembreRequest.php:59:            'liens_familiaux.*.membre_lie_id' => ['required_with:liens_familiaux', 'exists:membres,id'],
+app/Http/Requests/MembreRequest.php:72:        if (!$membreId) {
+app/Http/Requests/UpdateMembreRequest.php:11:        return $this->user()->can('update', $this->route('membre'));
+app/Http/Requests/UpdateMembreRequest.php:19:            'email' => 'nullable|email|max:255|unique:membres,email,' . $this->route('membre')->id,
+app/Http/Requests/StoreMembreRequest.php:19:            'email' => 'nullable|email|max:255|unique:membres,email',
+app/Http/Requests/Membres/BulkMembreActionRequest.php:13:        return $this->user()?->can('membres.edit') ?? false;
+app/Http/Requests/Membres/BulkMembreActionRequest.php:20:            'ids.*'  => ['integer','exists:membres,id'],
+app/Http/Requests/Membres/UpdateMembreRequest.php:13:        /** @var Membre $membre */
+app/Http/Requests/Membres/UpdateMembreRequest.php:14:        $membre = $this->route('membre');
+app/Http/Requests/Membres/UpdateMembreRequest.php:17:        return $membre?->exists && $this->user()?->can('update', $membre);
+app/Http/Requests/Membres/UpdateMembreRequest.php:22:        /** @var Membre $membre */
+app/Http/Requests/Membres/UpdateMembreRequest.php:23:        $membre = $this->route('membre');
+app/Http/Requests/Membres/UpdateMembreRequest.php:67:            'user_roles.*' => ['in:membre,instructeur,admin_ecole,superadmin'],
+app/Http/Requests/Membres/StoreMembreRequest.php:29:                Rule::unique('membres')->where(function ($query) {
+app/Http/Requests/Membres/StoreMembreRequest.php:77:            'email.unique' => 'Cet email est déjà utilisé par un autre membre de l\'école.',
+app/Models/LienFamilial.php:16:        'membre_principal_id',
+app/Models/LienFamilial.php:17:        'membre_lie_id',
+app/Models/LienFamilial.php:40:     * Relation vers le membre principal (User)
+app/Models/LienFamilial.php:42:    public function membrePrincipal(): BelongsTo
+app/Models/LienFamilial.php:44:        return $this->belongsTo(User::class, 'membre_principal_id');
+app/Models/LienFamilial.php:48:     * Relation vers le membre lié (User)
+app/Models/LienFamilial.php:50:    public function membreLie(): BelongsTo
+app/Models/LienFamilial.php:52:        return $this->belongsTo(User::class, 'membre_lie_id');
+app/Models/LienFamilial.php:72:     * Obtenir tous les membres d'une même famille
+app/Models/LienFamilial.php:77:                   ->with(['membrePrincipal', 'membreLie'])
+app/Models/LienFamilial.php:82:     * Créer un lien bidirectionnel entre deux membres
+app/Models/LienFamilial.php:84:    public static function creerLienBidirectionnel($membrePrincipalId, $membreLieId, $typeRelation, $familleId, $notes = null)
+app/Models/LienFamilial.php:102:            'membre_principal_id' => $membrePrincipalId,
+app/Models/LienFamilial.php:103:            'membre_lie_id' => $membreLieId,
+app/Models/LienFamilial.php:110:        if ($membrePrincipalId !== $membreLieId) {
+app/Models/LienFamilial.php:114:                'membre_principal_id' => $membreLieId,
+app/Models/LienFamilial.php:115:                'membre_lie_id' => $membrePrincipalId,
+app/Models/Ceinture.php:40:    public function membres(): HasMany
+app/Models/Ceinture.php:133:     * Vérifier si un membre peut passer à cette ceinture
+app/Models/Ceinture.php:135:    public function peutEtreAtteintePar(Membre $membre): bool
+app/Models/Ceinture.php:142:            return !$membre->ceinture_actuelle_id;
+app/Models/Ceinture.php:145:        return $membre->ceinture_actuelle_id === $precedente->id;
+app/Models/User.php:240:            return $this->hasRole('membre');
+app/Models/ProgressionCeinture.php:17:        'membre_id',
+app/Models/ProgressionCeinture.php:47:    public function membre(): BelongsTo
+app/Models/ProgressionCeinture.php:49:        return $this->belongsTo(User::class, 'membre_id');
+app/Models/Consentement.php:16:        'membre_id',
+app/Models/Consentement.php:66:    public function membre()
+app/Models/Consentement.php:110:    public function scopeForMembre($query, $membreId)
+app/Models/Consentement.php:112:        return $query->where('membre_id', $membreId);
+app/Models/Consentement.php:164:            "Consentement {$this->type} révoqué pour membre #{$this->membre_id}",
+app/Models/Consentement.php:179:        Membre $membre,
+app/Models/Consentement.php:195:            'membre_id' => $membre->id,
+app/Models/Consentement.php:196:            'ecole_id' => $membre->ecole_id,
+app/Models/Consentement.php:210:        if ($guardian && $membre->age < 18) {
+app/Models/Consentement.php:221:            "Consentement {$type} enregistré pour membre #{$membre->id}",
+app/Models/Consentement.php:233:     * Vérifier si un membre a un consentement actif
+app/Models/Consentement.php:235:    public static function hasActiveConsent(Membre $membre, string $type): bool
+app/Models/Consentement.php:237:        return static::forMembre($membre->id)
+app/Models/Consentement.php:244:     * Obtenir tous les consentements actifs d'un membre
+app/Models/Consentement.php:246:    public static function getActiveConsents(Membre $membre): \Illuminate\Database\Eloquent\Collection
+app/Models/Consentement.php:248:        return static::forMembre($membre->id)
+app/Models/Presence.php:35:    public function membre(): BelongsTo
+app/Models/Presence.php:37:        return $this->belongsTo(User::class, 'membre_id');
+app/Models/Presence.php:110:        int $membreId, 
+app/Models/Presence.php:117:                'membre_id' => $membreId,
+app/Models/Presence.php:129:    public static function statistiquesParMembre(int $membreId, int $mois = null): array
+app/Models/Presence.php:131:        $query = self::where('membre_id', $membreId);
+app/Models/Cours.php:53:    public function membres()
+app/Models/Cours.php:60:    public function membresActifs()
+app/Models/Cours.php:62:        return $this->membres()->wherePivot('statut_inscription', 'actif');
+app/Models/Cours.php:155:        return max(0, $this->places_max - $this->membresActifs()->count());
+app/Models/Cours.php:161:        return round(($this->membresActifs()->count() / $this->places_max) * 100, 2);
+app/Models/Cours.php:193:    public function peutInscrire(User $membre)
+app/Models/Cours.php:196:        if (!$membre->isMembreKarate()) {
+app/Models/Cours.php:200:        $age = $membre->age;
+app/Models/Cours.php:213:        if ($this->membres()->where('user_id', $membre->id)->exists()) {
+app/Models/Cours.php:220:    public function inscrireMembre(User $membre)
+app/Models/Cours.php:222:        if(!$this->peutInscrire($membre)) return false; 
+app/Models/Cours.php:223:        $this->membres()->attach($membre->id,['date_inscription'=>now(),'statut_inscription'=>'actif']); 
+app/Models/Cours.php:227:    public function desinscrireMembre(User $membre, $raison = null)
+app/Models/Cours.php:229:        $this->membres()->updateExistingPivot($membre->id,['statut_inscription'=>'termine']); 
+app/Models/Cours.php:253:        $membresInscrits = $this->membresActifs()->count();
+app/Models/Cours.php:254:        $revenuEstime = $this->getRevenuEstime($membresInscrits);
+app/Models/Cours.php:257:            'membres_inscrits' => $membresInscrits,
+app/Models/Cours.php:267:    private function getRevenuEstime($membresInscrits)
+app/Models/Cours.php:271:                return $membresInscrits * $this->montant;
+app/Models/Cours.php:273:                return $membresInscrits * $this->montant / 3;
+app/Models/Cours.php:275:                return $membresInscrits * $this->montant * 4;
+app/Models/Cours.php:277:                return $membresInscrits * $this->montant / 2.5;
+app/Models/Cours.php:279:                return $membresInscrits * $this->montant;
+app/Models/Cours.php:310:            'enrolled'=>$this->membresActifs()->count(),
+app/Models/Paiement.php:15:        'membre_id',
+app/Models/Paiement.php:34:    public function membre(): BelongsTo
+app/Models/Paiement.php:154:        int $membreId,
+app/Models/Paiement.php:160:            'membre_id' => $membreId,
+app/Models/Ecole.php:39:    public function membres(): HasMany

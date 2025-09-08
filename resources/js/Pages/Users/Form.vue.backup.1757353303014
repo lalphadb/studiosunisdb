@@ -1,0 +1,317 @@
+<template>
+    <AuthenticatedLayout>
+        <Head :title="user ? 'Modifier Utilisateur' : 'Nouvel Utilisateur'" />
+
+        <div class="py-6">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- En-tête -->
+                <div class="mb-6">
+                    <Link
+                        :href="route('users.index')"
+                        class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+                    >
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Retour à la liste
+                    </Link>
+                    
+                    <h1 class="mt-2 text-xl sm:text-2xl xl:text-3xl font-bold text-gray-900">
+                        {{ user ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}
+                    </h1>
+                </div>
+
+                <!-- Formulaire -->
+                <form @submit.prevent="submit">
+                    <div class="bg-white rounded-lg shadow-sm p-6 space-y-6">
+                        <!-- Informations personnelles -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Prénom <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="form.prenom"
+                                        type="text"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        :class="{ 'border-red-500': form.errors.prenom }"
+                                    />
+                                    <p v-if="form.errors.prenom" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.prenom }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Nom <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="form.nom"
+                                        type="text"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        :class="{ 'border-red-500': form.errors.nom }"
+                                    />
+                                    <p v-if="form.errors.nom" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.nom }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Email <span class="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        v-model="form.email"
+                                        type="email"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        :class="{ 'border-red-500': form.errors.email }"
+                                    />
+                                    <p v-if="form.errors.email" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.email }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Téléphone
+                                    </label>
+                                    <input
+                                        v-model="form.telephone"
+                                        type="tel"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Date de naissance
+                                    </label>
+                                    <input
+                                        v-model="form.date_naissance"
+                                        type="date"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Sexe
+                                    </label>
+                                    <select
+                                        v-model="form.sexe"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    >
+                                        <option value="Autre">Non spécifié</option>
+                                        <option value="M">Masculin</option>
+                                        <option value="F">Féminin</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mot de passe -->
+                        <div v-if="!user || showPasswordFields">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                                {{ user ? 'Changer le mot de passe' : 'Mot de passe' }}
+                            </h3>
+                            
+                            <div v-if="user" class="mb-4">
+                                <button
+                                    type="button"
+                                    @click="showPasswordFields = !showPasswordFields"
+                                    class="text-sm text-indigo-600 hover:text-indigo-500"
+                                >
+                                    {{ showPasswordFields ? 'Annuler le changement' : 'Modifier le mot de passe' }}
+                                </button>
+                            </div>
+                            
+                            <div v-if="!user || showPasswordFields" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Mot de passe {{ !user ? '*' : '' }}
+                                    </label>
+                                    <input
+                                        v-model="form.password"
+                                        type="password"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        :class="{ 'border-red-500': form.errors.password }"
+                                    />
+                                    <p v-if="form.errors.password" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.password }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Confirmer le mot de passe {{ !user ? '*' : '' }}
+                                    </label>
+                                    <input
+                                        v-model="form.password_confirmation"
+                                        type="password"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rôle et permissions -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Rôle et permissions</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Rôle <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="form.role"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        :class="{ 'border-red-500': form.errors.role }"
+                                    >
+                                        <option value="">Sélectionner un rôle</option>
+                                        <option v-for="role in roles" :key="role" :value="role">
+                                            {{ formatRole(role) }}
+                                        </option>
+                                    </select>
+                                    <p v-if="form.errors.role" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.role }}
+                                    </p>
+                                </div>
+
+                                <div v-if="user">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Statut du compte
+                                    </label>
+                                    <select
+                                        v-model="form.active"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    >
+                                        <option :value="true">Actif</option>
+                                        <option :value="false">Désactivé</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Karaté (si membre) -->
+                        <div v-if="form.role === 'membre' || user?.roles?.some(r => r.name === 'membre')">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Informations Karaté</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Ceinture actuelle
+                                    </label>
+                                    <select
+                                        v-model="form.ceinture_actuelle_id"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    >
+                                        <option value="">Aucune</option>
+                                        <option v-for="ceinture in ceintures" :key="ceinture.id" :value="ceinture.id">
+                                            {{ ceinture.nom }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Statut membre
+                                    </label>
+                                    <select
+                                        v-model="form.statut"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    >
+                                        <option value="actif">Actif</option>
+                                        <option value="inactif">Inactif</option>
+                                        <option value="suspendu">Suspendu</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="flex items-center justify-between pt-4 border-t">
+                            <Link
+                                :href="route('users.index')"
+                                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Annuler
+                            </Link>
+                            
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150"
+                            >
+                                {{ form.processing ? 'Enregistrement...' : (user ? 'Mettre à jour' : 'Créer') }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+
+const props = defineProps({
+    user: Object,
+    roles: Array,
+    ecoles: Array,
+    ceintures: Array,
+});
+
+const showPasswordFields = ref(false);
+
+const form = useForm({
+    prenom: props.user?.prenom || '',
+    nom: props.user?.nom || '',
+    email: props.user?.email || '',
+    telephone: props.user?.telephone || '',
+    date_naissance: props.user?.date_naissance || '',
+    sexe: props.user?.sexe || 'Autre',
+    adresse: props.user?.adresse || '',
+    ville: props.user?.ville || '',
+    code_postal: props.user?.code_postal || '',
+    province: props.user?.province || 'QC',
+    contact_urgence_nom: props.user?.contact_urgence_nom || '',
+    contact_urgence_telephone: props.user?.contact_urgence_telephone || '',
+    contact_urgence_relation: props.user?.contact_urgence_relation || '',
+    password: '',
+    password_confirmation: '',
+    role: props.user?.roles?.[0]?.name || '',
+    active: props.user?.active ?? true,
+    statut: props.user?.statut || 'actif',
+    ceinture_actuelle_id: props.user?.ceinture_actuelle_id || '',
+    notes_medicales: props.user?.notes_medicales || '',
+    allergies: props.user?.allergies || [],
+    medicaments: props.user?.medicaments || [],
+    consentement_photos: props.user?.consentement_photos ?? false,
+    consentement_communications: props.user?.consentement_communications ?? true,
+});
+
+const submit = () => {
+    if (props.user) {
+        form.put(route('users.update', props.user.id));
+    } else {
+        form.post(route('users.store'));
+    }
+};
+
+const formatRole = (role) => {
+    const roles = {
+        'superadmin': 'Super Admin',
+        'admin_ecole': 'Admin École',
+        'instructeur': 'Instructeur',
+        'membre': 'Membre',
+    };
+    return roles[role] || role;
+};
+</script>

@@ -12,27 +12,19 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\UsersExport;
 
 class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
         $this->authorizeResource(User::class, 'user');
     }
 
     public function index(Request $request)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         $query = User::query()
             ->with(['roles', 'ecole', 'ceintureActuelle'])
-            ->where('ecole_id', $authUser->ecole_id);
+            ->where('ecole_id', Auth::user()->ecole_id);
 
         // Filtres
         if ($request->filled('search')) {
@@ -73,13 +65,13 @@ class UserController extends Controller
 
         // Statistiques
         $stats = [
-            'total' => User::where('ecole_id', $authUser->ecole_id)->count(),
-            'actifs' => User::where('ecole_id', $authUser->ecole_id)->where('active', true)->where('statut', 'actif')->count(),
-            'membres' => User::where('ecole_id', $authUser->ecole_id)
+            'total' => User::where('ecole_id', Auth::user()->ecole_id)->count(),
+            'actifs' => User::where('ecole_id', Auth::user()->ecole_id)->where('active', true)->where('statut', 'actif')->count(),
+            'membres' => User::where('ecole_id', Auth::user()->ecole_id)
                 ->whereHas('roles', function ($q) {
                     $q->where('name', 'membre');
                 })->count(),
-            'admins' => User::where('ecole_id', $authUser->ecole_id)
+            'admins' => User::where('ecole_id', Auth::user()->ecole_id)
                 ->whereHas('roles', function ($q) {
                     $q->whereIn('name', ['superadmin', 'admin_ecole', 'instructeur']);
                 })->count(),
@@ -89,53 +81,43 @@ class UserController extends Controller
             'users' => $users,
             'filters' => $request->only(['search', 'role', 'statut', 'active', 'sort', 'direction', 'ceinture_id']),
             'roles' => Role::where('guard_name', 'web')->pluck('name'),
-            'ceintures' => Ceinture::orderBy('order')->get(['id', 'name', 'color_hex']),
+            'ceintures' => Ceinture::orderBy('ordre')->get(['id', 'nom', 'couleur_hex']),
             'stats' => $stats,
             'can' => [
-                'create' => $authUser->can('create', User::class),
-                'update' => $authUser->can('update', User::class),
-                'delete' => $authUser->can('delete', User::class),
-                'export' => $authUser->can('viewAny', User::class),
+                'create' => Auth::user()->can('create', User::class),
+                'update' => Auth::user()->can('update', User::class),
+                'delete' => Auth::user()->can('delete', User::class),
+                'export' => Auth::user()->can('viewAny', User::class),
             ],
         ]);
     }
 
     public function create()
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         return Inertia::render('Users/Form', [
             'user' => null,
             'roles' => Role::where('guard_name', 'web')
-                ->when(!$authUser->hasRole('superadmin'), function ($query) {
+                ->when(!Auth::user()->hasRole('superadmin'), function ($query) {
                     $query->where('name', '!=', 'superadmin');
                 })
                 ->pluck('name'),
-            'ecoles' => $authUser->hasRole('superadmin') 
+            'ecoles' => Auth::user()->hasRole('superadmin') 
                 ? Ecole::all() 
-                : [$authUser->ecole],
-            'ceintures' => Ceinture::orderBy('order')->get(),
+                : [Auth::user()->ecole],
+            'ceintures' => Ceinture::orderBy('ordre')->get(),
         ]);
     }
 
     public function store(Request $request)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         $validated = $request->validate([
             'prenom' => 'required|string|max:255',
             'nom' => 'required|string|max:255',
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users')->where(function ($query) use ($authUser) {
-                    return $query->where('ecole_id', $authUser->ecole_id);
+                Rule::unique('users')->where(function ($query) {
+                    return $query->where('ecole_id', Auth::user()->ecole_id);
                 }),
             ],
             'password' => 'required|string|min:8|confirmed',
@@ -150,7 +132,7 @@ class UserController extends Controller
             'contact_urgence_telephone' => 'nullable|string|max:255',
             'contact_urgence_relation' => 'nullable|string|max:255',
             'role' => 'required|exists:roles,name',
-            'ecole_id' => $authUser->hasRole('superadmin') 
+            'ecole_id' => Auth::user()->hasRole('superadmin') 
                 ? 'required|exists:ecoles,id' 
                 : 'nullable',
             'ceinture_actuelle_id' => 'nullable|exists:ceintures,id',
@@ -162,7 +144,7 @@ class UserController extends Controller
         ]);
 
         // Empêcher l'attribution du rôle superadmin par un non-superadmin
-        if (!$authUser->hasRole('superadmin') && $validated['role'] === 'superadmin') {
+        if (!Auth::user()->hasRole('superadmin') && $validated['role'] === 'superadmin') {
             abort(403, 'Vous ne pouvez pas créer un superadmin.');
         }
 
@@ -184,7 +166,7 @@ class UserController extends Controller
                 'contact_urgence_nom' => $validated['contact_urgence_nom'] ?? null,
                 'contact_urgence_telephone' => $validated['contact_urgence_telephone'] ?? null,
                 'contact_urgence_relation' => $validated['contact_urgence_relation'] ?? null,
-                'ecole_id' => $validated['ecole_id'] ?? $authUser->ecole_id,
+                'ecole_id' => $validated['ecole_id'] ?? Auth::user()->ecole_id,
                 'active' => true,
                 'statut' => 'actif',
                 'ceinture_actuelle_id' => $validated['ceinture_actuelle_id'] ?? null,
@@ -211,52 +193,37 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         $user->load(['roles', 'ecole', 'ceintureActuelle', 'family']);
 
         return Inertia::render('Users/Show', [
             'user' => $user,
             'can' => [
-                'edit' => $authUser->can('update', $user),
-                'delete' => $authUser->can('delete', $user),
+                'edit' => Auth::user()->can('update', $user),
+                'delete' => Auth::user()->can('delete', $user),
             ],
         ]);
     }
 
     public function edit(User $user)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         return Inertia::render('Users/Form', [
             'user' => $user->load(['roles', 'ceintureActuelle']),
             'roles' => Role::where('guard_name', 'web')
-                ->when(!$authUser->hasRole('superadmin'), function ($query) {
+                ->when(!Auth::user()->hasRole('superadmin'), function ($query) {
                     $query->where('name', '!=', 'superadmin');
                 })
                 ->pluck('name'),
-            'ecoles' => $authUser->hasRole('superadmin') 
+            'ecoles' => Auth::user()->hasRole('superadmin') 
                 ? Ecole::all() 
-                : [$authUser->ecole],
-            'ceintures' => Ceinture::orderBy('order')->get(),
+                : [Auth::user()->ecole],
+            'ceintures' => Ceinture::orderBy('ordre')->get(),
         ]);
     }
 
     public function update(Request $request, User $user)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         // Empêcher la modification de son propre compte (protection)
-        if ($user->id === $authUser->id && $request->has('active') && !$request->input('active')) {
+        if ($user->id === Auth::id() && $request->has('active') && !$request->input('active')) {
             return back()->withErrors(['error' => 'Vous ne pouvez pas désactiver votre propre compte.']);
         }
 
@@ -293,7 +260,7 @@ class UserController extends Controller
         ]);
 
         // Empêcher la modification du rôle superadmin par un non-superadmin
-        if (!$authUser->hasRole('superadmin') && 
+        if (!Auth::user()->hasRole('superadmin') && 
             ($validated['role'] === 'superadmin' || $user->hasRole('superadmin'))) {
             abort(403, 'Vous ne pouvez pas modifier un superadmin.');
         }
@@ -350,18 +317,13 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         // Empêcher la suppression de son propre compte
-        if ($user->id === $authUser->id) {
+        if ($user->id === Auth::id()) {
             return back()->withErrors(['error' => 'Vous ne pouvez pas supprimer votre propre compte.']);
         }
 
         // Empêcher la suppression d'un superadmin par un non-superadmin
-        if (!$authUser->hasRole('superadmin') && $user->hasRole('superadmin')) {
+        if (!Auth::user()->hasRole('superadmin') && $user->hasRole('superadmin')) {
             abort(403, 'Vous ne pouvez pas supprimer un superadmin.');
         }
 
@@ -373,15 +335,10 @@ class UserController extends Controller
 
     public function toggleActive(User $user)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         $this->authorize('update', $user);
 
         // Empêcher la désactivation de son propre compte
-        if ($user->id === $authUser->id) {
+        if ($user->id === Auth::id()) {
             return back()->withErrors(['error' => 'Vous ne pouvez pas désactiver votre propre compte.']);
         }
 
@@ -392,18 +349,8 @@ class UserController extends Controller
         );
     }
 
-    public function toggleStatus(User $user)
-    {
-        return $this->toggleActive($user);
-    }
-
     public function resetPassword(Request $request, User $user)
     {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
         $this->authorize('update', $user);
 
         $validated = $request->validate([
@@ -415,119 +362,5 @@ class UserController extends Controller
         ]);
 
         return back()->with('success', 'Mot de passe réinitialisé avec succès.');
-    }
-
-    /**
-     * Export des utilisateurs
-     */
-    public function export(Request $request, $format = 'xlsx')
-    {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
-        $this->authorize('viewAny', User::class);
-
-        // Construction de la requête avec les mêmes filtres que index()
-        $query = User::query()
-            ->with(['roles', 'ecole', 'ceintureActuelle'])
-            ->where('ecole_id', $authUser->ecole_id);
-
-        // Appliquer les filtres
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('nom', 'like', "%{$search}%")
-                  ->orWhere('telephone', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('role')) {
-            $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('name', $request->input('role'));
-            });
-        }
-
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->input('statut'));
-        }
-
-        // Tri
-        $sortField = $request->input('sort', 'nom');
-        $sortDirection = $request->input('direction', 'asc');
-        $query->orderBy($sortField, $sortDirection);
-
-        $users = $query->get();
-
-        // Export simplifié sans classe dédiée pour l'instant
-        if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d') . '.csv"',
-            ];
-
-            $callback = function() use ($users) {
-                $file = fopen('php://output', 'w');
-                
-                // En-têtes
-                fputcsv($file, ['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Date inscription']);
-                
-                // Données
-                foreach ($users as $user) {
-                    fputcsv($file, [
-                        $user->id,
-                        $user->nom,
-                        $user->prenom,
-                        $user->email,
-                        $user->telephone,
-                        $user->roles->first()?->name ?? '-',
-                        $user->statut,
-                        $user->created_at->format('Y-m-d'),
-                    ]);
-                }
-                
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
-        }
-
-        // Pour Excel, on retourne un CSV avec l'extension xlsx pour simplifier
-        // (nécessiterait Laravel Excel pour un vrai export Excel)
-        $headers = [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d') . '.xlsx"',
-        ];
-
-        // Pour l'instant, on retourne du CSV même pour xlsx
-        $callback = function() use ($users) {
-            $file = fopen('php://output', 'w');
-            
-            // En-têtes
-            fputcsv($file, ['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Ceinture', 'Date inscription']);
-            
-            // Données
-            foreach ($users as $user) {
-                fputcsv($file, [
-                    $user->id,
-                    $user->nom,
-                    $user->prenom,
-                    $user->email,
-                    $user->telephone,
-                    $user->roles->first()?->name ?? '-',
-                    $user->statut,
-                    $user->ceintureActuelle?->name ?? '-',
-                    $user->created_at->format('Y-m-d'),
-                ]);
-            }
-            
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
     }
 }

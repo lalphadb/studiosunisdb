@@ -37,19 +37,19 @@ class LienFamilial extends Model
     ];
 
     /**
-     * Relation vers le membre principal (User)
+     * Relation vers le membre principal
      */
     public function membrePrincipal(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'membre_principal_id');
+        return $this->belongsTo(Membre::class, 'membre_principal_id');
     }
 
     /**
-     * Relation vers le membre lié (User)
+     * Relation vers le membre lié
      */
     public function membreLie(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'membre_lie_id');
+        return $this->belongsTo(Membre::class, 'membre_lie_id');
     }
 
     /**

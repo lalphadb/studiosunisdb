@@ -3,103 +3,94 @@
 namespace App\Policies;
 
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
 {
-    /**
-     * Rôles autorisés à gérer les utilisateurs (hors superadmin complet).
-     */
-    private array $managerRoles = ['superadmin', 'admin_ecole'];
+    use HandlesAuthorization;
 
     /**
-     * Voir la liste des utilisateurs.
+     * Determine whether the user can perform any action.
+     */
+    public function before(User $user, $ability)
+    {
+        if ($user->hasRole('superadmin')) {
+            return true;
+        }
+    }
+
+    /**
+     * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole($this->managerRoles);
+        return $user->hasAnyRole(['admin_ecole', 'instructeur']);
     }
 
     /**
-     * Voir un utilisateur spécifique.
-     * - superadmin: tout
-     * - admin_ecole: seulement même école ou lui-même
-     * - autre: seulement lui-même
+     * Determine whether the user can view the model.
      */
     public function view(User $user, User $model): bool
     {
-        if ($user->hasRole('superadmin')) return true;
-        if ($user->hasRole('admin_ecole')) {
-            return $user->ecole_id === $model->ecole_id || $user->id === $model->id;
-        }
-        return $user->id === $model->id;
+        return $user->ecole_id === $model->ecole_id 
+            && $user->hasAnyRole(['admin_ecole', 'instructeur']);
     }
 
     /**
-     * Créer un utilisateur.
+     * Determine whether the user can create models.
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole($this->managerRoles);
+        return $user->hasRole('admin_ecole');
     }
 
     /**
-     * Mettre à jour un utilisateur.
-     * - superadmin: tout
-     * - admin_ecole: même école & ne peut pas modifier un superadmin
-     * - autre: seulement lui-même
+     * Determine whether the user can update the model.
      */
     public function update(User $user, User $model): bool
     {
-        if ($user->hasRole('superadmin')) return true;
-        if ($user->hasRole('admin_ecole')) {
-            if ($model->hasRole('superadmin')) return false; // pas de modification du superadmin
-            return $user->ecole_id === $model->ecole_id;
+        // Ne peut pas modifier un superadmin
+        if ($model->hasRole('superadmin') && !$user->hasRole('superadmin')) {
+            return false;
         }
-        return $user->id === $model->id;
+        
+        return $user->ecole_id === $model->ecole_id 
+            && $user->hasRole('admin_ecole');
     }
 
     /**
-     * Désactiver / supprimer (soft) un utilisateur.
+     * Determine whether the user can delete the model.
      */
     public function delete(User $user, User $model): bool
     {
-        if ($user->id === $model->id) return false; // pas d'auto-suppression ici
-        if ($user->hasRole('superadmin')) return true;
-        if ($user->hasRole('admin_ecole')) {
-            if ($model->hasRole('superadmin')) return false;
-            return $user->ecole_id === $model->ecole_id && !$model->hasRole('admin_ecole');
+        // Ne peut pas supprimer un superadmin
+        if ($model->hasRole('superadmin')) {
+            return false;
         }
-        return false;
+        
+        // Ne peut pas se supprimer soi-même
+        if ($user->id === $model->id) {
+            return false;
+        }
+        
+        return $user->ecole_id === $model->ecole_id 
+            && $user->hasRole('admin_ecole');
     }
 
     /**
-     * Gestion des rôles.
+     * Determine whether the user can restore the model.
      */
-    public function manageRoles(User $user, User $model): bool
-    {
-        if ($user->hasRole('superadmin')) return true;
-        if ($user->hasRole('admin_ecole')) {
-            if ($model->hasRole('superadmin')) return false;
-            return $user->ecole_id === $model->ecole_id;
-        }
-        return false;
-    }
-
-    /**
-     * Reset password.
-     */
-    public function resetPassword(User $user, User $model): bool
-    {
-        return $this->update($user, $model);
-    }
-
     public function restore(User $user, User $model): bool
     {
-        return $user->hasRole('superadmin');
+        return $user->ecole_id === $model->ecole_id 
+            && $user->hasRole('admin_ecole');
     }
 
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
     public function forceDelete(User $user, User $model): bool
     {
-        return $user->hasRole('superadmin');
+        return false; // Jamais de suppression définitive
     }
 }

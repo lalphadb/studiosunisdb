@@ -37,9 +37,9 @@ class Ceinture extends Model
     /**
      * Relations
      */
-    public function users(): HasMany
+    public function membres(): HasMany
     {
-        return $this->hasMany(User::class, 'ceinture_actuelle_id');
+        return $this->hasMany(Membre::class, 'ceinture_actuelle_id');
     }
     
     public function progressionsActuelles(): HasMany
@@ -130,19 +130,19 @@ class Ceinture extends Model
     }
     
     /**
-     * Vérifier si un utilisateur peut passer à cette ceinture
+     * Vérifier si un membre peut passer à cette ceinture
      */
-    public function peutEtreAtteintePar(User $user): bool
+    public function peutEtreAtteintePar(Membre $membre): bool
     {
-        // L'utilisateur doit avoir la ceinture précédente
+        // Le membre doit avoir la ceinture précédente
         $precedente = $this->precedente();
         
         if (!$precedente) {
             // C'est la première ceinture (blanche)
-            return !$user->ceinture_actuelle_id;
+            return !$membre->ceinture_actuelle_id;
         }
         
-        return $user->ceinture_actuelle_id === $precedente->id;
+        return $membre->ceinture_actuelle_id === $precedente->id;
     }
     
     /**

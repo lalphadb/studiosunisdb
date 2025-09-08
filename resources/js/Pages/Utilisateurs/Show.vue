@@ -94,17 +94,17 @@
             <div class="flex items-center gap-4">
               <div class="flex-shrink-0 h-12 w-12">
                 <div class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-semibold shadow-lg">
-                  {{ user.membre.prenom.charAt(0).toUpperCase() }}{{ user.membre.nom.charAt(0).toUpperCase() }}
+                  {{ user.user.prenom.charAt(0).toUpperCase() }}{{ user.user.nom.charAt(0).toUpperCase() }}
                 </div>
               </div>
               <div>
-                <div class="text-white font-medium">{{ user.membre.prenom }} {{ user.membre.nom }}</div>
-                <div class="text-slate-400 text-sm">{{ user.membre.email }}</div>
-                <div class="text-slate-500 text-xs">Ceinture: {{ user.membre.ceinture_actuelle || 'Aucune' }}</div>
+                <div class="text-white font-medium">{{ user.user.prenom }} {{ user.user.nom }}</div>
+                <div class="text-slate-400 text-sm">{{ user.user.email }}</div>
+                <div class="text-slate-500 text-xs">Ceinture: {{ user.user.ceinture_actuelle || 'Aucune' }}</div>
               </div>
               <div class="ml-auto">
                 <Link
-                  :href="route('membres.show', user.membre.id)"
+                  :href="route('membres.show', user.user.id)"
                   class="px-3 py-1.5 text-xs bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-lg hover:bg-indigo-500/30 transition-all"
                 >
                   Voir le profil

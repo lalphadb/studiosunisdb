@@ -1,20 +1,20 @@
 <template>
   <AuthenticatedLayout>
     <div class="p-6 space-y-8 max-w-5xl mx-auto">
-      <PageHeader :title="`Modifier ${membre.nom_complet}`" description="Mise à jour des informations du membre.">
+      <PageHeader :title="`Modifier ${user.nom_complet}`" description="Mise à jour des informations du user.">
         <template #icon>
           <div class="w-12 h-12 rounded-xl bg-slate-800/70 border border-slate-700 flex items-center justify-center">
             <svg class="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11 18l-4 1 1-4 9.586-9.586z" /></svg>
           </div>
         </template>
         <template #actions>
-          <Link :href="`/membres/${membre.id}`" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Profil</Link>
+          <Link :href="`/membres/${user.id}`" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Profil</Link>
           <Link href="/membres" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition">Liste</Link>
         </template>
       </PageHeader>
 
       <div class="rounded-2xl border border-slate-700/50 bg-slate-900/60 p-6">
-        <p class="mb-6 text-sm text-slate-300">Modification du profil de <strong class="text-slate-200">{{ membre.nom_complet }}</strong>. Les changements seront sauvegardés immédiatement.</p>
+        <p class="mb-6 text-sm text-slate-300">Modification du profil de <strong class="text-slate-200">{{ user.nom_complet }}</strong>. Les changements seront sauvegardés immédiatement.</p>
         <form @submit.prevent="submit" class="space-y-10">
           <!-- Informations personnelles -->
           <section>
@@ -67,8 +67,8 @@
                 </select>
               </FormField>
               <div class="text-xs text-slate-400 space-y-1">
-                <p>Membre depuis : <span class="text-slate-300">{{ formatDate(membre.date_inscription) }}</span></p>
-                <p v-if="membre.date_derniere_presence">Dernière présence : <span class="text-slate-300">{{ formatDate(membre.date_derniere_presence) }}</span></p>
+                <p>Membre depuis : <span class="text-slate-300">{{ formatDate(user.date_inscription) }}</span></p>
+                <p v-if="user.date_derniere_presence">Dernière présence : <span class="text-slate-300">{{ formatDate(user.date_derniere_presence) }}</span></p>
               </div>
             </div>
           </section>
@@ -199,12 +199,12 @@
                   />
                 </FormField>
                 
-                <FormField :label="membre.user ? 'Nouveau mot de passe' : 'Mot de passe'" :error="errors.user_password">
+                <FormField :label="user.user ? 'Nouveau mot de passe' : 'Mot de passe'" :error="errors.user_password">
                   <input 
                     v-model="form.user_password" 
                     type="password" 
                     class="field"
-                    :placeholder="membre.user ? 'Laisser vide pour conserver' : 'Minimum 8 caractères'"
+                    :placeholder="user.user ? 'Laisser vide pour conserver' : 'Minimum 8 caractères'"
                   />
                 </FormField>
               </div>
@@ -289,11 +289,11 @@
               </div>
 
               <!-- Info compte existant -->
-              <div v-if="membre.user" class="bg-slate-900/50 rounded-lg p-3">
+              <div v-if="user.user" class="bg-slate-900/50 rounded-lg p-3">
                 <div class="text-xs text-slate-400">
-                  Compte créé le {{ formatDate(membre.user?.created_at) }}
-                  <span v-if="membre.user?.last_login_at">
-                    • Dernière connexion : {{ formatDate(membre.user.last_login_at) }}
+                  Compte créé le {{ formatDate(user.user?.created_at) }}
+                  <span v-if="user.user?.last_login_at">
+                    • Dernière connexion : {{ formatDate(user.user.last_login_at) }}
                   </span>
                 </div>
               </div>
@@ -303,7 +303,7 @@
           <div class="flex items-center justify-between pt-4 border-t border-slate-700/50">
             <button type="button" @click="confirmerSuppression" class="px-4 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 text-sm font-medium text-white transition">🗑️ Supprimer</button>
             <div class="flex gap-3">
-              <Link :href="`/membres/${membre.id}`" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-slate-700">Annuler</Link>
+              <Link :href="`/membres/${user.id}`" class="px-4 py-2 rounded-lg bg-slate-800/70 hover:bg-slate-700 text-sm font-medium text-slate-200 border border-slate-700">Annuler</Link>
               <button type="submit" :disabled="processing" class="px-5 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-sm font-medium shadow disabled:opacity-50 flex items-center gap-2">
                 <span v-if="processing" class="animate-pulse">Sauvegarde...</span>
                 <span v-else>💾 Sauvegarder</span>
@@ -326,7 +326,7 @@
           <h3 class="text-lg font-medium text-gray-900 text-center mt-2">Confirmer la suppression</h3>
           <div class="mt-4">
             <p class="text-sm text-gray-500 text-center">
-              Êtes-vous sûr de vouloir supprimer le membre <strong>{{ membre.nom_complet }}</strong> ?
+              Êtes-vous sûr de vouloir supprimer le membre <strong>{{ user.nom_complet }}</strong> ?
               Cette action est définitive et toutes les données associées seront supprimées.
             </p>
           </div>
@@ -385,48 +385,48 @@ const processing = ref(false)
 
 // Form
 const form = useForm({
-  prenom: membre.prenom,
-  nom: membre.nom,
-  date_naissance: membre.date_naissance,
-  sexe: membre.sexe,
-  telephone: membre.telephone || '',
-  adresse: membre.adresse || '',
-  ville: membre.ville || '',
-  code_postal: membre.code_postal || '',
-  contact_urgence_nom: membre.contact_urgence_nom || '',
-  contact_urgence_telephone: membre.contact_urgence_telephone || '',
-  contact_urgence_relation: membre.contact_urgence_relation || '',
-  statut: membre.statut,
-  ceinture_actuelle_id: membre.ceinture_actuelle_id || null,
-  notes_medicales: membre.notes_medicales || '',
-  allergies: membre.allergies || [],
-  notes_instructeur: membre.notes_instructeur || '',
-  notes_admin: membre.notes_admin || '',
-  consentement_photos: membre.consentement_photos,
-  consentement_communications: membre.consentement_communications,
+  prenom: user.prenom,
+  nom: user.nom,
+  date_naissance: user.date_naissance,
+  sexe: user.sexe,
+  telephone: user.telephone || '',
+  adresse: user.adresse || '',
+  ville: user.ville || '',
+  code_postal: user.code_postal || '',
+  contact_urgence_nom: user.contact_urgence_nom || '',
+  contact_urgence_telephone: user.contact_urgence_telephone || '',
+  contact_urgence_relation: user.contact_urgence_relation || '',
+  statut: user.statut,
+  ceinture_actuelle_id: user.ceinture_actuelle_id || null,
+  notes_medicales: user.notes_medicales || '',
+  allergies: user.allergies || [],
+  notes_instructeur: user.notes_instructeur || '',
+  notes_admin: user.notes_admin || '',
+  consentement_photos: user.consentement_photos,
+  consentement_communications: user.consentement_communications,
   
   // NOUVEAUX CHAMPS: Accès système et rôles
-  has_system_access: !!membre.user,
-  user_email: membre.user?.email || membre.email || '',
+  has_system_access: !!user.user,
+  user_email: user.user?.email || user.email || '',
   user_password: '',
-  user_roles: membre.user?.roles?.map(r => r.name) || [],
-  user_active: membre.user?.active ?? true,
-  user_email_verified: !!membre.user?.email_verified_at,
+  user_roles: user.user?.roles?.map(r => r.name) || [],
+  user_active: user.user?.active ?? true,
+  user_email_verified: !!user.user?.email_verified_at,
 })
 
-onMounted(() => { if (membre.allergies?.length) allergiesText.value = membre.allergies.join(', ') })
+onMounted(() => { if (user.allergies?.length) allergiesText.value = user.allergies.join(', ') })
 
 function updateAllergies() { form.allergies = allergiesText.value.split(',').map(a => a.trim()).filter(Boolean) }
 function formatDate(date?: string) { return date ? new Date(date).toLocaleDateString('fr-CA') : 'Non spécifié' }
 function submit() { 
   processing.value = true
-  form.put(`/membres/${membre.id}`, {
+  form.put(`/membres/${user.id}`, {
     preserveScroll: true,
     onFinish: () => (processing.value = false)
   }) 
 }
 function confirmerSuppression() { showDeleteModal.value = true }
-function supprimerMembre() { router.delete(`/membres/${membre.id}`, { onSuccess: () => (showDeleteModal.value = false) }) }
+function supprimerMembre() { router.delete(`/membres/${user.id}`, { onSuccess: () => (showDeleteModal.value = false) }) }
 </script>
 
 <style scoped>

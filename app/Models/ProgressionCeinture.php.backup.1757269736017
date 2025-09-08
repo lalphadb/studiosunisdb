@@ -14,7 +14,7 @@ class ProgressionCeinture extends Model
     protected $table = 'progression_ceintures';
 
     protected $fillable = [
-        'user_id',
+        'membre_id',
         'ecole_id',
         'ceinture_actuelle_id',
         'ceinture_cible_id',
@@ -46,7 +46,7 @@ class ProgressionCeinture extends Model
     // Relations
     public function membre(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Membre::class);
     }
 
     public function ceintureActuelle(): BelongsTo

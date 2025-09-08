@@ -31,7 +31,7 @@ class CoursController extends Controller
             $c->jour_semaine_display = ucfirst($c->jour_semaine);
             $c->heure_debut_format = Carbon::parse($c->heure_debut)->format('H:i');
             $c->heure_fin_format = Carbon::parse($c->heure_fin)->format('H:i');
-            $c->inscrits_count = $c->membres_actifs_count; $c->is_archived = $c->deleted_at!==null; return $c; });
+            $c->inscrits_count = $c->users_actifs_count; $c->is_archived = $c->deleted_at!==null; return $c; });
         $instructeurs = User::role('instructeur')->select('id','name','email')->orderBy('name')->get();
         $stats = [
             'totalCours' => Cours::count(),
@@ -80,7 +80,7 @@ class CoursController extends Controller
 
     public function destroy(Cours $cours, CourseService $service)
     { $this->authorize('delete',$cours); if(!$cours->id){ Log::warning('Destroy sans id',['route_param'=>request()->route('cours')]); return back()->withErrors(['delete'=>'Cours introuvable.']); }
-      $force = request()->boolean('force'); if($force && $cours->membresActifs()->count()>0) return back()->withErrors(['delete'=>'Inscriptions actives: suppression définitive impossible.']);
+      $force = request()->boolean('force'); if($force && $cours->usersActifs()->count()>0) return back()->withErrors(['delete'=>'Inscriptions actives: suppression définitive impossible.']);
       $service->delete($cours,$force); $params=[]; if($force||request()->boolean('archives')) $params['archives']=1; return redirect()->route('cours.index',$params)->with('success',$force?'Cours supprimé définitivement.':'Cours archivé avec succès.'); }
 
     public function duplicateJour(Request $request, Cours $cours)

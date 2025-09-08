@@ -12,7 +12,7 @@ class Presence extends Model
 
     protected $fillable = [
         'cours_id',
-        'user_id',  // Gardé user_id mais pointe vers users
+        'membre_id',
         'instructeur_id',
         'date_cours',
         'statut',
@@ -31,10 +31,9 @@ class Presence extends Model
         return $this->belongsTo(Cours::class);
     }
 
-    // Relation avec User
-    public function user(): BelongsTo
+    public function membre(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Membre::class);
     }
 
     public function instructeur(): BelongsTo
@@ -114,7 +113,7 @@ class Presence extends Model
         return self::updateOrCreate(
             [
                 'cours_id' => $coursId,
-                'user_id' => $membreId,
+                'membre_id' => $membreId,
                 'date_cours' => today(),
             ],
             [
@@ -128,7 +127,7 @@ class Presence extends Model
 
     public static function statistiquesParMembre(int $membreId, int $mois = null): array
     {
-        $query = self::where('user_id', $membreId);
+        $query = self::where('membre_id', $membreId);
         
         if ($mois) {
             $query->whereMonth('date_cours', $mois);

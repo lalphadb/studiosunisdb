@@ -104,19 +104,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <div
             v-for="membre in membresInscrits"
-            :key="membre.id"
+            :key="user.id"
             class="bg-gray-800/30 backdrop-blur-xl border border-gray-700/50 rounded-xl p-4 hover:border-green-500/30 transition-all duration-300"
           >
             <!-- Photo et nom du membre -->
             <div class="flex items-center space-x-3 mb-4">
               <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
                 <span class="text-white font-bold text-lg">
-                  {{ membre.prenom.charAt(0) }}{{ membre.nom.charAt(0) }}
+                  {{ user.prenom.charAt(0) }}{{ user.nom.charAt(0) }}
                 </span>
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-semibold text-white truncate">{{ membre.nom_complet }}</h3>
-                <p class="text-sm text-gray-400">{{ membre.ceinture_actuelle?.nom || 'Aucune ceinture' }}</p>
+                <h3 class="text-lg font-semibold text-white truncate">{{ user.nom_complet }}</h3>
+                <p class="text-sm text-gray-400">{{ user.ceinture_actuelle?.nom || 'Aucune ceinture' }}</p>
               </div>
             </div>
 
@@ -288,33 +288,33 @@ const selectionnerCours = (cours) => {
   presencesLocales.value.clear()
   cours.membres?.forEach(membre => {
     const presenceExistante = props.presences.find(p =>
-      p.membre_id === membre.id && p.cours_id === cours.id
+      p.user_id === user.id && p.cours_id === cours.id
     )
     if (presenceExistante) {
-      presencesLocales.value.set(membre.id, { ...presenceExistante })
+      presencesLocales.value.set(user.id, { ...presenceExistante })
     }
   })
 }
 
 const marquerPresence = (membre, statut) => {
   const presence = {
-    membre_id: membre.id,
+    user_id: user.id,
     cours_id: coursSelectionne.value.id,
     statut: statut,
     heure_arrivee: statut === 'present' || statut === 'retard' ? new Date().toLocaleTimeString() : null,
     date_cours: new Date().toISOString().split('T')[0]
   }
 
-  presencesLocales.value.set(membre.id, presence)
+  presencesLocales.value.set(user.id, presence)
 }
 
 const getStatutPresence = (membre) => {
-  const presence = presencesLocales.value.get(membre.id)
+  const presence = presencesLocales.value.get(user.id)
   return presence?.statut || 'absent'
 }
 
 const getHeureArrivee = (membre) => {
-  const presence = presencesLocales.value.get(membre.id)
+  const presence = presencesLocales.value.get(user.id)
   return presence?.heure_arrivee || '--:--'
 }
 

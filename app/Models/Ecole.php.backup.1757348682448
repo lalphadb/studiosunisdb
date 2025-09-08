@@ -36,6 +36,11 @@ class Ecole extends Model
         return $this->hasMany(User::class);
     }
 
+    public function membres(): HasMany
+    {
+        return $this->hasMany(Membre::class);
+    }
+
     public function cours(): HasMany
     {
         return $this->hasMany(Cours::class);

@@ -66,8 +66,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('users.reset-password');
     Route::post('users/{user}/toggle-active', [UserController::class, 'toggleActive'])
         ->name('users.toggle-active');
-    Route::post('users/{user}/toggle-status', [UserController::class, 'toggleActive'])
-        ->name('users.toggle-status'); // Alias pour compatibilité
     Route::post('users/{user}/manage-roles', [UserController::class, 'manageRoles'])
         ->name('users.manage-roles');
     

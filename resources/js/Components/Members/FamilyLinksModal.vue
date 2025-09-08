@@ -133,13 +133,13 @@
                     required
                     class="w-full px-4 py-3 bg-gray-600/50 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">Sélectionner un membre...</option>
+                    <option value="">Sélectionner un user...</option>
                     <option
                       v-for="membre in availableMembers"
-                      :key="membre.id"
-                      :value="membre.id"
+                      :key="user.id"
+                      :value="user.id"
                     >
-                      {{ membre.prenom }} {{ membre.nom }} - {{ membre.email }}
+                      {{ user.prenom }} {{ user.nom }} - {{ user.email }}
                     </option>
                   </select>
                 </div>
@@ -395,7 +395,7 @@ const resetNewLink = () => {
 
 const applySuggestion = (suggestion) => {
   newLink.value.type_relation = suggestion.type_relation
-  newLink.value.membre_lie_id = suggestion.membre_id
+  newLink.value.membre_lie_id = suggestion.user_id
   newLink.value.description = suggestion.description
 }
 

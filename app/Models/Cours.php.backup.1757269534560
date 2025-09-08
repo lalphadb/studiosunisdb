@@ -48,18 +48,34 @@ class Cours extends Model
         return $this->belongsTo(User::class, 'instructeur_id');
     }
 
-    // Relation avec les users (anciennement membres)
-    // Table pivot: cours_users
-    public function users()
-    { 
-        return $this->belongsToMany(User::class, 'cours_users', 'cours_id', 'user_id')
-            ->withPivot(['date_inscription','date_fin','statut_inscription','prix_personnalise','notes'])
-            ->withTimestamps(); 
+    // =================== ACCESSORS SIMPLES POUR FORM EDIT ===================
+
+    public function getHeureDebutAttribute($value)
+    {
+        if (!$value) return null;
+        // Si déjà format H:i le renvoyer tel quel
+        if (preg_match('/^\d{2}:\d{2}$/', $value)) return $value;
+        try { return Carbon::parse($value)->format('H:i'); } catch (\Throwable $e) { return $value; }
     }
 
-    public function usersActifs()
+    public function getHeureFinAttribute($value)
     {
-        return $this->users()->wherePivot('statut_inscription', 'actif');
+        if (!$value) return null;
+        if (preg_match('/^\d{2}:\d{2}$/', $value)) return $value;
+        try { return Carbon::parse($value)->format('H:i'); } catch (\Throwable $e) { return $value; }
+    }
+
+    public function getInstructeurNomAttribute(): string
+    {
+        return $this->instructeur ? $this->instructeur->name : 'Non assigné';
+    }
+
+    public function membres()
+    { return $this->belongsToMany(Membre::class, 'cours_membres')->withPivot(['date_inscription','date_fin','statut_inscription','prix_personnalise','notes'])->withTimestamps(); }
+
+    public function membresActifs()
+    {
+        return $this->membres()->wherePivot('statut_inscription', 'actif');
     }
 
     public function presences()
@@ -84,28 +100,6 @@ class Cours extends Model
     public function enfants()
     {
         return $this->hasMany(self::class, 'parent_cours_id');
-    }
-
-    // =================== ACCESSORS SIMPLES POUR FORM EDIT ===================
-
-    public function getHeureDebutAttribute($value)
-    {
-        if (!$value) return null;
-        // Si déjà format H:i le renvoyer tel quel
-        if (preg_match('/^\d{2}:\d{2}$/', $value)) return $value;
-        try { return Carbon::parse($value)->format('H:i'); } catch (\Throwable $e) { return $value; }
-    }
-
-    public function getHeureFinAttribute($value)
-    {
-        if (!$value) return null;
-        if (preg_match('/^\d{2}:\d{2}$/', $value)) return $value;
-        try { return Carbon::parse($value)->format('H:i'); } catch (\Throwable $e) { return $value; }
-    }
-
-    public function getInstructeurNomAttribute(): string
-    {
-        return $this->instructeur ? $this->instructeur->name : 'Non assigné';
     }
 
     // =================== SCOPES ===================
@@ -136,7 +130,7 @@ class Cours extends Model
 
     public function scopeAvecPlacesDisponibles($query)
     {
-        return $query->whereRaw('places_max > (SELECT COUNT(*) FROM cours_users WHERE cours_id = cours.id AND statut_inscription = "actif")');
+        return $query->whereRaw('places_max > (SELECT COUNT(*) FROM cours_membres WHERE cours_id = cours.id AND statut_inscription = "actif")');
     }
 
     // =================== ACCESSEURS ===================
@@ -152,13 +146,13 @@ class Cours extends Model
 
     public function getPlacesDisponiblesAttribute()
     {
-        return max(0, $this->places_max - $this->usersActifs()->count());
+        return max(0, $this->places_max - $this->membresActifs()->count());
     }
 
     public function getTauxRemplissageAttribute()
     {
         if ($this->places_max == 0) return 0;
-        return round(($this->usersActifs()->count() / $this->places_max) * 100, 2);
+        return round(($this->membresActifs()->count() / $this->places_max) * 100, 2);
     }
 
     public function getHoraireCompletAttribute(): string
@@ -190,14 +184,9 @@ class Cours extends Model
 
     // =================== MÉTHODES BUSINESS ===================
 
-    public function peutInscrire(User $user)
+    public function peutInscrire(Membre $membre)
     {
-        // Vérifier que c'est un membre karate
-        if (!$user->isMembreKarate()) {
-            return false;
-        }
-
-        $age = $user->age;
+        $age = $membre->age;
         if ($age < $this->age_min) {
             return false;
         }
@@ -210,25 +199,18 @@ class Cours extends Model
             return false;
         }
 
-        if ($this->users()->where('user_id', $user->id)->exists()) {
+        if ($this->membres()->where('membre_id', $membre->id)->exists()) {
             return false;
         }
 
         return true;
     }
 
-    public function inscrireUser(User $user)
-    { 
-        if(!$this->peutInscrire($user)) return false; 
-        $this->users()->attach($user->id,['date_inscription'=>now(),'statut_inscription'=>'actif']); 
-        return true; 
-    }
+    public function inscrireMembre(Membre $membre)
+    { if(!$this->peutInscrire($membre)) return false; $this->membres()->attach($membre->id,['date_inscription'=>now(),'statut_inscription'=>'actif']); return true; }
 
-    public function desinscrireUser(User $user, $raison = null)
-    { 
-        $this->users()->updateExistingPivot($user->id,['statut_inscription'=>'termine']); 
-        return true; 
-    }
+    public function desinscrireMembre(Membre $membre, $raison = null)
+    { $this->membres()->updateExistingPivot($membre->id,['statut_inscription'=>'termine']); return true; }
 
     public function conflitHoraire($jour, $heureDebut, $heureFin)
     {
@@ -250,11 +232,11 @@ class Cours extends Model
         $presencesPresents = $this->presences()->where('statut', 'present')->count();
         $tauxPresence = $totalPresences > 0 ? ($presencesPresents / $totalPresences) * 100 : 0;
 
-        $usersInscrits = $this->usersActifs()->count();
-        $revenuEstime = $this->getRevenuEstime($usersInscrits);
+        $membresInscrits = $this->membresActifs()->count();
+        $revenuEstime = $this->getRevenuEstime($membresInscrits);
 
         return [
-            'membres_inscrits' => $usersInscrits,
+            'membres_inscrits' => $membresInscrits,
             'places_disponibles' => $this->places_disponibles,
             'taux_remplissage' => $this->taux_remplissage,
             'total_presences' => $totalPresences,
@@ -264,19 +246,19 @@ class Cours extends Model
         ];
     }
 
-    private function getRevenuEstime($usersInscrits)
+    private function getRevenuEstime($membresInscrits)
     {
         switch ($this->type_tarif) {
             case 'mensuel':
-                return $usersInscrits * $this->montant;
+                return $membresInscrits * $this->montant;
             case 'trimestriel':
-                return $usersInscrits * $this->montant / 3;
+                return $membresInscrits * $this->montant / 3;
             case 'horaire':
-                return $usersInscrits * $this->montant * 4;
+                return $membresInscrits * $this->montant * 4;
             case 'a_la_carte':
-                return $usersInscrits * $this->montant / 2.5;
+                return $membresInscrits * $this->montant / 2.5;
             default:
-                return $usersInscrits * $this->montant;
+                return $membresInscrits * $this->montant;
         }
     }
 
@@ -298,20 +280,7 @@ class Cours extends Model
         return $seances;
     }
 
-    public function pourCalendrier(){ 
-        return [
-            'id'=>$this->id,
-            'title'=>$this->nom,
-            'start'=>$this->heure_debut,
-            'end'=>$this->heure_fin,
-            'color'=>$this->couleur_calendrier,
-            'instructor'=>$this->instructeur_nom,
-            'level'=>$this->niveau,
-            'enrolled'=>$this->usersActifs()->count(),
-            'capacity'=>$this->places_max,
-            'tarif_info'=>$this->type_tarif_label.' - '.number_format($this->montant,2).'$'
-        ]; 
-    }
+    public function pourCalendrier(){ return ['id'=>$this->id,'title'=>$this->nom,'start'=>$this->heure_debut,'end'=>$this->heure_fin,'color'=>$this->couleur_calendrier,'instructor'=>$this->instructeur_nom,'level'=>$this->niveau,'enrolled'=>$this->membresActifs()->count(),'capacity'=>$this->places_max,'tarif_info'=>$this->type_tarif_label.' - '.number_format($this->montant,2).'$']; }
 
     // =================== MÉTHODES DUPLICATION CORRIGÉES ===================
 
@@ -365,4 +334,7 @@ class Cours extends Model
         $nouveau->save();
         return $nouveau;
     }
+
+    // Slug auto
+    // booted removed: slug column n'existe plus
 }

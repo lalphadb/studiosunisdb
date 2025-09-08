@@ -12,7 +12,7 @@ class Paiement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'membre_id',
+        'user_id',
         'type',
         'montant',
         'description',
@@ -31,9 +31,9 @@ class Paiement extends Model
     ];
 
     // Relations
-    public function membre(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Membre::class);
+        return $this->belongsTo(User::class);
     }
 
     // Scopes
@@ -157,7 +157,7 @@ class Paiement extends Model
         string $description = 'Cotisation mensuelle'
     ): self {
         return self::create([
-            'membre_id' => $membreId,
+            'user_id' => $membreId,
             'type' => 'mensuel',
             'montant' => $montant,
             'description' => $description,

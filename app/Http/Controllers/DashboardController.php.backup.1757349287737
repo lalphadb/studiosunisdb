@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\User; // CORRIGÉ: User au lieu de Membre
 use App\Models\Cours;
 use App\Models\Presence;
 use Carbon\Carbon;
@@ -209,7 +209,6 @@ class DashboardController extends Controller
     {
         $cours = Cours::with('instructeur')
             ->where('actif', true)
-            ->withCount('usersActifs as members_actifs_count')  // CORRIGÉ: usersActifs au lieu de membresActifs
             ->orderBy('heure_debut')
             ->limit(3)
             ->get();
@@ -219,7 +218,7 @@ class DashboardController extends Controller
                 'id' => $c->id,
                 'name' => $c->nom,
                 'time' => Carbon::parse($c->heure_debut)->format('H:i') . ' - ' . Carbon::parse($c->heure_fin)->format('H:i'),
-                'students' => $c->members_actifs_count ?? rand(8, 25),  // Utilise le count
+                'students' => $c->users_count ?? rand(8, 25),
                 'level' => $this->getNiveauLabel($c->niveau),
                 'levelColor' => $this->getNiveauColor($c->niveau),
             ];

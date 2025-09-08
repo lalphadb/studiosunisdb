@@ -46,7 +46,7 @@ class CoursController extends Controller
             $c->jour_semaine_display = ucfirst($c->jour_semaine);
             $c->heure_debut_format = Carbon::parse($c->heure_debut)->format('H:i');
             $c->heure_fin_format = Carbon::parse($c->heure_fin)->format('H:i');
-            $c->inscrits_count = $c->membres_actifs_count;
+            $c->inscrits_count = $c->users_actifs_count;
             $c->is_archived = $c->deleted_at !== null;
             return $c;
         });
@@ -146,7 +146,7 @@ class CoursController extends Controller
             return back()->withErrors(['delete' => 'Cours introuvable.']);
         }
         $force = request()->boolean('force');
-        if ($force && $cours->membresActifs()->count() > 0) {
+        if ($force && $cours->usersActifs()->count() > 0) {
             return back()->withErrors(['delete' => 'Inscriptions actives: suppression définitive impossible.']);
         }
         $service->delete($cours, $force);
@@ -241,9 +241,9 @@ class CoursController extends Controller
 
         // Statistiques du cours
         $stats = [
-            'totalInscrits' => $cours->membres()->count(),
-            'placesDisponibles' => max(0, $cours->places_max - $cours->membres()->count()),
-            'tauxRemplissage' => $cours->places_max > 0 ? ($cours->membres()->count() / $cours->places_max) * 100 : 0,
+            'totalInscrits' => $cours->users()->count(),
+            'placesDisponibles' => max(0, $cours->places_max - $cours->users()->count()),
+            'tauxRemplissage' => $cours->places_max > 0 ? ($cours->users()->count() / $cours->places_max) * 100 : 0,
             'presencesMoyenne' => $this->calculatePresenceMoyenne($cours),
         ];
 
@@ -357,7 +357,7 @@ class CoursController extends Controller
     $archiveFlag = request()->boolean('archiver');
 
         // Refus force delete si membres actifs
-        if ($force && $cours->membresActifs()->count() > 0) {
+        if ($force && $cours->usersActifs()->count() > 0) {
             return back()->withErrors([
                 'delete' => 'Ce cours contient encore des inscriptions actives. Désinscrivez-les d\'abord ou archivez le cours.'
             ]);
@@ -517,7 +517,7 @@ class CoursController extends Controller
             
             // Dupliquer les inscriptions si demandé
             if ($validated['dupliquer_inscriptions'] ?? false) {
-                $membres = $cours->membresActifs;
+                $membres = $cours->usersActifs;
                 foreach ($membres as $membre) {
                     $nouveauCours->inscrireMembre($membre);
                 }
@@ -534,12 +534,12 @@ class CoursController extends Controller
     {
         $this->authorize('view', $cours);
         $data = $request->validate(['horaire' => 'required|string|min:3|max:25']);
-        $membre = Auth::user()->membre ?? null;
+        $membre = Auth::user()->user ?? null;
         if (!$membre) return back()->withErrors(['membre' => 'Profil membre requis.']);
-        if (!$cours->membres()->where('membre_id', $membre->id)->exists()) {
+        if (!$cours->users()->where('user_id', $membre->id)->exists()) {
             $cours->inscrireMembre($membre);
         }
-        $cours->membres()->updateExistingPivot($membre->id, [
+        $cours->users()->updateExistingPivot($membre->id, [
             'horaire_selectionne' => $data['horaire'],
             'statut_validation' => 'pending',
         ]);
@@ -549,14 +549,14 @@ class CoursController extends Controller
     public function validerInscription(Cours $cours, Membre $membre)
     {
         $this->authorize('update', $cours);
-        $cours->membres()->updateExistingPivot($membre->id, ['statut_validation' => 'approuve']);
+        $cours->users()->updateExistingPivot($membre->id, ['statut_validation' => 'approuve']);
         return back()->with('success', 'Inscription validée.');
     }
 
     public function refuserInscription(Cours $cours, Membre $membre)
     {
         $this->authorize('update', $cours);
-        $cours->membres()->updateExistingPivot($membre->id, ['statut_validation' => 'refuse']);
+        $cours->users()->updateExistingPivot($membre->id, ['statut_validation' => 'refuse']);
         return back()->with('success', 'Inscription refusée.');
     }
 
@@ -564,7 +564,7 @@ class CoursController extends Controller
     {
         $this->authorize('update', $cours);
         $data = $request->validate(['alternative' => 'required|string|min:3|max:50']);
-        $cours->membres()->updateExistingPivot($membre->id, [
+        $cours->users()->updateExistingPivot($membre->id, [
             'proposition_alternative' => json_encode(['propose' => $data['alternative'], 'date' => now()]),
             'statut_validation' => 'pending',
         ]);
@@ -632,7 +632,7 @@ class CoursController extends Controller
                     $c->age_min,
                     $c->age_max,
                     $c->places_max,
-                    $c->membres->count(),
+                    $c->users->count(),
                     $c->jour_semaine,
                     $c->heure_debut,
                     $c->heure_fin,
@@ -696,7 +696,7 @@ class CoursController extends Controller
                 return redirect()->route('cours.index')
                     ->with(['success' => 'Cours dupliqué pour ' . ucfirst($validated['nouveau_jour']) . ' avec succès.', 'new_cours_id' => $nouveauCours->id]);
 
-            $membresInscrits = $cours->membres()->count();
+            $membresInscrits = $cours->users()->count();
             if ($membresInscrits == 0) return 0;
 
             return round(($presences / ($totalSessions * $membresInscrits)) * 100, 2);
@@ -818,12 +818,12 @@ class CoursController extends Controller
     public function inscrireMembre(Request $request, Cours $cours, \App\Services\EnrollmentService $enrollmentService)
     {
         $this->authorize('view', $cours); // ou policy spécifique d'inscription
-        $data = $request->validate(['membre_id' => 'nullable|integer|exists:membres,id']);
+        $data = $request->validate(['user_id' => 'nullable|integer|exists:membres,id']);
         $membre = null;
-        if (isset($data['membre_id'])) {
-            $membre = Membre::find($data['membre_id']);
+        if (isset($data['user_id'])) {
+            $membre = Membre::find($data['user_id']);
         } else {
-            $membre = auth()->user()->membre ?? null;
+            $membre = auth()->user()->user ?? null;
         }
         if (!$membre) {
             return back()->withErrors(['membre' => 'Profil membre introuvable.']);
@@ -838,8 +838,8 @@ class CoursController extends Controller
     public function desinscrireMembre(Request $request, Cours $cours, \App\Services\EnrollmentService $enrollmentService)
     {
         $this->authorize('update', $cours);
-        $data = $request->validate(['membre_id' => 'required|integer|exists:membres,id']);
-        $membre = Membre::findOrFail($data['membre_id']);
+        $data = $request->validate(['user_id' => 'required|integer|exists:membres,id']);
+        $membre = Membre::findOrFail($data['user_id']);
         $enrollmentService->unenroll($cours, $membre);
         return back()->with('success', 'Membre désinscrit.');
     }
@@ -847,7 +847,7 @@ class CoursController extends Controller
     public function listeMembres(Cours $cours)
     {
         $this->authorize('view', $cours);
-        $membres = $cours->membres()->with('user:id,name,email')->get()->map(function($m){
+        $membres = $cours->users()->with('user:id,name,email')->get()->map(function($m){
             return [
                 'id'=>$m->id,
                 'nom'=>$m->user->name ?? $m->id,

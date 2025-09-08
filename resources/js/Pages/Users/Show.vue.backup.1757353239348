@@ -1,0 +1,362 @@
+<template>
+    <AuthenticatedLayout>
+        <Head :title="`Utilisateur: ${user.nom_complet}`" />
+
+        <div class="py-6">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- En-tête -->
+                <div class="mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <Link
+                                :href="route('users.index')"
+                                class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-2"
+                            >
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Retour à la liste
+                            </Link>
+                            
+                            <h1 class="text-xl sm:text-2xl xl:text-3xl font-bold text-gray-900">
+                                {{ user.nom_complet }}
+                            </h1>
+                            
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <span v-for="role in user.roles" :key="role.id"
+                                    :class="getRoleBadgeClass(role.name)"
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                    {{ formatRole(role.name) }}
+                                </span>
+                                <span :class="getStatutBadgeClass(user.statut, user.active)"
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                    {{ getStatutLabel(user.statut, user.active) }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <Link
+                                v-if="can.edit"
+                                :href="route('users.edit', user.id)"
+                                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150"
+                            >
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Modifier
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Colonne principale -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Informations personnelles -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
+                            
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Nom complet</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.nom_complet }}</dd>
+                                </div>
+                                
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Email</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.email }}</dd>
+                                </div>
+                                
+                                <div v-if="user.telephone">
+                                    <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.telephone }}</dd>
+                                </div>
+                                
+                                <div v-if="user.date_naissance">
+                                    <dt class="text-sm font-medium text-gray-500">Date de naissance</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">
+                                        {{ formatDate(user.date_naissance) }}
+                                        <span v-if="user.age" class="text-gray-500">({{ user.age }} ans)</span>
+                                    </dd>
+                                </div>
+                                
+                                <div v-if="user.adresse || user.ville || user.code_postal">
+                                    <dt class="text-sm font-medium text-gray-500">Adresse</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">
+                                        <div v-if="user.adresse">{{ user.adresse }}</div>
+                                        <div v-if="user.ville || user.code_postal">
+                                            {{ user.ville }} {{ user.code_postal }}
+                                        </div>
+                                        <div v-if="user.province">{{ user.province }}</div>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Contact d'urgence -->
+                        <div v-if="user.contact_urgence_nom" class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Contact d'urgence</h3>
+                            
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Nom</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.contact_urgence_nom }}</dd>
+                                </div>
+                                
+                                <div v-if="user.contact_urgence_telephone">
+                                    <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.contact_urgence_telephone }}</dd>
+                                </div>
+                                
+                                <div v-if="user.contact_urgence_relation">
+                                    <dt class="text-sm font-medium text-gray-500">Relation</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.contact_urgence_relation }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Informations Karaté -->
+                        <div v-if="user.ceinture_actuelle || user.date_inscription" class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Informations Karaté</h3>
+                            
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div v-if="user.ceinture_actuelle">
+                                    <dt class="text-sm font-medium text-gray-500">Ceinture actuelle</dt>
+                                    <dd class="mt-1">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            :style="`background-color: ${user.ceinture_actuelle.couleur}20; color: ${user.ceinture_actuelle.couleur}`">
+                                            {{ user.ceinture_actuelle.nom }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                
+                                <div v-if="user.date_inscription">
+                                    <dt class="text-sm font-medium text-gray-500">Date d'inscription</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ formatDate(user.date_inscription) }}</dd>
+                                </div>
+                                
+                                <div v-if="user.date_derniere_presence">
+                                    <dt class="text-sm font-medium text-gray-500">Dernière présence</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ formatDate(user.date_derniere_presence) }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Notes médicales -->
+                        <div v-if="user.notes_medicales || user.allergies?.length || user.medicaments?.length" 
+                            class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Informations médicales</h3>
+                            
+                            <div class="space-y-4">
+                                <div v-if="user.notes_medicales">
+                                    <dt class="text-sm font-medium text-gray-500">Notes médicales</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.notes_medicales }}</dd>
+                                </div>
+                                
+                                <div v-if="user.allergies?.length">
+                                    <dt class="text-sm font-medium text-gray-500">Allergies</dt>
+                                    <dd class="mt-1">
+                                        <span v-for="(allergie, index) in user.allergies" :key="index"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mr-2">
+                                            {{ allergie }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                
+                                <div v-if="user.medicaments?.length">
+                                    <dt class="text-sm font-medium text-gray-500">Médicaments</dt>
+                                    <dd class="mt-1">
+                                        <span v-for="(medicament, index) in user.medicaments" :key="index"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                                            {{ medicament }}
+                                        </span>
+                                    </dd>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colonne latérale -->
+                    <div class="space-y-6">
+                        <!-- Informations système -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Informations système</h3>
+                            
+                            <dl class="space-y-3">
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">ID</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">#{{ user.id }}</dd>
+                                </div>
+                                
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">École</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ user.ecole?.nom || 'N/A' }}</dd>
+                                </div>
+                                
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Dernière connexion</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">
+                                        {{ user.last_login_at ? formatDateTime(user.last_login_at) : 'Jamais' }}
+                                    </dd>
+                                </div>
+                                
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Créé le</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ formatDateTime(user.created_at) }}</dd>
+                                </div>
+                                
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Modifié le</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ formatDateTime(user.updated_at) }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Consentements -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Consentements</h3>
+                            
+                            <dl class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <dt class="text-sm font-medium text-gray-500">Photos</dt>
+                                    <dd>
+                                        <span :class="user.consentement_photos ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                            {{ user.consentement_photos ? 'Accepté' : 'Refusé' }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <dt class="text-sm font-medium text-gray-500">Communications</dt>
+                                    <dd>
+                                        <span :class="user.consentement_communications ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                            {{ user.consentement_communications ? 'Accepté' : 'Refusé' }}
+                                        </span>
+                                    </dd>
+                                </div>
+                                
+                                <div v-if="user.date_consentement">
+                                    <dt class="text-sm font-medium text-gray-500">Date de consentement</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ formatDateTime(user.date_consentement) }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Actions rapides -->
+                        <div v-if="can.edit" class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Actions rapides</h3>
+                            
+                            <div class="space-y-2">
+                                <button
+                                    @click="toggleActive"
+                                    class="w-full px-4 py-2 text-sm font-medium rounded-md transition-colors"
+                                    :class="user.active 
+                                        ? 'bg-orange-50 text-orange-700 hover:bg-orange-100' 
+                                        : 'bg-green-50 text-green-700 hover:bg-green-100'"
+                                >
+                                    {{ user.active ? 'Désactiver le compte' : 'Activer le compte' }}
+                                </button>
+                                
+                                <button
+                                    @click="showResetPassword = true"
+                                    class="w-full px-4 py-2 bg-gray-50 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-100 transition-colors"
+                                >
+                                    Réinitialiser le mot de passe
+                                </button>
+                                
+                                <button
+                                    v-if="can.delete"
+                                    @click="confirmDelete"
+                                    class="w-full px-4 py-2 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors"
+                                >
+                                    Supprimer l'utilisateur
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+
+const props = defineProps({
+    user: Object,
+    can: Object,
+});
+
+const showResetPassword = ref(false);
+
+const formatRole = (role) => {
+    const roles = {
+        'superadmin': 'Super Admin',
+        'admin_ecole': 'Admin École',
+        'instructeur': 'Instructeur',
+        'membre': 'Membre',
+    };
+    return roles[role] || role;
+};
+
+const getRoleBadgeClass = (role) => {
+    const classes = {
+        'superadmin': 'bg-red-100 text-red-800',
+        'admin_ecole': 'bg-purple-100 text-purple-800',
+        'instructeur': 'bg-blue-100 text-blue-800',
+        'membre': 'bg-green-100 text-green-800',
+    };
+    return classes[role] || 'bg-gray-100 text-gray-800';
+};
+
+const getStatutBadgeClass = (statut, active) => {
+    if (!active) return 'bg-gray-100 text-gray-800';
+    
+    const classes = {
+        'actif': 'bg-green-100 text-green-800',
+        'inactif': 'bg-gray-100 text-gray-800',
+        'suspendu': 'bg-red-100 text-red-800',
+    };
+    return classes[statut] || 'bg-green-100 text-green-800';
+};
+
+const getStatutLabel = (statut, active) => {
+    if (!active) return 'Désactivé';
+    return statut ? statut.charAt(0).toUpperCase() + statut.slice(1) : 'Actif';
+};
+
+const formatDate = (date) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('fr-CA');
+};
+
+const formatDateTime = (date) => {
+    if (!date) return '';
+    return new Date(date).toLocaleDateString('fr-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
+const toggleActive = () => {
+    if (confirm(`Voulez-vous vraiment ${props.user.active ? 'désactiver' : 'activer'} cet utilisateur ?`)) {
+        router.post(route('users.toggle-active', props.user.id));
+    }
+};
+
+const confirmDelete = () => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) {
+        router.delete(route('users.destroy', props.user.id));
+    }
+};
+</script>

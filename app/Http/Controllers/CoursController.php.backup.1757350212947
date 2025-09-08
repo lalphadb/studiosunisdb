@@ -33,7 +33,7 @@ class CoursController extends Controller
         $this->authorize('viewAny', Cours::class);
         $withArchives = $request->boolean('archives');
         $query = Cours::with(['instructeur','ecole'])
-            ->withCount('usersActifs as membres_actifs_count')  // CORRIGÉ: usersActifs au lieu de membresActifs
+            ->withCount('membresActifs as membres_actifs_count')
             ->orderBy('jour_semaine')->orderBy('heure_debut');
         if ($withArchives) $query->onlyTrashed();
         $paginated = $query->paginate(15)->withQueryString();
@@ -41,10 +41,7 @@ class CoursController extends Controller
             $c->jour_semaine_display = ucfirst($c->jour_semaine);
             $c->heure_debut_format = Carbon::parse($c->heure_debut)->format('H:i');
             $c->heure_fin_format = Carbon::parse($c->heure_fin)->format('H:i');
-            $c->inscrits_count = $c->membres_actifs_count; // Utilise le count aliasé
-            $c->is_archived = $c->deleted_at!==null; 
-            return $c; 
-        });
+            $c->inscrits_count = $c->users_actifs_count; $c->is_archived = $c->deleted_at!==null; return $c; });
         $instructeurs = User::role('instructeur')->select('id','name','email')->orderBy('name')->get();
         $stats = [
             'totalCours' => Cours::count(),
@@ -192,7 +189,7 @@ class CoursController extends Controller
         
         // Récupérer tous les cours actifs avec instructeur et comptage membres
         $cours = Cours::with(['instructeur'])
-            ->withCount('usersActifs as inscrits_count')  // CORRIGÉ: usersActifs au lieu de membresActifs
+            ->withCount('membresActifs as inscrits_count')
             ->where('actif', true)
             ->orderBy('jour_semaine')
             ->orderBy('heure_debut')

@@ -79,7 +79,7 @@ class PresenceController extends Controller
                 'cours_id' => 'required|exists:cours,id',
                 'date_cours' => 'required|date',
                 'presences' => 'required|array',
-                'presences.*.user_id' => 'required|exists:users,id', // CORRIGÉ: user_id au lieu de membre_id
+                'presences.*.user_id' => 'required|exists:users,id', // CORRIGÉ: user_id au lieu de user_id
                 'presences.*.statut' => 'required|in:present,absent,retard,excuse',
                 'presences.*.heure_arrivee' => 'nullable|date_format:H:i',
                 'presences.*.notes' => 'nullable|string|max:500'

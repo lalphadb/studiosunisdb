@@ -12,8 +12,6 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\UsersExport;
 
 class UserController extends Controller
 {
@@ -415,119 +413,5 @@ class UserController extends Controller
         ]);
 
         return back()->with('success', 'Mot de passe réinitialisé avec succès.');
-    }
-
-    /**
-     * Export des utilisateurs
-     */
-    public function export(Request $request, $format = 'xlsx')
-    {
-        $authUser = Auth::user();
-        if (!$authUser) {
-            abort(401, 'Non authentifié');
-        }
-
-        $this->authorize('viewAny', User::class);
-
-        // Construction de la requête avec les mêmes filtres que index()
-        $query = User::query()
-            ->with(['roles', 'ecole', 'ceintureActuelle'])
-            ->where('ecole_id', $authUser->ecole_id);
-
-        // Appliquer les filtres
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('nom', 'like', "%{$search}%")
-                  ->orWhere('telephone', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('role')) {
-            $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('name', $request->input('role'));
-            });
-        }
-
-        if ($request->filled('statut')) {
-            $query->where('statut', $request->input('statut'));
-        }
-
-        // Tri
-        $sortField = $request->input('sort', 'nom');
-        $sortDirection = $request->input('direction', 'asc');
-        $query->orderBy($sortField, $sortDirection);
-
-        $users = $query->get();
-
-        // Export simplifié sans classe dédiée pour l'instant
-        if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d') . '.csv"',
-            ];
-
-            $callback = function() use ($users) {
-                $file = fopen('php://output', 'w');
-                
-                // En-têtes
-                fputcsv($file, ['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Date inscription']);
-                
-                // Données
-                foreach ($users as $user) {
-                    fputcsv($file, [
-                        $user->id,
-                        $user->nom,
-                        $user->prenom,
-                        $user->email,
-                        $user->telephone,
-                        $user->roles->first()?->name ?? '-',
-                        $user->statut,
-                        $user->created_at->format('Y-m-d'),
-                    ]);
-                }
-                
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
-        }
-
-        // Pour Excel, on retourne un CSV avec l'extension xlsx pour simplifier
-        // (nécessiterait Laravel Excel pour un vrai export Excel)
-        $headers = [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d') . '.xlsx"',
-        ];
-
-        // Pour l'instant, on retourne du CSV même pour xlsx
-        $callback = function() use ($users) {
-            $file = fopen('php://output', 'w');
-            
-            // En-têtes
-            fputcsv($file, ['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Ceinture', 'Date inscription']);
-            
-            // Données
-            foreach ($users as $user) {
-                fputcsv($file, [
-                    $user->id,
-                    $user->nom,
-                    $user->prenom,
-                    $user->email,
-                    $user->telephone,
-                    $user->roles->first()?->name ?? '-',
-                    $user->statut,
-                    $user->ceintureActuelle?->name ?? '-',
-                    $user->created_at->format('Y-m-d'),
-                ]);
-            }
-            
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
     }
 }

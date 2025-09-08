@@ -1,11 +1,11 @@
 <template>
   <AuthenticatedLayout>
-    <Head :title="`${membre.nom_complet} - Profil`" />
+    <Head :title="`${user.nom_complet} - Profil`" />
     
     <div class="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <PageHeader :title="membre.nom_complet" :description="`Profil détaillé du membre - ${membre.age} ans`">
+      <PageHeader :title="user.nom_complet" :description="`Profil détaillé du membre - ${user.age} ans`">
         <template #actions>
-          <Link :href="`/membres/${membre.id}/edit`" 
+          <Link :href="`/membres/${user.id}/edit`" 
                 class="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm font-medium hover:from-amber-400 hover:to-orange-500">
             Modifier
           </Link>
@@ -18,9 +18,9 @@
 
       <!-- Stats Cards Rapides -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Âge" :value="membre.age" tone="blue" description="ans" />
-        <StatCard title="Statut" :value="membre.statut" tone="green" description="Membre actif" />
-        <StatCard title="Ceinture" :value="membre.ceinture_actuelle?.nom || 'Aucune'" tone="purple" description="Niveau actuel" />
+        <StatCard title="Âge" :value="user.age" tone="blue" description="ans" />
+        <StatCard title="Statut" :value="user.statut" tone="green" description="Membre actif" />
+        <StatCard title="Ceinture" :value="user.ceinture_actuelle?.nom || 'Aucune'" tone="purple" description="Niveau actuel" />
         <StatCard title="Progressions" :value="historiqueProgressions?.length || 0" tone="amber" description="Total" />
       </div>
 
@@ -37,10 +37,10 @@
             <h4 class="text-sm font-medium text-slate-400 mb-3">Ceinture Actuelle</h4>
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-full border-2 border-slate-600" 
-                   :style="`background-color: ${membre.ceinture_actuelle?.couleur_hex}`"></div>
+                   :style="`background-color: ${user.ceinture_actuelle?.couleur_hex}`"></div>
               <div>
-                <div class="text-white font-medium">{{ membre.ceinture_actuelle?.nom }}</div>
-                <div class="text-xs text-slate-400">Ordre {{ membre.ceinture_actuelle?.order }}</div>
+                <div class="text-white font-medium">{{ user.ceinture_actuelle?.nom }}</div>
+                <div class="text-xs text-slate-400">Ordre {{ user.ceinture_actuelle?.order }}</div>
               </div>
             </div>
           </div>
@@ -118,27 +118,27 @@
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-slate-400">Nom complet</span>
-              <span class="text-white font-medium">{{ membre.nom_complet }}</span>
+              <span class="text-white font-medium">{{ user.nom_complet }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">Date de naissance</span>
-              <span class="text-white">{{ formatDate(membre.date_naissance) }}</span>
+              <span class="text-white">{{ formatDate(user.date_naissance) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">Âge</span>
-              <span class="text-white">{{ membre.age }} ans</span>
+              <span class="text-white">{{ user.age }} ans</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">Sexe</span>
-              <span class="text-white">{{ membre.sexe }}</span>
+              <span class="text-white">{{ user.sexe }}</span>
             </div>
-            <div v-if="membre.telephone" class="flex justify-between">
+            <div v-if="user.telephone" class="flex justify-between">
               <span class="text-slate-400">Téléphone</span>
-              <span class="text-white">{{ membre.telephone }}</span>
+              <span class="text-white">{{ user.telephone }}</span>
             </div>
-            <div v-if="membre.ville" class="flex justify-between">
+            <div v-if="user.ville" class="flex justify-between">
               <span class="text-slate-400">Ville</span>
-              <span class="text-white">{{ membre.ville }}</span>
+              <span class="text-white">{{ user.ville }}</span>
             </div>
           </div>
         </div>
@@ -149,15 +149,15 @@
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-slate-400">Nom</span>
-              <span class="text-white">{{ membre.contact_urgence_nom || '—' }}</span>
+              <span class="text-white">{{ user.contact_urgence_nom || '—' }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">Téléphone</span>
-              <span class="text-white">{{ membre.contact_urgence_telephone || '—' }}</span>
+              <span class="text-white">{{ user.contact_urgence_telephone || '—' }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">Relation</span>
-              <span class="text-white">{{ membre.contact_urgence_relation || '—' }}</span>
+              <span class="text-white">{{ user.contact_urgence_relation || '—' }}</span>
             </div>
           </div>
         </div>
@@ -196,7 +196,7 @@
       <div class="relative min-h-screen flex items-center justify-center p-4">
         <div class="relative w-full max-w-lg bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl p-6 shadow-2xl border border-slate-700/50">
           <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            🥋 Faire Progresser {{ membre.prenom }}
+            🥋 Faire Progresser {{ user.prenom }}
           </h3>
           
           <form @submit.prevent="validerProgression" class="space-y-4">
@@ -321,11 +321,11 @@ const formProgression = ref({
 
 // Computed
 const ceinturesDisponibles = computed(() => {
-  if (!props.membre.ceinture_actuelle) {
+  if (!props.user.ceinture_actuelle) {
     return props.ceintures
   }
   // Filtrer les ceintures supérieures à la ceinture actuelle
-  return props.ceintures.filter(c => c.order > props.membre.ceinture_actuelle.order)
+  return props.ceintures.filter(c => c.order > props.user.ceinture_actuelle.order)
 })
 
 // Methods
@@ -356,7 +356,7 @@ const closeHistoriqueModal = () => {
 }
 
 const validerProgression = () => {
-  router.post(`/membres/${props.membre.id}/progresser-ceinture`, {
+  router.post(`/membres/${props.user.id}/progresser-ceinture`, {
     ceinture_id: formProgression.value.ceinture_id,
     notes: formProgression.value.notes,
     forcer: formProgression.value.forcer

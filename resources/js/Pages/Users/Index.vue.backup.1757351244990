@@ -1,0 +1,362 @@
+<template>
+    <AuthenticatedLayout>
+        <Head title="Utilisateurs" />
+        
+        <div class="container mx-auto px-4 py-6">
+            <!-- Header avec titre et bouton création -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-xl sm:text-2xl xl:text-3xl font-bold text-gray-900 truncate">
+                    Gestion des utilisateurs
+                </h1>
+                <Link
+                    v-if="can.create"
+                    :href="route('users.create')"
+                    class="btn-primary inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                    <UserPlusIcon class="w-5 h-5 mr-2" />
+                    Nouvel utilisateur
+                </Link>
+            </div>
+            
+            <!-- Filtres -->
+            <div class="bg-white rounded-lg shadow mb-6 p-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Recherche
+                        </label>
+                        <input
+                            v-model="filters.search"
+                            type="text"
+                            placeholder="Nom ou email..."
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            @input="debouncedSearch"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Rôle
+                        </label>
+                        <select
+                            v-model="filters.role"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            @change="applyFilters"
+                        >
+                            <option value="">Tous les rôles</option>
+                            <option v-for="role in roles" :key="role" :value="role">
+                                {{ formatRole(role) }}
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Statut
+                        </label>
+                        <select
+                            v-model="filters.status"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            @change="applyFilters"
+                        >
+                            <option value="">Tous</option>
+                            <option value="active">Actifs</option>
+                            <option value="inactive">Inactifs</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button
+                            v-if="hasFilters"
+                            @click="resetFilters"
+                            class="btn-secondary w-full inline-flex items-center justify-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                        >
+                            <XMarkIcon class="w-4 h-4 mr-2" />
+                            Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left">
+                                    <button
+                                        @click="toggleSort('name')"
+                                        class="text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-700 flex items-center"
+                                    >
+                                        Nom
+                                        <ChevronUpDownIcon class="w-4 h-4 ml-1" />
+                                    </button>
+                                </th>
+                                <th class="px-6 py-3 text-left">
+                                    <button
+                                        @click="toggleSort('email')"
+                                        class="text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-700 flex items-center"
+                                    >
+                                        Email
+                                        <ChevronUpDownIcon class="w-4 h-4 ml-1" />
+                                    </button>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Rôle
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    École
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Statut
+                                </th>
+                                <th class="px-6 py-3 text-left">
+                                    <button
+                                        @click="toggleSort('last_login_at')"
+                                        class="text-xs font-medium text-gray-500 uppercase tracking-wider hover:text-gray-700 flex items-center"
+                                    >
+                                        Dernière connexion
+                                        <ChevronUpDownIcon class="w-4 h-4 ml-1" />
+                                    </button>
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr
+                                v-for="user in users.data"
+                                :key="user.id"
+                                class="hover:bg-gray-50 group"
+                            >
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                                                {{ user.name.charAt(0).toUpperCase() }}
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ user.name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">{{ user.email }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                        :class="getRoleBadgeClass(user.roles?.[0]?.name)"
+                                    >
+                                        {{ formatRole(user.roles?.[0]?.name) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ user.ecole?.nom || '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                        :class="user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                    >
+                                        {{ user.is_active ? 'Actif' : 'Inactif' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ formatDate(user.last_login_at) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-24">
+                                    <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <Link
+                                            :href="route('users.edit', user)"
+                                            class="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-lg transition-all"
+                                            title="Modifier"
+                                        >
+                                            <PencilIcon class="w-4 h-4" />
+                                        </Link>
+                                        <button
+                                            @click="toggleUserStatus(user)"
+                                            class="p-1.5 hover:bg-gray-100 rounded-lg transition-all"
+                                            :class="user.is_active ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'"
+                                            :title="user.is_active ? 'Désactiver' : 'Activer'"
+                                        >
+                                            <component :is="user.is_active ? XCircleIcon : CheckCircleIcon" class="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            @click="confirmDelete(user)"
+                                            class="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-lg transition-all"
+                                            title="Supprimer"
+                                        >
+                                            <TrashIcon class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div v-if="users.links && users.links.length > 3" class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                    <nav class="flex items-center justify-between">
+                        <div class="flex-1 flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Affichage de
+                                    <span class="font-medium">{{ users.from }}</span>
+                                    à
+                                    <span class="font-medium">{{ users.to }}</span>
+                                    sur
+                                    <span class="font-medium">{{ users.total }}</span>
+                                    résultats
+                                </p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <template v-for="link in users.links" :key="link.label">
+                                    <Link
+                                        v-if="link.url"
+                                        :href="link.url"
+                                        v-html="link.label"
+                                        class="px-3 py-1 text-sm rounded-md transition-colors"
+                                        :class="link.active ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'"
+                                        preserveScroll
+                                    />
+                                    <span
+                                        v-else
+                                        v-html="link.label"
+                                        class="px-3 py-1 text-sm text-gray-400"
+                                    />
+                                </template>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { Head, Link, router } from '@inertiajs/vue3'
+import { debounce } from 'lodash'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { 
+    UserPlusIcon, 
+    PencilIcon, 
+    TrashIcon, 
+    XMarkIcon, 
+    ChevronUpDownIcon,
+    XCircleIcon,
+    CheckCircleIcon
+} from '@heroicons/vue/24/outline'
+
+const props = defineProps({
+    users: Object,
+    filters: Object,
+    sort: Object,
+    roles: Array,
+    can: Object
+})
+
+const filters = ref({
+    search: props.filters?.search || '',
+    role: props.filters?.role || '',
+    status: props.filters?.status || ''
+})
+
+const hasFilters = computed(() => {
+    return filters.value.search || filters.value.role || filters.value.status
+})
+
+const formatRole = (role) => {
+    const roleLabels = {
+        'superadmin': 'Super Admin',
+        'admin_ecole': 'Administrateur',
+        'instructeur': 'Instructeur',
+        'membre': 'Membre'
+    }
+    return roleLabels[role] || role
+}
+
+const getRoleBadgeClass = (role) => {
+    const classes = {
+        'superadmin': 'bg-purple-100 text-purple-800',
+        'admin_ecole': 'bg-blue-100 text-blue-800',
+        'instructeur': 'bg-yellow-100 text-yellow-800',
+        'membre': 'bg-gray-100 text-gray-800'
+    }
+    return classes[role] || 'bg-gray-100 text-gray-800'
+}
+
+const formatDate = (date) => {
+    if (!date) return 'Jamais'
+    return new Date(date).toLocaleDateString('fr-CA', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })
+}
+
+const applyFilters = () => {
+    router.get(route('users.index'), {
+        search: filters.value.search,
+        role: filters.value.role,
+        status: filters.value.status,
+        sort: props.sort?.field,
+        direction: props.sort?.direction
+    }, {
+        preserveState: true,
+        preserveScroll: true
+    })
+}
+
+const debouncedSearch = debounce(() => {
+    applyFilters()
+}, 300)
+
+const resetFilters = () => {
+    filters.value = {
+        search: '',
+        role: '',
+        status: ''
+    }
+    applyFilters()
+}
+
+const toggleSort = (field) => {
+    const direction = props.sort?.field === field && props.sort?.direction === 'asc' ? 'desc' : 'asc'
+    router.get(route('users.index'), {
+        ...filters.value,
+        sort: field,
+        direction
+    }, {
+        preserveState: true,
+        preserveScroll: true
+    })
+}
+
+const toggleUserStatus = (user) => {
+    router.post(route('users.toggle-status', user), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Message de succès géré par le serveur
+        }
+    })
+}
+
+const confirmDelete = (user) => {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.name} ?`)) {
+        router.delete(route('users.destroy', user), {
+            preserveScroll: true
+        })
+    }
+}
+</script>

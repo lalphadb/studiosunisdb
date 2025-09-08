@@ -250,8 +250,8 @@
                   class="flex-1 px-3 py-2 bg-gray-600/50 border border-gray-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Membre lié...</option>
-                  <option v-for="membre in availableMembers" :key="membre.id" :value="membre.id">
-                    {{ membre.prenom }} {{ membre.nom }}
+                  <option v-for="membre in availableMembers" :key="user.id" :value="user.id">
+                    {{ user.prenom }} {{ user.nom }}
                   </option>
                 </select>
 

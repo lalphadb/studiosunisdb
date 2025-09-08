@@ -55,9 +55,9 @@
             <template v-if="!isMembreRole">
               <!-- Membres -->
               <Link 
-                href="/membres" 
+                href="/users" 
                 class="nav-item group"
-                :class="{ 'active': currentPath.startsWith('/membres') }"
+                :class="{ 'active': currentPath.startsWith('/users') || currentPath.startsWith('/membres') }"
               >
                 <div class="nav-icon bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 group-hover:from-emerald-500/30 group-hover:to-emerald-600/30">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,9 +129,9 @@
               <!-- Utilisateurs (Admin uniquement) -->
               <Link 
                 v-if="isAdminRole"
-                href="/utilisateurs" 
+                href="/users" 
                 class="nav-item group"
-                :class="{ 'active': currentPath.startsWith('/utilisateurs') }"
+                :class="{ 'active': currentPath.startsWith('/users') || currentPath.startsWith('/utilisateurs') }"
               >
                 <div class="nav-icon bg-gradient-to-br from-indigo-500/20 to-indigo-600/20 group-hover:from-indigo-500/30 group-hover:to-indigo-600/30">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +238,7 @@
           <div v-if="sidebarOpen" class="space-y-1">
             <p class="px-3 mb-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Actions rapides</p>
             
-            <button @click="navigateTo('/membres/create')" 
+            <button @click="navigateTo('/users/create')" 
                     class="quick-action group">
               <div class="quick-action-icon">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -530,6 +530,18 @@ const userInitials = computed(() => {
     .join('')
     .toUpperCase()
     .slice(0, 2)
+})
+
+// Détection des rôles
+const isAdminRole = computed(() => {
+  const roles = page.props?.auth?.user?.roles || []
+  return roles.includes('superadmin') || roles.includes('admin_ecole')
+})
+
+const isMembreRole = computed(() => {
+  const roles = page.props?.auth?.user?.roles || []
+  // Si l'utilisateur a SEULEMENT le rôle membre (pas admin ni instructeur)
+  return roles.includes('membre') && !roles.includes('admin_ecole') && !roles.includes('superadmin') && !roles.includes('instructeur')
 })
 
 // Navigation simplifiée
