@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Cours;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 class CoursFactory extends Factory
 {
     protected $model = Cours::class;
+
     /**
      * Define the model's default state.
      *
@@ -21,6 +22,7 @@ class CoursFactory extends Factory
     {
         $jour = collect(array_keys(Cours::JOURS_SEMAINE))->random();
         $nom = $this->faker->unique()->words(2, true);
+
         return [
             'ecole_id' => 1,
             'instructeur_id' => null,

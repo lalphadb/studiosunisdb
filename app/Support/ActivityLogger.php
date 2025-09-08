@@ -15,14 +15,14 @@ use Illuminate\Support\Facades\Log;
 final class ActivityLogger
 {
     /**
-     * @param  string       $event       ex. 'membre.created'
-     * @param  mixed|null   $subject     Modèle Eloquent ou scalaires; ignoré si null
-     * @param  array<mixed> $properties  Contexte additionnel sérialisable
+     * @param  string  $event  ex. 'membre.created'
+     * @param  mixed|null  $subject  Modèle Eloquent ou scalaires; ignoré si null
+     * @param  array<mixed>  $properties  Contexte additionnel sérialisable
      */
     public static function log(string $event, mixed $subject = null, array $properties = []): void
     {
         $props = Arr::only($properties, array_keys($properties));
-        $user  = auth()->user();
+        $user = auth()->user();
 
         if (function_exists('activity') && class_exists(\Spatie\Activitylog\Models\Activity::class)) {
             activity()
@@ -31,14 +31,15 @@ final class ActivityLogger
                 ->withProperties($props)
                 ->event($event)
                 ->log($event);
+
             return;
         }
 
         // Fallback fichier de logs
         Log::info(sprintf('[%s] %s', __CLASS__, $event), [
             'user_id' => $user?->id,
-            'subject' => is_object($subject) ? get_class($subject) . ':' . ($subject->id ?? null) : $subject,
-            'props'   => $props,
+            'subject' => is_object($subject) ? get_class($subject).':'.($subject->id ?? null) : $subject,
+            'props' => $props,
         ]);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Cours;
 
-use App\Models\User;
 use App\Models\Cours;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,9 +19,10 @@ class CoursAdvancedTest extends TestCase
     private function createAdminUser(): User
     {
         $u = User::factory()->create(['ecole_id' => 1]);
-        if (method_exists($u, 'assignRole')) { 
-            $u->assignRole('admin_ecole'); 
+        if (method_exists($u, 'assignRole')) {
+            $u->assignRole('admin_ecole');
         }
+
         return $u;
     }
 
@@ -47,12 +48,12 @@ class CoursAdvancedTest extends TestCase
         // Soft delete
         $response = $this->delete(route('cours.destroy', $cours));
         $response->assertRedirect(route('cours.index'));
-        
+
         // Vérifier soft delete
         $this->assertSoftDeleted('cours', ['id' => $cours->id]);
         $this->assertDatabaseHas('cours', [
             'id' => $cours->id,
-            'nom' => 'Test Archive'
+            'nom' => 'Test Archive',
         ]);
     }
 
@@ -67,9 +68,9 @@ class CoursAdvancedTest extends TestCase
         ]);
 
         // Force delete
-        $response = $this->delete(route('cours.destroy', $cours) . '?force=1');
+        $response = $this->delete(route('cours.destroy', $cours).'?force=1');
         $response->assertRedirect(route('cours.index'));
-        
+
         // Vérifier suppression définitive
         $this->assertDatabaseMissing('cours', ['id' => $cours->id]);
     }
@@ -91,12 +92,12 @@ class CoursAdvancedTest extends TestCase
         // Restaurer
         $response = $this->post(route('cours.restore', $cours));
         $response->assertRedirect(route('cours.index'));
-        
+
         // Vérifier restauration
         $this->assertDatabaseHas('cours', [
             'id' => $cours->id,
             'nom' => 'Test Restore',
-            'deleted_at' => null
+            'deleted_at' => null,
         ]);
     }
 
@@ -112,17 +113,17 @@ class CoursAdvancedTest extends TestCase
         ]);
 
         $response = $this->post(route('cours.duplicate.jour', $cours), [
-            'nouveau_jour' => 'mardi'
+            'nouveau_jour' => 'mardi',
         ]);
 
         $response->assertRedirect(route('cours.index'));
-        
+
         // Vérifier duplication
         $this->assertDatabaseHas('cours', [
             'jour_semaine' => 'mardi',
-            'ecole_id' => 1
+            'ecole_id' => 1,
         ]);
-        
+
         $this->assertDatabaseCount('cours', 2);
     }
 
@@ -137,15 +138,15 @@ class CoursAdvancedTest extends TestCase
         ]);
 
         $response = $this->post(route('cours.duplicate.session', $cours), [
-            'nouvelle_session' => 'hiver'
+            'nouvelle_session' => 'hiver',
         ]);
 
         $response->assertRedirect(route('cours.index'));
-        
+
         // Vérifier duplication
         $this->assertDatabaseCount('cours', 2);
         $this->assertDatabaseHas('cours', [
-            'ecole_id' => 1
+            'ecole_id' => 1,
         ]);
     }
 
@@ -167,11 +168,11 @@ class CoursAdvancedTest extends TestCase
             'date_debut' => now()->addWeek()->toDateString(),
             'date_fin' => now()->addMonth()->toDateString(),
             'frequence' => 'hebdomadaire',
-            'dupliquer_inscriptions' => false
+            'dupliquer_inscriptions' => false,
         ]);
 
         $response->assertRedirect(route('cours.index'));
-        
+
         // Vérifier création de 2 nouvelles sessions (mardi + jeudi)
         $this->assertDatabaseCount('cours', 3);
         $this->assertDatabaseHas('cours', ['jour_semaine' => 'mardi']);
@@ -193,8 +194,8 @@ class CoursAdvancedTest extends TestCase
     {
         $admin1 = $this->createAdminUser(); // ecole_id = 1
         $admin2 = User::factory()->create(['ecole_id' => 2]);
-        if (method_exists($admin2, 'assignRole')) { 
-            $admin2->assignRole('admin_ecole'); 
+        if (method_exists($admin2, 'assignRole')) {
+            $admin2->assignRole('admin_ecole');
         }
 
         $cours1 = Cours::factory()->create(['ecole_id' => 1]);

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -17,43 +17,43 @@ return new class extends Migration
             $table->string('telephone')->nullable()->after('email');
             $table->date('date_naissance')->nullable()->after('telephone');
             $table->enum('sexe', ['M', 'F', 'Autre'])->default('Autre')->after('date_naissance');
-            
+
             // Adresse
             $table->text('adresse')->nullable()->after('sexe');
             $table->string('ville')->nullable()->after('adresse');
             $table->string('code_postal')->nullable()->after('ville');
             $table->string('province')->default('QC')->after('code_postal');
-            
+
             // Contact urgence
             $table->string('contact_urgence_nom')->nullable()->after('province');
             $table->string('contact_urgence_telephone')->nullable()->after('contact_urgence_nom');
             $table->string('contact_urgence_relation')->nullable()->after('contact_urgence_telephone');
-            
+
             // Statut et karaté
             $table->enum('statut', ['actif', 'inactif', 'suspendu'])->default('actif')->after('active');
             $table->unsignedBigInteger('ceinture_actuelle_id')->nullable()->after('statut');
             $table->date('date_inscription')->nullable()->after('ceinture_actuelle_id');
             $table->date('date_derniere_presence')->nullable()->after('date_inscription');
-            
+
             // Médical
             $table->text('notes_medicales')->nullable()->after('date_derniere_presence');
             $table->json('allergies')->nullable()->after('notes_medicales');
             $table->json('medicaments')->nullable()->after('allergies');
-            
+
             // Consentements
             $table->boolean('consentement_photos')->default(false)->after('medicaments');
             $table->boolean('consentement_communications')->default(true)->after('consentement_photos');
             $table->timestamp('date_consentement')->nullable()->after('consentement_communications');
-            
+
             // Liens familiaux
             $table->unsignedBigInteger('family_id')->nullable()->after('date_consentement');
-            
+
             // Champs personnalisés
             $table->json('champs_personnalises')->nullable()->after('family_id');
-            
+
             // Soft deletes
             $table->softDeletes()->after('updated_at');
-            
+
             // Index pour performance
             $table->index(['prenom', 'nom'], 'idx_nom_complet');
             $table->index('date_naissance', 'idx_date_naissance');
@@ -69,7 +69,7 @@ return new class extends Migration
         });
 
         // 2. Migrer données membres → users
-        DB::statement("
+        DB::statement('
             UPDATE users u 
             JOIN membres m ON u.id = m.user_id 
             SET 
@@ -99,17 +99,17 @@ return new class extends Migration
                 u.champs_personnalises = m.champs_personnalises,
                 u.deleted_at = m.deleted_at
             WHERE m.user_id IS NOT NULL
-        ");
+        ');
 
         // 3. Créer users pour membres orphelins (sans user_id)
-        $membresOrphelins = DB::select("
+        $membresOrphelins = DB::select('
             SELECT * FROM membres 
             WHERE user_id IS NULL OR user_id NOT IN (SELECT id FROM users)
-        ");
+        ');
 
         foreach ($membresOrphelins as $membre) {
             $userId = DB::table('users')->insertGetId([
-                'name' => $membre->prenom . ' ' . $membre->nom,
+                'name' => $membre->prenom.' '.$membre->nom,
                 'email' => $membre->email,
                 'password' => bcrypt('password123'), // Mot de passe temporaire
                 'ecole_id' => $membre->ecole_id,
@@ -141,7 +141,7 @@ return new class extends Migration
                 'updated_at' => $membre->updated_at,
                 'deleted_at' => $membre->deleted_at,
                 'active' => $membre->statut === 'actif',
-                'email_verified_at' => now()
+                'email_verified_at' => now(),
             ]);
 
             // Assigner rôle membre
@@ -150,7 +150,7 @@ return new class extends Migration
                 DB::table('model_has_roles')->insert([
                     'role_id' => $roleId,
                     'model_type' => 'App\\Models\\User',
-                    'model_id' => $userId
+                    'model_id' => $userId,
                 ]);
             }
         }
@@ -169,14 +169,14 @@ return new class extends Migration
 
             $table->foreign('cours_id')->references('id')->on('cours')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            
+
             $table->unique(['cours_id', 'user_id']);
             $table->index(['statut_inscription', 'date_inscription']);
             $table->index('date_fin');
         });
 
         // 5. Migrer données cours_membres → cours_users
-        DB::statement("
+        DB::statement('
             INSERT INTO cours_users (cours_id, user_id, date_inscription, date_fin, statut_inscription, prix_personnalise, notes, created_at, updated_at)
             SELECT 
                 cm.cours_id,
@@ -191,20 +191,20 @@ return new class extends Migration
             FROM cours_membres cm
             JOIN membres m ON cm.membre_id = m.id
             WHERE m.user_id IS NOT NULL
-        ");
+        ');
 
         // 6. Mettre à jour autres tables : ajouter user_id et migrer données
         $tablesToUpdate = [
             'presences' => 'membre_id',
             'paiements' => 'membre_id',
             'progression_ceintures' => 'membre_id',
-            'examens' => 'membre_id'
+            'examens' => 'membre_id',
         ];
 
         foreach ($tablesToUpdate as $table => $memberColumn) {
             if (Schema::hasTable($table) && Schema::hasColumn($table, $memberColumn)) {
                 // Ajouter colonne user_id si pas encore présente
-                if (!Schema::hasColumn($table, 'user_id')) {
+                if (! Schema::hasColumn($table, 'user_id')) {
                     Schema::table($table, function (Blueprint $table) {
                         $table->unsignedBigInteger('user_id')->nullable()->after('id');
                         $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -223,7 +223,7 @@ return new class extends Migration
 
         // 7. Supprimer les anciennes tables après migration
         Schema::dropIfExists('cours_membres');
-        
+
         // Garder table membres temporairement pour rollback possible
         // Schema::dropIfExists('membres'); // On supprimera après validation
     }
@@ -241,7 +241,7 @@ return new class extends Migration
             $table->decimal('prix_personnalise', 6, 2)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('cours_id')->references('id')->on('cours')->onDelete('cascade');
             $table->foreign('membre_id')->references('id')->on('membres')->onDelete('cascade');
             $table->unique(['cours_id', 'membre_id']);
@@ -251,7 +251,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['ceinture_actuelle_id']);
             $table->dropForeign(['family_id']);
-            
+
             $table->dropColumn([
                 'prenom', 'nom', 'telephone', 'date_naissance', 'sexe',
                 'adresse', 'ville', 'code_postal', 'province',
@@ -259,7 +259,7 @@ return new class extends Migration
                 'statut', 'ceinture_actuelle_id', 'date_inscription', 'date_derniere_presence',
                 'notes_medicales', 'allergies', 'medicaments',
                 'consentement_photos', 'consentement_communications', 'date_consentement',
-                'family_id', 'champs_personnalises', 'deleted_at'
+                'family_id', 'champs_personnalises', 'deleted_at',
             ]);
         });
 

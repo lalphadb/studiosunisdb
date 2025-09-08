@@ -13,6 +13,7 @@ class CoursApiController extends Controller
     {
         $this->authorize('viewAny', Cours::class);
         $cours = Cours::with('instructeur')->actif()->orderBy('jour_semaine')->orderBy('heure_debut')->get();
+
         return CoursResource::collection($cours);
     }
 
@@ -20,6 +21,7 @@ class CoursApiController extends Controller
     {
         $this->authorize('view', $cours);
         $cours->load('instructeur');
+
         return new CoursResource($cours);
     }
 }

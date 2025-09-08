@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Requests\Membres;
@@ -16,17 +17,17 @@ final class BulkMembreActionRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'ids'    => ['required','array','min:1'],
-            'ids.*'  => ['integer','exists:membres,id'],
-            'action' => ['required', Rule::in(['statut','assign_ceinture'])],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:membres,id'],
+            'action' => ['required', Rule::in(['statut', 'assign_ceinture'])],
         ];
 
         if ($this->input('action') === 'statut') {
-            $rules['value'] = ['required', Rule::in(['actif','inactif','suspendu'])];
+            $rules['value'] = ['required', Rule::in(['actif', 'inactif', 'suspendu'])];
         }
 
         if ($this->input('action') === 'assign_ceinture') {
-            $rules['ceinture_id'] = ['required','integer','exists:ceintures,id'];
+            $rules['ceinture_id'] = ['required', 'integer', 'exists:ceintures,id'];
         }
 
         return $rules;

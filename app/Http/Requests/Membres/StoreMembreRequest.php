@@ -20,7 +20,7 @@ final class StoreMembreRequest extends FormRequest
             'prenom' => ['required', 'string', 'max:255'],
             'date_naissance' => ['required', 'date', 'before:today'],
             'sexe' => ['required', 'in:M,F,Autre'],
-            
+
             // Contact
             'email' => [
                 'nullable',
@@ -31,37 +31,37 @@ final class StoreMembreRequest extends FormRequest
                 }),
             ],
             'telephone' => ['nullable', 'string', 'max:20'],
-            
+
             // Contact urgence
             'contact_urgence_nom' => ['nullable', 'string', 'max:255'],
             'contact_urgence_telephone' => ['nullable', 'string', 'max:20'],
             'contact_urgence_relation' => ['nullable', 'string', 'max:255'],
-            
+
             // Adresse
             'adresse' => ['nullable', 'string', 'max:255'],
             'ville' => ['nullable', 'string', 'max:100'],
             'code_postal' => ['nullable', 'string', 'max:10'],
             'province' => ['nullable', 'string', 'max:50'],
-            
+
             // Karaté
             'ceinture_actuelle_id' => ['nullable', 'exists:ceintures,id'],
             'date_inscription' => ['nullable', 'date'],
-            
+
             // Médical
             'notes_medicales' => ['nullable', 'string'],
             'allergies' => ['nullable', 'array'],
             'medicaments' => ['nullable', 'array'],
-            
+
             // Photo
             'photo' => ['nullable', 'image', 'max:2048', 'mimes:jpeg,png,jpg'],
-            
+
             // User lié (optionnel pour créer un compte)
             'password' => ['nullable', 'string', 'min:8'],
-            
+
             // Consentements
             'consentement_photos' => ['nullable', 'boolean'],
             'consentement_communications' => ['nullable', 'boolean'],
-            
+
             // Statut
             'statut' => ['required', 'in:actif,inactif,suspendu'],
         ];

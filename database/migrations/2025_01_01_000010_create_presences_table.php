@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->boolean('validation_parent')->default(false);
             $table->timestamps();
-            
+
             // Contrainte unicité + index performance
             $table->unique(['cours_id', 'membre_id', 'date_cours']);
             $table->index(['date_cours', 'statut']);

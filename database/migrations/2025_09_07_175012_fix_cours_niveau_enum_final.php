@@ -12,12 +12,12 @@ return new class extends Migration
             // Modifier la colonne niveau avec les nouveaux enum
             $table->enum('niveau', [
                 'tous',
-                'debutant', 
+                'debutant',
                 'intermediaire',
                 'avance',
                 'prive',
                 'competition',
-                'a_la_carte'
+                'a_la_carte',
             ])->default('tous')->change();
         });
     }
@@ -28,8 +28,8 @@ return new class extends Migration
             // Retour aux anciens enum si nécessaire
             $table->enum('niveau', [
                 'debutant',
-                'intermediaire', 
-                'avance'
+                'intermediaire',
+                'avance',
             ])->default('debutant')->change();
         });
     }

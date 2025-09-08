@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Ceinture;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Seeder;
 
 class CeinturesSeeder extends Seeder
 {
@@ -24,9 +23,9 @@ class CeinturesSeeder extends Seeder
             ['order' => 6,  'name' => 'Bleue Rayée',     'name_en' => 'Blue Stripe',   'color_hex' => '#0066CC'],
             ['order' => 7,  'name' => 'Verte',           'name_en' => 'Green',         'color_hex' => '#228B22'],
             ['order' => 8,  'name' => 'Verte Rayée',     'name_en' => 'Green Stripe',  'color_hex' => '#228B22'],
-            ['order' => 9,  'name' => 'Marron 1 Rayée',  'name_en' => 'Brown 1 Stripe','color_hex' => '#8B4513'],
-            ['order' => 10, 'name' => 'Marron 2 Rayées', 'name_en' => 'Brown 2 Stripes','color_hex' => '#8B4513'],
-            ['order' => 11, 'name' => 'Marron 3 Rayées', 'name_en' => 'Brown 3 Stripes','color_hex' => '#8B4513'],
+            ['order' => 9,  'name' => 'Marron 1 Rayée',  'name_en' => 'Brown 1 Stripe', 'color_hex' => '#8B4513'],
+            ['order' => 10, 'name' => 'Marron 2 Rayées', 'name_en' => 'Brown 2 Stripes', 'color_hex' => '#8B4513'],
+            ['order' => 11, 'name' => 'Marron 3 Rayées', 'name_en' => 'Brown 3 Stripes', 'color_hex' => '#8B4513'],
             ['order' => 12, 'name' => 'Noire Shodan',    'name_en' => 'Black 1st Dan', 'color_hex' => '#000000'],
             ['order' => 13, 'name' => 'Noire Nidan',     'name_en' => 'Black 2nd Dan', 'color_hex' => '#000000'],
             ['order' => 14, 'name' => 'Noire Sandan',    'name_en' => 'Black 3rd Dan', 'color_hex' => '#000000'],
@@ -36,7 +35,7 @@ class CeinturesSeeder extends Seeder
             ['order' => 18, 'name' => 'Noire Nanadan',   'name_en' => 'Black 7th Dan', 'color_hex' => '#000000'],
             ['order' => 19, 'name' => 'Noire Hachidan',  'name_en' => 'Black 8th Dan', 'color_hex' => '#000000'],
             ['order' => 20, 'name' => 'Noire Kyudan',    'name_en' => 'Black 9th Dan', 'color_hex' => '#000000'],
-            ['order' => 21, 'name' => 'Noire Judan',     'name_en' => 'Black 10th Dan','color_hex' => '#000000'],
+            ['order' => 21, 'name' => 'Noire Judan',     'name_en' => 'Black 10th Dan', 'color_hex' => '#000000'],
         ];
 
         foreach ($ceintures as $ceinture) {
@@ -82,22 +81,37 @@ class CeinturesSeeder extends Seeder
             20 => '9e Dan - Kyoshi',
             21 => '10e Dan - Meijin',
         ];
+
         return $descriptions[$ordre] ?? 'Niveau supérieur';
     }
 
     private function getMinimumDuration($ordre): int
     {
-        if ($ordre <= 4) return 3;   // Ceintures colorées : 3 mois
-        if ($ordre <= 8) return 6;   // Ceintures intermédiaires : 6 mois
-        if ($ordre <= 11) return 12; // Marrons : 12 mois
+        if ($ordre <= 4) {
+            return 3;
+        }   // Ceintures colorées : 3 mois
+        if ($ordre <= 8) {
+            return 6;
+        }   // Ceintures intermédiaires : 6 mois
+        if ($ordre <= 11) {
+            return 12;
+        } // Marrons : 12 mois
+
         return 24;                   // Noires : 24 mois minimum
     }
 
     private function getMinimumAttendances($ordre): int
     {
-        if ($ordre <= 4) return 20;
-        if ($ordre <= 8) return 40;
-        if ($ordre <= 11) return 60;
+        if ($ordre <= 4) {
+            return 20;
+        }
+        if ($ordre <= 8) {
+            return 40;
+        }
+        if ($ordre <= 11) {
+            return 60;
+        }
+
         return 80;
     }
 }

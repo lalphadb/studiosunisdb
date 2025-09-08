@@ -11,10 +11,10 @@ class CoursPolicy
     private array $superRoles = ['superadmin'];
 
     /** Rôles pouvant consulter la liste */
-    private array $viewRoles = ['superadmin','admin','admin_ecole','instructeur','membre'];
+    private array $viewRoles = ['superadmin', 'admin', 'admin_ecole', 'instructeur', 'membre'];
 
     /** Rôles pouvant gérer (create / update / delete / export) */
-    private array $manageRoles = ['superadmin','admin','admin_ecole'];
+    private array $manageRoles = ['superadmin', 'admin', 'admin_ecole'];
 
     public function viewAny(User $user): bool
     {
@@ -23,10 +23,14 @@ class CoursPolicy
 
     public function view(User $user, Cours $cours): bool
     {
-        if (!$this->viewAny($user)) return false;
+        if (! $this->viewAny($user)) {
+            return false;
+        }
 
         // Super rôles voient tout
-        if ($user->hasAnyRole($this->superRoles)) return true;
+        if ($user->hasAnyRole($this->superRoles)) {
+            return true;
+        }
 
         // Autres rôles : même école
         return $cours->ecole_id === $user->ecole_id;
@@ -39,9 +43,13 @@ class CoursPolicy
 
     public function update(User $user, Cours $cours): bool
     {
-        if (!$user->hasAnyRole($this->manageRoles)) return false;
+        if (! $user->hasAnyRole($this->manageRoles)) {
+            return false;
+        }
 
-        if ($user->hasAnyRole($this->superRoles)) return true;
+        if ($user->hasAnyRole($this->superRoles)) {
+            return true;
+        }
 
         return $cours->ecole_id === $user->ecole_id;
     }

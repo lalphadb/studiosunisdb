@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Cours;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class CoursSeeder extends Seeder
 {
@@ -17,13 +16,14 @@ class CoursSeeder extends Seeder
         // Récupérer un utilisateur existant pour être l'instructeur
         $instructeur = User::where('email', 'superadmin@test.com')->first();
 
-        if (!$instructeur) {
+        if (! $instructeur) {
             // Si pas de superadmin, prendre le premier utilisateur
             $instructeur = User::first();
         }
 
-        if (!$instructeur) {
+        if (! $instructeur) {
             $this->command->error('❌ Aucun utilisateur trouvé. Veuillez créer un utilisateur d\'abord.');
+
             return;
         }
 
@@ -155,6 +155,6 @@ class CoursSeeder extends Seeder
             ], $data);
         }
 
-        $this->command->info('✅ ' . count($cours) . ' cours de test créés !');
+        $this->command->info('✅ '.count($cours).' cours de test créés !');
     }
 }

@@ -14,7 +14,7 @@ class MembreResource extends JsonResource
             'user_id' => $this->user_id,
             'prenom' => $this->prenom,
             'nom' => $this->nom,
-            'nom_complet' => $this->prenom . ' ' . $this->nom,
+            'nom_complet' => $this->prenom.' '.$this->nom,
             'email' => $this->email,
             'telephone' => $this->telephone,
             'date_naissance' => $this->date_naissance?->format('Y-m-d'),
@@ -32,7 +32,7 @@ class MembreResource extends JsonResource
             ],
             'statut' => $this->statut,
             'statut_badge' => $this->getStatutBadge(),
-            'ceinture_actuelle' => $this->whenLoaded('ceintureActuelle', function() {
+            'ceinture_actuelle' => $this->whenLoaded('ceintureActuelle', function () {
                 return [
                     'id' => $this->ceintureActuelle->id,
                     'nom' => $this->ceintureActuelle->nom,
@@ -42,8 +42,8 @@ class MembreResource extends JsonResource
             }),
             'date_inscription' => $this->date_inscription?->format('Y-m-d'),
             'date_derniere_presence' => $this->date_derniere_presence?->format('Y-m-d'),
-            'jours_depuis_derniere_presence' => $this->date_derniere_presence 
-                ? now()->diffInDays($this->date_derniere_presence) 
+            'jours_depuis_derniere_presence' => $this->date_derniere_presence
+                ? now()->diffInDays($this->date_derniere_presence)
                 : null,
             'notes_medicales' => $this->notes_medicales,
             'allergies' => $this->allergies,
@@ -54,11 +54,11 @@ class MembreResource extends JsonResource
                 'date' => $this->date_consentement?->format('Y-m-d H:i'),
             ],
             'liens_familiaux' => $this->whenLoaded('liensFamiliaux', function () {
-                return $this->liensFamiliaux->map(fn($lien) => [
+                return $this->liensFamiliaux->map(fn ($lien) => [
                     'id' => $lien->id,
                     'membre_lie' => [
                         'id' => $lien->membreLie->id,
-                        'nom_complet' => $lien->membreLie->prenom . ' ' . $lien->membreLie->nom,
+                        'nom_complet' => $lien->membreLie->prenom.' '.$lien->membreLie->nom,
                         'telephone' => $lien->membreLie->telephone,
                         'email' => $lien->membreLie->email,
                     ],
@@ -80,7 +80,7 @@ class MembreResource extends JsonResource
 
     private function getStatutBadge(): array
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'actif' => ['label' => 'Actif', 'color' => 'green'],
             'inactif' => ['label' => 'Inactif', 'color' => 'gray'],
             'suspendu' => ['label' => 'Suspendu', 'color' => 'red'],

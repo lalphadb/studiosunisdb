@@ -3,9 +3,9 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Throwable;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Inertia\Inertia;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -40,12 +40,12 @@ class Handler extends ExceptionHandler
         // Gestion personnalisée des erreurs HTTP pour Inertia
         if ($e instanceof HttpException) {
             $status = $e->getStatusCode();
-            
+
             // Erreur 403 personnalisée avec diagnostic
             if ($status === 403) {
                 return $this->render403($request, $e);
             }
-            
+
             // Autres erreurs HTTP
             if (in_array($status, [404, 500, 503])) {
                 return $this->renderInertiaError($request, $status, $e->getMessage());

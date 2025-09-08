@@ -32,7 +32,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->ecole_id === $model->ecole_id 
+        return $user->ecole_id === $model->ecole_id
             && $user->hasAnyRole(['admin_ecole', 'instructeur']);
     }
 
@@ -50,11 +50,11 @@ class UserPolicy
     public function update(User $user, User $model): bool
     {
         // Ne peut pas modifier un superadmin
-        if ($model->hasRole('superadmin') && !$user->hasRole('superadmin')) {
+        if ($model->hasRole('superadmin') && ! $user->hasRole('superadmin')) {
             return false;
         }
-        
-        return $user->ecole_id === $model->ecole_id 
+
+        return $user->ecole_id === $model->ecole_id
             && $user->hasRole('admin_ecole');
     }
 
@@ -67,13 +67,13 @@ class UserPolicy
         if ($model->hasRole('superadmin')) {
             return false;
         }
-        
+
         // Ne peut pas se supprimer soi-même
         if ($user->id === $model->id) {
             return false;
         }
-        
-        return $user->ecole_id === $model->ecole_id 
+
+        return $user->ecole_id === $model->ecole_id
             && $user->hasRole('admin_ecole');
     }
 
@@ -82,7 +82,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->ecole_id === $model->ecole_id 
+        return $user->ecole_id === $model->ecole_id
             && $user->hasRole('admin_ecole');
     }
 

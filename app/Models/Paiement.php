@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
 
 class Paiement extends Model
 {
@@ -50,10 +50,10 @@ class Paiement extends Model
     public function scopeEnRetard($query)
     {
         return $query->where('statut', 'en_retard')
-                    ->orWhere(function($q) {
-                        $q->where('statut', 'en_attente')
-                          ->where('date_echeance', '<', today());
-                    });
+            ->orWhere(function ($q) {
+                $q->where('statut', 'en_attente')
+                    ->where('date_echeance', '<', today());
+            });
     }
 
     public function scopeParType($query, $type)
@@ -64,16 +64,18 @@ class Paiement extends Model
     public function scopeParMois($query, $mois, $annee = null)
     {
         $annee = $annee ?: now()->year;
+
         return $query->whereYear('date_echeance', $annee)
-                    ->whereMonth('date_echeance', $mois);
+            ->whereMonth('date_echeance', $mois);
     }
 
     public function scopeRevenuMois($query, $mois, $annee = null)
     {
         $annee = $annee ?: now()->year;
+
         return $query->where('statut', 'paye')
-                    ->whereYear('date_paiement', $annee)
-                    ->whereMonth('date_paiement', $mois);
+            ->whereYear('date_paiement', $annee)
+            ->whereMonth('date_paiement', $mois);
     }
 
     // Accessors
@@ -84,7 +86,7 @@ class Paiement extends Model
 
     public function getEstEnRetardAttribute(): bool
     {
-        return $this->statut === 'en_retard' || 
+        return $this->statut === 'en_retard' ||
                ($this->statut === 'en_attente' && $this->date_echeance < today());
     }
 
@@ -99,7 +101,7 @@ class Paiement extends Model
 
     public function getCouleurStatutAttribute(): string
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'paye' => '#10B981',      // Vert
             'en_attente' => '#F59E0B', // Orange
             'en_retard' => '#EF4444',  // Rouge
@@ -110,7 +112,7 @@ class Paiement extends Model
 
     public function getIconeStatutAttribute(): string
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'paye' => '✓',
             'en_attente' => '⏳',
             'en_retard' => '⚠️',
@@ -121,7 +123,7 @@ class Paiement extends Model
 
     public function getMontantFormatAttribute(): string
     {
-        return number_format($this->montant, 2, ',', ' ') . ' $';
+        return number_format($this->montant, 2, ',', ' ').' $';
     }
 
     // Méthodes utilitaires
@@ -144,6 +146,7 @@ class Paiement extends Model
     {
         if ($this->statut === 'en_attente' && $this->date_echeance < today()) {
             $this->update(['statut' => 'en_retard']);
+
             return true;
         }
 
@@ -166,7 +169,7 @@ class Paiement extends Model
         ]);
     }
 
-    public static function statistiquesFinancieres(int $mois = null, int $annee = null): array
+    public static function statistiquesFinancieres(?int $mois = null, ?int $annee = null): array
     {
         $mois = $mois ?: now()->month;
         $annee = $annee ?: now()->year;
@@ -174,7 +177,7 @@ class Paiement extends Model
         $revenus = self::revenuMois($mois, $annee)->sum('montant');
         $enAttente = self::enAttente()->parMois($mois, $annee)->sum('montant');
         $enRetard = self::enRetard()->sum('montant');
-        
+
         $totalPaiements = self::parMois($mois, $annee)->count();
         $paiementsReçus = self::paye()->parMois($mois, $annee)->count();
 
@@ -184,7 +187,7 @@ class Paiement extends Model
             'en_retard' => $enRetard,
             'total_paiements' => $totalPaiements,
             'paiements_recus' => $paiementsReçus,
-            'taux_recouvrement' => $totalPaiements > 0 ? 
+            'taux_recouvrement' => $totalPaiements > 0 ?
                 round($paiementsReçus / $totalPaiements * 100, 1) : 0,
         ];
     }

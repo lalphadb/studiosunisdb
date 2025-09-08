@@ -1,10 +1,10 @@
 #!/usr/bin/env php
 <?php
+
 /**
  * Script de démarrage rapide StudiosDB
  * Usage: php start.php
  */
-
 echo "\n";
 echo "╔════════════════════════════════════════╗\n";
 echo "║     🚀 StudiosDB v5 Pro - Démarrage    ║\n";
@@ -19,7 +19,7 @@ passthru('php artisan optimize:clear');
 echo "\n2️⃣  Vérification de la syntaxe PHP...\n";
 $files = [
     'app/Http/Requests/Membres/StoreMembreRequest.php',
-    'app/Http/Requests/Membres/UpdateMembreRequest.php'
+    'app/Http/Requests/Membres/UpdateMembreRequest.php',
 ];
 
 $syntaxOk = true;
@@ -27,16 +27,16 @@ foreach ($files as $file) {
     $output = [];
     $return = 0;
     exec("php -l $file 2>&1", $output, $return);
-    
+
     if ($return === 0) {
-        echo "   ✅ " . basename($file) . " OK\n";
+        echo '   ✅ '.basename($file)." OK\n";
     } else {
-        echo "   ❌ " . basename($file) . " ERREUR\n";
+        echo '   ❌ '.basename($file)." ERREUR\n";
         $syntaxOk = false;
     }
 }
 
-if (!$syntaxOk) {
+if (! $syntaxOk) {
     echo "\n❌ Des erreurs de syntaxe ont été détectées.\n";
     echo "Corrigez les erreurs avant de continuer.\n";
     exit(1);
@@ -71,8 +71,8 @@ echo "╚═══════════════════════�
 echo "\n";
 
 // Proposer de lancer Laravel directement
-echo "Voulez-vous démarrer Laravel maintenant ? (o/n): ";
-$handle = fopen("php://stdin", "r");
+echo 'Voulez-vous démarrer Laravel maintenant ? (o/n): ';
+$handle = fopen('php://stdin', 'r');
 $line = fgets($handle);
 if (trim($line) === 'o' || trim($line) === 'O') {
     echo "\n🚀 Démarrage de Laravel...\n";

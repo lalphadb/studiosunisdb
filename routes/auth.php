@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
-        
+
     // Route GET pour déconnexion directe depuis navigateur
     Route::get('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout.get');

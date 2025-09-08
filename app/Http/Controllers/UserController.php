@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Ecole;
 use App\Models\Ceinture;
+use App\Models\Ecole;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\UsersExport;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -26,7 +25,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -39,10 +38,10 @@ class UserController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('nom', 'like', "%{$search}%")
-                  ->orWhere('telephone', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('prenom', 'like', "%{$search}%")
+                    ->orWhere('nom', 'like', "%{$search}%")
+                    ->orWhere('telephone', 'like', "%{$search}%");
             });
         }
 
@@ -103,19 +102,19 @@ class UserController extends Controller
     public function create()
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
         return Inertia::render('Users/Form', [
             'user' => null,
             'roles' => Role::where('guard_name', 'web')
-                ->when(!$authUser->hasRole('superadmin'), function ($query) {
+                ->when(! $authUser->hasRole('superadmin'), function ($query) {
                     $query->where('name', '!=', 'superadmin');
                 })
                 ->pluck('name'),
-            'ecoles' => $authUser->hasRole('superadmin') 
-                ? Ecole::all() 
+            'ecoles' => $authUser->hasRole('superadmin')
+                ? Ecole::all()
                 : [$authUser->ecole],
             'ceintures' => Ceinture::orderBy('order')->get(),
         ]);
@@ -124,7 +123,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -150,8 +149,8 @@ class UserController extends Controller
             'contact_urgence_telephone' => 'nullable|string|max:255',
             'contact_urgence_relation' => 'nullable|string|max:255',
             'role' => 'required|exists:roles,name',
-            'ecole_id' => $authUser->hasRole('superadmin') 
-                ? 'required|exists:ecoles,id' 
+            'ecole_id' => $authUser->hasRole('superadmin')
+                ? 'required|exists:ecoles,id'
                 : 'nullable',
             'ceinture_actuelle_id' => 'nullable|exists:ceintures,id',
             'notes_medicales' => 'nullable|string',
@@ -162,14 +161,14 @@ class UserController extends Controller
         ]);
 
         // Empêcher l'attribution du rôle superadmin par un non-superadmin
-        if (!$authUser->hasRole('superadmin') && $validated['role'] === 'superadmin') {
+        if (! $authUser->hasRole('superadmin') && $validated['role'] === 'superadmin') {
             abort(403, 'Vous ne pouvez pas créer un superadmin.');
         }
 
         DB::beginTransaction();
         try {
             $user = User::create([
-                'name' => $validated['prenom'] . ' ' . $validated['nom'],
+                'name' => $validated['prenom'].' '.$validated['nom'],
                 'prenom' => $validated['prenom'],
                 'nom' => $validated['nom'],
                 'email' => $validated['email'],
@@ -205,14 +204,15 @@ class UserController extends Controller
                 ->with('success', 'Utilisateur créé avec succès.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Erreur lors de la création: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Erreur lors de la création: '.$e->getMessage()]);
         }
     }
 
     public function show(User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -230,19 +230,19 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
         return Inertia::render('Users/Form', [
             'user' => $user->load(['roles', 'ceintureActuelle']),
             'roles' => Role::where('guard_name', 'web')
-                ->when(!$authUser->hasRole('superadmin'), function ($query) {
+                ->when(! $authUser->hasRole('superadmin'), function ($query) {
                     $query->where('name', '!=', 'superadmin');
                 })
                 ->pluck('name'),
-            'ecoles' => $authUser->hasRole('superadmin') 
-                ? Ecole::all() 
+            'ecoles' => $authUser->hasRole('superadmin')
+                ? Ecole::all()
                 : [$authUser->ecole],
             'ceintures' => Ceinture::orderBy('order')->get(),
         ]);
@@ -251,12 +251,12 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
         // Empêcher la modification de son propre compte (protection)
-        if ($user->id === $authUser->id && $request->has('active') && !$request->input('active')) {
+        if ($user->id === $authUser->id && $request->has('active') && ! $request->input('active')) {
             return back()->withErrors(['error' => 'Vous ne pouvez pas désactiver votre propre compte.']);
         }
 
@@ -293,7 +293,7 @@ class UserController extends Controller
         ]);
 
         // Empêcher la modification du rôle superadmin par un non-superadmin
-        if (!$authUser->hasRole('superadmin') && 
+        if (! $authUser->hasRole('superadmin') &&
             ($validated['role'] === 'superadmin' || $user->hasRole('superadmin'))) {
             abort(403, 'Vous ne pouvez pas modifier un superadmin.');
         }
@@ -301,7 +301,7 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $updateData = [
-                'name' => $validated['prenom'] . ' ' . $validated['nom'],
+                'name' => $validated['prenom'].' '.$validated['nom'],
                 'prenom' => $validated['prenom'],
                 'nom' => $validated['nom'],
                 'email' => $validated['email'],
@@ -325,7 +325,7 @@ class UserController extends Controller
                 'consentement_communications' => $validated['consentement_communications'] ?? true,
             ];
 
-            if (!empty($validated['password'])) {
+            if (! empty($validated['password'])) {
                 $updateData['password'] = Hash::make($validated['password']);
             }
 
@@ -344,14 +344,15 @@ class UserController extends Controller
                 ->with('success', 'Utilisateur mis à jour avec succès.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Erreur lors de la mise à jour: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Erreur lors de la mise à jour: '.$e->getMessage()]);
         }
     }
 
     public function destroy(User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -361,7 +362,7 @@ class UserController extends Controller
         }
 
         // Empêcher la suppression d'un superadmin par un non-superadmin
-        if (!$authUser->hasRole('superadmin') && $user->hasRole('superadmin')) {
+        if (! $authUser->hasRole('superadmin') && $user->hasRole('superadmin')) {
             abort(403, 'Vous ne pouvez pas supprimer un superadmin.');
         }
 
@@ -374,7 +375,7 @@ class UserController extends Controller
     public function toggleActive(User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -385,9 +386,9 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Vous ne pouvez pas désactiver votre propre compte.']);
         }
 
-        $user->update(['active' => !$user->active]);
+        $user->update(['active' => ! $user->active]);
 
-        return back()->with('success', 
+        return back()->with('success',
             $user->active ? 'Utilisateur activé.' : 'Utilisateur désactivé.'
         );
     }
@@ -400,7 +401,7 @@ class UserController extends Controller
     public function resetPassword(Request $request, User $user)
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -423,7 +424,7 @@ class UserController extends Controller
     public function export(Request $request, $format = 'xlsx')
     {
         $authUser = Auth::user();
-        if (!$authUser) {
+        if (! $authUser) {
             abort(401, 'Non authentifié');
         }
 
@@ -439,10 +440,10 @@ class UserController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('prenom', 'like', "%{$search}%")
-                  ->orWhere('nom', 'like', "%{$search}%")
-                  ->orWhere('telephone', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('prenom', 'like', "%{$search}%")
+                    ->orWhere('nom', 'like', "%{$search}%")
+                    ->orWhere('telephone', 'like', "%{$search}%");
             });
         }
 
@@ -467,15 +468,15 @@ class UserController extends Controller
         if ($format === 'csv') {
             $headers = [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d') . '.csv"',
+                'Content-Disposition' => 'attachment; filename="utilisateurs_'.date('Y-m-d').'.csv"',
             ];
 
-            $callback = function() use ($users) {
+            $callback = function () use ($users) {
                 $file = fopen('php://output', 'w');
-                
+
                 // En-têtes
                 fputcsv($file, ['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Date inscription']);
-                
+
                 // Données
                 foreach ($users as $user) {
                     fputcsv($file, [
@@ -489,7 +490,7 @@ class UserController extends Controller
                         $user->created_at->format('Y-m-d'),
                     ]);
                 }
-                
+
                 fclose($file);
             };
 
@@ -500,16 +501,16 @@ class UserController extends Controller
         // (nécessiterait Laravel Excel pour un vrai export Excel)
         $headers = [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="utilisateurs_' . date('Y-m-d') . '.xlsx"',
+            'Content-Disposition' => 'attachment; filename="utilisateurs_'.date('Y-m-d').'.xlsx"',
         ];
 
         // Pour l'instant, on retourne du CSV même pour xlsx
-        $callback = function() use ($users) {
+        $callback = function () use ($users) {
             $file = fopen('php://output', 'w');
-            
+
             // En-têtes
             fputcsv($file, ['ID', 'Nom', 'Prénom', 'Email', 'Téléphone', 'Rôle', 'Statut', 'Ceinture', 'Date inscription']);
-            
+
             // Données
             foreach ($users as $user) {
                 fputcsv($file, [
@@ -524,7 +525,7 @@ class UserController extends Controller
                     $user->created_at->format('Y-m-d'),
                 ]);
             }
-            
+
             fclose($file);
         };
 

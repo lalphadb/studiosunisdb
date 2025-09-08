@@ -26,7 +26,7 @@ class MembreRequest extends FormRequest
                 'max:255',
                 Rule::unique('membres')
                     ->where('ecole_id', $ecoleId)
-                    ->ignore($membreId)
+                    ->ignore($membreId),
             ],
             'telephone' => ['nullable', 'string', 'max:20'],
             'date_naissance' => ['required', 'date', 'before:today'],
@@ -35,41 +35,41 @@ class MembreRequest extends FormRequest
             'ville' => ['nullable', 'string', 'max:100'],
             'code_postal' => ['nullable', 'string', 'regex:/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/i'],
             'province' => ['nullable', 'string', 'max:2'],
-            
+
             // Contact urgence
             'contact_urgence_nom' => ['required', 'string', 'max:200'],
             'contact_urgence_telephone' => ['required', 'string', 'max:20'],
             'contact_urgence_relation' => ['required', 'string', 'max:50'],
-            
+
             // Statut et ceinture
             'statut' => ['required', Rule::in(['actif', 'inactif', 'suspendu'])],
             'ceinture_actuelle_id' => ['nullable', 'exists:belts,id'],
-            
+
             // Informations médicales
             'notes_medicales' => ['nullable', 'string', 'max:1000'],
             'allergies' => ['nullable', 'array'],
             'medicaments' => ['nullable', 'array'],
-            
+
             // Consentements
             'consentement_photos' => ['boolean'],
             'consentement_communications' => ['boolean'],
-            
+
             // Liens familiaux
             'liens_familiaux' => ['nullable', 'array'],
             'liens_familiaux.*.membre_lie_id' => ['required_with:liens_familiaux', 'exists:membres,id'],
             'liens_familiaux.*.type_relation' => ['required_with:liens_familiaux', 'string', 'max:50'],
             'liens_familiaux.*.est_tuteur_legal' => ['boolean'],
             'liens_familiaux.*.contact_urgence' => ['boolean'],
-            
+
             // Champs personnalisés
             'champs_personnalises' => ['nullable', 'array'],
-            
+
             // Photo
             'photo' => ['nullable', 'image', 'max:5120'], // 5MB max
         ];
 
         // Règles spécifiques pour la création
-        if (!$membreId) {
+        if (! $membreId) {
             $rules['user_id'] = ['nullable', 'exists:users,id'];
             $rules['date_inscription'] = ['nullable', 'date'];
         }
@@ -100,17 +100,17 @@ class MembreRequest extends FormRequest
     public function validated($key = null, $default = null): mixed
     {
         $validated = parent::validated($key, $default);
-        
+
         // Ajouter ecole_id automatiquement
-        if (is_array($validated) && !isset($validated['ecole_id'])) {
+        if (is_array($validated) && ! isset($validated['ecole_id'])) {
             $validated['ecole_id'] = auth()->user()->ecole_id ?? 1;
         }
-        
+
         // Gérer les consentements
         if (isset($validated['consentement_photos']) || isset($validated['consentement_communications'])) {
             $validated['date_consentement'] = now();
         }
-        
+
         return $validated;
     }
 }

@@ -143,6 +143,7 @@ return [
         } catch (\Throwable $e) {
             // ignore and fall through to default
         }
+
         return 'dev';
     })()),
 

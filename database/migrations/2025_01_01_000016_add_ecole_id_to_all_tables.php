@@ -2,32 +2,32 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
         $defaultEcoleId = DB::table('ecoles')->first()?->id ?? 1;
-        
+
         // Tables nécessitant ecole_id
         $tables = [
             'membres',
-            'paiements', 
+            'paiements',
             'presences',
             'factures',
             'progression_ceintures',
-            'examens'
+            'examens',
         ];
-        
+
         foreach ($tables as $table) {
-            if (Schema::hasTable($table) && !Schema::hasColumn($table, 'ecole_id')) {
+            if (Schema::hasTable($table) && ! Schema::hasColumn($table, 'ecole_id')) {
                 Schema::table($table, function (Blueprint $t) use ($defaultEcoleId) {
                     $t->foreignId('ecole_id')
-                      ->default($defaultEcoleId)
-                      ->constrained('ecoles')
-                      ->onDelete('cascade');
+                        ->default($defaultEcoleId)
+                        ->constrained('ecoles')
+                        ->onDelete('cascade');
                     $t->index('ecole_id');
                 });
             }
@@ -37,7 +37,7 @@ return new class extends Migration
     public function down(): void
     {
         // Retrait des colonnes
-        $tables = ['membres','paiements','presences','factures','progression_ceintures','examens'];
+        $tables = ['membres', 'paiements', 'presences', 'factures', 'progression_ceintures', 'examens'];
         foreach ($tables as $table) {
             if (Schema::hasColumn($table, 'ecole_id')) {
                 Schema::table($table, function (Blueprint $t) {

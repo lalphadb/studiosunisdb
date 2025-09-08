@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
-use App\Models\Cours;
-use Carbon\Carbon;
 
 class UpdateCoursRequest extends FormRequest
 {
@@ -16,6 +14,7 @@ class UpdateCoursRequest extends FormRequest
     public function authorize(): bool
     {
         $cours = $this->route('cours');
+
         return $this->user()->can('update', $cours);
     }
 
@@ -63,24 +62,24 @@ class UpdateCoursRequest extends FormRequest
         if ($this->has('tarif_mensuel') && $this->input('tarif_mensuel') === '') {
             $this->merge(['tarif_mensuel' => null]);
         }
-        
+
         // Convertir string vide instructeur_id en null
         if ($this->has('instructeur_id') && $this->input('instructeur_id') === '') {
             $this->merge(['instructeur_id' => null]);
         }
-        
+
         // Assurer la cohérence du système de tarification
         if ($this->input('type_tarif') === 'mensuel' && $this->filled('montant')) {
             $this->merge(['tarif_mensuel' => $this->input('montant')]);
-        } elseif ($this->input('type_tarif') !== 'mensuel' && !$this->filled('tarif_mensuel')) {
+        } elseif ($this->input('type_tarif') !== 'mensuel' && ! $this->filled('tarif_mensuel')) {
             $this->merge(['tarif_mensuel' => null]);
         }
-        
+
         // Auto-assignation école (ROBUSTE) - pour Update, garder l'existante ou fallback
-        if (!$this->filled('ecole_id')) {
+        if (! $this->filled('ecole_id')) {
             $user = $this->user();
             $ecoleId = null;
-            
+
             if ($user && isset($user->ecole_id) && $user->ecole_id) {
                 $ecoleId = $user->ecole_id;
             } else {
@@ -92,7 +91,7 @@ class UpdateCoursRequest extends FormRequest
                     $ecoleId = 1; // Mono-école
                 }
             }
-            
+
             $this->merge(['ecole_id' => $ecoleId]);
         }
     }
@@ -115,7 +114,7 @@ class UpdateCoursRequest extends FormRequest
                     $datetimeFin = Carbon::createFromFormat('Y-m-d H:i', "$dateFin $heureFin");
 
                     if ($datetimeFin->lte($datetimeDebut)) {
-                        $validator->errors()->add('date_fin', 
+                        $validator->errors()->add('date_fin',
                             'La date et heure de fin doivent être postérieures à la date et heure de début.'
                         );
                     }

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,17 +14,17 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Ajouter ecole_id seulement si n'existe pas
-            if (!Schema::hasColumn('users', 'ecole_id')) {
+            if (! Schema::hasColumn('users', 'ecole_id')) {
                 $table->foreignId('ecole_id')->nullable()->constrained('ecoles')->onDelete('cascade');
                 $table->index(['ecole_id', 'email_verified_at']); // Performance auth
             }
         });
-        
+
         // Populer avec première école (mono-école)
         $premiereEcole = DB::table('ecoles')->first();
         if ($premiereEcole) {
             DB::table('users')->whereNull('ecole_id')->update(['ecole_id' => $premiereEcole->id]);
-            
+
             // Rendre obligatoire après population
             Schema::table('users', function (Blueprint $table) {
                 $table->foreignId('ecole_id')->nullable(false)->change();

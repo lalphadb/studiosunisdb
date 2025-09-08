@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Presence;
 use App\Models\Cours;
+use App\Models\Presence;
 use App\Models\User; // CORRIGÉ: User au lieu de Membre
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
 
 /**
  * Contrôleur Présences Ultra-Professionnel Laravel 11
@@ -24,17 +22,17 @@ class PresenceController extends Controller
     {
         // CORRIGÉ: Utiliser user au lieu de membre
         $query = Presence::with(['user', 'cours'])
-            ->when($request->date_debut, fn($q, $date) => $q->whereDate('date_cours', '>=', $date))
-            ->when($request->date_fin, fn($q, $date) => $q->whereDate('date_cours', '<=', $date))
-            ->when($request->cours_id, fn($q, $cours) => $q->where('cours_id', $cours))
-            ->when($request->statut, fn($q, $statut) => $q->where('statut', $statut));
+            ->when($request->date_debut, fn ($q, $date) => $q->whereDate('date_cours', '>=', $date))
+            ->when($request->date_fin, fn ($q, $date) => $q->whereDate('date_cours', '<=', $date))
+            ->when($request->cours_id, fn ($q, $cours) => $q->where('cours_id', $cours))
+            ->when($request->statut, fn ($q, $statut) => $q->where('statut', $statut));
 
         $presences = $query->orderBy('date_cours', 'desc')
-                          ->orderBy('heure_arrivee', 'desc')
-                          ->paginate(50);
+            ->orderBy('heure_arrivee', 'desc')
+            ->paginate(50);
 
         $cours = Cours::where('statut', 'actif')->get(['id', 'nom']);
-        
+
         $stats = [
             'total_presences' => Presence::count(),
             'presences_aujourd_hui' => Presence::whereDate('date_cours', today())->count(),
@@ -51,12 +49,12 @@ class PresenceController extends Controller
     {
         // CORRIGÉ: Utiliser users au lieu de membres dans la relation
         $cours = Cours::where('statut', 'actif')
-            ->with(['users' => function($query) {
+            ->with(['users' => function ($query) {
                 $query->where('statut', 'actif');
             }])
             ->get();
 
-        $cours_today = $cours->filter(function($cours) {
+        $cours_today = $cours->filter(function ($cours) {
             // Logique pour filtrer les cours du jour actuel
             // TODO: Implémenter avec les horaires
             return true;
@@ -65,7 +63,7 @@ class PresenceController extends Controller
         return Inertia::render('Presences/Tablette', [
             'cours' => $cours_today->values(),
             'date_cours' => today()->format('Y-m-d'),
-            'message_accueil' => "Bienvenue au dojo! Sélectionnez votre cours."
+            'message_accueil' => 'Bienvenue au dojo! Sélectionnez votre cours.',
         ]);
     }
 
@@ -82,7 +80,7 @@ class PresenceController extends Controller
                 'presences.*.user_id' => 'required|exists:users,id', // CORRIGÉ: user_id au lieu de user_id
                 'presences.*.statut' => 'required|in:present,absent,retard,excuse',
                 'presences.*.heure_arrivee' => 'nullable|date_format:H:i',
-                'presences.*.notes' => 'nullable|string|max:500'
+                'presences.*.notes' => 'nullable|string|max:500',
             ]);
 
             $count = 0;
@@ -91,13 +89,13 @@ class PresenceController extends Controller
                     [
                         'cours_id' => $validated['cours_id'],
                         'user_id' => $presenceData['user_id'], // CORRIGÉ: user_id
-                        'date_cours' => $validated['date_cours']
+                        'date_cours' => $validated['date_cours'],
                     ],
                     [
                         'statut' => $presenceData['statut'],
                         'heure_arrivee' => $presenceData['heure_arrivee'] ?? null,
                         'notes' => $presenceData['notes'] ?? null,
-                        'instructeur_id' => auth()->id()
+                        'instructeur_id' => auth()->id(),
                     ]
                 );
                 $count++;
@@ -106,13 +104,13 @@ class PresenceController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "✅ {$count} présences sauvegardées avec succès!",
-                'count' => $count
+                'count' => $count,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => "❌ Erreur lors de la sauvegarde: " . $e->getMessage()
+                'message' => '❌ Erreur lors de la sauvegarde: '.$e->getMessage(),
             ], 422);
         }
     }
@@ -123,8 +121,8 @@ class PresenceController extends Controller
     public function rapport(Request $request): Response
     {
         $periode = $request->periode ?? 'semaine';
-        
-        $dateDebut = match($periode) {
+
+        $dateDebut = match ($periode) {
             'jour' => today(),
             'semaine' => today()->startOfWeek(),
             'mois' => today()->startOfMonth(),
@@ -135,9 +133,9 @@ class PresenceController extends Controller
         $stats = [
             'total_presences' => Presence::whereDate('date_cours', '>=', $dateDebut)->count(),
             'membres_actifs' => Presence::whereDate('date_cours', '>=', $dateDebut)
-                                      ->distinct('user_id')->count(), // CORRIGÉ: user_id
+                ->distinct('user_id')->count(), // CORRIGÉ: user_id
             'cours_actifs' => Presence::whereDate('date_cours', '>=', $dateDebut)
-                                    ->distinct('cours_id')->count(),
+                ->distinct('cours_id')->count(),
             'taux_presence' => $this->calculateTauxPresence($dateDebut),
             'evolution' => $this->calculateEvolutionPresences($periode),
         ];
@@ -170,11 +168,11 @@ class PresenceController extends Controller
     {
         $debuts_semaine = today()->startOfWeek();
         $presents = Presence::where('statut', 'present')
-                           ->whereDate('date_cours', '>=', $debuts_semaine)
-                           ->count();
-        
+            ->whereDate('date_cours', '>=', $debuts_semaine)
+            ->count();
+
         $total = Presence::whereDate('date_cours', '>=', $debuts_semaine)->count();
-        
+
         return $total > 0 ? round(($presents / $total) * 100, 1) : 0;
     }
 
@@ -184,11 +182,11 @@ class PresenceController extends Controller
     private function calculateTauxPresence($dateDebut): float
     {
         $presents = Presence::where('statut', 'present')
-                           ->whereDate('date_cours', '>=', $dateDebut)
-                           ->count();
-        
+            ->whereDate('date_cours', '>=', $dateDebut)
+            ->count();
+
         $total = Presence::whereDate('date_cours', '>=', $dateDebut)->count();
-        
+
         return $total > 0 ? round(($presents / $total) * 100, 1) : 0;
     }
 
@@ -198,23 +196,25 @@ class PresenceController extends Controller
     private function calculateEvolutionPresences(string $periode): float
     {
         $now = today();
-        
-        $currentCount = match($periode) {
+
+        $currentCount = match ($periode) {
             'jour' => Presence::whereDate('date_cours', $now)->count(),
             'semaine' => Presence::whereBetween('date_cours', [$now->startOfWeek(), $now->endOfWeek()])->count(),
             'mois' => Presence::whereMonth('date_cours', $now->month)->count(),
             default => 0
         };
 
-        $previousCount = match($periode) {
+        $previousCount = match ($periode) {
             'jour' => Presence::whereDate('date_cours', $now->subDay())->count(),
             'semaine' => Presence::whereBetween('date_cours', [$now->subWeek()->startOfWeek(), $now->subWeek()->endOfWeek()])->count(),
             'mois' => Presence::whereMonth('date_cours', $now->subMonth()->month)->count(),
             default => 0
         };
 
-        if ($previousCount === 0) return 100;
-        
+        if ($previousCount === 0) {
+            return 100;
+        }
+
         return round((($currentCount - $previousCount) / $previousCount) * 100, 1);
     }
 }

@@ -1,0 +1,29 @@
+# Ignore backup directories
+backups/
+database/migrations_backup/
+routes/backups/
+
+# Ignore specific backup files
+*_backup.php
+*_corrupt_backup.php
+*.backup
+*.backup.*
+*patch*.php
+
+# Ignore vendor directory (already handled by Pint but good to be explicit)
+vendor/
+
+# Ignore storage and cache
+storage/
+bootstrap/cache/
+
+# Ignore compiled assets
+public/build/
+public/hot
+public/mix-manifest.json
+
+# Ignore specific problematic files
+app/Http/Controllers/CoursController_corrupt_backup.php
+app/Http/Controllers/CoursController_backup.php
+routes/web_backup.php
+resources/views/sections/backup.blade.php

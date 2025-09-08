@@ -17,7 +17,7 @@ class LienFamilial extends Model
         'membre_lie_id',
         'type_relation',
         'famille_id',
-        'notes'
+        'notes',
     ];
 
     /**
@@ -33,7 +33,7 @@ class LienFamilial extends Model
         'oncle_tante' => 'Oncle/Tante',
         'neveu_niece' => 'Neveu/Nièce',
         'cousin' => 'Cousin(e)',
-        'autre' => 'Autre'
+        'autre' => 'Autre',
     ];
 
     /**
@@ -74,8 +74,8 @@ class LienFamilial extends Model
     public static function getMembresParFamille($familleId)
     {
         return self::where('famille_id', $familleId)
-                   ->with(['membrePrincipal', 'membreLie'])
-                   ->get();
+            ->with(['membrePrincipal', 'membreLie'])
+            ->get();
     }
 
     /**
@@ -94,7 +94,7 @@ class LienFamilial extends Model
             'oncle_tante' => 'neveu_niece',
             'neveu_niece' => 'oncle_tante',
             'cousin' => 'cousin',
-            'autre' => 'autre'
+            'autre' => 'autre',
         ];
 
         // Créer le lien principal
@@ -103,7 +103,7 @@ class LienFamilial extends Model
             'membre_lie_id' => $membreLieId,
             'type_relation' => $typeRelation,
             'famille_id' => $familleId,
-            'notes' => $notes
+            'notes' => $notes,
         ]);
 
         // Créer le lien inverse si différent
@@ -115,7 +115,7 @@ class LienFamilial extends Model
                 'membre_lie_id' => $membrePrincipalId,
                 'type_relation' => $typeRelationInverse,
                 'famille_id' => $familleId,
-                'notes' => $notes
+                'notes' => $notes,
             ]);
         }
 

@@ -16,17 +16,17 @@ class DatabaseSeeder extends Seeder
         $this->command->info('║     SEEDING STUDIOSDB - DONNÉES DE BASE   ║');
         $this->command->info('╚══════════════════════════════════════════╝');
         $this->command->info('');
-        
+
         $this->command->info('🏢 Création de l\'école par défaut...');
-        
+
         // 2. Rôles et permissions (OBLIGATOIRE)
         $this->command->info('📋 Création des rôles et permissions...');
         $this->call(RolesAndSuperAdminSeeder::class);
-        
+
         // 3. Ceintures officielles (OBLIGATOIRE)
         $this->command->info('🥋 Création des 21 ceintures officielles...');
         $this->call(CeinturesSeeder::class);
-        
+
         $this->command->info('');
         $this->command->info('╔══════════════════════════════════════════╗');
         $this->command->info('║         ✅ SEEDING TERMINÉ !              ║');

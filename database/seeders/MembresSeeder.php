@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Membre;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class MembresSeeder extends Seeder
@@ -44,7 +43,7 @@ class MembresSeeder extends Seeder
                     'consentement_photos' => true,
                     'consentement_communications' => true,
                     'date_consentement' => now(),
-                ]
+                ],
             ],
             [
                 'user' => [
@@ -73,7 +72,7 @@ class MembresSeeder extends Seeder
                     'consentement_photos' => true,
                     'consentement_communications' => true,
                     'date_consentement' => now(),
-                ]
+                ],
             ],
             [
                 'user' => [
@@ -102,7 +101,7 @@ class MembresSeeder extends Seeder
                     'consentement_photos' => true,
                     'consentement_communications' => true,
                     'date_consentement' => now(),
-                ]
+                ],
             ],
             [
                 'user' => [
@@ -131,7 +130,7 @@ class MembresSeeder extends Seeder
                     'consentement_photos' => true,
                     'consentement_communications' => true,
                     'date_consentement' => now(),
-                ]
+                ],
             ],
             [
                 'user' => [
@@ -160,7 +159,7 @@ class MembresSeeder extends Seeder
                     'consentement_photos' => true,
                     'consentement_communications' => true,
                     'date_consentement' => now(),
-                ]
+                ],
             ],
         ];
 
@@ -173,6 +172,6 @@ class MembresSeeder extends Seeder
             Membre::create($data['membre']);
         }
 
-        $this->command->info('✅ ' . count($membres) . ' membres de test créés !');
+        $this->command->info('✅ '.count($membres).' membres de test créés !');
     }
 }

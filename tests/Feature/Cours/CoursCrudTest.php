@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Cours;
 
-use App\Models\User;
 use App\Models\Cours;
 use App\Models\Membre;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,14 +22,19 @@ class CoursCrudTest extends TestCase
     {
         $u = User::factory()->create();
         // If roles system exists, attach instructeur
-        if (method_exists($u, 'assignRole')) { $u->assignRole('instructeur'); }
+        if (method_exists($u, 'assignRole')) {
+            $u->assignRole('instructeur');
+        }
+
         return $u;
     }
 
     public function test_user_can_create_course()
     {
         $user = User::factory()->create();
-        if (method_exists($user,'assignRole')) { $user->assignRole('admin_ecole'); }
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole('admin_ecole');
+        }
         $this->actingAs($user);
 
         $payload = [
@@ -57,7 +62,9 @@ class CoursCrudTest extends TestCase
     public function test_course_duplicate_creates_inactive_copy()
     {
         $user = User::factory()->create();
-        if (method_exists($user,'assignRole')) { $user->assignRole('admin_ecole'); }
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole('admin_ecole');
+        }
         $this->actingAs($user);
 
         $cours = Cours::factory()->create([
@@ -82,7 +89,9 @@ class CoursCrudTest extends TestCase
     public function test_enrollment_flow()
     {
         $admin = User::factory()->create();
-        if (method_exists($admin,'assignRole')) { $admin->assignRole('admin_ecole'); }
+        if (method_exists($admin, 'assignRole')) {
+            $admin->assignRole('admin_ecole');
+        }
         $this->actingAs($admin);
 
         $cours = Cours::factory()->create([
@@ -99,17 +108,25 @@ class CoursCrudTest extends TestCase
         ]);
 
         $membreUser = User::factory()->create();
-        if (method_exists($membreUser,'assignRole')) { $membreUser->assignRole('membre'); }
+        if (method_exists($membreUser, 'assignRole')) {
+            $membreUser->assignRole('membre');
+        }
         // Suppose relation membre existe; sinon skip
         $membre = $membreUser->membre ?? null;
-        if (!$membre && class_exists(\App\Models\Membre::class)) {
+        if (! $membre && class_exists(\App\Models\Membre::class)) {
             // fallback create membre si factory existe
-            try { $membre = Membre::factory()->create(['user_id'=>$membreUser->id]); } catch (\Throwable $e) { $this->markTestSkipped('Factory Membre manquante'); }
+            try {
+                $membre = Membre::factory()->create(['user_id' => $membreUser->id]);
+            } catch (\Throwable $e) {
+                $this->markTestSkipped('Factory Membre manquante');
+            }
         }
-        if (!$membre) { $this->markTestSkipped('Membre model indisponible'); }
+        if (! $membre) {
+            $this->markTestSkipped('Membre model indisponible');
+        }
 
-        $res = $this->post(route('cours.inscrire', $cours), ['membre_id'=>$membre->id]);
+        $res = $this->post(route('cours.inscrire', $cours), ['membre_id' => $membre->id]);
         $res->assertStatus(302);
-        $this->assertDatabaseHas('cours_membres', ['cours_id'=>$cours->id,'membre_id'=>$membre->id,'statut'=>'actif']);
+        $this->assertDatabaseHas('cours_membres', ['cours_id' => $cours->id, 'membre_id' => $membre->id, 'statut' => 'actif']);
     }
 }

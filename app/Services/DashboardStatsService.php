@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\{Membre, Cours, Presence, Paiement};
-use Illuminate\Support\Facades\{DB, Cache, Log};
+use App\Models\Cours;
+use App\Models\Membre;
+use App\Models\Paiement;
+use App\Models\Presence;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Service Statistiques Dashboard - StudiosDB v6 Pro
@@ -17,7 +21,7 @@ class DashboardStatsService
     public function getStatsForUser($user): array
     {
         $cacheKey = "dashboard_stats_user_{$user->id}";
-        
+
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user) {
             return $this->calculateStats($user);
         });
@@ -93,9 +97,12 @@ class DashboardStatsService
         try {
             $currentMonth = Membre::whereDate('date_inscription', '>=', now()->startOfMonth())->count();
             $lastMonth = Membre::whereDate('date_inscription', '>=', now()->subMonth()->startOfMonth())
-                              ->whereDate('date_inscription', '<', now()->startOfMonth())->count();
+                ->whereDate('date_inscription', '<', now()->startOfMonth())->count();
 
-            if ($lastMonth === 0) return $currentMonth > 0 ? 100.0 : 0.0;
+            if ($lastMonth === 0) {
+                return $currentMonth > 0 ? 100.0 : 0.0;
+            }
+
             return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
         } catch (\Exception $e) {
             return 8.5; // Croissance réaliste par défaut
@@ -107,12 +114,14 @@ class DashboardStatsService
         try {
             $thisMonth = Carbon::now()->startOfMonth();
             $totalPresences = Presence::whereBetween('date_cours', [$thisMonth, now()])->count();
-            
-            if ($totalPresences === 0) return 87.5;
-            
+
+            if ($totalPresences === 0) {
+                return 87.5;
+            }
+
             $presentCount = Presence::whereBetween('date_cours', [$thisMonth, now()])
-                                  ->where('statut', 'present')->count();
-            
+                ->where('statut', 'present')->count();
+
             return round(($presentCount / $totalPresences) * 100, 1);
         } catch (\Exception $e) {
             return 87.5; // Taux réaliste par défaut
@@ -124,16 +133,19 @@ class DashboardStatsService
         try {
             $thisMonth = Carbon::now()->startOfMonth();
             $lastMonth = Carbon::now()->subMonth()->startOfMonth();
-            
+
             $currentRevenue = Paiement::where('statut', 'paye')
                 ->whereBetween('date_paiement', [$thisMonth, now()])
                 ->sum('montant') ?? 0;
-                
+
             $lastRevenue = Paiement::where('statut', 'paye')
                 ->whereBetween('date_paiement', [$lastMonth, $thisMonth])
                 ->sum('montant') ?? 0;
-            
-            if ($lastRevenue == 0) return $currentRevenue > 0 ? 100.0 : 0.0;
+
+            if ($lastRevenue == 0) {
+                return $currentRevenue > 0 ? 100.0 : 0.0;
+            }
+
             return round((($currentRevenue - $lastRevenue) / $lastRevenue) * 100, 1);
         } catch (\Exception $e) {
             return 12.3; // Croissance réaliste par défaut

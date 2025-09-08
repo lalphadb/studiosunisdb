@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Exports;
 
 use App\Models\Membre;
 use Carbon\CarbonImmutable;
-use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -32,30 +33,30 @@ class MembersExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             ->with([
                 'user:id,email',
                 'ceintureActuelle:id,name,color_hex',
-                'ecole:id,nom'
+                'ecole:id,nom',
             ])
             ->where('ecole_id', auth()->user()->ecole_id);
 
         // Applique les filtres
-        if (!empty($this->filters['q'])) {
+        if (! empty($this->filters['q'])) {
             $q = $this->filters['q'];
             $query->where(function ($w) use ($q) {
                 $w->where('prenom', 'like', "%{$q}%")
-                  ->orWhere('nom', 'like', "%{$q}%")
-                  ->orWhere('telephone', 'like', "%{$q}%")
-                  ->orWhereHas('user', fn($u) => $u->where('email', 'like', "%{$q}%"));
+                    ->orWhere('nom', 'like', "%{$q}%")
+                    ->orWhere('telephone', 'like', "%{$q}%")
+                    ->orWhereHas('user', fn ($u) => $u->where('email', 'like', "%{$q}%"));
             });
         }
 
-        if (!empty($this->filters['statut'])) {
+        if (! empty($this->filters['statut'])) {
             $query->where('statut', $this->filters['statut']);
         }
 
-        if (!empty($this->filters['ceinture_id'])) {
+        if (! empty($this->filters['ceinture_id'])) {
             $query->where('ceinture_actuelle_id', $this->filters['ceinture_id']);
         }
 
-        if (!empty($this->filters['age_group'])) {
+        if (! empty($this->filters['age_group'])) {
             if ($this->filters['age_group'] === 'mineur') {
                 $query->whereDate('date_naissance', '>', CarbonImmutable::now()->subYears(18)->toDateString());
             } elseif ($this->filters['age_group'] === 'adulte') {
@@ -175,7 +176,7 @@ class MembersExport implements FromQuery, WithHeadings, WithMapping, WithStyles
      */
     private function formatSexe(?string $sexe): string
     {
-        return match($sexe) {
+        return match ($sexe) {
             'M' => 'Masculin',
             'F' => 'Féminin',
             default => 'Autre',
@@ -187,7 +188,7 @@ class MembersExport implements FromQuery, WithHeadings, WithMapping, WithStyles
      */
     private function formatStatut(?string $statut): string
     {
-        return match($statut) {
+        return match ($statut) {
             'actif' => 'Actif',
             'inactif' => 'Inactif',
             'suspendu' => 'Suspendu',

@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Membre;
 use App\Models\Ceinture;
+use App\Models\Membre;
 use App\Models\ProgressionCeinture;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProgressionCeintureService
 {
@@ -16,15 +15,15 @@ class ProgressionCeintureService
      * Faire progresser un membre vers une nouvelle ceinture
      */
     public function progresserMembre(
-        Membre $membre, 
-        Ceinture $nouvelleCeinture, 
-        string $notes = null, 
+        Membre $membre,
+        Ceinture $nouvelleCeinture,
+        ?string $notes = null,
         string $typeProgression = 'attribution_manuelle'
     ): bool {
-        
+
         // Vérifications de sécurité
         $this->validerProgression($membre, $nouvelleCeinture);
-        
+
         return DB::transaction(function () use ($membre, $nouvelleCeinture, $notes, $typeProgression) {
             // Créer l'entrée de progression dans la table examens/progressions existante
             // Pour l'instant on utilise la table progression_ceintures existante
@@ -40,12 +39,12 @@ class ProgressionCeintureService
                 'notes_instructeur' => $notes,
                 'note_finale' => 100, // Attribution manuelle = réussite
             ]);
-            
+
             // Mettre à jour la ceinture actuelle du membre
             $membre->update([
-                'ceinture_actuelle_id' => $nouvelleCeinture->id
+                'ceinture_actuelle_id' => $nouvelleCeinture->id,
             ]);
-            
+
             // Log d'audit
             if (function_exists('activity')) {
                 activity('progression_ceintures')
@@ -61,11 +60,11 @@ class ProgressionCeintureService
                     ])
                     ->log('progression_ceinture.created');
             }
-            
+
             return true;
         });
     }
-    
+
     /**
      * Vérifier si une progression est valide
      */
@@ -77,7 +76,7 @@ class ProgressionCeintureService
             'criteres_requis' => [],
             'criteres_atteints' => [],
         ];
-        
+
         // Vérifier si la ceinture suivante est logique
         if ($membre->ceinture_actuelle_id) {
             $ceintureActuelle = $membre->ceintureActuelle;
@@ -85,7 +84,7 @@ class ProgressionCeintureService
                 $validations['peut_progresser'] = false;
                 $validations['raisons_blocage'][] = 'La nouvelle ceinture doit être supérieure à la ceinture actuelle';
             }
-            
+
             // Vérifier si on ne "saute" pas de ceintures (optionnel en mode manuel)
             $prochaineCeinture = $ceintureActuelle->suivante();
             if ($prochaineCeinture && $nouvelleCeinture->id !== $prochaineCeinture->id) {
@@ -93,36 +92,36 @@ class ProgressionCeintureService
                 // Note: on n'empêche pas la progression, juste un avertissement
             }
         }
-        
+
         // Vérifier les critères minimum de temps
         $derniereProgression = $this->getDerniereProgression($membre);
         if ($derniereProgression) {
             $tempsEcoule = Carbon::parse($derniereProgression->date_examen)->diffInMonths(now());
             $tempsRequis = $nouvelleCeinture->minimum_duration_months;
-            
+
             $validations['criteres_requis']['temps_minimum'] = "{$tempsRequis} mois";
             $validations['criteres_atteints']['temps_ecoule'] = "{$tempsEcoule} mois";
-            
+
             if ($tempsEcoule < $tempsRequis) {
                 $validations['raisons_blocage'][] = "Temps minimum recommandé non atteint ({$tempsEcoule}/{$tempsRequis} mois)";
                 // Note: en mode manuel, on peut forcer
             }
         }
-        
+
         // Vérifier les présences (approximatif si pas de système de présences détaillé)
         $presencesRequises = $nouvelleCeinture->minimum_attendances;
         $presencesActuelles = $membre->presences()->count(); // À ajuster selon système réel
-        
+
         $validations['criteres_requis']['presences_minimum'] = $presencesRequises;
         $validations['criteres_atteints']['presences_actuelles'] = $presencesActuelles;
-        
+
         if ($presencesActuelles < $presencesRequises) {
             $validations['raisons_blocage'][] = "Présences recommandées insuffisantes ({$presencesActuelles}/{$presencesRequises})";
         }
-        
+
         return $validations;
     }
-    
+
     /**
      * Obtenir l'historique des progressions d'un membre
      */
@@ -133,7 +132,7 @@ class ProgressionCeintureService
             ->orderBy('created_at', 'desc') // Utiliser created_at au lieu de date_obtention
             ->get();
     }
-    
+
     /**
      * Obtenir la dernière progression d'un membre
      */
@@ -143,7 +142,7 @@ class ProgressionCeintureService
             ->orderBy('created_at', 'desc')
             ->first();
     }
-    
+
     /**
      * Obtenir les progressions récentes (pour le dashboard)
      */
@@ -155,7 +154,7 @@ class ProgressionCeintureService
             ->limit($limit)
             ->get();
     }
-    
+
     /**
      * Obtenir les statistiques de progression
      */
@@ -171,7 +170,7 @@ class ProgressionCeintureService
                 ->count(),
             'total_progressions' => ProgressionCeinture::where('statut', 'certifie')->count(),
         ];
-        
+
         // Répartition par ceinture
         $stats['repartition_ceintures'] = Ceinture::withCount('membres')->get()
             ->map(function ($ceinture) {
@@ -181,10 +180,10 @@ class ProgressionCeintureService
                     'nombre_membres' => $ceinture->membres_count,
                 ];
             });
-            
+
         return $stats;
     }
-    
+
     /**
      * Suggestions de progression automatique
      */
@@ -194,31 +193,36 @@ class ProgressionCeintureService
             ->whereHas('ceintureActuelle')
             ->get()
             ->filter(function ($membre) {
-                if (!$membre->ceintureActuelle) return false;
-                
+                if (! $membre->ceintureActuelle) {
+                    return false;
+                }
+
                 $prochaineCeinture = $membre->ceintureActuelle->suivante();
-                if (!$prochaineCeinture) return false;
-                
+                if (! $prochaineCeinture) {
+                    return false;
+                }
+
                 $validation = $this->peutProgresser($membre, $prochaineCeinture);
+
                 // Suggérer même si pas parfait (mode manuel)
                 return count($validation['raisons_blocage']) <= 2; // Tolérance
             })
             ->values();
     }
-    
+
     /**
      * Valider une progression (méthode privée)
      */
     private function validerProgression(Membre $membre, Ceinture $nouvelleCeinture): void
     {
-        if (!$membre->exists) {
+        if (! $membre->exists) {
             throw new \InvalidArgumentException('Le membre doit exister en base de données');
         }
-        
-        if (!$nouvelleCeinture->active) {
+
+        if (! $nouvelleCeinture->active) {
             throw new \InvalidArgumentException('La ceinture cible doit être active');
         }
-        
+
         // Les validations métier peuvent être optionnelles en mode manuel
         // mais on garde les validations de sécurité de base
     }

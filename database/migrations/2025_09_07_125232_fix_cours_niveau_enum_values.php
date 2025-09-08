@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -22,7 +20,7 @@ return new class extends Migration
             'competition',
             'a_la_carte'
         ) NOT NULL DEFAULT 'debutant'");
-        
+
         // Migrer les données existantes si nécessaire
         DB::update("UPDATE cours SET niveau = 'competition' WHERE niveau = 'competiteur'");
     }
@@ -34,7 +32,7 @@ return new class extends Migration
     {
         // Restaurer l'ancien enum si rollback nécessaire
         DB::update("UPDATE cours SET niveau = 'competiteur' WHERE niveau = 'competition'");
-        
+
         DB::statement("ALTER TABLE cours MODIFY COLUMN niveau ENUM(
             'debutant',
             'intermediaire', 

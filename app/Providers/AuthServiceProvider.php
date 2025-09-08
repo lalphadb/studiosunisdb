@@ -2,25 +2,25 @@
 
 namespace App\Providers;
 
+use App\Models\Ceinture;
+use App\Models\Cours;
+use App\Models\Paiement;
+use App\Models\Presence;
+use App\Models\User;
+use App\Policies\CeinturePolicy;
+use App\Policies\CoursPolicy;
+use App\Policies\PaiementPolicy;
+use App\Policies\PresencePolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Cours;
-use App\Models\Presence;
-use App\Models\Paiement;
-use App\Models\Ceinture;
-use App\Models\User;
-use App\Policies\CoursPolicy;
-use App\Policies\PresencePolicy;
-use App\Policies\PaiementPolicy;
-use App\Policies\CeinturePolicy;
-use App\Policies\UserPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
         // SUPPRIMÉ: Membre::class => MembrePolicy::class (fusionné dans User)
-        User::class     => UserPolicy::class,
-        Cours::class    => CoursPolicy::class,
+        User::class => UserPolicy::class,
+        Cours::class => CoursPolicy::class,
         Presence::class => PresencePolicy::class,
         Paiement::class => PaiementPolicy::class,
         Ceinture::class => CeinturePolicy::class,
@@ -34,6 +34,7 @@ class AuthServiceProvider extends ServiceProvider
             if ($user->hasRole('superadmin')) {
                 return true;
             }
+
             return null;
         });
 

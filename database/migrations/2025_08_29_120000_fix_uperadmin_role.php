@@ -3,7 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         // Merge any accidental 'uperadmin' role into 'superadmin'
@@ -11,12 +12,15 @@ return new class extends Migration {
         $modelHasRoles = config('permission.table_names.model_has_roles', 'model_has_roles');
 
         $uper = DB::table($rolesTable)->where('name', 'uperadmin')->first();
-        if (!$uper) return; // nothing to do
+        if (! $uper) {
+            return;
+        } // nothing to do
 
         $super = DB::table($rolesTable)->where('name', 'superadmin')->first();
-        if (!$super) {
+        if (! $super) {
             // Rename directly if superadmin does not exist
             DB::table($rolesTable)->where('id', $uper->id)->update(['name' => 'superadmin']);
+
             return;
         }
 

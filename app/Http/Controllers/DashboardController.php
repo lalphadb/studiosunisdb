@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
-use Illuminate\Http\Request;
-use App\Models\User;
 use App\Models\Cours;
-use App\Models\Presence;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -16,15 +15,15 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $role = $user->getRoleNames()->first() ?: 'membre';
-        
+
         // Dashboard adaptatif selon le rôle
         if ($role === 'membre') {
             return $this->dashboardMembre($user);
         }
-        
+
         return $this->dashboardAdmin($user, $role);
     }
-    
+
     private function dashboardMembre($user)
     {
         // CORRIGÉ: Utiliser directement $user (fusion User + Membre)
@@ -37,17 +36,17 @@ class DashboardController extends Controller
                 'attendance_rate' => $this->calculateMemberAttendance($user),
                 'courses_count' => $user->cours()->count(),
                 'next_course' => $this->getNextCourse($user),
-                'belts_history' => $this->getBeltsHistory($user)
+                'belts_history' => $this->getBeltsHistory($user),
             ];
         }
-        
+
         return Inertia::render('Dashboard', [
             'role' => 'membre',
             'memberData' => $memberData,
             'stats' => [], // Pas de stats globales pour les membres
         ]);
     }
-    
+
     private function dashboardAdmin($user, $role)
     {
         // CORRIGÉ: Utiliser User::membresKarate() au lieu de Membre::
@@ -58,17 +57,17 @@ class DashboardController extends Controller
             'paiements_retard' => 7, // Placeholder
             'revenus_mois' => $this->calculateMonthlyRevenue(),
         ];
-        
+
         // Activités récentes
         $activities = $this->getRecentActivities();
-        
+
         return Inertia::render('Dashboard', [
             'role' => $role,
             'stats' => $stats,
             'recentActivities' => $activities,
         ]);
     }
-    
+
     private function calculateMemberAttendance($user)
     {
         try {
@@ -78,45 +77,45 @@ class DashboardController extends Controller
                 ->whereMonth('date_cours', Carbon::now()->month)
                 ->where('statut', 'present')
                 ->count();
-                
+
             $totalCourses = DB::table('presences')
                 ->where('user_id', $user->id)
                 ->whereMonth('date_cours', Carbon::now()->month)
                 ->count();
-                
+
             return $totalCourses > 0 ? round(($totalPresences / $totalCourses) * 100) : 0;
         } catch (\Exception $e) {
             return 87; // Valeur par défaut
         }
     }
-    
+
     private function getNextCourse($user)
     {
         try {
             $nextCourse = $user->cours()
                 ->where('jour_semaine', '>=', Carbon::now()->dayOfWeek)
                 ->first();
-                
+
             if ($nextCourse) {
                 return [
                     'name' => $nextCourse->nom,
                     'day' => $nextCourse->jour_semaine_label,
-                    'time' => Carbon::parse($nextCourse->heure_debut)->format('H:i') . ' - ' . Carbon::parse($nextCourse->heure_fin)->format('H:i'),
-                    'instructor' => $nextCourse->instructeur?->name ?? 'Non assigné'
+                    'time' => Carbon::parse($nextCourse->heure_debut)->format('H:i').' - '.Carbon::parse($nextCourse->heure_fin)->format('H:i'),
+                    'instructor' => $nextCourse->instructeur?->name ?? 'Non assigné',
                 ];
             }
         } catch (\Exception $e) {
             // Fallback
         }
-        
+
         return [
             'name' => 'Karaté Intermédiaire',
             'day' => 'Mardi 10 septembre',
             'time' => '19h00 - 20h30',
-            'instructor' => 'Sensei Martin'
+            'instructor' => 'Sensei Martin',
         ];
     }
-    
+
     private function getBeltsHistory($user)
     {
         try {
@@ -124,14 +123,14 @@ class DashboardController extends Controller
                 ->with('ceintureNouvelle')
                 ->orderBy('date_obtention')
                 ->get();
-                
-            return $progressions->map(function($progression) use ($user) {
+
+            return $progressions->map(function ($progression) use ($user) {
                 return [
                     'id' => $progression->id,
                     'name' => $progression->ceintureNouvelle->name,
                     'color' => $progression->ceintureNouvelle->color_hex,
                     'date' => $progression->date_obtention->format('d M Y'),
-                    'current' => $progression->ceintureNouvelle->id === $user->ceinture_actuelle_id
+                    'current' => $progression->ceintureNouvelle->id === $user->ceinture_actuelle_id,
                 ];
             })->toArray();
         } catch (\Exception $e) {
@@ -139,11 +138,11 @@ class DashboardController extends Controller
             return [
                 ['id' => 1, 'name' => 'Ceinture Blanche', 'color' => '#FFFFFF', 'date' => '15 janv. 2024', 'current' => false],
                 ['id' => 2, 'name' => 'Ceinture Jaune', 'color' => '#FFD700', 'date' => '15 févr. 2024', 'current' => false],
-                ['id' => 5, 'name' => 'Ceinture Bleue', 'color' => '#0066CC', 'date' => '15 mai 2024', 'current' => true]
+                ['id' => 5, 'name' => 'Ceinture Bleue', 'color' => '#0066CC', 'date' => '15 mai 2024', 'current' => true],
             ];
         }
     }
-    
+
     private function calculatePresenceRate()
     {
         // Calculer le taux de présence réel si les tables existent
@@ -152,17 +151,17 @@ class DashboardController extends Controller
                 ->whereMonth('date_cours', Carbon::now()->month)
                 ->where('statut', 'present')
                 ->count();
-                
+
             $totalPossible = DB::table('presences')
                 ->whereMonth('date_cours', Carbon::now()->month)
                 ->count();
-                
+
             return $totalPossible > 0 ? round(($totalPresences / $totalPossible) * 100) : 92;
         } catch (\Exception $e) {
             return 92; // Valeur par défaut
         }
     }
-    
+
     private function calculateMonthlyRevenue()
     {
         // Calculer le revenu mensuel réel si la table existe
@@ -171,13 +170,13 @@ class DashboardController extends Controller
                 ->whereMonth('date_paiement', Carbon::now()->month)
                 ->where('statut', 'complete')
                 ->sum('montant');
-                
+
             return $revenue > 0 ? $revenue : 12450;
         } catch (\Exception $e) {
             return 12450; // Valeur par défaut
         }
     }
-    
+
     private function getRecentActivities()
     {
         return [
@@ -186,25 +185,25 @@ class DashboardController extends Controller
                 'title' => 'Nouveau membre inscrit',
                 'time' => 'Il y a 5 minutes',
                 'icon' => 'UserPlusIcon',
-                'color' => 'bg-green-500/20'
+                'color' => 'bg-green-500/20',
             ],
             [
                 'id' => 2,
                 'title' => 'Cours de karaté avancé terminé',
                 'time' => 'Il y a 1 heure',
                 'icon' => 'CheckIcon',
-                'color' => 'bg-blue-500/20'
+                'color' => 'bg-blue-500/20',
             ],
             [
                 'id' => 3,
                 'title' => 'Paiement reçu - 150$',
                 'time' => 'Il y a 2 heures',
                 'icon' => 'CurrencyDollarIcon',
-                'color' => 'bg-amber-500/20'
-            ]
+                'color' => 'bg-amber-500/20',
+            ],
         ];
     }
-    
+
     private function getUpcomingCours()
     {
         $cours = Cours::with('instructeur')
@@ -213,22 +212,22 @@ class DashboardController extends Controller
             ->orderBy('heure_debut')
             ->limit(3)
             ->get();
-            
-        return $cours->map(function($c) {
+
+        return $cours->map(function ($c) {
             return [
                 'id' => $c->id,
                 'name' => $c->nom,
-                'time' => Carbon::parse($c->heure_debut)->format('H:i') . ' - ' . Carbon::parse($c->heure_fin)->format('H:i'),
+                'time' => Carbon::parse($c->heure_debut)->format('H:i').' - '.Carbon::parse($c->heure_fin)->format('H:i'),
                 'students' => $c->members_actifs_count ?? rand(8, 25),  // Utilise le count
                 'level' => $this->getNiveauLabel($c->niveau),
                 'levelColor' => $this->getNiveauColor($c->niveau),
             ];
         })->toArray();
     }
-    
+
     private function getNiveauLabel($niveau)
     {
-        return match($niveau) {
+        return match ($niveau) {
             'debutant' => 'Ceinture blanche',
             'intermediaire' => 'Ceinture verte',
             'avance' => 'Ceinture marron',
@@ -236,10 +235,10 @@ class DashboardController extends Controller
             default => 'Tous niveaux'
         };
     }
-    
+
     private function getNiveauColor($niveau)
     {
-        return match($niveau) {
+        return match ($niveau) {
             'debutant' => 'bg-slate-600 text-white',
             'intermediaire' => 'bg-green-600 text-white',
             'avance' => 'bg-amber-700 text-white',

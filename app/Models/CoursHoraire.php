@@ -20,12 +20,12 @@ class CoursHoraire extends Model
         'heure_fin',
         'salle',
         'instructeur_id',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [
         'heure_debut' => 'datetime:H:i',
-        'heure_fin' => 'datetime:H:i'
+        'heure_fin' => 'datetime:H:i',
     ];
 
     /**
@@ -38,7 +38,7 @@ class CoursHoraire extends Model
         'jeudi' => 'Jeudi',
         'vendredi' => 'Vendredi',
         'samedi' => 'Samedi',
-        'dimanche' => 'Dimanche'
+        'dimanche' => 'Dimanche',
     ];
 
     /**
@@ -70,7 +70,7 @@ class CoursHoraire extends Model
      */
     public function scopeActifs($query)
     {
-        return $query->whereHas('cours', function($q) {
+        return $query->whereHas('cours', function ($q) {
             $q->where('statut', 'actif');
         });
     }
@@ -87,7 +87,7 @@ class CoursHoraire extends Model
             'jeudi' => '🌙',
             'vendredi' => '✨',
             'samedi' => '🌈',
-            'dimanche' => '🌸'
+            'dimanche' => '🌸',
         ];
 
         return $emojis[$this->jour] ?? '📅';
@@ -124,13 +124,13 @@ class CoursHoraire extends Model
     {
         $query = self::where('jour', $jour)
             ->where('cours_id', $this->cours_id)
-            ->where(function($q) use ($heureDebut, $heureFin) {
+            ->where(function ($q) use ($heureDebut, $heureFin) {
                 $q->whereBetween('heure_debut', [$heureDebut, $heureFin])
-                  ->orWhereBetween('heure_fin', [$heureDebut, $heureFin])
-                  ->orWhere(function($subQ) use ($heureDebut, $heureFin) {
-                      $subQ->where('heure_debut', '<=', $heureDebut)
-                           ->where('heure_fin', '>=', $heureFin);
-                  });
+                    ->orWhereBetween('heure_fin', [$heureDebut, $heureFin])
+                    ->orWhere(function ($subQ) use ($heureDebut, $heureFin) {
+                        $subQ->where('heure_debut', '<=', $heureDebut)
+                            ->where('heure_fin', '>=', $heureFin);
+                    });
             });
 
         if ($excludeId) {
@@ -166,7 +166,7 @@ class CoursHoraire extends Model
             $semaine[$jour] = [
                 'libelle' => $libelle,
                 'emoji' => ['lundi' => '🌅', 'mardi' => '🌞', 'mercredi' => '⭐', 'jeudi' => '🌙', 'vendredi' => '✨', 'samedi' => '🌈', 'dimanche' => '🌸'][$jour],
-                'horaires' => $horaires->where('jour', $jour)->values()
+                'horaires' => $horaires->where('jour', $jour)->values(),
             ];
         }
 

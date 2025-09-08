@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Presence extends Model
 {
@@ -56,13 +56,15 @@ class Presence extends Model
     public function scopeParMois($query, $mois, $annee = null)
     {
         $annee = $annee ?: now()->year;
+
         return $query->whereYear('date_cours', $annee)
-                    ->whereMonth('date_cours', $mois);
+            ->whereMonth('date_cours', $mois);
     }
 
     public function scopeParSemaine($query, $semaine = null)
     {
         $semaine = $semaine ?: now()->weekOfYear;
+
         return $query->whereRaw('WEEK(date_cours) = ?', [$semaine]);
     }
 
@@ -84,7 +86,7 @@ class Presence extends Model
 
     public function getCouleurStatutAttribute(): string
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'present' => '#10B981', // Vert
             'retard' => '#F59E0B',  // Orange
             'excuse' => '#6B7280',  // Gris
@@ -95,7 +97,7 @@ class Presence extends Model
 
     public function getIconeStatutAttribute(): string
     {
-        return match($this->statut) {
+        return match ($this->statut) {
             'present' => '✓',
             'retard' => '⏰',
             'excuse' => '📝',
@@ -106,8 +108,8 @@ class Presence extends Model
 
     // Méthodes utilitaires
     public static function marquerPresence(
-        int $coursId, 
-        int $membreId, 
+        int $coursId,
+        int $membreId,
         string $statut = 'present',
         ?string $notes = null
     ): self {
@@ -126,10 +128,10 @@ class Presence extends Model
         );
     }
 
-    public static function statistiquesParMembre(int $membreId, int $mois = null): array
+    public static function statistiquesParMembre(int $membreId, ?int $mois = null): array
     {
         $query = self::where('user_id', $membreId);
-        
+
         if ($mois) {
             $query->whereMonth('date_cours', $mois);
         }

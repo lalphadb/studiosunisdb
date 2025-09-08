@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\User;
-use App\Models\Membre;
-use function Pest\Laravel\{actingAs,get,post,put,delete};
+
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
 it('liste les membres', function () {
     $user = User::factory()->create();

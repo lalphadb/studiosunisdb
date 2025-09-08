@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProgressionCeinture extends Model
 {
-    use HasFactory, BelongsToEcole;
+    use BelongsToEcole, HasFactory;
 
     protected $table = 'progression_ceintures';
 
@@ -37,10 +37,15 @@ class ProgressionCeinture extends Model
 
     // Statuts possibles
     const STATUT_ELIGIBLE = 'eligible';
+
     const STATUT_CANDIDAT = 'candidat';
+
     const STATUT_EXAMEN_PLANIFIE = 'examen_planifie';
+
     const STATUT_EXAMEN_REUSSI = 'examen_reussi';
+
     const STATUT_CERTIFIE = 'certifie';
+
     const STATUT_ECHEC = 'echec';
 
     // Relations
@@ -124,10 +129,17 @@ class ProgressionCeinture extends Model
 
     public function getNoteFinaleFormatteeAttribute(): string
     {
-        if (!$this->note_finale) return 'N/A';
-        
-        if ($this->note_finale >= 80) return $this->note_finale . '/100 ✅';
-        if ($this->note_finale >= 60) return $this->note_finale . '/100 ⚠️';
-        return $this->note_finale . '/100 ❌';
+        if (! $this->note_finale) {
+            return 'N/A';
+        }
+
+        if ($this->note_finale >= 80) {
+            return $this->note_finale.'/100 ✅';
+        }
+        if ($this->note_finale >= 60) {
+            return $this->note_finale.'/100 ⚠️';
+        }
+
+        return $this->note_finale.'/100 ❌';
     }
 }

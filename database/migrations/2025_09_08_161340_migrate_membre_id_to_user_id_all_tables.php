@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,13 +15,13 @@ return new class extends Migration
             'factures',
             'paiements',
             'presences',
-            'progression_ceintures'
+            'progression_ceintures',
         ];
 
         foreach ($tables as $tableName) {
             // Ajouter user_id si elle n'existe pas
-            if (!Schema::hasColumn($tableName, 'user_id')) {
-                Schema::table($tableName, function (Blueprint $table) use ($tableName) {
+            if (! Schema::hasColumn($tableName, 'user_id')) {
+                Schema::table($tableName, function (Blueprint $table) {
                     $table->unsignedBigInteger('user_id')->nullable()->after('id');
                     $table->index('user_id');
                 });
@@ -46,11 +46,11 @@ return new class extends Migration
                     AND COLUMN_NAME = 'membre_id'
                     AND REFERENCED_TABLE_NAME = 'membres'
                 ");
-                
+
                 foreach ($oldForeignKeys as $fk) {
                     $table->dropForeign($fk->CONSTRAINT_NAME);
                 }
-                
+
                 // Vérifier si la FK user_id existe déjà
                 $existingUserFK = DB::select("
                     SELECT CONSTRAINT_NAME 
@@ -60,7 +60,7 @@ return new class extends Migration
                     AND COLUMN_NAME = 'user_id'
                     AND REFERENCED_TABLE_NAME = 'users'
                 ");
-                
+
                 // Ajouter la nouvelle FK seulement si elle n'existe pas
                 if (empty($existingUserFK)) {
                     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -77,7 +77,7 @@ return new class extends Migration
             'factures',
             'paiements',
             'presences',
-            'progression_ceintures'
+            'progression_ceintures',
         ];
 
         foreach ($tables as $tableName) {
@@ -91,11 +91,11 @@ return new class extends Migration
                     AND COLUMN_NAME = 'user_id'
                     AND REFERENCED_TABLE_NAME = 'users'
                 ");
-                
+
                 foreach ($userForeignKeys as $fk) {
                     $table->dropForeign($fk->CONSTRAINT_NAME);
                 }
-                
+
                 // Supprimer la colonne user_id
                 if (Schema::hasColumn($tableName, 'user_id')) {
                     $table->dropColumn('user_id');

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('envoi_email')->default(false);
             $table->timestamp('date_envoi')->nullable();
             $table->timestamps();
-            
+
             $table->index(['statut', 'date_echeance']);
             $table->index('membre_id');
             $table->index('date_emission');

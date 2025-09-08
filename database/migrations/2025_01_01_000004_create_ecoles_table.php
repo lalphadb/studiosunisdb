@@ -2,15 +2,15 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
         // Créer la table ecoles si elle n'existe pas
-        if (!Schema::hasTable('ecoles')) {
+        if (! Schema::hasTable('ecoles')) {
             Schema::create('ecoles', function (Blueprint $table) {
                 $table->id();
                 $table->string('nom');
@@ -26,11 +26,11 @@ return new class extends Migration
                 $table->json('configuration')->nullable();
                 $table->boolean('est_active')->default(true);
                 $table->timestamps();
-                
+
                 $table->index('slug');
                 $table->index('est_active');
             });
-            
+
             // Insérer une école par défaut
             DB::table('ecoles')->insert([
                 'nom' => 'École de Karaté Studios Unis',

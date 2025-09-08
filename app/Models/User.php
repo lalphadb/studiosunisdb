@@ -2,22 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Support\Facades\Schema;
 use App\Traits\BelongsToEcole;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes, BelongsToEcole;
+    use BelongsToEcole, HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     /**
      * DÉSACTIVÉ TEMPORAIREMENT - Global scope causait boucle infinie
@@ -75,7 +74,7 @@ class User extends Authenticatable
         'consentement_communications',
         'date_consentement',
         'family_id',
-        'champs_personnalises'
+        'champs_personnalises',
     ];
 
     /**
@@ -102,7 +101,7 @@ class User extends Authenticatable
         'consentement_communications' => 'boolean',
         'allergies' => 'array',
         'medicaments' => 'array',
-        'champs_personnalises' => 'array'
+        'champs_personnalises' => 'array',
     ];
 
     /**
@@ -111,7 +110,7 @@ class User extends Authenticatable
     protected $appends = [
         'nom_complet',
         'age',
-        'est_actif'
+        'est_actif',
     ];
 
     // Relations Spatie Permission
@@ -172,18 +171,19 @@ class User extends Authenticatable
     // Accesseurs SÉCURISÉS (ex-Membre)
     public function getNomCompletAttribute(): string
     {
-        if (!empty($this->prenom) && !empty($this->nom)) {
+        if (! empty($this->prenom) && ! empty($this->nom)) {
             return trim("{$this->prenom} {$this->nom}");
         }
+
         return $this->name ?? 'Utilisateur';
     }
 
     public function getAgeAttribute(): ?int
     {
-        if (!$this->date_naissance) {
+        if (! $this->date_naissance) {
             return null;
         }
-        
+
         try {
             return $this->date_naissance->age;
         } catch (\Exception $e) {
@@ -194,10 +194,10 @@ class User extends Authenticatable
     public function getTousLiensFamiliauxAttribute()
     {
         // SÉCURISÉ: Éviter chargement automatique des relations
-        if (!$this->relationLoaded('liensFamiliaux') || !$this->relationLoaded('liensInverses')) {
+        if (! $this->relationLoaded('liensFamiliaux') || ! $this->relationLoaded('liensInverses')) {
             return collect([]);
         }
-        
+
         return $this->liensFamiliaux->merge($this->liensInverses);
     }
 
@@ -246,52 +246,56 @@ class User extends Authenticatable
     // Nouveaux helpers pour membre/karaté
     public function isMembreKarate(): bool
     {
-        return !empty($this->prenom) && !empty($this->nom) && !empty($this->date_naissance);
+        return ! empty($this->prenom) && ! empty($this->nom) && ! empty($this->date_naissance);
     }
 
     public function isAdminOnly(): bool
     {
-        return !$this->isMembreKarate() && ($this->isAdminEcole() || $this->isSuperAdmin() || $this->isInstructeur());
+        return ! $this->isMembreKarate() && ($this->isAdminEcole() || $this->isSuperAdmin() || $this->isInstructeur());
     }
 
     // Scopes SÉCURISÉS (ex-Membre)
     public function scopeActif($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->where('statut', 'actif')
-              ->orWhereNull('statut');
+                ->orWhereNull('statut');
         })->where('active', true);
     }
 
     public function scopeRecherche($query, $terme)
     {
-        if (!$terme) return $query;
-        
+        if (! $terme) {
+            return $query;
+        }
+
         $terme = trim($terme);
-        if (strlen($terme) < 2) return $query;
-        
-        return $query->where(function($q) use ($terme) {
+        if (strlen($terme) < 2) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($terme) {
             $q->where('prenom', 'like', "%{$terme}%")
-              ->orWhere('nom', 'like', "%{$terme}%")
-              ->orWhere('name', 'like', "%{$terme}%")
-              ->orWhere('email', 'like', "%{$terme}%")
-              ->orWhere('telephone', 'like', "%{$terme}%");
+                ->orWhere('nom', 'like', "%{$terme}%")
+                ->orWhere('name', 'like', "%{$terme}%")
+                ->orWhere('email', 'like', "%{$terme}%")
+                ->orWhere('telephone', 'like', "%{$terme}%");
         });
     }
 
     public function scopeMembresKarate($query)
     {
         return $query->whereNotNull('prenom')
-                    ->whereNotNull('nom')
-                    ->whereNotNull('date_naissance');
+            ->whereNotNull('nom')
+            ->whereNotNull('date_naissance');
     }
 
     public function scopeAdminsOnly($query)
     {
-        return $query->where(function($q) {
+        return $query->where(function ($q) {
             $q->whereNull('prenom')
-              ->orWhereNull('nom')
-              ->orWhereNull('date_naissance');
+                ->orWhereNull('nom')
+                ->orWhereNull('date_naissance');
         });
     }
 
@@ -300,11 +304,11 @@ class User extends Authenticatable
      */
     public function scopeSameEcole($query, $ecoleId = null)
     {
-        if (!$ecoleId) {
+        if (! $ecoleId) {
             // Éviter récursion en ne chargeant pas auth()->user()
             return $query;
         }
-        
+
         return $query->where('ecole_id', $ecoleId);
     }
 }

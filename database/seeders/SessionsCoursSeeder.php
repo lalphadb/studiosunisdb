@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\SessionCours;
 use App\Models\Cours;
+use App\Models\SessionCours;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class SessionsCoursSeeder extends Seeder
 {
@@ -19,6 +18,7 @@ class SessionsCoursSeeder extends Seeder
 
         if ($cours->isEmpty()) {
             $this->command->error('❌ Aucun cours trouvé. Veuillez exécuter le CoursSeeder d\'abord.');
+
             return;
         }
 
@@ -34,8 +34,8 @@ class SessionsCoursSeeder extends Seeder
                 if ($dateSession) {
                     $sessions[] = [
                         'cours_id' => $cour->id,
-                        'date_heure_debut' => $dateSession->format('Y-m-d') . ' ' . $cour->heure_debut,
-                        'date_heure_fin' => $dateSession->format('Y-m-d') . ' ' . $cour->heure_fin,
+                        'date_heure_debut' => $dateSession->format('Y-m-d').' '.$cour->heure_debut,
+                        'date_heure_fin' => $dateSession->format('Y-m-d').' '.$cour->heure_fin,
                         'statut' => $dateSession->isPast() ? 'terminee' : 'planifiee',
                         'capacite_actuelle' => rand(5, $cour->capacite_max),
                         'salle' => $cour->salle,
@@ -49,7 +49,7 @@ class SessionsCoursSeeder extends Seeder
             SessionCours::create($session);
         }
 
-        $this->command->info('✅ ' . count($sessions) . ' sessions de cours créées pour les 4 prochaines semaines !');
+        $this->command->info('✅ '.count($sessions).' sessions de cours créées pour les 4 prochaines semaines !');
     }
 
     /**
@@ -70,7 +70,7 @@ class SessionsCoursSeeder extends Seeder
             'dimanche' => Carbon::SUNDAY,
         ];
 
-        if (!isset($joursMapping[$cour->jour_semaine])) {
+        if (! isset($joursMapping[$cour->jour_semaine])) {
             return null;
         }
 

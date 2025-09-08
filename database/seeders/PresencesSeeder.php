@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Presence;
 use App\Models\Cours;
 use App\Models\Membre;
+use App\Models\Presence;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class PresencesSeeder extends Seeder
 {
@@ -24,6 +23,7 @@ class PresencesSeeder extends Seeder
 
         if (empty($cours) || empty($membres)) {
             $this->command->error('❌ Aucun cours ou membre trouvé. Veuillez exécuter les seeders CoursSeeder et MembresSeeder d\'abord.');
+
             return;
         }
 
@@ -72,7 +72,7 @@ class PresencesSeeder extends Seeder
             Presence::create($presence);
         }
 
-        $this->command->info('✅ ' . count($presences) . ' présences de test créées pour les 2 dernières semaines !');
+        $this->command->info('✅ '.count($presences).' présences de test créées pour les 2 dernières semaines !');
     }
 
     /**
@@ -102,6 +102,7 @@ class PresencesSeeder extends Seeder
     private function genererStatutPresenceAleatoire(): string
     {
         $statuts = ['present', 'present', 'present', 'present', 'retard', 'absent', 'excuse'];
+
         return $statuts[array_rand($statuts)];
     }
 
@@ -120,7 +121,7 @@ class PresencesSeeder extends Seeder
             ],
             'retard' => [
                 'Arrivée en retard justifiée',
-                'Retard de ' . rand(5, 20) . ' minutes',
+                'Retard de '.rand(5, 20).' minutes',
                 'Problème de transport',
             ],
             'absent' => [
@@ -136,6 +137,7 @@ class PresencesSeeder extends Seeder
         ];
 
         $notesPossibles = $notes[$statut] ?? [null];
+
         return $notesPossibles[array_rand($notesPossibles)];
     }
 }

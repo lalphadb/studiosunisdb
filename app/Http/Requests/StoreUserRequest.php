@@ -20,20 +20,21 @@ class StoreUserRequest extends FormRequest
      */
     public function rules(): array
     {
-            $ecoleId = $this->user()?->ecole_id;
-            $authUser = $this->user();
-            $superadminRule = $authUser && $authUser->hasRole('superadmin') ? [] : ['not_in:superadmin'];
-            return [
-                'name' => ['required', 'string', 'max:255'],
-                'email' => [
-                    'required','string','email','max:255',
-                    \Illuminate\Validation\Rule::unique('users')->where(fn($q) => $ecoleId ? $q->where('ecole_id',$ecoleId) : $q)
-                ],
-                'password' => ['required','confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
-                'roles' => ['sometimes','array'],
-                'roles.*' => array_merge(['exists:roles,name'], $superadminRule),
-                'email_verified' => ['sometimes','boolean'],
-            ];
+        $ecoleId = $this->user()?->ecole_id;
+        $authUser = $this->user();
+        $superadminRule = $authUser && $authUser->hasRole('superadmin') ? [] : ['not_in:superadmin'];
+
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required', 'string', 'email', 'max:255',
+                \Illuminate\Validation\Rule::unique('users')->where(fn ($q) => $ecoleId ? $q->where('ecole_id', $ecoleId) : $q),
+            ],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'roles' => ['sometimes', 'array'],
+            'roles.*' => array_merge(['exists:roles,name'], $superadminRule),
+            'email_verified' => ['sometimes', 'boolean'],
+        ];
     }
 
     /**

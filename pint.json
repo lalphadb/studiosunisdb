@@ -1,0 +1,26 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "backups",
+        "quarantine",
+        "database/migrations_backup",
+        "routes/backups",
+        "vendor",
+        "storage",
+        "bootstrap/cache",
+        "public/build"
+    ],
+    "notName": [
+        "*_backup.php",
+        "*_corrupt*.php",
+        "*.backup",
+        "*.backup.*",
+        "*patch*.php"
+    ],
+    "notPath": [
+        "backups/*",
+        "quarantine/*",
+        "*/backup/*",
+        "*/backups/*"
+    ]
+}

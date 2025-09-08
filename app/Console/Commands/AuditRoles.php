@@ -2,14 +2,15 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Console\Command;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AuditRoles extends Command
 {
     protected $signature = 'audit:roles {--fix-missing-superadmin : Ensure at least one superadmin exists}';
+
     protected $description = 'Audit roles & permissions consistency across policies and database';
 
     public function handle(): int
@@ -17,41 +18,41 @@ class AuditRoles extends Command
         $this->info('--- Roles & Permissions Audit ---');
 
         $dbRoles = Role::all()->pluck('name')->sort()->values();
-        $this->line('Existing roles (DB): ' . $dbRoles->join(', '));
+        $this->line('Existing roles (DB): '.$dbRoles->join(', '));
 
         $policyMatrix = [
             'cours' => [
-                'viewAny' => ['superadmin','admin_ecole','instructeur','membre'],
-                'manage'  => ['superadmin','admin_ecole'],
+                'viewAny' => ['superadmin', 'admin_ecole', 'instructeur', 'membre'],
+                'manage' => ['superadmin', 'admin_ecole'],
             ],
             'membre' => [
-                'view'   => ['superadmin','admin_ecole','instructeur'],
-                'manage' => ['superadmin','admin_ecole'],
+                'view' => ['superadmin', 'admin_ecole', 'instructeur'],
+                'manage' => ['superadmin', 'admin_ecole'],
             ],
             'paiement' => [
-                'view'   => ['superadmin','admin_ecole','instructeur'],
-                'manage' => ['superadmin','admin_ecole'],
+                'view' => ['superadmin', 'admin_ecole', 'instructeur'],
+                'manage' => ['superadmin', 'admin_ecole'],
             ],
             'presence' => [
-                'view'   => ['superadmin','admin_ecole','instructeur'],
-                'manage' => ['superadmin','admin_ecole'],
+                'view' => ['superadmin', 'admin_ecole', 'instructeur'],
+                'manage' => ['superadmin', 'admin_ecole'],
             ],
             'ceinture' => [
-                'view'   => ['superadmin','admin_ecole'],
+                'view' => ['superadmin', 'admin_ecole'],
                 'manage' => ['superadmin'],
             ],
             'users' => [
-                'view'   => ['superadmin','admin_ecole'],
-                'manage' => ['superadmin','admin_ecole'],
+                'view' => ['superadmin', 'admin_ecole'],
+                'manage' => ['superadmin', 'admin_ecole'],
             ],
         ];
 
-        $referencedRoles = collect($policyMatrix)->flatMap(fn($ops) => collect($ops)->flatten())->unique()->sort()->values();
-        $this->line('Roles referenced in policies: ' . $referencedRoles->join(', '));
+        $referencedRoles = collect($policyMatrix)->flatMap(fn ($ops) => collect($ops)->flatten())->unique()->sort()->values();
+        $this->line('Roles referenced in policies: '.$referencedRoles->join(', '));
 
         $missingInDb = $referencedRoles->diff($dbRoles);
         if ($missingInDb->isNotEmpty()) {
-            $this->warn('Missing roles in DB: ' . $missingInDb->join(', '));
+            $this->warn('Missing roles in DB: '.$missingInDb->join(', '));
         } else {
             $this->info('All policy roles exist in DB.');
         }
@@ -59,7 +60,7 @@ class AuditRoles extends Command
         // Detect orphan roles (present in DB but not referenced anywhere)
         $orphan = $dbRoles->diff($referencedRoles);
         if ($orphan->isNotEmpty()) {
-            $this->warn('Orphan (unused) roles: ' . $orphan->join(', '));
+            $this->warn('Orphan (unused) roles: '.$orphan->join(', '));
         } else {
             $this->info('No orphan roles.');
         }
@@ -68,7 +69,7 @@ class AuditRoles extends Command
         $this->line("\nUsers per role:");
         $dbRoles->each(function ($role) {
             $count = User::role($role)->count();
-            $this->line(str_pad(" - $role", 20) . ': ' . $count);
+            $this->line(str_pad(" - $role", 20).': '.$count);
         });
 
         // Ensure at least one superadmin
@@ -94,6 +95,7 @@ class AuditRoles extends Command
         }
 
         $this->info('\nAudit complete.');
+
         return Command::SUCCESS;
     }
 }

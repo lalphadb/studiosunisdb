@@ -1,4 +1,0 @@
-
-
-// Module Cours Routes
-require __DIR__.'/cours.php';

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->boolean('active')->default(true);
             $table->timestamps();
-            
+
             $table->index('active');
             $table->index(['primary_contact_email']);
         });

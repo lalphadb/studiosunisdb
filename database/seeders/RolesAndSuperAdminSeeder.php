@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolesAndSuperAdminSeeder extends Seeder
 {
@@ -21,14 +20,14 @@ class RolesAndSuperAdminSeeder extends Seeder
             'superadmin' => 'Super Administrateur - Accès total',
             'admin_ecole' => 'Administrateur École - Gestion complète école',
             'instructeur' => 'Instructeur - Gestion cours et membres',
-            'membre' => 'Membre - Accès limité aux informations personnelles'
+            'membre' => 'Membre - Accès limité aux informations personnelles',
         ];
 
         echo "=== CRÉATION DES RÔLES SPATIE ===\n";
-        
+
         foreach ($roles as $roleName => $description) {
             $role = Role::firstOrCreate(['name' => $roleName], ['guard_name' => 'web']);
-            
+
             if ($role->wasRecentlyCreated) {
                 echo "✅ Rôle créé: {$roleName}\n";
             } else {
@@ -45,10 +44,10 @@ class RolesAndSuperAdminSeeder extends Seeder
         ];
 
         echo "\n=== CRÉATION DES PERMISSIONS ===\n";
-        
+
         foreach ($permissions as $permName => $description) {
             $permission = Permission::firstOrCreate(['name' => $permName], ['guard_name' => 'web']);
-            
+
             if ($permission->wasRecentlyCreated) {
                 echo "✅ Permission créée: {$permName}\n";
             } else {
@@ -58,19 +57,19 @@ class RolesAndSuperAdminSeeder extends Seeder
 
         // Attribution des permissions aux rôles
         echo "\n=== ATTRIBUTION PERMISSIONS ===\n";
-        
+
         $superadmin = Role::findByName('superadmin');
         $adminEcole = Role::findByName('admin_ecole');
         $instructeur = Role::findByName('instructeur');
-        
+
         // Superadmin : toutes les permissions
         $superadmin->givePermissionTo(Permission::all());
         echo "✅ Superadmin: toutes permissions\n";
-        
+
         // Admin école : gestion cours, membres, panneau admin
         $adminEcole->givePermissionTo(['admin-panel', 'cours-manage', 'membres-manage']);
         echo "✅ Admin École: permissions de gestion\n";
-        
+
         // Instructeur : gestion cours et membres (pas users)
         $instructeur->givePermissionTo(['cours-manage', 'membres-manage']);
         echo "✅ Instructeur: permissions cours/membres\n";
@@ -80,10 +79,10 @@ class RolesAndSuperAdminSeeder extends Seeder
         $this->createSuperAdmin();
 
         echo "\n=== RÉSUMÉ FINAL ===\n";
-        echo "Rôles disponibles: " . Role::count() . "\n";
-        echo "Permissions disponibles: " . Permission::count() . "\n";
+        echo 'Rôles disponibles: '.Role::count()."\n";
+        echo 'Permissions disponibles: '.Permission::count()."\n";
         echo "✅ Configuration des rôles terminée\n";
-        
+
         // Clear cache des permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         echo "✅ Cache permissions réinitialisé\n";
@@ -103,7 +102,7 @@ class RolesAndSuperAdminSeeder extends Seeder
 
         // Créer le rôle superadmin si n'existe pas
         $role = Role::firstOrCreate(['name' => 'superadmin']);
-        
+
         // Assigner le rôle
         $superAdmin->syncRoles(['superadmin']);
 

@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-    $driver = Schema::getConnection()->getDriverName();
-    if ($driver === 'sqlite' || !Schema::hasTable('ceintures')) return; // Skip in sqlite test env or missing table
+        $driver = Schema::getConnection()->getDriverName();
+        if ($driver === 'sqlite' || ! Schema::hasTable('ceintures')) {
+            return;
+        } // Skip in sqlite test env or missing table
         Schema::table('ceintures', function (Blueprint $table) {
-            if (!Schema::hasColumn('ceintures', 'name_en')) {
+            if (! Schema::hasColumn('ceintures', 'name_en')) {
                 $table->string('name_en')->nullable()->after('name');
             }
         });
@@ -25,10 +27,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-    $driver = Schema::getConnection()->getDriverName();
-    if ($driver === 'sqlite' || !Schema::hasTable('ceintures')) return;
+        $driver = Schema::getConnection()->getDriverName();
+        if ($driver === 'sqlite' || ! Schema::hasTable('ceintures')) {
+            return;
+        }
         Schema::table('ceintures', function (Blueprint $table) {
-            if (Schema::hasColumn('ceintures','name_en')) {
+            if (Schema::hasColumn('ceintures', 'name_en')) {
                 $table->dropColumn('name_en');
             }
         });

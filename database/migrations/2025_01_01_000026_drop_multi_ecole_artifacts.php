@@ -5,14 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
-        $tables = ['users','membres','cours','presences','paiements'];
+        $tables = ['users', 'membres', 'cours', 'presences', 'paiements'];
         $dbName = DB::getDatabaseName();
 
         foreach ($tables as $table) {
-            if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'ecole_id')) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'ecole_id')) {
                 continue;
             }
 

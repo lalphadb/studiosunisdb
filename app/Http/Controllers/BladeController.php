@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Membre, Cours, Presence, Paiement, User};
+use App\Models\Cours;
+use App\Models\Membre;
+use App\Models\Presence;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class BladeController extends Controller
 {
@@ -15,14 +17,14 @@ class BladeController extends Controller
     public function debug()
     {
         $extensions = get_loaded_extensions();
-        
+
         return view('blade.debug', [
             'extensions' => $extensions,
             'php_version' => PHP_VERSION,
             'laravel_version' => app()->version(),
         ]);
     }
-    
+
     /**
      * Login Blade (comme debug mais pour login)
      */
@@ -31,13 +33,13 @@ class BladeController extends Controller
         if (Auth::check()) {
             return redirect('/blade/dashboard');
         }
-        
+
         return view('blade.login', [
             'title' => 'StudiosDB v5 - Login Blade',
             'message' => 'Laravel fonctionne - Inertia temporairement bypassé',
         ]);
     }
-    
+
     /**
      * Traitement login
      */
@@ -45,30 +47,31 @@ class BladeController extends Controller
     {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
-        
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
+
             return redirect('/blade/dashboard');
         }
-        
+
         return back()->withErrors([
             'email' => 'Identifiants incorrects.',
         ]);
     }
-    
+
     /**
      * Dashboard Blade fonctionnel
      */
     public function dashboard()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect('/blade/login');
         }
-        
+
         $user = Auth::user();
-        
+
         // Métriques comme dans le debug - pattern qui fonctionne
         $metriques = [
             'membres_actifs' => Membre::where('statut', 'actif')->count(),
@@ -78,35 +81,35 @@ class BladeController extends Controller
             'users_total' => User::count(),
             'presences_semaine' => Presence::whereBetween('date_cours', [
                 now()->startOfWeek(),
-                now()->endOfWeek()
+                now()->endOfWeek(),
             ])->count(),
         ];
-        
+
         return view('blade.dashboard', [
             'user' => $user,
             'metriques' => $metriques,
             'timestamp' => now()->format('Y-m-d H:i:s'),
         ]);
     }
-    
+
     /**
      * Membres Blade
      */
     public function membres()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect('/blade/login');
         }
-        
+
         $membres = Membre::with('user')->paginate(10);
-        
+
         return view('blade.membres', [
             'membres' => $membres,
             'total' => Membre::count(),
             'actifs' => Membre::where('statut', 'actif')->count(),
         ]);
     }
-    
+
     /**
      * Logout
      */
@@ -115,7 +118,7 @@ class BladeController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect('/blade/login');
     }
 }

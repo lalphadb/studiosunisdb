@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class StoreCoursRequest extends FormRequest
 {
@@ -61,23 +60,23 @@ class StoreCoursRequest extends FormRequest
         if ($this->has('tarif_mensuel') && $this->input('tarif_mensuel') === '') {
             $this->merge(['tarif_mensuel' => null]);
         }
-        
+
         // Convertir string vide instructeur_id en null
         if ($this->has('instructeur_id') && $this->input('instructeur_id') === '') {
             $this->merge(['instructeur_id' => null]);
         }
-        
+
         // Assurer la cohérence du système de tarification
         if ($this->input('type_tarif') === 'mensuel' && $this->filled('montant')) {
             $this->merge(['tarif_mensuel' => $this->input('montant')]);
-        } elseif ($this->input('type_tarif') !== 'mensuel' && !$this->filled('tarif_mensuel')) {
+        } elseif ($this->input('type_tarif') !== 'mensuel' && ! $this->filled('tarif_mensuel')) {
             $this->merge(['tarif_mensuel' => null]);
         }
-        
+
         // Auto-assignation école (ROBUSTE)
         $user = $this->user();
         $ecoleId = null;
-        
+
         if ($user && isset($user->ecole_id) && $user->ecole_id) {
             $ecoleId = $user->ecole_id;
         } else {
@@ -90,11 +89,11 @@ class StoreCoursRequest extends FormRequest
                 $ecoleId = 1;
             }
         }
-        
+
         $this->merge(['ecole_id' => $ecoleId]);
-        
+
         // Statut par défaut si non fourni
-        if (!$this->filled('statut')) {
+        if (! $this->filled('statut')) {
             $this->merge(['statut' => 'actif']);
         }
     }
@@ -117,7 +116,7 @@ class StoreCoursRequest extends FormRequest
                     $datetimeFin = Carbon::createFromFormat('Y-m-d H:i', "$dateFin $heureFin");
 
                     if ($datetimeFin->lte($datetimeDebut)) {
-                        $validator->errors()->add('date_fin', 
+                        $validator->errors()->add('date_fin',
                             'La date et heure de fin doivent être postérieures à la date et heure de début.'
                         );
                     }

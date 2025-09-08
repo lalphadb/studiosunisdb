@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
@@ -35,20 +36,20 @@ final class MembreController extends Controller
     public function index(Request $request): Response
     {
         $filters = [
-            'q'           => trim((string) $request->string('q')),
-            'statut'      => $request->string('statut')->toString() ?: null,
+            'q' => trim((string) $request->string('q')),
+            'statut' => $request->string('statut')->toString() ?: null,
             'ceinture_id' => $request->integer('ceinture_id') ?: null,
-            'age_group'   => $request->string('age_group')->toString() ?: null, // mineur|adulte
-            'sort'        => $request->string('sort')->toString() ?: 'created_at',
-            'dir'         => strtolower($request->string('dir')->toString() ?: 'desc'),
-            'per_page'    => (int) ($request->integer('per_page') ?: 15),
+            'age_group' => $request->string('age_group')->toString() ?: null, // mineur|adulte
+            'sort' => $request->string('sort')->toString() ?: 'created_at',
+            'dir' => strtolower($request->string('dir')->toString() ?: 'desc'),
+            'per_page' => (int) ($request->integer('per_page') ?: 15),
         ];
 
-        $allowSort = ['created_at','nom','prenom','date_inscription','date_derniere_presence'];
+        $allowSort = ['created_at', 'nom', 'prenom', 'date_inscription', 'date_derniere_presence'];
         if (! in_array($filters['sort'], $allowSort, true)) {
             $filters['sort'] = 'created_at';
         }
-        if (! in_array($filters['dir'], ['asc','desc'], true)) {
+        if (! in_array($filters['dir'], ['asc', 'desc'], true)) {
             $filters['dir'] = 'desc';
         }
         $filters['per_page'] = max(5, min(100, $filters['per_page']));
@@ -65,7 +66,7 @@ final class MembreController extends Controller
                 'cours as cours_count',
                 'presences as presences_mois' => function ($q) use ($now) {
                     $q->whereMonth('date_cours', (int) $now->format('m'))
-                      ->whereYear('date_cours', (int) $now->format('Y'));
+                        ->whereYear('date_cours', (int) $now->format('Y'));
                 },
             ]);
 
@@ -74,9 +75,9 @@ final class MembreController extends Controller
             $q = $filters['q'];
             $query->where(function ($w) use ($q) {
                 $w->where('prenom', 'like', "%{$q}%")
-                  ->orWhere('nom', 'like', "%{$q}%")
-                  ->orWhere('telephone', 'like', "%{$q}%")
-                  ->orWhereHas('user', fn($u) => $u->where('email', 'like', "%{$q}%"));
+                    ->orWhere('nom', 'like', "%{$q}%")
+                    ->orWhere('telephone', 'like', "%{$q}%")
+                    ->orWhereHas('user', fn ($u) => $u->where('email', 'like', "%{$q}%"));
             });
         }
 
@@ -103,20 +104,20 @@ final class MembreController extends Controller
             ->withQueryString()
             ->through(function (Membre $m) {
                 return [
-                    'id'                 => $m->id,
-                    'nom_complet'        => $m->nom_complet,
-                    'prenom'             => $m->prenom,
-                    'nom'                => $m->nom,
-                    'age'                => $m->age,
-                    'is_minor'           => $m->age < 18,
-                    'telephone'          => $m->telephone,
-                    'user'               => $m->relationLoaded('user') && $m->user ? Arr::only($m->user->toArray(), ['email']) : null,
-                    'ceinture_actuelle'  => $m->relationLoaded('ceintureActuelle') && $m->ceintureActuelle
+                    'id' => $m->id,
+                    'nom_complet' => $m->nom_complet,
+                    'prenom' => $m->prenom,
+                    'nom' => $m->nom,
+                    'age' => $m->age,
+                    'is_minor' => $m->age < 18,
+                    'telephone' => $m->telephone,
+                    'user' => $m->relationLoaded('user') && $m->user ? Arr::only($m->user->toArray(), ['email']) : null,
+                    'ceinture_actuelle' => $m->relationLoaded('ceintureActuelle') && $m->ceintureActuelle
                         ? ['id' => $m->ceintureActuelle->id, 'nom' => $m->ceintureActuelle->name, 'couleur_hex' => $m->ceintureActuelle->color_hex]
                         : null,
-                    'statut'             => $m->statut,
-                    'cours_count'        => (int) $m->getAttribute('cours_count'),
-                    'presences_mois'     => (int) $m->getAttribute('presences_mois'),
+                    'statut' => $m->statut,
+                    'cours_count' => (int) $m->getAttribute('cours_count'),
+                    'presences_mois' => (int) $m->getAttribute('presences_mois'),
                 ];
             });
 
@@ -132,7 +133,7 @@ final class MembreController extends Controller
                 (int) $now->format('Y'),
             ])
             ->first();
-        
+
         $stats = [
             'total' => (int) $statsRaw->total,
             'actifs' => (int) $statsRaw->actifs,
@@ -140,7 +141,7 @@ final class MembreController extends Controller
         ];
         $stats['presences_jour'] = (int) DB::table('presences')->whereDate('date_cours', $now->toDateString())->count();
 
-        $ceintures = Ceinture::query()->select('id','name','name_en','color_hex','order')->orderBy('order')->get()->map(function($c) {
+        $ceintures = Ceinture::query()->select('id', 'name', 'name_en', 'color_hex', 'order')->orderBy('order')->get()->map(function ($c) {
             return [
                 'id' => $c->id,
                 'nom' => $c->name,
@@ -157,11 +158,11 @@ final class MembreController extends Controller
         ];
 
         return Inertia::render('Membres/Index', [
-            'membres'  => $membres,
-            'filters'  => Arr::only($filters, ['q','statut','ceinture_id','age_group','sort','dir','per_page']),
-            'ceintures'=> $ceintures,
-            'stats'    => $stats,
-            'can'      => $can,
+            'membres' => $membres,
+            'filters' => Arr::only($filters, ['q', 'statut', 'ceinture_id', 'age_group', 'sort', 'dir', 'per_page']),
+            'ceintures' => $ceintures,
+            'stats' => $stats,
+            'can' => $can,
         ]);
     }
 
@@ -170,7 +171,7 @@ final class MembreController extends Controller
         $this->authorize('create', Membre::class);
 
         return Inertia::render('Membres/Create', [
-            'ceintures' => Ceinture::query()->select('id','name','name_en','color_hex','order')->orderBy('order')->get()->map(function($c) {
+            'ceintures' => Ceinture::query()->select('id', 'name', 'name_en', 'color_hex', 'order')->orderBy('order')->get()->map(function ($c) {
                 return [
                     'id' => $c->id,
                     'nom' => $c->name,
@@ -188,39 +189,39 @@ final class MembreController extends Controller
         DB::transaction(function () use ($data) {
             // Crée ou relie un User (email unique par école)
             $user = null;
-            if (!empty($data['email'])) {
+            if (! empty($data['email'])) {
                 $user = User::create([
-                    'name'      => trim(($data['prenom'] ?? '').' '.($data['nom'] ?? '')),
-                    'email'     => $data['email'],
-                    'password'  => Hash::make($data['password'] ?? str()->random(16)),
-                    'ecole_id'  => auth()->user()?->ecole_id,
+                    'name' => trim(($data['prenom'] ?? '').' '.($data['nom'] ?? '')),
+                    'email' => $data['email'],
+                    'password' => Hash::make($data['password'] ?? str()->random(16)),
+                    'ecole_id' => auth()->user()?->ecole_id,
                 ]);
                 $user->assignRole('membre');
             }
 
             /** @var Membre $m */
             $m = Membre::create([
-                'user_id'               => $user?->id,
-                'ecole_id'              => auth()->user()->ecole_id ?? 1, // Assurer ecole_id toujours présent
-                'prenom'                => $data['prenom'],
-                'nom'                   => $data['nom'],
-                'email'                 => $data['email'] ?? null,
-                'date_naissance'        => $data['date_naissance'],
-                'sexe'                  => $data['sexe'] ?? 'Autre',
-                'telephone'             => $data['telephone'] ?? null,
-                'adresse'               => $data['adresse'] ?? null,
-                'ville'                 => $data['ville'] ?? null,
-                'code_postal'           => $data['code_postal'] ?? null,
-                'province'              => $data['province'] ?? 'QC',
-                'contact_urgence_nom'   => $data['contact_urgence_nom'] ?? null,
+                'user_id' => $user?->id,
+                'ecole_id' => auth()->user()->ecole_id ?? 1, // Assurer ecole_id toujours présent
+                'prenom' => $data['prenom'],
+                'nom' => $data['nom'],
+                'email' => $data['email'] ?? null,
+                'date_naissance' => $data['date_naissance'],
+                'sexe' => $data['sexe'] ?? 'Autre',
+                'telephone' => $data['telephone'] ?? null,
+                'adresse' => $data['adresse'] ?? null,
+                'ville' => $data['ville'] ?? null,
+                'code_postal' => $data['code_postal'] ?? null,
+                'province' => $data['province'] ?? 'QC',
+                'contact_urgence_nom' => $data['contact_urgence_nom'] ?? null,
                 'contact_urgence_telephone' => $data['contact_urgence_telephone'] ?? null,
                 'contact_urgence_relation' => $data['contact_urgence_relation'] ?? null,
-                'statut'                => $data['statut'] ?? 'actif',
-                'ceinture_actuelle_id'  => $data['ceinture_actuelle_id'] ?? null,
-                'date_inscription'      => $data['date_inscription'] ?? now()->toDateString(),
-                'consentement_photos'   => $data['consentement_photos'] ?? false,
+                'statut' => $data['statut'] ?? 'actif',
+                'ceinture_actuelle_id' => $data['ceinture_actuelle_id'] ?? null,
+                'date_inscription' => $data['date_inscription'] ?? now()->toDateString(),
+                'consentement_photos' => $data['consentement_photos'] ?? false,
                 'consentement_communications' => $data['consentement_communications'] ?? true,
-                'date_consentement'     => isset($data['consentement_photos']) || isset($data['consentement_communications']) ? now() : null,
+                'date_consentement' => isset($data['consentement_photos']) || isset($data['consentement_communications']) ? now() : null,
             ]);
 
             if (function_exists('activity')) {
@@ -240,9 +241,9 @@ final class MembreController extends Controller
             'ceintureActuelle:id,name,color_hex,order',
             'cours:id,nom', // si relation many-to-many existe
         ]);
-        
+
         // Récupérer toutes les ceintures pour le modal
-        $ceintures = Ceinture::orderBy('order')->get(['id', 'name', 'color_hex', 'order'])->map(function($c) {
+        $ceintures = Ceinture::orderBy('order')->get(['id', 'name', 'color_hex', 'order'])->map(function ($c) {
             return [
                 'id' => $c->id,
                 'nom' => $c->name,
@@ -250,10 +251,10 @@ final class MembreController extends Controller
                 'order' => $c->order,
             ];
         });
-        
+
         // Historique progressions
         $historiqueProgressions = $this->progressionService->getHistoriqueProgression($membre);
-        
+
         // Validation progression suivante
         $prochaineCeinture = $membre->ceintureActuelle?->suivante();
         $validationProgression = null;
@@ -268,27 +269,27 @@ final class MembreController extends Controller
 
         return Inertia::render('Membres/Show', [
             'membre' => [
-                'id'                => $membre->id,
-                'nom_complet'       => $membre->nom_complet,
-                'prenom'            => $membre->prenom,
-                'nom'               => $membre->nom,
-                'date_naissance'    => $membre->date_naissance?->toDateString(),
-                'age'               => $membre->age,
-                'telephone'         => $membre->telephone,
-                'adresse'           => $membre->adresse,
-                'statut'            => $membre->statut,
+                'id' => $membre->id,
+                'nom_complet' => $membre->nom_complet,
+                'prenom' => $membre->prenom,
+                'nom' => $membre->nom,
+                'date_naissance' => $membre->date_naissance?->toDateString(),
+                'age' => $membre->age,
+                'telephone' => $membre->telephone,
+                'adresse' => $membre->adresse,
+                'statut' => $membre->statut,
                 'ceinture_actuelle' => $membre->ceintureActuelle ? [
-                    'id' => $membre->ceintureActuelle->id, 
-                    'nom' => $membre->ceintureActuelle->name, 
+                    'id' => $membre->ceintureActuelle->id,
+                    'nom' => $membre->ceintureActuelle->name,
                     'couleur_hex' => $membre->ceintureActuelle->color_hex,
                     'order' => $membre->ceintureActuelle->order,
                 ] : null,
-                'user'              => $membre->user?->only(['email']),
-                'cours'             => $membre->cours?->map->only(['id','nom']),
-                'date_inscription'  => $membre->date_inscription?->toDateString(),
+                'user' => $membre->user?->only(['email']),
+                'cours' => $membre->cours?->map->only(['id', 'nom']),
+                'date_inscription' => $membre->date_inscription?->toDateString(),
                 'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
-                'sexe'              => $membre->sexe,
-                'ville'             => $membre->ville,
+                'sexe' => $membre->sexe,
+                'ville' => $membre->ville,
                 'contact_urgence_nom' => $membre->contact_urgence_nom,
                 'contact_urgence_telephone' => $membre->contact_urgence_telephone,
                 'contact_urgence_relation' => $membre->contact_urgence_relation,
@@ -321,8 +322,8 @@ final class MembreController extends Controller
     {
         // Charger les relations nécessaires
         $membre->load(['user.roles', 'ceintureActuelle']);
-        
-        $ceintures = Ceinture::query()->select('id','name','name_en','color_hex','order')->orderBy('order')->get()->map(function($c) {
+
+        $ceintures = Ceinture::query()->select('id', 'name', 'name_en', 'color_hex', 'order')->orderBy('order')->get()->map(function ($c) {
             return [
                 'id' => $c->id,
                 'nom' => $c->name,
@@ -332,32 +333,32 @@ final class MembreController extends Controller
         });
 
         return Inertia::render('Membres/Edit', [
-            'membre'    => [
-                'id'                => $membre->id,
-                'nom_complet'       => $membre->nom_complet,
-                'prenom'            => $membre->prenom,
-                'nom'               => $membre->nom,
-                'email'             => $membre->email,
-                'date_naissance'    => $membre->date_naissance?->toDateString(),
-                'sexe'              => $membre->sexe,
-                'telephone'         => $membre->telephone,
-                'adresse'           => $membre->adresse,
-                'ville'             => $membre->ville,
-                'code_postal'       => $membre->code_postal,
+            'membre' => [
+                'id' => $membre->id,
+                'nom_complet' => $membre->nom_complet,
+                'prenom' => $membre->prenom,
+                'nom' => $membre->nom,
+                'email' => $membre->email,
+                'date_naissance' => $membre->date_naissance?->toDateString(),
+                'sexe' => $membre->sexe,
+                'telephone' => $membre->telephone,
+                'adresse' => $membre->adresse,
+                'ville' => $membre->ville,
+                'code_postal' => $membre->code_postal,
                 'contact_urgence_nom' => $membre->contact_urgence_nom,
                 'contact_urgence_telephone' => $membre->contact_urgence_telephone,
                 'contact_urgence_relation' => $membre->contact_urgence_relation,
-                'statut'            => $membre->statut,
+                'statut' => $membre->statut,
                 'ceinture_actuelle_id' => $membre->ceinture_actuelle_id,
-                'notes_medicales'   => $membre->notes_medicales,
-                'allergies'         => json_decode($membre->allergies ?? '[]', true) ?: [],
+                'notes_medicales' => $membre->notes_medicales,
+                'allergies' => json_decode($membre->allergies ?? '[]', true) ?: [],
                 'notes_instructeur' => $membre->notes_instructeur,
-                'notes_admin'       => $membre->notes_admin,
+                'notes_admin' => $membre->notes_admin,
                 'consentement_photos' => $membre->consentement_photos,
                 'consentement_communications' => $membre->consentement_communications,
-                'date_inscription'  => $membre->date_inscription?->toDateString(),
+                'date_inscription' => $membre->date_inscription?->toDateString(),
                 'date_derniere_presence' => $membre->date_derniere_presence?->toDateString(),
-                
+
                 // AJOUT: Données utilisateur pour la gestion des rôles
                 'user' => $membre->user ? [
                     'id' => $membre->user->id,
@@ -366,7 +367,7 @@ final class MembreController extends Controller
                     'email_verified_at' => $membre->user->email_verified_at,
                     'created_at' => $membre->user->created_at,
                     'last_login_at' => $membre->user->last_login_at,
-                    'roles' => $membre->user->roles->map(fn($role) => [
+                    'roles' => $membre->user->roles->map(fn ($role) => [
                         'id' => $role->id,
                         'name' => $role->name,
                     ]),
@@ -383,7 +384,7 @@ final class MembreController extends Controller
         DB::transaction(function () use (&$membre, $data) {
             $membre->update(Arr::only($data, [
                 'prenom',
-                'nom', 
+                'nom',
                 'date_naissance',
                 'sexe',
                 'telephone',
@@ -391,7 +392,7 @@ final class MembreController extends Controller
                 'ville',
                 'code_postal',
                 'contact_urgence_nom',
-                'contact_urgence_telephone', 
+                'contact_urgence_telephone',
                 'contact_urgence_relation',
                 'statut',
                 'ceinture_actuelle_id',
@@ -400,7 +401,7 @@ final class MembreController extends Controller
                 'notes_instructeur',
                 'notes_admin',
                 'consentement_photos',
-                'consentement_communications'
+                'consentement_communications',
             ]));
 
             // Gestion compte utilisateur + rôles
@@ -408,7 +409,7 @@ final class MembreController extends Controller
 
             if (function_exists('activity')) {
                 activity('membres')->performedOn($membre)->causedBy(auth()->user())
-                    ->withProperties(['payload' => Arr::except($data, ['password','user_password'])])
+                    ->withProperties(['payload' => Arr::except($data, ['password', 'user_password'])])
                     ->log('membre.updated');
             }
         });
@@ -440,7 +441,7 @@ final class MembreController extends Controller
     {
         $this->authorize('viewAny', Membre::class);
 
-        $filters = $request->only(['q','statut','ceinture_id','age_group','sort','dir']);
+        $filters = $request->only(['q', 'statut', 'ceinture_id', 'age_group', 'sort', 'dir']);
         $filename = 'membres_'.now()->timezone(config('app.timezone', 'UTC'))->format('Ymd_His').'.xlsx';
 
         return Excel::download(new MembersExport($filters), $filename);
@@ -449,7 +450,7 @@ final class MembreController extends Controller
     public function bulk(BulkMembreActionRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $ids  = array_unique($data['ids']);
+        $ids = array_unique($data['ids']);
 
         DB::transaction(function () use ($data, $ids) {
             $action = $data['action'];
@@ -480,38 +481,38 @@ final class MembreController extends Controller
         $this->authorize('update', $membre);
 
         $validated = $request->validate([
-            'ceinture_id' => ['required','integer','exists:ceintures,id'],
-            'notes'       => ['nullable','string','max:2000'],
-            'forcer'      => ['boolean'], // Pour outrepasser les validations automatiques
+            'ceinture_id' => ['required', 'integer', 'exists:ceintures,id'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+            'forcer' => ['boolean'], // Pour outrepasser les validations automatiques
         ]);
 
         $nouvelleCeinture = Ceinture::findOrFail($validated['ceinture_id']);
 
         // Vérifier si la progression est valide (sauf si forcée)
-        if (!$validated['forcer']) {
+        if (! $validated['forcer']) {
             $validation = $this->progressionService->peutProgresser($membre, $nouvelleCeinture);
-            if (!$validation['peut_progresser']) {
+            if (! $validation['peut_progresser']) {
                 return back()->withErrors([
-                    'progression' => 'Progression bloquée: ' . implode(', ', $validation['raisons_blocage'])
+                    'progression' => 'Progression bloquée: '.implode(', ', $validation['raisons_blocage']),
                 ]);
             }
         }
 
         try {
             $progression = $this->progressionService->progresserMembre(
-                $membre, 
-                $nouvelleCeinture, 
+                $membre,
+                $nouvelleCeinture,
                 $validated['notes'] ?? null,
                 $validated['forcer'] ? 'attribution_forcee' : 'attribution_manuelle'
             );
 
-            return redirect()->back()->with('success', 
+            return redirect()->back()->with('success',
                 "Progression réussie: {$membre->nom_complet} → {$nouvelleCeinture->nom}"
             );
 
         } catch (\Exception $e) {
             return back()->withErrors([
-                'progression' => 'Erreur lors de la progression: ' . $e->getMessage()
+                'progression' => 'Erreur lors de la progression: '.$e->getMessage(),
             ]);
         }
     }
@@ -531,20 +532,21 @@ final class MembreController extends Controller
     private function handleSystemAccess(Membre $membre, array $data): void
     {
         $hasSystemAccess = $data['has_system_access'] ?? false;
-        
-        if (!$hasSystemAccess) {
+
+        if (! $hasSystemAccess) {
             // Supprimer l'accès système si désactivé
             if ($membre->user) {
                 $membre->user->delete();
                 $membre->update(['user_id' => null]);
             }
+
             return;
         }
 
         // Créer ou mettre à jour le compte utilisateur
         $userEmail = $data['user_email'] ?? $membre->email;
         $userName = trim("{$membre->prenom} {$membre->nom}");
-        
+
         if ($membre->user) {
             // Mettre à jour utilisateur existant
             $updateData = [
@@ -552,15 +554,15 @@ final class MembreController extends Controller
                 'email' => $userEmail,
                 'active' => $data['user_active'] ?? true,
             ];
-            
-            if (!empty($data['user_password'])) {
+
+            if (! empty($data['user_password'])) {
                 $updateData['password'] = Hash::make($data['user_password']);
             }
-            
+
             if (isset($data['user_email_verified'])) {
                 $updateData['email_verified_at'] = $data['user_email_verified'] ? now() : null;
             }
-            
+
             $membre->user->update($updateData);
             $user = $membre->user;
         } else {
@@ -573,24 +575,24 @@ final class MembreController extends Controller
                 'active' => $data['user_active'] ?? true,
                 'email_verified_at' => ($data['user_email_verified'] ?? false) ? now() : null,
             ]);
-            
+
             $membre->update(['user_id' => $user->id]);
         }
 
         // Gérer les rôles
         $roles = $data['user_roles'] ?? ['membre'];
-        
+
         // Assurer qu'au minimum le rôle 'membre' est assigné
-        if (empty($roles) || !in_array('membre', $roles)) {
+        if (empty($roles) || ! in_array('membre', $roles)) {
             $roles[] = 'membre';
         }
-        
+
         // Empêcher l'assignation de superadmin par des non-superadmin
         $authUser = auth()->user();
-        if (!$authUser->hasRole('superadmin')) {
-            $roles = array_filter($roles, fn($role) => $role !== 'superadmin');
+        if (! $authUser->hasRole('superadmin')) {
+            $roles = array_filter($roles, fn ($role) => $role !== 'superadmin');
         }
-        
+
         $user->syncRoles($roles);
     }
 }

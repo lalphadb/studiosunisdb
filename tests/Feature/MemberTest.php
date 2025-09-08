@@ -2,40 +2,42 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Member;
 use App\Models\Belt;
+use App\Models\Member;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class MemberTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $gestionnaire;
+
     protected User $membre;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Créer les rôles
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'gestionnaire']);
         Role::create(['name' => 'membre']);
-        
+
         // Créer les utilisateurs
         $this->admin = User::factory()->create()->assignRole('admin');
         $this->gestionnaire = User::factory()->create()->assignRole('gestionnaire');
         $this->membre = User::factory()->create()->assignRole('membre');
-        
+
         // Créer une ceinture de test
         Belt::create([
             'name' => 'Blanche',
             'color_hex' => '#FFFFFF',
-            'order' => 1
+            'order' => 1,
         ]);
     }
 
@@ -79,7 +81,7 @@ class MemberTest extends TestCase
             ->assertRedirect();
 
         $this->assertDatabaseHas('members', [
-            'email' => 'jean.dupont@example.com'
+            'email' => 'jean.dupont@example.com',
         ]);
     }
 
@@ -92,7 +94,7 @@ class MemberTest extends TestCase
             ->assertForbidden();
 
         $this->assertDatabaseHas('members', [
-            'id' => $member->id
+            'id' => $member->id,
         ]);
     }
 
@@ -101,7 +103,7 @@ class MemberTest extends TestCase
         Member::factory()->create([
             'first_name' => 'Unique',
             'last_name' => 'Name',
-            'email' => 'unique@test.com'
+            'email' => 'unique@test.com',
         ]);
 
         $this->actingAs($this->admin)
@@ -120,14 +122,14 @@ class MemberTest extends TestCase
         $this->actingAs($this->gestionnaire)
             ->post(route('members.bulk-update'), [
                 'ids' => $members->pluck('id')->toArray(),
-                'action' => 'deactivate'
+                'action' => 'deactivate',
             ])
             ->assertRedirect();
 
         foreach ($members as $member) {
             $this->assertDatabaseHas('members', [
                 'id' => $member->id,
-                'status' => 'inactive'
+                'status' => 'inactive',
             ]);
         }
     }
@@ -138,19 +140,19 @@ class MemberTest extends TestCase
         $newBelt = Belt::create([
             'name' => 'Jaune',
             'color_hex' => '#FFD700',
-            'order' => 2
+            'order' => 2,
         ]);
 
         $this->actingAs($this->admin)
             ->post(route('members.change-belt', $member), [
                 'belt_id' => $newBelt->id,
-                'notes' => 'Excellent progrès'
+                'notes' => 'Excellent progrès',
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('members', [
             'id' => $member->id,
-            'current_belt_id' => $newBelt->id
+            'current_belt_id' => $newBelt->id,
         ]);
     }
 
@@ -182,7 +184,7 @@ class MemberTest extends TestCase
                 'email',
                 'birth_date',
                 'postal_code',
-                'gender'
+                'gender',
             ]);
     }
 }

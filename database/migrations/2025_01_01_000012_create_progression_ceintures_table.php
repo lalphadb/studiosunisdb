@@ -15,8 +15,8 @@ return new class extends Migration
             $table->foreignId('ceinture_cible_id')->constrained('ceintures');
             $table->foreignId('instructeur_id')->constrained('users');
             $table->enum('statut', [
-                'eligible', 'candidat', 'examen_planifie', 
-                'examen_reussi', 'certifie', 'echec'
+                'eligible', 'candidat', 'examen_planifie',
+                'examen_reussi', 'certifie', 'echec',
             ])->default('eligible');
             $table->date('date_eligibilite');
             $table->date('date_examen')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('note_finale')->nullable(); // /100
             $table->text('recommandations')->nullable();
             $table->timestamps();
-            
+
             $table->index(['membre_id', 'statut']);
             $table->index('date_examen');
         });

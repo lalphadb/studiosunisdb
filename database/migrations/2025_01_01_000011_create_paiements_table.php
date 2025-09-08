@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('saisi_par_id')->nullable()->constrained('users');
             $table->timestamps();
-            
+
             // Index pour les rapports financiers
             $table->index(['date_echeance', 'statut']);
             $table->index(['membre_id', 'statut']);

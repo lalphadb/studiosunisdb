@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\CoursController;
 use App\Http\Controllers\API\CoursApiController;
+use App\Http\Controllers\CoursController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -48,8 +48,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/planning', [CoursController::class, 'planningGeneral'])->name('planning');
 
     // API REST légère (lecture) pour intégration front plus moderne
-    Route::prefix('api')->name('api.cours.')->group(function(){
-        Route::get('/cours', [CoursApiController::class,'index'])->name('index');
-        Route::get('/cours/{cours}', [CoursApiController::class,'show'])->name('show');
+    Route::prefix('api')->name('api.cours.')->group(function () {
+        Route::get('/cours', [CoursApiController::class, 'index'])->name('index');
+        Route::get('/cours/{cours}', [CoursApiController::class, 'show'])->name('show');
     });
 });

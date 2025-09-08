@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-
+use App\Http\Controllers\BladeController;
+use App\Http\Controllers\CeintureController;
 /**
  * ============================================================
  * StudiosDB v7 - Routes Web Consolidées (MODULE FUSION USER)
@@ -12,15 +11,15 @@ use Inertia\Inertia;
  */
 
 /* 1) Imports & configuration */
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CoursController;
-use App\Http\Controllers\PresenceController;
-use App\Http\Controllers\PaiementController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\CeintureController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamenController;
-use App\Http\Controllers\BladeController;
+use App\Http\Controllers\PaiementController;
+use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /* 2) Pages publiques */
 Route::get('/', function () {
@@ -31,7 +30,7 @@ Route::get('/loi-25', fn () => Inertia::render('Loi25'))
     ->name('loi25');
 
 /* 2.1) Test serveur sans auth */
-Route::get('/test-server', function() {
+Route::get('/test-server', function () {
     return response()->json([
         'status' => 'OK',
         'message' => 'ServeurStudiosDB fonctionne',
@@ -58,7 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /* 4.3) USERS UNIFIÉ - Remplace Membres + Utilisateurs */
     Route::resource('users', UserController::class);
-    
+
     // Actions spécialisées
     Route::post('users/{user}/progresser-ceinture', [UserController::class, 'progresserCeinture'])
         ->name('users.progresser-ceinture');
@@ -70,14 +69,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('users.toggle-status'); // Alias pour compatibilité
     Route::post('users/{user}/manage-roles', [UserController::class, 'manageRoles'])
         ->name('users.manage-roles');
-    
+
     // Actions de masse
     Route::post('users/bulk', [UserController::class, 'bulk'])
         ->name('users.bulk');
-    
+
     // Export
     Route::get('users-export/{format?}', [UserController::class, 'export'])
-        ->whereIn('format', ['xlsx','csv','pdf'])
+        ->whereIn('format', ['xlsx', 'csv', 'pdf'])
         ->name('users.export');
 
     /* REDIRECTIONS COMPATIBILITÉ */
@@ -85,8 +84,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('/membres', '/users', 301);
     Route::redirect('/membres/{id}', '/users/{id}', 301);
     Route::redirect('/membres/{id}/edit', '/users/{id}/edit', 301);
-    
-    // Ancien /utilisateurs -> /users  
+
+    // Ancien /utilisateurs -> /users
     Route::redirect('/utilisateurs', '/users', 301);
     Route::redirect('/utilisateurs/{id}', '/users/{id}', 301);
     Route::redirect('/utilisateurs/{id}/edit', '/users/{id}/edit', 301);
@@ -94,42 +93,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /* 4.4) Cours - Routes complètes avec planning */
     Route::bind('cours', function ($value, $route) {
         $user = auth()->user();
-        
+
         if ($user?->hasRole('superadmin')) {
             return \App\Models\Cours::withTrashed()->findOrFail($value);
         }
-        
+
         return \App\Models\Cours::withTrashed()->findOrFail($value);
     });
-    
+
     Route::resource('cours', CoursController::class)
         ->parameters(['cours' => 'cours']);
-    
+
     Route::get('cours-planning', [CoursController::class, 'planning'])->name('cours.planning');
     Route::get('planning', [CoursController::class, 'planning'])->name('planning');
-    
+
     Route::post('cours/{cours}/restore', [CoursController::class, 'restore'])->name('cours.restore');
     Route::post('cours/{cours}/duplicate', [CoursController::class, 'duplicate'])->name('cours.duplicate');
     Route::get('cours/{cours}/duplicate-form', [CoursController::class, 'duplicateForm'])->name('cours.duplicate.form');
     Route::post('cours/{cours}/duplicate-jour', [CoursController::class, 'duplicateJour'])->name('cours.duplicate.jour');
     Route::post('cours/{cours}/duplicate-session', [CoursController::class, 'duplicateSession'])->name('cours.duplicate.session');
-    
+
     Route::get('cours/{cours}/sessions', [CoursController::class, 'sessionsForm'])->name('cours.sessions.form');
     Route::post('cours/{cours}/sessions', [CoursController::class, 'createSessions'])->name('cours.sessions.create');
 
     /* 4.5) Présences */
     Route::get('presences/tablette', [PresenceController::class, 'tablette'])
         ->name('presences.tablette');
-    Route::resource('presences', PresenceController::class)->only(['index','store','update','destroy','show']);
+    Route::resource('presences', PresenceController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 
     /* 4.6) Paiements */
-    Route::resource('paiements', PaiementController::class)->only(['index','show','store','update']);
+    Route::resource('paiements', PaiementController::class)->only(['index', 'show', 'store', 'update']);
     Route::post('paiements/{paiement}/refund', [PaiementController::class, 'refund'])
         ->name('paiements.refund');
 
     /* 4.7) Ceintures & Examens */
-    Route::resource('ceintures', CeintureController::class)->only(['index','show']);
-    Route::resource('examens', ExamenController::class)->only(['index','store','update']);
+    Route::resource('ceintures', CeintureController::class)->only(['index', 'show']);
+    Route::resource('examens', ExamenController::class)->only(['index', 'store', 'update']);
 });
 
 /* 5) Administration & Debug (admin only) */
@@ -140,7 +139,7 @@ Route::middleware(['auth', 'can:admin-panel'])->group(function () {
 });
 
 /* 5.1) Routes diagnostic temporaires */
-Route::middleware(['auth'])->get('/debug/cours-access', function() {
+Route::middleware(['auth'])->get('/debug/cours-access', function () {
     $user = auth()->user();
     $diagnostic = [
         'user_authenticated' => auth()->check(),
@@ -154,7 +153,7 @@ Route::middleware(['auth'])->get('/debug/cours-access', function() {
         'session_id' => request()->session()->getId(),
         'csrf_token' => csrf_token(),
     ];
-    
+
     return response()->json($diagnostic, 200, [], JSON_PRETTY_PRINT);
 })->name('debug.cours-access');
 
@@ -164,9 +163,10 @@ Route::middleware(['auth', 'can:admin-panel'])->group(function () {
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
+
         return redirect('/dashboard')->with('success', 'Cache vidé avec succès');
     })->name('cache.clear');
-    
+
     Route::get('/system-info', function () {
         return response()->json([
             'php_version' => PHP_VERSION,
@@ -176,7 +176,7 @@ Route::middleware(['auth', 'can:admin-panel'])->group(function () {
             'database_connection' => config('database.default'),
             'cache_driver' => config('cache.default'),
             'session_driver' => config('session.driver'),
-            'timestamp' => now()
+            'timestamp' => now(),
         ]);
     })->name('system.info');
 });

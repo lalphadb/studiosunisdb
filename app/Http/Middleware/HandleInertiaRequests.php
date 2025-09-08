@@ -30,7 +30,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        
+
         // Configuration Turnstile (protection anti-bot)
         $turnstileConfig = [];
         if (class_exists(\App\Services\TurnstileService::class)) {
@@ -41,7 +41,7 @@ class HandleInertiaRequests extends Middleware
                 $turnstileConfig = ['enabled' => false];
             }
         }
-        
+
         return [
             'turnstile' => $turnstileConfig,
             ...parent::share($request),

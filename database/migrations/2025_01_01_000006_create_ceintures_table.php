@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('minimum_attendances')->default(24);
             $table->boolean('active')->default(true);
             $table->timestamps();
-            
+
             $table->unique('order');
             $table->index('active');
         });

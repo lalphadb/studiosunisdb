@@ -7,7 +7,7 @@ $dbName = 'studiosdb';
 $backupFile = "{$backupDir}/{$dbName}_backup_{$timestamp}.sql";
 
 // Créer le répertoire si nécessaire
-if (!is_dir($backupDir)) {
+if (! is_dir($backupDir)) {
     mkdir($backupDir, 0755, true);
 }
 
@@ -37,35 +37,35 @@ if ($returnCode === 0) {
     // Compresser le backup
     exec("gzip $backupFile");
     $compressedFile = "{$backupFile}.gz";
-    
+
     if (file_exists($compressedFile)) {
         $size = round(filesize($compressedFile) / 1024 / 1024, 2);
         echo "✅ Backup réussi!\n";
         echo "📄 Fichier: $compressedFile\n";
         echo "📊 Taille: {$size} MB\n\n";
-        
+
         // Lister les backups existants
         echo "📋 Backups disponibles:\n";
         $backups = glob("{$backupDir}/{$dbName}_backup_*.sql.gz");
         rsort($backups);
-        
+
         foreach (array_slice($backups, 0, 5) as $backup) {
             $name = basename($backup);
             $size = round(filesize($backup) / 1024 / 1024, 2);
             $date = filemtime($backup);
-            echo "  - $name ({$size} MB) - " . date('Y-m-d H:i:s', $date) . "\n";
+            echo "  - $name ({$size} MB) - ".date('Y-m-d H:i:s', $date)."\n";
         }
-        
+
         // Nettoyer les vieux backups (garder les 10 derniers)
         if (count($backups) > 10) {
             foreach (array_slice($backups, 10) as $oldBackup) {
                 unlink($oldBackup);
-                echo "🗑️ Supprimé: " . basename($oldBackup) . "\n";
+                echo '🗑️ Supprimé: '.basename($oldBackup)."\n";
             }
         }
     }
 } else {
     echo "❌ Erreur lors du backup!\n";
-    echo "Output: " . implode("\n", $output) . "\n";
+    echo 'Output: '.implode("\n", $output)."\n";
     exit(1);
 }

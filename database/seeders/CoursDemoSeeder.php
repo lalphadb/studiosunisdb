@@ -16,8 +16,9 @@ class CoursDemoSeeder extends Seeder
     {
         // Récupérer première école
         $ecole = DB::table('ecoles')->first();
-        if (!$ecole) {
+        if (! $ecole) {
             $this->command->warn('Aucune école trouvée - créer une école d\'abord');
+
             return;
         }
 
@@ -50,7 +51,7 @@ class CoursDemoSeeder extends Seeder
                 'description' => 'Perfectionnement technique et préparation aux grades supérieurs pour adolescents.',
                 'instructeur_id' => $instructeur?->id,
                 'ecole_id' => $ecole->id,
-                'niveau' => 'intermediaire', 
+                'niveau' => 'intermediaire',
                 'age_min' => 11,
                 'age_max' => 17,
                 'places_max' => 12,
@@ -101,15 +102,15 @@ class CoursDemoSeeder extends Seeder
                 'actif' => true,
                 'couleur_calendrier' => '#f59e0b',
                 'salle' => 'Salle Annexe',
-            ]
+            ],
         ];
 
         foreach ($coursDemo as $cours) {
             Cours::create($cours);
         }
 
-        $this->command->info('✅ ' . count($coursDemo) . ' cours de démonstration créés');
-        $this->command->info('📍 École: ' . $ecole->nom);
-        $this->command->info('👨‍🏫 Instructeur: ' . ($instructeur ? $instructeur->name : 'Non assigné'));
+        $this->command->info('✅ '.count($coursDemo).' cours de démonstration créés');
+        $this->command->info('📍 École: '.$ecole->nom);
+        $this->command->info('👨‍🏫 Instructeur: '.($instructeur ? $instructeur->name : 'Non assigné'));
     }
 }

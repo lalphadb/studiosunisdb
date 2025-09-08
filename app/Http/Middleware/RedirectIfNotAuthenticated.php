@@ -15,12 +15,12 @@ class RedirectIfNotAuthenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             // Pour les requêtes Inertia, rediriger vers login
             if ($request->header('X-Inertia')) {
                 return redirect()->route('login');
             }
-            
+
             // Pour les requêtes normales, aussi rediriger
             return redirect()->route('login');
         }

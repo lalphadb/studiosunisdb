@@ -4,8 +4,8 @@ namespace Tests\Feature\Users;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class UserSecurityTest extends TestCase
 {
@@ -53,14 +53,14 @@ class UserSecurityTest extends TestCase
         $user2 = User::factory()->create(['ecole_id' => $ecole2]);
 
         $this->actingAs($admin1);
-        
+
         // Admin école 1 ne peut pas voir utilisateur école 2
         $response = $this->get(route('utilisateurs.index'));
         $response->assertOk();
-        
+
         $users = $response->viewData('users') ?? $response->inertia('users');
         $userIds = collect($users['data'] ?? $users)->pluck('id')->toArray();
-        
+
         $this->assertNotContains($user2->id, $userIds);
         $this->assertContains($admin1->id, $userIds);
     }
@@ -82,7 +82,7 @@ class UserSecurityTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         // Vérifier que l'utilisateur n'a PAS le rôle superadmin
         $user = User::where('email', 'super@test.com')->first();
         $this->assertNotNull($user);
@@ -99,7 +99,7 @@ class UserSecurityTest extends TestCase
 
         // Tentative auto-suppression
         $response = $this->delete(route('utilisateurs.destroy', $admin));
-        
+
         // Doit être refusée par la policy
         $response->assertForbidden();
     }
@@ -107,10 +107,10 @@ class UserSecurityTest extends TestCase
     public function test_admin_ecole_cannot_modify_superadmin()
     {
         $ecole = $this->createEcole();
-        
+
         $superadmin = User::factory()->create(['ecole_id' => $ecole]);
         $superadmin->assignRole('superadmin');
-        
+
         $admin = User::factory()->create(['ecole_id' => $ecole]);
         $admin->assignRole('admin_ecole');
 
@@ -130,7 +130,7 @@ class UserSecurityTest extends TestCase
         $ecole1 = $this->createEcole();
         $ecole2 = \DB::table('ecoles')->insertGetId([
             'nom' => 'École 2',
-            'slug' => 'ecole-2',  
+            'slug' => 'ecole-2',
             'ville' => 'Test City 2',
             'province' => 'QC',
             'est_active' => true,
@@ -144,7 +144,7 @@ class UserSecurityTest extends TestCase
         // Utilisateur avec même email dans école 2
         User::factory()->create([
             'email' => 'test@example.com',
-            'ecole_id' => $ecole2
+            'ecole_id' => $ecole2,
         ]);
 
         $this->actingAs($admin1);
@@ -160,7 +160,7 @@ class UserSecurityTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
-            'ecole_id' => $ecole1
+            'ecole_id' => $ecole1,
         ]);
     }
 
@@ -170,7 +170,7 @@ class UserSecurityTest extends TestCase
         $ecole2 = \DB::table('ecoles')->insertGetId([
             'nom' => 'École 2',
             'slug' => 'ecole-2',
-            'ville' => 'Test City 2', 
+            'ville' => 'Test City 2',
             'province' => 'QC',
             'est_active' => true,
             'created_at' => now(),
@@ -191,7 +191,7 @@ class UserSecurityTest extends TestCase
         // Superadmin voit utilisateurs des 2 écoles
         $users = $response->viewData('users') ?? $response->inertia('users');
         $userIds = collect($users['data'] ?? $users)->pluck('id')->toArray();
-        
+
         $this->assertContains($user1->id, $userIds);
         $this->assertContains($user2->id, $userIds);
         $this->assertContains($superadmin->id, $userIds);
@@ -228,7 +228,7 @@ class UserSecurityTest extends TestCase
         $response->assertOk();
 
         $roles = $response->viewData('roles') ?? $response->inertia('roles');
-        
+
         // Admin école ne doit pas voir option superadmin
         $this->assertNotContains('superadmin', $roles);
         $this->assertContains('instructeur', $roles);

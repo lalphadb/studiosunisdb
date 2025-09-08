@@ -31,18 +31,18 @@ class UpdateUserRequest extends FormRequest
         $ecoleId = $this->user()?->ecole_id;
         $authUser = $this->user();
         $superadminRule = $authUser && $authUser->hasRole('superadmin') ? [] : ['not_in:superadmin'];
-        
+
         return [
-            'name' => ['required','string','max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required','string','email','max:255',
-                $userId ? Rule::unique('users')->where(fn($q) => $ecoleId ? $q->where('ecole_id',$ecoleId):$q)->ignore($userId) : 'unique:users'
+                'required', 'string', 'email', 'max:255',
+                $userId ? Rule::unique('users')->where(fn ($q) => $ecoleId ? $q->where('ecole_id', $ecoleId) : $q)->ignore($userId) : 'unique:users',
             ],
-            'password' => ['sometimes','nullable','confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
-            'roles' => ['sometimes','array'],
+            'password' => ['sometimes', 'nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'roles' => ['sometimes', 'array'],
             'roles.*' => array_merge(['exists:roles,name'], $superadminRule),
-            'email_verified' => ['sometimes','boolean'],
-            'active' => ['sometimes','boolean'],
+            'email_verified' => ['sometimes', 'boolean'],
+            'active' => ['sometimes', 'boolean'],
         ];
     }
 

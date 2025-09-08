@@ -4,16 +4,16 @@ namespace App\Exports;
 
 use App\Models\Membre;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Collection;
 
-class MembresExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class MembresExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $ecoleId;
+
     protected $filters;
 
     public function __construct($ecoleId = null, array $filters = [])
@@ -28,15 +28,15 @@ class MembresExport implements FromCollection, WithHeadings, WithMapping, WithSt
             ->where('ecole_id', $this->ecoleId);
 
         // Appliquer les filtres
-        if (!empty($this->filters['statut'])) {
+        if (! empty($this->filters['statut'])) {
             $query->where('statut', $this->filters['statut']);
         }
 
-        if (!empty($this->filters['recherche'])) {
+        if (! empty($this->filters['recherche'])) {
             $query->recherche($this->filters['recherche']);
         }
 
-        if (!empty($this->filters['ceinture_id'])) {
+        if (! empty($this->filters['ceinture_id'])) {
             $query->where('ceinture_actuelle_id', $this->filters['ceinture_id']);
         }
 
