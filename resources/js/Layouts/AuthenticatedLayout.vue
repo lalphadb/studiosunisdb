@@ -53,7 +53,7 @@
 
             <!-- MENU ADMIN/INSTRUCTEUR -->
             <template v-if="!isMembreRole">
-              <!-- Membres -->
+              <!-- Membres/Utilisateurs - Une seule entrée -->
               <Link 
                 href="/users" 
                 class="nav-item group"
@@ -123,25 +123,6 @@
                 <span v-if="sidebarOpen" class="nav-label">Finances</span>
                 <span v-if="sidebarOpen && stats?.paiements_en_retard > 0" class="nav-badge bg-red-500/20 text-red-400 animate-pulse">
                   {{ stats.paiements_en_retard }}
-                </span>
-              </Link>
-
-              <!-- Utilisateurs (Admin uniquement) -->
-              <Link 
-                v-if="isAdminRole"
-                href="/users" 
-                class="nav-item group"
-                :class="{ 'active': currentPath.startsWith('/users') || currentPath.startsWith('/utilisateurs') }"
-              >
-                <div class="nav-icon bg-gradient-to-br from-indigo-500/20 to-indigo-600/20 group-hover:from-indigo-500/30 group-hover:to-indigo-600/30">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-                <span v-if="sidebarOpen" class="nav-label">Utilisateurs</span>
-                <span v-if="sidebarOpen" class="ml-auto text-[10px] px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full font-bold uppercase tracking-wider">
-                  Admin
                 </span>
               </Link>
             </template>
